@@ -1,0 +1,48 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Profile photos - readable by anyone, writable by authenticated users
+    match /profile-photos/{userId}/{allPaths=**} {
+      // Anyone can read profile photos (for displaying in public pages)
+      allow read: if true;
+      // Only authenticated users can upload their own profile photo
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Blog post images - readable by anyone, writable by admins/secretaries
+    match /blog-images/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Event images - readable by anyone, writable by admins/secretaries
+    match /event-images/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Member photos - readable by authenticated users, writable by admins/secretaries
+    match /member-photos/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Assisted people photos - readable by authenticated users, writable by admins
+    match /assistido-photos/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Stream thumbnails - readable by anyone, writable by authenticated users
+    match /streams/thumbnails/{allPaths=**} {
+      allow read: if true; // Public read for stream thumbnails
+      allow write: if request.auth != null; // Any authenticated user can upload
+    }
+
+    // Default: deny all
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

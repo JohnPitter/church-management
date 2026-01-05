@@ -1,0 +1,733 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========== VARIÁVEIS CSS BASE DO TEMA ========== */
+:root {
+  /* Cores padrão do tema */
+  --color-primary: #2563eb;
+  --color-secondary: #7c3aed;
+  --color-accent: #059669;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-text: #1e293b;
+  --color-textSecondary: #64748b;
+  --color-primary-dark: #1d4ed8;
+  --color-secondary-dark: #6d28d9;
+  --color-accent-dark: #047857;
+}
+
+/* ========== CLASSES DE TEMA SEMPRE DISPONÍVEIS ========== */
+.theme-gradient {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)) !important;
+}
+
+.theme-primary {
+  background-color: var(--color-primary) !important;
+  color: white !important;
+}
+
+.theme-secondary {
+  background-color: var(--color-secondary) !important;
+  color: white !important;
+}
+
+.theme-text-primary {
+  color: var(--color-primary) !important;
+}
+
+.theme-text-secondary {
+  color: var(--color-secondary) !important;
+}
+
+/* Forçar cores específicas independente do modo escuro do sistema */
+html, body {
+  color-scheme: light !important;
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+}
+
+/* Garantir que elementos específicos não sejam afetados pelo modo escuro */
+* {
+  color-scheme: light !important;
+}
+
+/* Forçar botões do navbar a terem cor correta */
+nav button, .navbar button, nav .text-white, .navbar .text-white {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+nav button:hover, .navbar button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+/* Corrigir elementos específicos que podem ficar invisíveis no modo escuro */
+.bg-white {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
+.text-gray-900 {
+  color: #111827 !important;
+}
+
+.text-gray-700 {
+  color: #374151 !important;
+}
+
+.text-gray-600 {
+  color: #4b5563 !important;
+}
+
+.text-gray-500 {
+  color: #6b7280 !important;
+}
+
+/* Garantir que inputs e formulários sejam visíveis */
+input, select, textarea {
+  color-scheme: light !important;
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #d1d5db !important;
+}
+
+/* Garantir que botões sejam sempre visíveis */
+button {
+  color-scheme: light !important;
+  border: 1px solid transparent !important;
+}
+
+/* Botões azuis/primários usando variáveis do tema */
+.bg-blue-600, .bg-blue-500, .bg-blue-700, button[type="submit"] {
+  background-color: var(--color-primary, #2563eb) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--color-primary, #2563eb) !important;
+}
+
+.bg-blue-600:hover, .bg-blue-500:hover, .bg-blue-700:hover, button[type="submit"]:hover {
+  background-color: var(--color-primary-dark, #1d4ed8) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--color-primary-dark, #1d4ed8) !important;
+}
+
+/* Botões cinza/secundários */
+.bg-gray-600, .bg-gray-500, .bg-gray-700 {
+  background-color: #6b7280 !important;
+  color: #ffffff !important;
+  border: 1px solid #6b7280 !important;
+}
+
+.bg-gray-600:hover, .bg-gray-500:hover, .bg-gray-700:hover {
+  background-color: #4b5563 !important;
+  color: #ffffff !important;
+  border: 1px solid #4b5563 !important;
+}
+
+/* Botões com borda */
+.border-gray-300, button[class*="border"] {
+  background-color: #ffffff !important;
+  color: #374151 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.border-gray-300:hover, button[class*="border"]:hover {
+  background-color: #f9fafb !important;
+  color: #374151 !important;
+  border: 1px solid #9ca3af !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
+/* Garantir que modais e dropdowns sejam visíveis */
+.bg-gray-50 {
+  background-color: #f9fafb !important;
+  color: #1e293b !important;
+}
+
+.border-gray-200 {
+  border-color: #e5e7eb !important;
+}
+
+.border-gray-300 {
+  border-color: #d1d5db !important;
+}
+
+/* Garantir que badges e indicadores sejam visíveis */
+.bg-green-100 {
+  background-color: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.bg-yellow-100 {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+.bg-red-100 {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+.bg-blue-100 {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+/* Garantir que textos de diferentes cores sejam visíveis */
+.text-green-600 {
+  color: #16a34a !important;
+}
+
+.text-green-700 {
+  color: #15803d !important;
+}
+
+.text-green-800 {
+  color: #166534 !important;
+}
+
+.text-red-600 {
+  color: #dc2626 !important;
+}
+
+.text-red-700 {
+  color: #b91c1c !important;
+}
+
+.text-yellow-600 {
+  color: #d97706 !important;
+}
+
+.text-yellow-700 {
+  color: #b45309 !important;
+}
+
+.text-blue-600 {
+  color: #2563eb !important;
+}
+
+.text-blue-700 {
+  color: #1d4ed8 !important;
+}
+
+.text-blue-800 {
+  color: #1e40af !important;
+}
+
+.text-blue-900 {
+  color: #1e3a8a !important;
+}
+
+/* Garantir que elementos de navegação sejam visíveis */
+nav, .navbar {
+  color-scheme: light !important;
+}
+
+/* Forçar cabeçalho/navbar com tema a ter fundo azul forte */
+.theme-header, nav.theme-header, .theme-header nav {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* Forçar banners/gradientes com tema inline styles usando variáveis */
+div[style*="linear-gradient"] {
+  background: linear-gradient(135deg, var(--color-primary, #2563eb), var(--color-secondary, #7c3aed)) !important;
+}
+
+/* Garantir que botões inline com theme style sejam visíveis usando variáveis */
+button[style*="backgroundColor"] {
+  background-color: var(--color-primary, #2563eb) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--color-primary, #2563eb) !important;
+}
+
+button[style*="backgroundColor"]:hover {
+  background-color: var(--color-primary-dark, #1d4ed8) !important;
+  color: #ffffff !important;
+}
+
+/* Forçar especificamente botões de login e registro */
+button[type="submit"][style*="backgroundColor"] {
+  background-color: var(--color-primary, #2563eb) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--color-primary, #2563eb) !important;
+}
+
+button[type="submit"][style*="backgroundColor"]:hover {
+  background-color: var(--color-secondary, #7c3aed) !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que divs com gradiente inline usem tema */
+.space-y-6 > div[style*="linear-gradient"],
+div.rounded-lg[style*="linear-gradient"] {
+  background: linear-gradient(135deg, var(--color-primary, #2563eb), var(--color-secondary, #7c3aed)) !important;
+}
+
+/* Forçar links com cores do tema */
+a[style*="color"], .text-indigo-600, .text-blue-600 {
+  color: var(--color-primary, #2563eb) !important;
+}
+
+a[style*="color"]:hover, .text-indigo-600:hover, .text-blue-600:hover {
+  color: var(--color-secondary, #7c3aed) !important;
+}
+
+/* Garantir que banners e elementos com fundo cinza sejam visíveis */
+.bg-gray-200, .bg-gray-300, .bg-gray-400 {
+  background-color: #e5e7eb !important;
+  color: #1f2937 !important;
+}
+
+/* Garantir contraste adequado para elementos de destaque */
+.bg-indigo-50, .bg-blue-50 {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #c7d2fe !important;
+}
+
+/* Garantir que todos os fundos de 50 sejam visíveis */
+.bg-purple-50 {
+  background-color: #faf5ff !important;
+  color: #7c3aed !important;
+  border: 1px solid #e9d5ff !important;
+}
+
+.bg-green-50 {
+  background-color: #f0fdf4 !important;
+  color: #16a34a !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+.bg-orange-50 {
+  background-color: #fff7ed !important;
+  color: #ea580c !important;
+  border: 1px solid #fed7aa !important;
+}
+
+.bg-pink-50 {
+  background-color: #fdf2f8 !important;
+  color: #ec4899 !important;
+  border: 1px solid #fbcfe8 !important;
+}
+
+.bg-red-50 {
+  background-color: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca !important;
+}
+
+.bg-yellow-50, .bg-amber-50 {
+  background-color: #fefce8 !important;
+  color: #ca8a04 !important;
+  border: 1px solid #fef3c7 !important;
+}
+
+.bg-emerald-50 {
+  background-color: #ecfdf5 !important;
+  color: #059669 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+.bg-cyan-50 {
+  background-color: #ecfeff !important;
+  color: #0891b2 !important;
+  border: 1px solid #a5f3fc !important;
+}
+
+.bg-teal-50 {
+  background-color: #f0fdfa !important;
+  color: #0d9488 !important;
+  border: 1px solid #99f6e4 !important;
+}
+
+/* Garantir que hovers dos bg-X-50 funcionem corretamente */
+.hover\\:bg-blue-100:hover {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+.hover\\:bg-green-100:hover {
+  background-color: #dcfce7 !important;
+  color: #16a34a !important;
+}
+
+.hover\\:bg-purple-100:hover {
+  background-color: #f3e8ff !important;
+  color: #7c3aed !important;
+}
+
+.hover\\:bg-orange-100:hover {
+  background-color: #ffedd5 !important;
+  color: #ea580c !important;
+}
+
+.hover\\:bg-pink-100:hover {
+  background-color: #fce7f3 !important;
+  color: #ec4899 !important;
+}
+
+.hover\\:bg-red-100:hover {
+  background-color: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+.hover\\:bg-yellow-100:hover, .hover\\:bg-amber-100:hover {
+  background-color: #fef3c7 !important;
+  color: #ca8a04 !important;
+}
+
+.hover\\:bg-emerald-100:hover {
+  background-color: #d1fae5 !important;
+  color: #059669 !important;
+}
+
+.hover\\:bg-cyan-100:hover {
+  background-color: #cffafe !important;
+  color: #0891b2 !important;
+}
+
+.hover\\:bg-teal-100:hover {
+  background-color: #ccfbf1 !important;
+  color: #0d9488 !important;
+}
+
+/* Garantir que cards e containers sejam visíveis */
+.shadow, .shadow-lg, .shadow-md {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
+/* Garantir que hover states funcionem corretamente */
+.hover\:bg-gray-100:hover {
+  background-color: #f3f4f6 !important;
+  color: #1e293b !important;
+}
+
+.hover\:bg-gray-50:hover {
+  background-color: #f9fafb !important;
+  color: #1e293b !important;
+}
+
+/* Garantir que elementos de tabela sejam visíveis */
+table, th, td {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
+/* Garantir que elementos de formulário com fundo cinza sejam visíveis */
+.bg-gray-100 {
+  background-color: #f3f4f6 !important;
+  color: #1e293b !important;
+}
+
+/* Garantir que spinners e loading sejam visíveis */
+.animate-spin {
+  color: #2563eb !important;
+}
+
+/* Garantir que SVGs e ícones sejam visíveis */
+svg {
+  color: inherit !important;
+  fill: currentColor !important;
+}
+
+/* Elementos com cor atual devem usar a cor do texto */
+.text-current {
+  color: #1e293b !important;
+}
+
+/* Garantir que elementos de loading/spinner sejam visíveis */
+.border-blue-600 {
+  border-color: #2563eb !important;
+}
+
+.border-b-2 {
+  border-color: #2563eb !important;
+}
+
+/* Garantir que placeholders sejam visíveis */
+input::placeholder, textarea::placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+/* Garantir que elementos disabled sejam visíveis */
+input:disabled, button:disabled, select:disabled, textarea:disabled {
+  background-color: #f3f4f6 !important;
+  color: #6b7280 !important;
+  opacity: 0.5 !important;
+}
+
+/* Garantir que elementos de foco sejam visíveis */
+*:focus {
+  outline-color: #2563eb !important;
+}
+
+/* Garantir que elementos com background transparente tenham cor */
+.bg-transparent {
+  background-color: transparent !important;
+  color: #1e293b !important;
+}
+
+/* Garantir que textos em branco sejam visíveis quando necessário */
+.text-white {
+  color: #ffffff !important;
+}
+
+/* Garantir que elementos com z-index alto sejam visíveis */
+.z-50, .z-40, .z-30 {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Garantir que dropdowns e menus sejam visíveis */
+.absolute {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
+/* Garantir que elementos de overlay sejam visíveis */
+.bg-black {
+  background-color: #000000 !important;
+}
+
+.bg-opacity-50 {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Garantir que badges específicos sejam visíveis */
+.bg-green-50 {
+  background-color: #f0fdf4 !important;
+  color: #166534 !important;
+}
+
+.bg-red-50 {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+}
+
+.bg-yellow-50 {
+  background-color: #fefce8 !important;
+  color: #854d0e !important;
+}
+
+.bg-blue-50 {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+}
+
+/* Garantir que elementos de notificação sejam visíveis */
+.bg-indigo-600 {
+  background-color: #4f46e5 !important;
+  color: #ffffff !important;
+}
+
+.hover\:bg-indigo-700:hover {
+  background-color: #4338ca !important;
+  color: #ffffff !important;
+}
+
+/* Classes de utilitário para botões e gradientes */
+.btn-primary {
+  background-color: var(--color-primary, #2563eb) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--color-primary, #2563eb) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark, #1d4ed8) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--color-primary-dark, #1d4ed8) !important;
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary, #2563eb), var(--color-secondary, #7c3aed)) !important;
+}
+
+.bg-primary {
+  background-color: var(--color-primary, #2563eb) !important;
+  color: #ffffff !important;
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary, #7c3aed) !important;
+  color: #ffffff !important;
+}
+
+.text-primary {
+  color: var(--color-primary, #2563eb) !important;
+}
+
+.text-secondary {
+  color: var(--color-secondary, #7c3aed) !important;
+}
+
+/* Override para dark mode preferences */
+@media (prefers-color-scheme: dark) {
+  html, body {
+    color-scheme: light !important;
+    background-color: #f8fafc !important;
+    color: #1e293b !important;
+  }
+  
+  * {
+    color-scheme: light !important;
+  }
+  
+  /* Forçar elementos específicos no modo escuro */
+  svg {
+    color: inherit !important;
+    fill: currentColor !important;
+  }
+  
+  input, select, textarea {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    border-color: #d1d5db !important;
+  }
+  
+  /* Botões azuis/primários no modo escuro usando variáveis */
+  .bg-blue-600, .bg-blue-500, .bg-blue-700, button[type="submit"] {
+    background-color: var(--color-primary, #2563eb) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--color-primary, #2563eb) !important;
+  }
+  
+  /* Botões cinza/secundários no modo escuro */
+  .bg-gray-600, .bg-gray-500, .bg-gray-700 {
+    background-color: #6b7280 !important;
+    color: #ffffff !important;
+    border: 1px solid #6b7280 !important;
+  }
+  
+  /* Navbar no modo escuro usando variáveis */
+  .theme-header, nav.theme-header {
+    background-color: var(--color-primary, #2563eb) !important;
+    color: #ffffff !important;
+  }
+  
+  nav button, .navbar button {
+    background-color: transparent !important;
+    color: #ffffff !important;
+  }
+  
+  /* Forçar gradientes e botões com theme inline no modo escuro usando variáveis */
+  div[style*="linear-gradient"] {
+    background: linear-gradient(135deg, var(--color-primary, #2563eb), var(--color-secondary, #7c3aed)) !important;
+  }
+  
+  button[style*="backgroundColor"] {
+    background-color: var(--color-primary, #2563eb) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--color-primary, #2563eb) !important;
+  }
+  
+  /* Links com cores do tema no modo escuro */
+  a[style*="color"], .text-indigo-600, .text-blue-600 {
+    color: var(--color-primary, #2563eb) !important;
+  }
+  
+  a[style*="color"]:hover, .text-indigo-600:hover, .text-blue-600:hover {
+    color: var(--color-secondary, #7c3aed) !important;
+  }
+  
+  /* Garantir que todos os bg-X-50 sejam visíveis no modo escuro */
+  .bg-purple-50, .bg-green-50, .bg-orange-50, .bg-pink-50, .bg-yellow-50, .bg-amber-50, 
+  .bg-emerald-50, .bg-cyan-50, .bg-teal-50, .bg-red-50 {
+    background-color: inherit !important;
+    color: inherit !important;
+    border: 1px solid #d1d5db !important;
+  }
+  
+  .bg-purple-50 { background-color: #faf5ff !important; color: #7c3aed !important; }
+  .bg-green-50 { background-color: #f0fdf4 !important; color: #16a34a !important; }
+  .bg-orange-50 { background-color: #fff7ed !important; color: #ea580c !important; }
+  .bg-pink-50 { background-color: #fdf2f8 !important; color: #ec4899 !important; }
+  .bg-red-50 { background-color: #fef2f2 !important; color: #dc2626 !important; }
+  .bg-yellow-50, .bg-amber-50 { background-color: #fefce8 !important; color: #ca8a04 !important; }
+  .bg-emerald-50 { background-color: #ecfdf5 !important; color: #059669 !important; }
+  .bg-cyan-50 { background-color: #ecfeff !important; color: #0891b2 !important; }
+  .bg-teal-50 { background-color: #f0fdfa !important; color: #0d9488 !important; }
+  
+  .bg-white {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+  }
+  
+  /* Garantir que dropdowns sejam visíveis no modo escuro */
+  .absolute.bg-white {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #d1d5db !important;
+  }
+  
+  /* Classes de utilitário no modo escuro */
+  .btn-primary {
+    background-color: var(--color-primary, #2563eb) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--color-primary, #2563eb) !important;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-primary-dark, #1d4ed8) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--color-primary-dark, #1d4ed8) !important;
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, var(--color-primary, #2563eb), var(--color-secondary, #7c3aed)) !important;
+  }
+
+  .bg-primary {
+    background-color: var(--color-primary, #2563eb) !important;
+    color: #ffffff !important;
+  }
+
+  .bg-secondary {
+    background-color: var(--color-secondary, #7c3aed) !important;
+    color: #ffffff !important;
+  }
+
+  .text-primary {
+    color: var(--color-primary, #2563eb) !important;
+  }
+
+  .text-secondary {
+    color: var(--color-secondary, #7c3aed) !important;
+  }
+}
+
+/* Flag emoji container styles */
+.flag-emoji-container {
+  font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Twitter Color Emoji", "Twemoji Mozilla", "EmojiOne Color", "Android Emoji", "Segoe UI Symbol", sans-serif !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-rendering: optimizeLegibility !important;
+  -webkit-font-feature-settings: "liga" 1, "kern" 1 !important;
+  font-feature-settings: "liga" 1, "kern" 1 !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-decoration: none !important;
+  text-transform: none !important;
+  text-shadow: none !important;
+  unicode-bidi: isolate !important;
+  word-spacing: normal !important;
+  letter-spacing: normal !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
