@@ -20,7 +20,20 @@
       "Bash(git init:*)",
       "Bash(git remote add:*)",
       "Bash(git config:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git checkout:*)",
+      "Bash(for file in CreatePrayerRequestModal CreateForumCategoryModal EventsCalendar)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)",
+      "Bash(for file in SolicitarAjudaModal CreateCategoryModal CreateDonationModal CreateTransactionModal CreateRoleModal CreateUserModal)",
+      "Bash(for file in CreateMemberModal EditDevotionalModal DevotionalDetailModal)",
+      "Bash(for file in CreateVisitorModal ContactVisitorModal RecordVisitModal VisitorDetailsModal)",
+      "Bash(for file in Layout ProtectedRoute PublicRoute PermissionGuard NotificationBell NotificationsList)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []
