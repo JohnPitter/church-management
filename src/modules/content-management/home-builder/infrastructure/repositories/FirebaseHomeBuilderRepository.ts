@@ -15,7 +15,7 @@ import {
   limit,
   Timestamp
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import { HomeLayout, HomeComponent } from '@modules/content-management/home-builder/domain/entities/HomeBuilder';
 
 export class FirebaseHomeBuilderRepository {

@@ -16,7 +16,7 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/config/firebase';
-import { loggingService } from 'infrastructure/services/LoggingService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import {
   ONGInfo,
   Voluntario,

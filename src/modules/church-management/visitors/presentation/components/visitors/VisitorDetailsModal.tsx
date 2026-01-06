@@ -8,7 +8,7 @@ import {
   VisitorStatus,
   FollowUpStatus,
   VisitRecord
-} from '../../domain/entities/Visitor';
+} from '@modules/church-management/visitors/domain/entities/Visitor';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 

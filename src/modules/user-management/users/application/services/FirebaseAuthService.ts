@@ -2,7 +2,7 @@
 // Complete implementation for authentication services
 
 import { IAuthService } from '@modules/user-management/users/domain/services/IAuthService';
-import { User, UserStatus, UserRole } from '@modules/User';
+import { User, UserStatus, UserRole } from '@modules/user-management/users/domain/entities/User';
 import { auth, db } from '@/config/firebase';
 import { 
   signInWithEmailAndPassword, 

@@ -1,8 +1,8 @@
 import { db } from '@/config/firebase';
 import { collection, doc, setDoc, Timestamp } from 'firebase/firestore';
 import { Assistido, StatusAssistido, SituacaoFamiliar, Escolaridade, TipoMoradia } from '@modules/assistance/assistidos/domain/entities/Assistido';
-import { Member, MemberStatus, MaritalStatus } from '../../domain/entities/Member';
-import { Event, EventStatus } from '../../domain/entities/Event';
+import { Member, MemberStatus, MaritalStatus } from '@modules/church-management/members/domain/entities/Member';
+import { Event, EventStatus } from '@modules/church-management/events/domain/entities/Event';
 
 interface OldData {
   assistidos?: Record<string, any>;

@@ -1,7 +1,7 @@
 // Domain Service Interface - Auth Service
 // Defines the contract for authentication services
 
-import { User } from '../entities/User';
+import { User } from '@modules/user-management/users/domain/entities/User';
 
 export interface IAuthService {
   login(email: string, password: string): Promise<User>;

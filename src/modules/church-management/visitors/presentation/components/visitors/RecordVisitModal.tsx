@@ -6,7 +6,7 @@ import { visitorService } from '@modules/church-management/visitors/application/
 import {
   Visitor,
   ServiceType
-} from '../../domain/entities/Visitor';
+} from '@modules/church-management/visitors/domain/entities/Visitor';
 
 interface RecordVisitModalProps {
   isOpen: boolean;

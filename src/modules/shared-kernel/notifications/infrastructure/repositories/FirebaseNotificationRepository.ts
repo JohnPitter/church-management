@@ -20,7 +20,7 @@ import {
 import { db } from '@/config/firebase';
 import { INotificationRepository } from '@modules/shared-kernel/notifications/domain/repositories/INotificationRepository';
 import { Notification, NotificationPreferences, NotificationStatus, NotificationType } from '@modules/shared-kernel/notifications/domain/entities/Notification';
-import { FirebaseUserRepository } from './FirebaseUserRepository';
+import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 
 export class FirebaseNotificationRepository implements INotificationRepository {
   private readonly notificationsCollection = 'notifications';

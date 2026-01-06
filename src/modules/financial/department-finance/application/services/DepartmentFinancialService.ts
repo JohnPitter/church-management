@@ -27,7 +27,7 @@ import {
   DepartmentMonthlyBalance,
   DepartmentSummary,
   DepartmentEntity
-} from 'domain/entities/Department';
+} from '@modules/financial/department-finance/domain/entities/Department';
 import { startOfMonth, endOfMonth, format as formatDate } from 'date-fns';
 
 export interface DepartmentFilters {
