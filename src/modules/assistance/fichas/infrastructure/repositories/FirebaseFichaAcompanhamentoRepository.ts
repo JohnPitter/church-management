@@ -14,8 +14,8 @@ import {
   limit,
   Timestamp
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
-import { FichaAcompanhamento, SessaoAcompanhamento } from '../../modules/assistance/fichas/domain/entities/FichaAcompanhamento';
+import { db } from '@/config/firebase';
+import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
 
 export class FirebaseFichaAcompanhamentoRepository {
   private readonly collectionName = 'fichasAcompanhamento';

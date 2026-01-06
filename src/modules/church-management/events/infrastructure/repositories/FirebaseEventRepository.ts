@@ -15,7 +15,7 @@ import {
   limit as firestoreLimit,
   Timestamp
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import { IEventRepository } from '../../domain/repositories/IEventRepository';
 import { Event, EventCategory, EventConfirmation, EventStatus, ConfirmationStatus } from '../../domain/entities/Event';
 

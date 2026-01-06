@@ -1,6 +1,6 @@
 export * from './../modules/financial/church-finance/domain/entities/Financial';
 export { DefaultCategoriesService, DEFAULT_INCOME_CATEGORIES, DEFAULT_EXPENSE_CATEGORIES } from './application/services/DefaultFinancialCategories';
-export { AdminFinancialPage } from './presentation/pages/AdminFinancialPage';
+// export { AdminFinancialPage } from './presentation/pages/AdminFinancialPage'; // TODO: Page moved to src/presentation/pages
 
 // Financial service exports (renamed to avoid collisions with ChurchFinancialService)
 export {

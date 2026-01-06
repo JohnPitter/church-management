@@ -15,7 +15,7 @@ import {
   limit as firestoreLimit,
   Timestamp
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import { IAssistidoRepository } from '@modules/assistance/assistidos/domain/repositories/IAssistidoRepository';
 import { 
   Assistido, 
@@ -24,7 +24,7 @@ import {
   FamiliarAssistido,
   NecessidadeAssistido,
   TipoAtendimento
-} from '../../modules/assistance/assistidos/domain/entities/Assistido';
+} from '@modules/assistance/assistidos/domain/entities/Assistido';
 
 export class FirebaseAssistidoRepository implements IAssistidoRepository {
   private readonly assistidosCollection = 'assistidos';

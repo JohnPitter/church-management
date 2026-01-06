@@ -21,6 +21,7 @@
     "jsx": "react-jsx",
     "baseUrl": "src",
     "paths": {
+      "@/*": ["./*"],
       "@modules/*": ["modules/*"],
       "@shared-kernel/*": ["modules/shared-kernel/*"],
       "@church-management/*": ["modules/church-management/*"],

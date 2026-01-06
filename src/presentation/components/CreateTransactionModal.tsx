@@ -8,7 +8,7 @@ import {
   TransactionType, 
   PaymentMethod,
   TransactionStatus 
-} from '../../modules/financial/church-finance/domain/entities/Financial';
+} from '@modules/financial/church-finance/domain/entities/Financial';
 import { financialService } from '@modules/financial/church-finance/application/services/FinancialService';
 
 interface CreateTransactionModalProps {

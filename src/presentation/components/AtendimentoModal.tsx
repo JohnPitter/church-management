@@ -9,7 +9,7 @@ import {
   AtendimentoAssistido,
   TipoAtendimento,
   ItemDoacao
-} from '../../modules/assistance/assistidos/domain/entities/Assistido';
+} from '@modules/assistance/assistidos/domain/entities/Assistido';
 
 interface AtendimentoModalProps {
   isOpen: boolean;

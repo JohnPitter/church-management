@@ -15,8 +15,8 @@ import {
   DocumentSnapshot,
   QuerySnapshot
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
-import { HelpRequest, HelpRequestStatus } from '../../modules/assistance/help-requests/domain/entities/HelpRequest';
+import { db } from '@/config/firebase';
+import { HelpRequest, HelpRequestStatus } from '@modules/assistance/help-requests/domain/entities/HelpRequest';
 
 export class FirebaseHelpRequestRepository {
   private collectionName = 'helpRequests';

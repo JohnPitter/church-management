@@ -4,10 +4,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FirebaseLiveStreamRepository } from '@modules/content-management/live-streaming/infrastructure/repositories/FirebaseLiveStreamRepository';
-import { LiveStream, StreamCategory, StreamStatus } from '../../modules/content-management/live-streaming/domain/entities/LiveStream';
+import { LiveStream, StreamCategory, StreamStatus } from '@modules/content-management/live-streaming/domain/entities/LiveStream';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import { doc, setDoc, deleteDoc, onSnapshot, collection, serverTimestamp } from 'firebase/firestore';
 import SocialShareButtons from '../components/SocialShareButtons';
 

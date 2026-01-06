@@ -2,7 +2,7 @@
 // Modal for creating new users with role assignment
 
 import React, { useState } from 'react';
-import { UserRole, UserRegistration } from '../../domain/entities/User';
+import { UserRole, UserRegistration } from '@/domain/entities/User';
 
 interface CreateUserModalProps {
   isOpen: boolean;

@@ -15,9 +15,9 @@ import {
   limit as firestoreLimit,
   Timestamp
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import { IProjectRepository } from '@modules/content-management/projects/domain/repositories/IProjectRepository';
-import { Project, ProjectStatus, ProjectRegistration, RegistrationStatus } from '../../modules/content-management/projects/domain/entities/Project';
+import { Project, ProjectStatus, ProjectRegistration, RegistrationStatus } from '@modules/content-management/projects/domain/entities/Project';
 
 export class FirebaseProjectRepository implements IProjectRepository {
   private readonly projectsCollection = 'projects';

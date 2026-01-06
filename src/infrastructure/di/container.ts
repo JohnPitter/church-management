@@ -10,9 +10,9 @@ import { FirebaseEventRepository } from '@modules/church-management/events/infra
 import { LoginUseCase } from '@modules/user-management/users/application/usecases/LoginUseCase';
 import { RegisterUseCase } from '@modules/user-management/users/application/usecases/RegisterUseCase';
 import { CreateMemberUseCase } from '@modules/church-management/members/application/usecases/CreateMemberUseCase';
-import { FirebaseAuthService } from '../services/FirebaseAuthService';
-import { FirebaseNotificationService } from '../services/FirebaseNotificationService';
-import { FirebaseAuditService } from '../services/FirebaseAuditService';
+import { FirebaseAuthService } from '@modules/user-management/users/application/services/FirebaseAuthService';
+import { FirebaseNotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/FirebaseNotificationService';
+import { FirebaseAuditService } from '@modules/shared-kernel/audit/infrastructure/services/FirebaseAuditService';
 
 class DIContainer {
   private static instance: DIContainer;

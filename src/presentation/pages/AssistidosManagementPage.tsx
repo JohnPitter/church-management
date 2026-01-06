@@ -10,7 +10,7 @@ import {
   StatusAssistido,
   NecessidadeAssistido,
   TipoAtendimento
-} from '../../modules/assistance/assistidos/domain/entities/Assistido';
+} from '@modules/assistance/assistidos/domain/entities/Assistido';
 import {
   HiUsers,
   HiClipboardDocumentList,

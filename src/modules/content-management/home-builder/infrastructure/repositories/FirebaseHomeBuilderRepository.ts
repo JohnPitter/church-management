@@ -16,7 +16,7 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import { HomeLayout, HomeComponent } from '../../modules/content-management/home-builder/domain/entities/HomeBuilder';
+import { HomeLayout, HomeComponent } from '@modules/content-management/home-builder/domain/entities/HomeBuilder';
 
 export class FirebaseHomeBuilderRepository {
   private collectionName = 'homeLayouts';

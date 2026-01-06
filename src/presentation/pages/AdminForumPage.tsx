@@ -12,7 +12,7 @@ import {
   ForumStats,
   TopicStatus,
   TopicPriority
-} from '../../modules/content-management/forum/domain/entities/Forum';
+} from '@modules/content-management/forum/domain/entities/Forum';
 import { 
   forumService,
   TopicFilters

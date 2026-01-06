@@ -12,7 +12,7 @@ import {
   TransactionStatus,
   PaymentMethod,
   FinancialEntity
-} from '../../modules/financial/church-finance/domain/entities/Financial';
+} from '@modules/financial/church-finance/domain/entities/Financial';
 import {
   financialService,
   FinancialSummary,

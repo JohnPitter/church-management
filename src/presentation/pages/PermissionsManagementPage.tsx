@@ -17,7 +17,7 @@ import {
   PublicPage, 
   PublicPageManager 
 } from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
-import { User } from '../../domain/entities/User';
+import { User } from '@/domain/entities/User';
 import { CreateRoleModal } from '../components/CreateRoleModal';
 
 export const PermissionsManagementPage: React.FC = () => {

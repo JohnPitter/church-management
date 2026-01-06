@@ -17,9 +17,9 @@ import {
   updatePassword as firebaseUpdatePassword
 } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
-import { db, auth, functions } from '../../config/firebase';
+import { db, auth, functions } from '@/config/firebase';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import { User, UserCredentials, UserRegistration, UserRole, UserStatus } from '../../domain/entities/User';
+import { User, UserCredentials, UserRegistration, UserRole, UserStatus } from '@/domain/entities/User';
 
 export class FirebaseUserRepository implements IUserRepository {
   private readonly collectionName = 'users';

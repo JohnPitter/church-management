@@ -1,9 +1,9 @@
 // Use Case - Register
 // Contains the business logic for user registration
 
-import { User, UserRegistration, UserRole } from '../../entities/User';
-import { IUserRepository } from '../../repositories/IUserRepository';
-import { MemberEntity } from '../../entities/Member';
+import { User, UserRegistration, UserRole } from '@modules/user-management/users/domain/entities/User';
+import { IUserRepository } from '@modules/user-management/users/domain/repositories/IUserRepository';
+import { MemberEntity } from '@modules/user-management/users/domain/entities/Member';
 
 export interface RegisterUseCaseInput {
   email: string;

@@ -1,2 +1,2 @@
-export * from '../../modules/church-management/events/domain/entities/Event';
+export * from '@modules/church-management/events/domain/entities/Event';
 

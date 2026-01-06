@@ -17,7 +17,7 @@ import {
   startAt,
   endAt
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import {
   IProfissionalAssistenciaRepository,
   ProfissionalFilters

@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
-import { db, auth } from '../../config/firebase';
+import { db, auth } from '@/config/firebase';
 import { signInWithRedirect, GoogleAuthProvider, getRedirectResult } from 'firebase/auth';
-import { UserRole, UserStatus } from '../../domain/entities/User';
+import { UserRole, UserStatus } from '@/domain/entities/User';
 
 const SetupPageAlternative: React.FC = () => {
   const { currentUser } = useAuth();

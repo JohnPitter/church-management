@@ -6,7 +6,7 @@ import { visitorService } from '@modules/church-management/visitors/application/
 import {
   VisitorStatus,
   FollowUpStatus
-} from '../../domain/entities/Visitor';
+} from '@modules/church-management/visitors/domain/entities/Visitor';
 
 interface CreateVisitorModalProps {
   isOpen: boolean;

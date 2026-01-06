@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
-import { db } from '../../config/firebase';
-import { UserRole, UserStatus } from '../../domain/entities/User';
+import { db } from '@/config/firebase';
+import { UserRole, UserStatus } from '@/domain/entities/User';
 
 const SetupPageSimple: React.FC = () => {
   const navigate = useNavigate();

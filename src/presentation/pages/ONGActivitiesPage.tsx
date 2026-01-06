@@ -9,7 +9,7 @@ import {
   RecursoAtividade,
   RelatorioAtividade,
   ONGEntity
-} from '../../modules/ong-management/settings/domain/entities/ONG';
+} from '@modules/ong-management/settings/domain/entities/ONG';
 
 const ONGActivitiesPage: React.FC = () => {
   const { currentUser } = useAuth();

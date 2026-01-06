@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PrayerRequestService } from '@modules/church-management/prayer-requests/application/services/PrayerRequestService';
-import { PrayerRequest, PrayerRequestStatus } from '../../modules/church-management/prayer-requests/domain/entities/PrayerRequest';
+import { PrayerRequest, PrayerRequestStatus } from '@modules/church-management/prayer-requests/domain/entities/PrayerRequest';
 import { CreatePrayerRequestModal } from '../components/CreatePrayerRequestModal';
 
 const PrayerRequests: React.FC = () => {

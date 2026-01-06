@@ -7,7 +7,7 @@ import {
   ForumCategory,
   TopicStatus,
   TopicPriority
-} from '../../modules/content-management/forum/domain/entities/Forum';
+} from '@modules/content-management/forum/domain/entities/Forum';
 import { forumService } from '@modules/content-management/forum/infrastructure/services/ForumService';
 
 interface CreateTopicModalProps {

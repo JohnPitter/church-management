@@ -8,10 +8,10 @@ import {
 import { FirebaseProfissionalAssistenciaRepository } from '@modules/assistance/professional/infrastructure/repositories/FirebaseProfissionalAssistenciaRepository';
 import { FirebaseAgendamentoAssistenciaRepository } from '@modules/assistance/agendamento/infrastructure/repositories/FirebaseAgendamentoAssistenciaRepository';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
-import { NotificationService } from './NotificationService';
+import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '../../config/firebase';
-import { UserRole, UserStatus } from '../../domain/entities/User';
+import { db, functions } from '@/config/firebase';
+import { UserRole, UserStatus } from '@/domain/entities/User';
 import {
   ProfissionalAssistencia,
   AgendamentoAssistencia,

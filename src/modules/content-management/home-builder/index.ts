@@ -1,4 +1,4 @@
 export * from './../modules/content-management/home-builder/domain/entities/HomeBuilder';
 export * from './application/services/HomeBuilderService';
-export * from './presentation/pages/AdminHomeBuilderPage';
+// export * from './presentation/pages/AdminHomeBuilderPage'; // TODO: Page moved to src/presentation/pages
 

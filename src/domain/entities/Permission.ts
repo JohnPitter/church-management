@@ -1,2 +1,2 @@
-export * from '../../modules/user-management/permissions/domain/entities/Permission';
+export * from '@modules/user-management/permissions/domain/entities/Permission';
 

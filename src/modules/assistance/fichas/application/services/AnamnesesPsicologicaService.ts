@@ -1,6 +1,6 @@
 import { collection, addDoc, updateDoc, doc, getDoc, getDocs, query, where, orderBy, Timestamp } from 'firebase/firestore';
-import { db } from '../../config/firebase';
-import { AnamnesesPsicologicaData } from '../../presentation/components/AnamnesesPsicologicaModal';
+import { db } from '@/config/firebase';
+import { AnamnesesPsicologicaData } from '@/presentation/components/AnamnesesPsicologicaModal';
 
 export class AnamnesesPsicologicaService {
   private collectionName = 'anamnesesPsicologicas';

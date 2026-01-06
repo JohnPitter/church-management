@@ -9,7 +9,7 @@ import {
   HelpRequestPriority,
   HelpRequestType,
   ProfessionalHelpRequestEntity
-} from '../../modules/assistance/professional/domain/entities/ProfessionalHelpRequest';
+} from '@modules/assistance/professional/domain/entities/ProfessionalHelpRequest';
 import { TipoAssistencia } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { ProfessionalHelpRequestService } from '@modules/assistance/professional/application/services/ProfessionalHelpRequestService';

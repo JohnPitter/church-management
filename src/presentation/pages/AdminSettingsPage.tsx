@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../../config/firebase';
+import { storage } from '@/config/firebase';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 interface SystemSettings {

@@ -1,8 +1,8 @@
 // Use Case - Login
 // Contains the business logic for user authentication
 
-import { User, UserCredentials, UserEntity } from '../../entities/User';
-import { IUserRepository } from '../../repositories/IUserRepository';
+import { User, UserCredentials, UserEntity } from '@modules/user-management/users/domain/entities/User';
+import { IUserRepository } from '@modules/user-management/users/domain/repositories/IUserRepository';
 
 export interface LoginUseCaseInput {
   email: string;

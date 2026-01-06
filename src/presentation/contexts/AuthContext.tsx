@@ -2,7 +2,7 @@
 // Clean implementation using Clean Architecture
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, UserEntity } from '../../domain/entities/User';
+import { User, UserEntity } from '@/domain/entities/User';
 import { container } from '../../infrastructure/di/container';
 import type { IAuthService } from '@modules/user-management/auth/domain/services/IAuthService';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';

@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
-import { User as DomainUser, UserRole, UserRegistration } from '../../domain/entities/User';
+import { User as DomainUser, UserRole, UserRegistration } from '@/domain/entities/User';
 import { CreateUserModal } from '../components/CreateUserModal';
 import { PermissionService } from '@modules/user-management/permissions/application/services/PermissionService';
 import { PermissionGuard } from '../components/PermissionGuard';

@@ -17,7 +17,7 @@ import {
   writeBatch,
   QueryConstraint
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import { INotificationRepository } from '@modules/shared-kernel/notifications/domain/repositories/INotificationRepository';
 import { Notification, NotificationPreferences, NotificationStatus, NotificationType } from '@modules/shared-kernel/notifications/domain/entities/Notification';
 import { FirebaseUserRepository } from './FirebaseUserRepository';

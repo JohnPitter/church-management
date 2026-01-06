@@ -6,7 +6,7 @@ import {
   RelatorioAtividades,
   RelatorioFinanceiro,
   ONGEntity
-} from '../../modules/ong-management/settings/domain/entities/ONG';
+} from '@modules/ong-management/settings/domain/entities/ONG';
 
 const ONGReportsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);

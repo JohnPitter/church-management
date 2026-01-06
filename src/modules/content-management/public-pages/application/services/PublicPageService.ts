@@ -9,7 +9,7 @@ import {
   getDocs,
   Timestamp 
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import { PublicPageConfig, DEFAULT_PUBLIC_PAGES, PublicPage } from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
 
 export class PublicPageService {

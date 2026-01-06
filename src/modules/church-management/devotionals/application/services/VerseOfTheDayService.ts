@@ -4,8 +4,8 @@ import {
   setDoc, 
   Timestamp 
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
-import { getDailyVerse, getDayOfYear } from '../../data/daily-verses';
+import { db } from '@/config/firebase';
+import { getDailyVerse, getDayOfYear } from '@modules/church-management/devotionals/infrastructure/data/daily-verses';
 
 export interface VerseOfTheDay {
   id: string;

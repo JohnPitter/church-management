@@ -14,7 +14,7 @@ import {
   Timestamp,
   addDoc
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import { IMemberRepository } from '../../domain/repositories/IMemberRepository';
 import { Member, MemberStatus, MemberType, Address } from '../../domain/entities/Member';
 

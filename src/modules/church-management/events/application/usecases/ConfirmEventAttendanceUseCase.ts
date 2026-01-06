@@ -1,10 +1,10 @@
 // Use Case - Confirm Event Attendance
 // Business logic for confirming attendance to events
 
-import { Event, EventEntity, EventConfirmation, ConfirmationStatus } from '../../entities/Event';
-import { User, UserEntity } from '../../entities/User';
-import { IEventRepository } from '../../repositories/IEventRepository';
-import { INotificationService } from '../auth/RegisterUseCase';
+import { Event, EventEntity, EventConfirmation, ConfirmationStatus } from '@modules/church-management/events/domain/entities/Event';
+import { User, UserEntity } from '@modules/user-management/users/domain/entities/User';
+import { IEventRepository } from '@modules/church-management/events/domain/repositories/IEventRepository';
+import { INotificationService } from '@modules/user-management/auth/application/usecases/RegisterUseCase';
 
 export interface ConfirmEventAttendanceInput {
   eventId: string;

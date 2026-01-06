@@ -1,9 +1,9 @@
 // Unit Tests - LoginUseCase
 // Tests for login business logic
 
-import { LoginUseCase, IAuthService } from '../auth/LoginUseCase';
-import { IUserRepository } from '../../repositories/IUserRepository';
-import { User, UserRole, UserStatus } from '../../entities/User';
+import { LoginUseCase, IAuthService } from '@modules/user-management/auth/application/usecases/LoginUseCase';
+import { IUserRepository } from '@modules/user-management/users/domain/repositories/IUserRepository';
+import { User, UserRole, UserStatus } from '@modules/user-management/users/domain/entities/User';
 
 // Mock implementations
 class MockUserRepository implements IUserRepository {

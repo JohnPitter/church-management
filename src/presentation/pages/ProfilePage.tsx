@@ -5,10 +5,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { format } from 'date-fns';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
-import { User, UserRole, UserStatus } from '../../domain/entities/User';
+import { User, UserRole, UserStatus } from '@/domain/entities/User';
 import { PermissionService } from '@modules/user-management/permissions/application/services/PermissionService';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
-import { auth, storage } from '../../config/firebase';
+import { auth, storage } from '@/config/firebase';
 import { deleteField } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 

@@ -1,6 +1,6 @@
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import { collection, doc, setDoc, Timestamp } from 'firebase/firestore';
-import { Assistido, StatusAssistido, SituacaoFamiliar, Escolaridade, TipoMoradia } from '../../modules/assistance/assistidos/domain/entities/Assistido';
+import { Assistido, StatusAssistido, SituacaoFamiliar, Escolaridade, TipoMoradia } from '@modules/assistance/assistidos/domain/entities/Assistido';
 import { Member, MemberStatus, MaritalStatus } from '../../domain/entities/Member';
 import { Event, EventStatus } from '../../domain/entities/Event';
 

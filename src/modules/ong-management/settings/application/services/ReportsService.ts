@@ -11,7 +11,7 @@ import {
   Timestamp,
   getCountFromServer
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import { subMonths, format, startOfMonth, endOfMonth } from 'date-fns';
 
 export interface ReportData {

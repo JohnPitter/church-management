@@ -1,2 +1,2 @@
-export * from '../../modules/church-management/visitors/infrastructure/persistence/FirebaseVisitorRepository';
+export * from '@modules/church-management/visitors/infrastructure/persistence/FirebaseVisitorRepository';
 

@@ -1,7 +1,7 @@
 // Hook para verificar se existe pelo menos um admin no sistema
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 
 interface AdminCheckResult {
   hasAdmin: boolean | null; // null = loading, true/false = resultado

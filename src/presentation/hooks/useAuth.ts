@@ -3,9 +3,9 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, UserEntity } from '../../domain/entities/User';
+import { User, UserEntity } from '@/domain/entities/User';
 import { getLoginUseCase, getRegisterUseCase, getUserRepository } from '../../infrastructure/di/container';
-import { auth } from '../../config/firebase';
+import { auth } from '@/config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 interface AuthState {

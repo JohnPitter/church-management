@@ -11,7 +11,7 @@ import {
   DevotionalCategory,
   DevotionalCategoryType,
   DevotionalComment
-} from '../../modules/church-management/devotionals/domain/entities/Devotional';
+} from '@modules/church-management/devotionals/domain/entities/Devotional';
 import { 
   devotionalService, 
   DevotionalFilters,

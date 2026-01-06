@@ -6,7 +6,7 @@ import {
   StatusVoluntario, 
   DisponibilidadeVoluntario,
   ONGEntity 
-} from '../../modules/ong-management/settings/domain/entities/ONG';
+} from '@modules/ong-management/settings/domain/entities/ONG';
 
 const ONGVolunteersPage: React.FC = () => {
   const { currentUser } = useAuth();

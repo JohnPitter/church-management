@@ -1,11 +1,11 @@
 // Use Case - Create Event
 // Business logic for creating church events
 
-import { Event, EventStatus } from '../../entities/Event';
-import { User, UserEntity } from '../../entities/User';
-import { IEventRepository } from '../../repositories/IEventRepository';
-import { IAuditService } from '../../services/IAuditService';
-import { INotificationService } from '../auth/RegisterUseCase';
+import { Event, EventStatus } from '@modules/church-management/events/domain/entities/Event';
+import { User, UserEntity } from '@modules/user-management/users/domain/entities/User';
+import { IEventRepository } from '@modules/church-management/events/domain/repositories/IEventRepository';
+import { IAuditService } from '@modules/church-management/events/domain/services/IAuditService';
+import { INotificationService } from '@modules/user-management/auth/application/usecases/RegisterUseCase';
 
 export interface CreateEventUseCaseInput {
   title: string;

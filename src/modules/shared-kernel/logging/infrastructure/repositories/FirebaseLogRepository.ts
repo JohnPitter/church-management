@@ -13,7 +13,7 @@ import {
   Timestamp,
   DocumentData
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 
 export interface SystemLog {
   id: string;

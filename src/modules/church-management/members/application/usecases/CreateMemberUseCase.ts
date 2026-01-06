@@ -1,10 +1,10 @@
 // Use Case - Create Member
 // Business logic for creating a new church member
 
-import { Member, MemberEntity, Address, MemberStatus } from '../../entities/Member';
-import { User, UserEntity } from '../../entities/User';
-import { IMemberRepository } from '../../repositories/IMemberRepository';
-import { IAuditService } from '../../services/IAuditService';
+import { Member, MemberEntity, Address, MemberStatus } from '@modules/church-management/members/domain/entities/Member';
+import { User, UserEntity } from '@modules/user-management/users/domain/entities/User';
+import { IMemberRepository } from '@modules/church-management/members/domain/repositories/IMemberRepository';
+import { IAuditService } from '@modules/church-management/members/domain/services/IAuditService';
 
 export interface CreateMemberUseCaseInput {
   name: string;

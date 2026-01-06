@@ -7,7 +7,7 @@ import {
   Visitor,
   ContactType,
   ContactMethod
-} from '../../domain/entities/Visitor';
+} from '@modules/church-management/visitors/domain/entities/Visitor';
 
 interface ContactVisitorModalProps {
   isOpen: boolean;

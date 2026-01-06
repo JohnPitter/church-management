@@ -1,2 +1,2 @@
-export * from '../../modules/content-management/blog/domain/repositories/IBlogRepository';
+export * from '@modules/content-management/blog/domain/repositories/IBlogRepository';
 

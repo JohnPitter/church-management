@@ -9,7 +9,7 @@ import { ptBR } from 'date-fns/locale';
 import {
   Devotional,
   DevotionalCategory
-} from '../../modules/church-management/devotionals/domain/entities/Devotional';
+} from '@modules/church-management/devotionals/domain/entities/Devotional';
 import { 
   devotionalService, 
   DevotionalFilters

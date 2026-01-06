@@ -9,7 +9,7 @@ import {
   VisitorStatus,
   FollowUpStatus,
   VisitorStats
-} from '../../modules/church-management/visitors/domain/entities/Visitor';
+} from '@modules/church-management/visitors/domain/entities/Visitor';
 import { format } from 'date-fns';
 import { CreateVisitorModal } from '../components/visitors/CreateVisitorModal';
 import { VisitorDetailsModal } from '../components/visitors/VisitorDetailsModal';

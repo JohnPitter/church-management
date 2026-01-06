@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
-import { db } from '../../config/firebase';
-import { UserRole, UserStatus } from '../../domain/entities/User';
+import { db } from '@/config/firebase';
+import { UserRole, UserStatus } from '@/domain/entities/User';
 
 const SetupPage: React.FC = () => {
   const { currentUser, signInWithGoogle } = useAuth();

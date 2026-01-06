@@ -12,7 +12,7 @@ import {
   ComponentTemplate,
   ComponentType,
   HomeBuilderEntity
-} from '../../modules/content-management/home-builder/domain/entities/HomeBuilder';
+} from '@modules/content-management/home-builder/domain/entities/HomeBuilder';
 import { ComponentRenderer } from '../components/HomeBuilder/ComponentRenderer';
 import { ComponentSettings } from '../components/HomeBuilder/ComponentSettings';
 

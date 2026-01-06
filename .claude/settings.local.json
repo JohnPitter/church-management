@@ -34,7 +34,12 @@
       "Bash(for file in CreateVisitorModal ContactVisitorModal RecordVisitModal VisitorDetailsModal)",
       "Bash(for file in Layout ProtectedRoute PublicRoute PermissionGuard NotificationBell NotificationsList)",
       "Bash(wc:*)",
-      "Bash(node scripts/update-imports-complete.js:*)"
+      "Bash(node scripts/update-imports-complete.js:*)",
+      "Bash(node scripts/fix-module-imports.js:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(bash scripts/restore-services.sh:*)",
+      "Bash(node scripts/fix-all-service-imports.js:*)",
+      "Bash(node scripts/fix-remaining-imports.js:*)"
     ],
     "deny": [],
     "ask": []

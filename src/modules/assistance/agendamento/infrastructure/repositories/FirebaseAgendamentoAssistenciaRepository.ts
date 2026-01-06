@@ -16,7 +16,7 @@ import {
   Timestamp,
   arrayUnion
 } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import {
   IAgendamentoAssistenciaRepository
 } from '@modules/assistance/assistencia/domain/repositories/IAssistenciaRepository';
