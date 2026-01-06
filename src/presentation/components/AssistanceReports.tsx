@@ -2,9 +2,9 @@
 // Relatórios de atendimento para o painel administrativo
 
 import React, { useState, useEffect } from 'react';
-import { AgendamentoAssistenciaService, ProfissionalAssistenciaService } from '../../infrastructure/services/AssistenciaService';
-import { FichaAcompanhamentoService } from '../../infrastructure/services/FichaAcompanhamentoService';
-import { AgendamentoAssistencia, ProfissionalAssistencia } from '../../domain/entities/Assistencia';
+import { AgendamentoAssistenciaService, ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
+import { FichaAcompanhamentoService } from '@modules/assistance/fichas/application/services/FichaAcompanhamentoService';
+import { AgendamentoAssistencia, ProfissionalAssistencia } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import { FichaAcompanhamento } from '../../modules/assistance/fichas/domain/entities/FichaAcompanhamento';
 import { AssistanceBarChart } from './charts/AssistanceBarChart';
 import { AssistanceStatusPieChart } from './charts/AssistanceStatusPieChart';

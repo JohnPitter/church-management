@@ -4,10 +4,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotificationActions } from '../hooks/useNotificationActions';
-import { FirebaseBlogRepository } from '../../data/repositories/FirebaseBlogRepository';
+import { FirebaseBlogRepository } from '@modules/content-management/blog/infrastructure/repositories/FirebaseBlogRepository';
 import { BlogPost as DomainBlogPost, PostStatus, PostVisibility } from '../../modules/content-management/blog/domain/entities/BlogPost';
 import { format } from 'date-fns';
-import { loggingService } from '../../infrastructure/services/LoggingService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { PermissionGuard } from '../components/PermissionGuard';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 

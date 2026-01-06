@@ -9,7 +9,7 @@ import {
   PaymentMethod,
   TransactionType 
 } from '../../modules/financial/church-finance/domain/entities/Financial';
-import { financialService } from '../../infrastructure/services/FinancialService';
+import { financialService } from '@modules/financial/church-finance/application/services/FinancialService';
 
 interface CreateDonationModalProps {
   isOpen: boolean;

@@ -4,10 +4,10 @@
 import {
   IProfissionalAssistenciaService,
   IAgendamentoAssistenciaService
-} from '../../domain/services/IAssistenciaService';
-import { FirebaseProfissionalAssistenciaRepository } from '../../data/repositories/FirebaseProfissionalAssistenciaRepository';
-import { FirebaseAgendamentoAssistenciaRepository } from '../../data/repositories/FirebaseAgendamentoAssistenciaRepository';
-import { FirebaseUserRepository } from '../../data/repositories/FirebaseUserRepository';
+} from '@modules/assistance/assistencia/domain/services/IAssistenciaService';
+import { FirebaseProfissionalAssistenciaRepository } from '@modules/assistance/professional/infrastructure/repositories/FirebaseProfissionalAssistenciaRepository';
+import { FirebaseAgendamentoAssistenciaRepository } from '@modules/assistance/agendamento/infrastructure/repositories/FirebaseAgendamentoAssistenciaRepository';
+import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { NotificationService } from './NotificationService';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../../config/firebase';
@@ -23,11 +23,11 @@ import {
   EstatisticasAssistencia,
   HorarioFuncionamento,
   AssistenciaEntity
-} from '../../domain/entities/Assistencia';
+} from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import {
   ProfissionalFilters,
   AgendamentoFilters
-} from '../../domain/repositories/IAssistenciaRepository';
+} from '@modules/assistance/assistencia/domain/repositories/IAssistenciaRepository';
 
 export class ProfissionalAssistenciaService implements IProfissionalAssistenciaService {
   private profissionalRepository = new FirebaseProfissionalAssistenciaRepository();

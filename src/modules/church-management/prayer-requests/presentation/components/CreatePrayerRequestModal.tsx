@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CreatePrayerRequestData, PrayerRequestEntity } from '../../domain/entities/PrayerRequest';
-import { PrayerRequestService } from 'infrastructure/services/PrayerRequestService';
+import { PrayerRequestService } from '@modules/church-management/prayer-requests/application/services/PrayerRequestService';
 
 interface CreatePrayerRequestModalProps {
   isOpen: boolean;

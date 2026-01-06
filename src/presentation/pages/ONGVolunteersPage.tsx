@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { FirebaseONGRepository } from '../../data/repositories/FirebaseONGRepository';
+import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
 import { 
   Voluntario, 
   StatusVoluntario, 

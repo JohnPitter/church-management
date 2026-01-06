@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { FirebaseLiveStreamRepository } from '../../data/repositories/FirebaseLiveStreamRepository';
+import { FirebaseLiveStreamRepository } from '@modules/content-management/live-streaming/infrastructure/repositories/FirebaseLiveStreamRepository';
 import { LiveStream, StreamCategory, StreamStatus } from '../../modules/content-management/live-streaming/domain/entities/LiveStream';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

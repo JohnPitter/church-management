@@ -13,7 +13,7 @@ import {
 import { 
   devotionalService, 
   DevotionalFilters
-} from '../../infrastructure/services/DevotionalService';
+} from '@modules/church-management/devotionals/application/services/DevotionalService';
 import SocialShareButtons from '../components/SocialShareButtons';
 
 export const Devotionals: React.FC = () => {

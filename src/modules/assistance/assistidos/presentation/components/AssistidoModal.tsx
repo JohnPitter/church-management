@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AssistidoService } from 'infrastructure/services/AssistidoService';
+import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
 import { useAuth } from 'presentation/contexts/AuthContext';
 import { useSettings } from 'presentation/contexts/SettingsContext';
 import { 

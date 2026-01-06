@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { PermissionService } from '../../infrastructure/services/PermissionService';
+import { PermissionService } from '@modules/user-management/permissions/application/services/PermissionService';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 
 // Singleton instance to share cache across all components

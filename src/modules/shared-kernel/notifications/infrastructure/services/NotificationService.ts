@@ -1,14 +1,14 @@
 // Infrastructure Service - Notification Service
 // Complete implementation for notification business operations
 
-import { INotificationService } from '../../domain/services/INotificationService';
-import { FirebaseNotificationRepository } from '../../data/repositories/FirebaseNotificationRepository';
-import { FirebaseUserRepository } from '../../data/repositories/FirebaseUserRepository';
+import { INotificationService } from '@modules/shared-kernel/notifications/domain/services/INotificationService';
+import { FirebaseNotificationRepository } from '@modules/shared-kernel/notifications/infrastructure/repositories/FirebaseNotificationRepository';
+import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { 
   Notification, 
   NotificationEntity, 
   NotificationPriority 
-} from '../../domain/entities/Notification';
+} from '@modules/shared-kernel/notifications/domain/entities/Notification';
 
 export class NotificationService implements INotificationService {
   private notificationRepository = new FirebaseNotificationRepository();

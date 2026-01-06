@@ -8,8 +8,8 @@ import {
   DepartmentTransactionType,
   DepartmentTransactionStatus,
   DepartmentEntity
-} from '../../domain/entities/Department';
-import { departmentFinancialService } from '../../infrastructure/services/DepartmentFinancialService';
+} from '@modules/church-management/departments/domain/entities/Department';
+import { departmentFinancialService } from '@modules/financial/department-finance/application/services/DepartmentFinancialService';
 
 interface DepartmentTransactionModalProps {
   isOpen: boolean;

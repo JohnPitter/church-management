@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../hooks/useTheme';
-import { HomeBuilderService } from '../../infrastructure/services/HomeBuilderService';
+import { HomeBuilderService } from '@modules/content-management/home-builder/application/services/HomeBuilderService';
 import {
   HomeLayout,
   HomeComponent,

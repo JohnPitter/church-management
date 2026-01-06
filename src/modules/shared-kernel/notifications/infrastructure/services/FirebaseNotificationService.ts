@@ -1,7 +1,7 @@
 // Infrastructure Service - Firebase Notification Service
 // Stub implementation for notifications
 
-import { INotificationService } from '../../domain/usecases/auth/RegisterUseCase';
+import { INotificationService } from '@modules/user-management/users/application/usecases/RegisterUseCase';
 import { db } from '../../config/firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 

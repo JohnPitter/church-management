@@ -1,7 +1,7 @@
 // Domain Entity - Professional Help Request
 // System for professionals to request help or referrals from other professionals
 
-import { TipoAssistencia } from 'domain/entities/Assistencia';
+import { TipoAssistencia } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 
 export enum HelpRequestStatus {
   Pendente = 'pendente',

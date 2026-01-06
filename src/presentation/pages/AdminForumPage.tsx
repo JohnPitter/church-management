@@ -16,7 +16,7 @@ import {
 import { 
   forumService,
   TopicFilters
-} from '../../infrastructure/services/ForumService';
+} from '@modules/content-management/forum/infrastructure/services/ForumService';
 import { CreateTopicModal } from '../components/CreateTopicModal';
 import { CreateForumCategoryModal } from '../components/CreateForumCategoryModal';
 

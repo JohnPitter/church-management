@@ -2,8 +2,8 @@
 // Provides notification state management and operations
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { Notification, NotificationPreferences } from '../../domain/entities/Notification';
-import { NotificationService } from '../../infrastructure/services/NotificationService';
+import { Notification, NotificationPreferences } from '@modules/shared-kernel/notifications/domain/entities/Notification';
+import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 import { useAuth } from './AuthContext';
 
 interface NotificationContextType {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FirebaseONGRepository } from '../../data/repositories/FirebaseONGRepository';
+import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
 import { 
   PeriodoRelatorio,
   RelatorioVoluntarios,

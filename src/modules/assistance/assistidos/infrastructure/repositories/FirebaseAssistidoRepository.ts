@@ -16,7 +16,7 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import { IAssistidoRepository } from '../../domain/repositories/IAssistidoRepository';
+import { IAssistidoRepository } from '@modules/assistance/assistidos/domain/repositories/IAssistidoRepository';
 import { 
   Assistido, 
   StatusAssistido, 

@@ -18,8 +18,8 @@ import {
   QueryConstraint
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import { INotificationRepository } from '../../domain/repositories/INotificationRepository';
-import { Notification, NotificationPreferences, NotificationStatus, NotificationType } from '../../domain/entities/Notification';
+import { INotificationRepository } from '@modules/shared-kernel/notifications/domain/repositories/INotificationRepository';
+import { Notification, NotificationPreferences, NotificationStatus, NotificationType } from '@modules/shared-kernel/notifications/domain/entities/Notification';
 import { FirebaseUserRepository } from './FirebaseUserRepository';
 
 export class FirebaseNotificationRepository implements INotificationRepository {

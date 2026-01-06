@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
-import { ReportData, reportsService } from '../../infrastructure/services/ReportsService';
+import { ReportData, reportsService } from '@modules/ong-management/settings/application/services/ReportsService';
 
 
 

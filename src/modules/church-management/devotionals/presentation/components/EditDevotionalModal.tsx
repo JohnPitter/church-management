@@ -6,7 +6,7 @@ import {
   Devotional,
   DevotionalCategory
 } from '../../domain/entities/Devotional';
-import { devotionalService } from 'infrastructure/services/DevotionalService';
+import { devotionalService } from '@modules/church-management/devotionals/application/services/DevotionalService';
 
 interface EditDevotionalModalProps {
   isOpen: boolean;

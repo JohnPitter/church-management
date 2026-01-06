@@ -4,8 +4,8 @@ import {
   StatusProfissional,
   ProfissionalAssistencia,
   AssistenciaEntity
-} from '../../domain/entities/Assistencia';
-import { ProfissionalAssistenciaService } from '../../infrastructure/services/AssistenciaService';
+} from '@modules/assistance/assistencia/domain/entities/Assistencia';
+import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { useAuth } from '../contexts/AuthContext';
 
 // Component for managing user account

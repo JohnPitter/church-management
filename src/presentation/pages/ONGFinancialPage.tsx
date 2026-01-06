@@ -17,7 +17,7 @@ import {
   ongFinancialService,
   ONGFinancialSummary as FinancialSummary,
   ONGTransactionFilters as TransactionFilters
-} from '../../infrastructure/services/ONGFinancialService';
+} from '@modules/financial/ong-finance/application/services/ONGFinancialService';
 import { CreateTransactionModal } from '../components/CreateTransactionModal';
 import { CreateDonationModal } from '../components/CreateDonationModal';
 import { CreateCategoryModal } from '../components/CreateCategoryModal';

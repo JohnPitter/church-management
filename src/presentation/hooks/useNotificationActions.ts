@@ -2,7 +2,7 @@
 // Custom hook for notification operations
 
 import { useCallback } from 'react';
-import { NotificationService } from '../../infrastructure/services/NotificationService';
+import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 import { useNotifications } from '../contexts/NotificationContext';
 
 export const useNotificationActions = () => {

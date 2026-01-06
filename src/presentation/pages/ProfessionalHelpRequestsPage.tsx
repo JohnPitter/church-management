@@ -10,9 +10,9 @@ import {
   HelpRequestType,
   ProfessionalHelpRequestEntity
 } from '../../modules/assistance/professional/domain/entities/ProfessionalHelpRequest';
-import { TipoAssistencia } from '../../domain/entities/Assistencia';
-import { ProfissionalAssistenciaService } from '../../infrastructure/services/AssistenciaService';
-import { ProfessionalHelpRequestService } from '../../infrastructure/services/ProfessionalHelpRequestService';
+import { TipoAssistencia } from '@modules/assistance/assistencia/domain/entities/Assistencia';
+import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
+import { ProfessionalHelpRequestService } from '@modules/assistance/professional/application/services/ProfessionalHelpRequestService';
 
 export const ProfessionalHelpRequestsPage: React.FC = () => {
   const { currentUser } = useAuth();

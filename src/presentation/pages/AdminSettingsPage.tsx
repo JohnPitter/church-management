@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../config/firebase';
-import { loggingService } from '../../infrastructure/services/LoggingService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 interface SystemSettings {
   churchName: string;

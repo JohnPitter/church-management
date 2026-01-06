@@ -8,7 +8,7 @@ import {
   TopicStatus,
   TopicPriority
 } from '../../modules/content-management/forum/domain/entities/Forum';
-import { forumService } from '../../infrastructure/services/ForumService';
+import { forumService } from '@modules/content-management/forum/infrastructure/services/ForumService';
 
 interface CreateTopicModalProps {
   isOpen: boolean;

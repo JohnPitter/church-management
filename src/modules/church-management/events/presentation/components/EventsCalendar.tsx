@@ -5,8 +5,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isSameDay, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
-import { FirebaseEventRepository } from 'data/repositories/FirebaseEventRepository';
-import { FirebaseMemberRepository } from 'data/repositories/FirebaseMemberRepository';
+import { FirebaseEventRepository } from '@modules/church-management/events/infrastructure/repositories/FirebaseEventRepository';
+import { FirebaseMemberRepository } from '@modules/church-management/members/infrastructure/repositories/FirebaseMemberRepository';
 import { Event } from 'domain/entities/Event';
 import { Member } from 'domain/entities/Member';
 

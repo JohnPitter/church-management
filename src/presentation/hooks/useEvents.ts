@@ -5,8 +5,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { Event, EventConfirmation, EventCategory, ConfirmationStatus } from '../../domain/entities/Event';
 import { useAuth } from './useAuth';
 import { container } from '../../infrastructure/di/container';
-import { CreateEventUseCase } from '../../domain/usecases/events/CreateEventUseCase';
-import { ConfirmEventAttendanceUseCase } from '../../domain/usecases/events/ConfirmEventAttendanceUseCase';
+import { CreateEventUseCase } from '@modules/church-management/events/application/usecases/CreateEventUseCase';
+import { ConfirmEventAttendanceUseCase } from '@modules/church-management/events/application/usecases/ConfirmEventAttendanceUseCase';
 import toast from 'react-hot-toast';
 
 interface EventsState {

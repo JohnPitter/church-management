@@ -2,14 +2,14 @@
 // Church asset and property inventory management
 
 import React, { useState, useEffect } from 'react';
-import { AssetService } from '../../infrastructure/services/AssetService';
+import { AssetService } from '@modules/church-management/assets/application/services/AssetService';
 import {
   Asset,
   AssetCategory,
   AssetCondition,
   AssetStatus,
   AssetEntity
-} from '../../domain/entities/Asset';
+} from '@modules/church-management/assets/domain/entities/Asset';
 import { useAuth } from '../contexts/AuthContext';
 
 const AssetsManagementPage: React.FC = () => {

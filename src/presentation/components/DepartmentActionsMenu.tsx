@@ -2,7 +2,7 @@
 // Dropdown menu for department actions (edit, deactivate, etc.)
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Department } from '../../domain/entities/Department';
+import { Department } from '@modules/church-management/departments/domain/entities/Department';
 
 interface DepartmentActionsMenuProps {
   department: Department;

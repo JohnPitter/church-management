@@ -4,9 +4,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { FirebaseProjectRepository } from '../../data/repositories/FirebaseProjectRepository';
-import { FirebaseBlogRepository } from '../../data/repositories/FirebaseBlogRepository';
-import { FirebaseEventRepository } from '../../data/repositories/FirebaseEventRepository';
+import { FirebaseProjectRepository } from '@modules/content-management/projects/infrastructure/repositories/FirebaseProjectRepository';
+import { FirebaseBlogRepository } from '@modules/content-management/blog/infrastructure/repositories/FirebaseBlogRepository';
+import { FirebaseEventRepository } from '@modules/church-management/events/infrastructure/repositories/FirebaseEventRepository';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { VerseOfTheDay } from '../components/VerseOfTheDay';

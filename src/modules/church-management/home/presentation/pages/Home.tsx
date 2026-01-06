@@ -8,7 +8,7 @@ import { useTheme } from 'presentation/hooks/useTheme';
 import { SystemModule, PermissionAction } from 'domain/entities/Permission';
 import { useSettings } from 'presentation/contexts/SettingsContext';
 import { useNavigate } from 'react-router-dom';
-import { HomeBuilderService } from 'infrastructure/services/HomeBuilderService';
+import { HomeBuilderService } from '@modules/content-management/home-builder/application/services/HomeBuilderService';
 import { HomeLayout, HomeBuilderEntity } from '../../domain/entities/HomeBuilder';
 import { ComponentRenderer } from 'presentation/components/HomeBuilder/ComponentRenderer';
 import { BibleVerse, getVerseOfTheDay } from 'data/verses';

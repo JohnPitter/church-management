@@ -1,7 +1,7 @@
 // Infrastructure Service - Logging Service
 // Centralized logging service for system events
 
-import { FirebaseLogRepository, SystemLog } from '../../data/repositories/FirebaseLogRepository';
+import { FirebaseLogRepository, SystemLog } from '@modules/shared-kernel/logging/infrastructure/repositories/FirebaseLogRepository';
 import { User } from '../../domain/entities/User';
 
 interface LogContext {

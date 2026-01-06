@@ -21,12 +21,12 @@ import { db } from '../../config/firebase';
 import {
   IProfissionalAssistenciaRepository,
   ProfissionalFilters
-} from '../../domain/repositories/IAssistenciaRepository';
+} from '@modules/assistance/assistencia/domain/repositories/IAssistenciaRepository';
 import {
   ProfissionalAssistencia,
   TipoAssistencia,
   StatusProfissional
-} from '../../domain/entities/Assistencia';
+} from '@modules/assistance/assistencia/domain/entities/Assistencia';
 
 export class FirebaseProfissionalAssistenciaRepository implements IProfissionalAssistenciaRepository {
   private readonly profissionaisCollection = 'profissionaisAssistencia';

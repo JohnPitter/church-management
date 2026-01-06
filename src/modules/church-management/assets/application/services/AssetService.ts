@@ -22,7 +22,7 @@ import {
   AssetCondition,
   AssetStatus,
   AssetEntity
-} from '../../domain/entities/Asset';
+} from '@modules/church-management/assets/domain/entities/Asset';
 
 export class AssetService {
   private collectionName = 'assets';

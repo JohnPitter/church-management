@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNotifications } from '../contexts/NotificationContext';
-import { Notification, NotificationEntity } from '../../domain/entities/Notification';
+import { Notification, NotificationEntity } from '@modules/shared-kernel/notifications/domain/entities/Notification';
 
 interface NotificationsListProps {
   className?: string;

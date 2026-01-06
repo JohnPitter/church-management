@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
-import { FirebaseONGRepository } from '../../data/repositories/FirebaseONGRepository';
+import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
 import { ONGInfo, ONGEntity } from '../../modules/ong-management/settings/domain/entities/ONG';
 
 const ONGSettingsPage: React.FC = () => {

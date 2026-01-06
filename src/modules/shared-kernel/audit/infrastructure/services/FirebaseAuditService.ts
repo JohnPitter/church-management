@@ -1,7 +1,7 @@
 // Infrastructure Service - Firebase Audit Service
 // Implementation for audit logging
 
-import { IAuditService, AuditLogEntry } from '../../domain/services/IAuditService';
+import { IAuditService, AuditLogEntry } from '@modules/shared-kernel/audit/domain/services/IAuditService';
 import { db } from '../../config/firebase';
 import { collection, addDoc, Timestamp, query, where, orderBy, limit as firestoreLimit, getDocs } from 'firebase/firestore';
 

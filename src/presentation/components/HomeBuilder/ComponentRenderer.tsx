@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { HomeComponent, ComponentType } from '../../../modules/content-management/home-builder/domain/entities/HomeBuilder';
-import { PrayerRequestService } from '../../../infrastructure/services/PrayerRequestService';
+import { PrayerRequestService } from '@modules/church-management/prayer-requests/application/services/PrayerRequestService';
 import { OpenStreetMap } from '../OpenStreetMap';
 
 // SISTEMA DE COMPONENTES ULTRA-CONTROLADO - FORÇA SEPARAÇÃO ABSOLUTA

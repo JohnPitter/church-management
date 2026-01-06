@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 import { useAuth } from '../contexts/AuthContext';
-import { PermissionService } from '../../infrastructure/services/PermissionService';
+import { PermissionService } from '@modules/user-management/permissions/application/services/PermissionService';
 import { AdminVerseOfTheDay } from '../components/AdminVerseOfTheDay';
 
 export const AdminDashboardPage: React.FC = () => {

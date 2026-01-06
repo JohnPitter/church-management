@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { visitorService, VisitorFilters } from '../../infrastructure/services/VisitorService';
+import { visitorService, VisitorFilters } from '@modules/church-management/visitors/application/services/VisitorService';
 import {
   Visitor,
   VisitorStatus,

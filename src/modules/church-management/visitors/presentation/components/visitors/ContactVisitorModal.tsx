@@ -2,7 +2,7 @@
 // Modal for adding contact attempts with visitors
 
 import React, { useState } from 'react';
-import { visitorService } from 'infrastructure/services/VisitorService';
+import { visitorService } from '@modules/church-management/visitors/application/services/VisitorService';
 import {
   Visitor,
   ContactType,

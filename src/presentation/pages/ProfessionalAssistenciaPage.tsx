@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { AgendamentoAssistenciaService, ProfissionalAssistenciaService } from '../../infrastructure/services/AssistenciaService';
-import { AgendamentoAssistencia, StatusAgendamento, TipoAssistencia, AssistenciaEntity } from '../../domain/entities/Assistencia';
+import { AgendamentoAssistenciaService, ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
+import { AgendamentoAssistencia, StatusAgendamento, TipoAssistencia, AssistenciaEntity } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 
 const ProfessionalAssistenciaPage: React.FC = () => {
   const { currentUser } = useAuth();

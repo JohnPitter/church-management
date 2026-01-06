@@ -2,7 +2,7 @@
 // Simplified member management page using English entities
 
 import React, { useState, useEffect } from 'react';
-import { MemberService } from '../../infrastructure/services/MemberService';
+import { MemberService } from '@modules/church-management/members/application/services/MemberService';
 import {
   Member,
   MemberStatus,

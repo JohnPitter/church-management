@@ -7,8 +7,8 @@ import {
   DepartmentTransaction,
   DepartmentTransactionType,
   DepartmentEntity
-} from '../../domain/entities/Department';
-import { departmentFinancialService } from '../../infrastructure/services/DepartmentFinancialService';
+} from '@modules/church-management/departments/domain/entities/Department';
+import { departmentFinancialService } from '@modules/financial/department-finance/application/services/DepartmentFinancialService';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 

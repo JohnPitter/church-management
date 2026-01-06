@@ -2,8 +2,8 @@
 // Modal for creating and editing department financial boxes
 
 import React, { useState, useEffect } from 'react';
-import { Department, DepartmentEntity } from '../../domain/entities/Department';
-import { departmentFinancialService } from '../../infrastructure/services/DepartmentFinancialService';
+import { Department, DepartmentEntity } from '@modules/church-management/departments/domain/entities/Department';
+import { departmentFinancialService } from '@modules/financial/department-finance/application/services/DepartmentFinancialService';
 
 interface CreateDepartmentModalProps {
   isOpen: boolean;

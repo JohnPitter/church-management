@@ -2,7 +2,7 @@
 // Modal for recording new visits from existing visitors
 
 import React, { useState } from 'react';
-import { visitorService } from 'infrastructure/services/VisitorService';
+import { visitorService } from '@modules/church-management/visitors/application/services/VisitorService';
 import {
   Visitor,
   ServiceType

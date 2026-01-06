@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { ProfissionalAssistenciaService } from '../../infrastructure/services/AssistenciaService';
-import { FirebaseFichaAcompanhamentoRepository } from '../../data/repositories/FirebaseFichaAcompanhamentoRepository';
+import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
+import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { FichaAcompanhamento, SessaoAcompanhamento } from '../../modules/assistance/fichas/domain/entities/FichaAcompanhamento';
 
 interface FichaModalProps {

@@ -6,10 +6,10 @@ import {
   AssistenciaEntity,
   ProfissionalAssistencia,
   AgendamentoAssistencia
-} from '../../domain/entities/Assistencia';
-import { ProfissionalAssistenciaService, AgendamentoAssistenciaService } from '../../infrastructure/services/AssistenciaService';
-import { AnamnesesPsicologicaService } from '../../infrastructure/services/AnamnesesPsicologicaService';
-import { ProfessionalHelpRequestService } from '../../infrastructure/services/ProfessionalHelpRequestService';
+} from '@modules/assistance/assistencia/domain/entities/Assistencia';
+import { ProfissionalAssistenciaService, AgendamentoAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
+import { AnamnesesPsicologicaService } from '@modules/assistance/fichas/application/services/AnamnesesPsicologicaService';
+import { ProfessionalHelpRequestService } from '@modules/assistance/professional/application/services/ProfessionalHelpRequestService';
 import { ProfessionalHelpRequest, HelpRequestStatus, HelpRequestPriority } from '../../modules/assistance/professional/domain/entities/ProfessionalHelpRequest';
 import AgendamentoAssistenciaModalEnhanced from '../components/AgendamentoAssistenciaModalEnhanced';
 import ProfissionalAssistenciaModal from '../components/ProfissionalAssistenciaModal';

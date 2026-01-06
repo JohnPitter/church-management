@@ -8,8 +8,8 @@ import {
   AssistenciaEntity,
   ProfissionalAssistencia,
   AgendamentoAssistencia
-} from '../../domain/entities/Assistencia';
-import { ProfissionalAssistenciaService, AgendamentoAssistenciaService } from '../../infrastructure/services/AssistenciaService';
+} from '@modules/assistance/assistencia/domain/entities/Assistencia';
+import { ProfissionalAssistenciaService, AgendamentoAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 

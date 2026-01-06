@@ -4,9 +4,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
-import { PermissionService, RolePermissionConfig, UserPermissionConfig, CustomRoleConfig } from '../../infrastructure/services/PermissionService';
-import { FirebaseUserRepository } from '../../data/repositories/FirebaseUserRepository';
-import { PublicPageService } from '../../infrastructure/services/PublicPageService';
+import { PermissionService, RolePermissionConfig, UserPermissionConfig, CustomRoleConfig } from '@modules/user-management/permissions/application/services/PermissionService';
+import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
+import { PublicPageService } from '@modules/content-management/public-pages/application/services/PublicPageService';
 import { 
   SystemModule, 
   PermissionAction, 
@@ -16,7 +16,7 @@ import {
   PublicPageConfig, 
   PublicPage, 
   PublicPageManager 
-} from '../../domain/entities/PublicPageSettings';
+} from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
 import { User } from '../../domain/entities/User';
 import { CreateRoleModal } from '../components/CreateRoleModal';
 

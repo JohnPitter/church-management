@@ -5,10 +5,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotificationActions } from '../hooks/useNotificationActions';
 import { format } from 'date-fns';
-import { FirebaseProjectRepository } from '../../data/repositories/FirebaseProjectRepository';
+import { FirebaseProjectRepository } from '@modules/content-management/projects/infrastructure/repositories/FirebaseProjectRepository';
 import { Project as DomainProject, ProjectStatus, ProjectRegistration, RegistrationStatus } from '../../modules/content-management/projects/domain/entities/Project';
-import { loggingService } from '../../infrastructure/services/LoggingService';
-import { NotificationService } from '../../infrastructure/services/NotificationService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 
 // Presentation interface that maps to domain entities
 interface PresentationProject {

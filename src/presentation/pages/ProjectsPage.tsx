@@ -5,8 +5,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { Project, ProjectStatus, RegistrationStatus } from '../../modules/content-management/projects/domain/entities/Project';
-import { FirebaseProjectRepository } from '../../data/repositories/FirebaseProjectRepository';
-import { loggingService } from '../../infrastructure/services/LoggingService';
+import { FirebaseProjectRepository } from '@modules/content-management/projects/infrastructure/repositories/FirebaseProjectRepository';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { format } from 'date-fns';
 import SocialShareButtons from '../components/SocialShareButtons';
 

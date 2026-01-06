@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DataMigrationService } from '../../infrastructure/services/DataMigrationService';
+import { DataMigrationService } from '@modules/shared-kernel/migration/application/services/DataMigrationService';
 import { useSettings } from '../contexts/SettingsContext';
 import {
   HiCloudArrowUp,

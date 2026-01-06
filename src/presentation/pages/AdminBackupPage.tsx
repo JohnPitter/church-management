@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { format } from 'date-fns';
-import { BackupInfo, DatabaseStats, backupService } from '../../infrastructure/services/BackupService';
+import { BackupInfo, DatabaseStats, backupService } from '@modules/analytics/backup/application/services/BackupService';
 
 
 

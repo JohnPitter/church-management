@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SystemModule, PermissionAction, PermissionManager } from '../../domain/entities/Permission';
-import { CustomRoleConfig } from '../../infrastructure/services/PermissionService';
+import { CustomRoleConfig } from '@modules/user-management/permissions/application/services/PermissionService';
 
 interface CreateRoleModalProps {
   isOpen: boolean;

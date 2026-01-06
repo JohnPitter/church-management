@@ -17,15 +17,15 @@ import {
   financialService,
   FinancialSummary,
   TransactionFilters
-} from '../../infrastructure/services/FinancialService';
+} from '@modules/financial/church-finance/application/services/FinancialService';
 import {
   Department,
   DepartmentTransaction,
   DepartmentEntity
-} from '../../domain/entities/Department';
+} from '@modules/church-management/departments/domain/entities/Department';
 import {
   departmentFinancialService
-} from '../../infrastructure/services/DepartmentFinancialService';
+} from '@modules/financial/department-finance/application/services/DepartmentFinancialService';
 import { CreateTransactionModal } from '../components/CreateTransactionModal';
 import { CreateDonationModal } from '../components/CreateDonationModal';
 import { CreateCategoryModal } from '../components/CreateCategoryModal';

@@ -5,9 +5,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotificationActions } from '../hooks/useNotificationActions';
 import { format } from 'date-fns';
-import { FirebaseEventRepository } from '../../data/repositories/FirebaseEventRepository';
+import { FirebaseEventRepository } from '@modules/church-management/events/infrastructure/repositories/FirebaseEventRepository';
 import { Event as DomainEvent, EventCategory, EventStatus, EventConfirmation, ConfirmationStatus } from '../../domain/entities/Event';
-import { loggingService } from '../../infrastructure/services/LoggingService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 interface Event {
   id: string;

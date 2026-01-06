@@ -4,8 +4,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, UserEntity } from '../../domain/entities/User';
 import { container } from '../../infrastructure/di/container';
-import type { IAuthService } from '../../domain/services/IAuthService';
-import { loggingService } from '../../infrastructure/services/LoggingService';
+import type { IAuthService } from '@modules/user-management/auth/domain/services/IAuthService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 interface AuthContextType {
   currentUser: User | null;

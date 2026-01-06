@@ -16,7 +16,7 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import { IProjectRepository } from '../../domain/repositories/IProjectRepository';
+import { IProjectRepository } from '@modules/content-management/projects/domain/repositories/IProjectRepository';
 import { Project, ProjectStatus, ProjectRegistration, RegistrationStatus } from '../../modules/content-management/projects/domain/entities/Project';
 
 export class FirebaseProjectRepository implements IProjectRepository {

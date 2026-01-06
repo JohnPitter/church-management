@@ -5,12 +5,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotificationActions } from '../hooks/useNotificationActions';
 import { format } from 'date-fns';
-import { FirebaseLiveStreamRepository } from '../../data/repositories/FirebaseLiveStreamRepository';
+import { FirebaseLiveStreamRepository } from '@modules/content-management/live-streaming/infrastructure/repositories/FirebaseLiveStreamRepository';
 import { LiveStream as DomainLiveStream, StreamCategory, StreamStatus } from '../../modules/content-management/live-streaming/domain/entities/LiveStream';
 import { db, storage } from '../../config/firebase';
 import { onSnapshot, collection } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { loggingService } from '../../infrastructure/services/LoggingService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 // Optimized image component without flickering
 const ThumbnailWithOverlay: React.FC<{

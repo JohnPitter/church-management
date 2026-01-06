@@ -3,8 +3,8 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
-import { PublicPage, PublicPageConfig } from '../../domain/entities/PublicPageSettings';
-import { PublicPageService } from '../../infrastructure/services/PublicPageService';
+import { PublicPage, PublicPageConfig } from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
+import { PublicPageService } from '@modules/content-management/public-pages/application/services/PublicPageService';
 import { LoadingSpinner } from './common/LoadingSpinner';
 
 interface PublicRouteProps {

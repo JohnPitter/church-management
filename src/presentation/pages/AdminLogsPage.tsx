@@ -4,8 +4,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { format as formatDate } from 'date-fns';
-import { FirebaseLogRepository, SystemLog } from '../../data/repositories/FirebaseLogRepository';
-import { LogSeederService } from '../../infrastructure/services/LogSeederService';
+import { FirebaseLogRepository, SystemLog } from '@modules/shared-kernel/logging/infrastructure/repositories/FirebaseLogRepository';
+import { LogSeederService } from '@modules/shared-kernel/logging/infrastructure/services/LogSeederService';
 
 
 

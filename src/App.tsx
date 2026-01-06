@@ -72,7 +72,7 @@ import { ProtectedRoute } from './presentation/components/ProtectedRoute';
 import { PublicRoute } from './presentation/components/PublicRoute';
 import { Layout } from './presentation/components/Layout';
 import AdminSetupGuard from './presentation/components/AdminSetupGuard';
-import { PublicPage } from './domain/entities/PublicPageSettings';
+import { PublicPage } from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
 
 // Placeholder component for pages not yet migrated
 const ComingSoon: React.FC<{ title: string }> = ({ title }) => (

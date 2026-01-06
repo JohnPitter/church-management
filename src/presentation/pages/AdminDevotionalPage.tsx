@@ -16,7 +16,7 @@ import {
   devotionalService, 
   DevotionalFilters,
   DevotionalStats 
-} from '../../infrastructure/services/DevotionalService';
+} from '@modules/church-management/devotionals/application/services/DevotionalService';
 import { CreateDevotionalModal } from '../components/CreateDevotionalModal';
 import { EditDevotionalModal } from '../components/EditDevotionalModal';
 import { DevotionalDetailModal } from '../components/DevotionalDetailModal';

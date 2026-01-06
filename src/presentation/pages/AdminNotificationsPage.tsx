@@ -4,8 +4,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
-import { FirebaseUserRepository } from '../../data/repositories/FirebaseUserRepository';
-import { NotificationPriority } from '../../domain/entities/Notification';
+import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
+import { NotificationPriority } from '@modules/shared-kernel/notifications/domain/entities/Notification';
 
 interface CustomNotificationForm {
   title: string;

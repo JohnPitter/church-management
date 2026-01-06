@@ -2,7 +2,7 @@
 // Modal for viewing and editing visitor details
 
 import React, { useState, useEffect } from 'react';
-import { visitorService } from 'infrastructure/services/VisitorService';
+import { visitorService } from '@modules/church-management/visitors/application/services/VisitorService';
 import {
   Visitor,
   VisitorStatus,

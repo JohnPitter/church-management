@@ -19,7 +19,7 @@ import {
 import { db } from '../../config/firebase';
 import {
   IAgendamentoAssistenciaRepository
-} from '../../domain/repositories/IAssistenciaRepository';
+} from '@modules/assistance/assistencia/domain/repositories/IAssistenciaRepository';
 import {
   AgendamentoAssistencia,
   TipoAssistencia,
@@ -27,7 +27,7 @@ import {
   EstatisticasAssistencia,
   ModalidadeAtendimento,
   HistoricoAgendamento
-} from '../../domain/entities/Assistencia';
+} from '@modules/assistance/assistencia/domain/entities/Assistencia';
 
 export class FirebaseAgendamentoAssistenciaRepository implements IAgendamentoAssistenciaRepository {
   private readonly agendamentosCollection = 'agendamentosAssistencia';

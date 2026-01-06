@@ -33,7 +33,8 @@
       "Bash(for file in CreateMemberModal EditDevotionalModal DevotionalDetailModal)",
       "Bash(for file in CreateVisitorModal ContactVisitorModal RecordVisitModal VisitorDetailsModal)",
       "Bash(for file in Layout ProtectedRoute PublicRoute PermissionGuard NotificationBell NotificationsList)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(node scripts/update-imports-complete.js:*)"
     ],
     "deny": [],
     "ask": []

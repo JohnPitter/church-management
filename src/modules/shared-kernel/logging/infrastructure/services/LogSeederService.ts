@@ -1,7 +1,7 @@
 // Infrastructure Service - Log Seeder Service
 // Creates sample logs to demonstrate the logging system
 
-import { FirebaseLogRepository } from '../../data/repositories/FirebaseLogRepository';
+import { FirebaseLogRepository } from '@modules/shared-kernel/logging/infrastructure/repositories/FirebaseLogRepository';
 
 export class LogSeederService {
   private logRepository: FirebaseLogRepository;

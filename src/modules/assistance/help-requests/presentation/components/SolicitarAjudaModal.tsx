@@ -3,9 +3,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { HelpRequestPriority } from '../../domain/entities/HelpRequest';
-import { ProfissionalAssistencia, TipoAssistencia } from 'domain/entities/Assistencia';
-import { HelpRequestService } from 'infrastructure/services/HelpRequestService';
-import { ProfissionalAssistenciaService } from 'infrastructure/services/AssistenciaService';
+import { ProfissionalAssistencia, TipoAssistencia } from '@modules/assistance/assistencia/domain/entities/Assistencia';
+import { HelpRequestService } from '@modules/assistance/help-requests/application/services/HelpRequestService';
+import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 
 interface SolicitarAjudaModalProps {
   isOpen: boolean;

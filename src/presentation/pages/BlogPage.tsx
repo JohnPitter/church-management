@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { BlogPost, PostVisibility } from '../../modules/content-management/blog/domain/entities/BlogPost';
-import { FirebaseBlogRepository } from '../../data/repositories/FirebaseBlogRepository';
+import { FirebaseBlogRepository } from '@modules/content-management/blog/infrastructure/repositories/FirebaseBlogRepository';
 import { format } from 'date-fns';
 import SocialShareButtons from '../components/SocialShareButtons';
 
