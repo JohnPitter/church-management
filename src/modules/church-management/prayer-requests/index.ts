@@ -1,4 +1,4 @@
-export * from './../modules/church-management/prayer-requests/domain/entities/PrayerRequest';
+export * from './domain/entities/PrayerRequest';
 export * from './application/services/PrayerRequestService';
 export * from './infrastructure/repositories/FirebasePrayerRequestRepository';
 // export { default as PrayerRequests } from './presentation/pages/PrayerRequests'; // TODO: Page moved to src/presentation/pages

@@ -885,8 +885,8 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
       }
 
       // Import the ficha repository and entity
-      const { FirebaseFichaAcompanhamentoRepository } = await import('../../data/repositories/FirebaseFichaAcompanhamentoRepository');
-      const { FichaAcompanhamentoEntity } = await import('../../modules/assistance/fichas/domain/entities/FichaAcompanhamento');
+      const { FirebaseFichaAcompanhamentoRepository } = await import('@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository');
+      const { FichaAcompanhamentoEntity } = await import('@modules/assistance/fichas/domain/entities/FichaAcompanhamento');
       
       const fichaRepository = new FirebaseFichaAcompanhamentoRepository();
 
