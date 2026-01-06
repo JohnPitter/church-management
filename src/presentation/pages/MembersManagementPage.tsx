@@ -9,7 +9,7 @@ import {
   MemberType,
   MemberEntity
 } from '../../domain/entities/Member';
-import { CreateMemberModal } from '../components/CreateMemberModal';
+import { CreateMemberModal } from '@modules/church-management/members/presentation/components/CreateMemberModal';
 import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } from 'docx';
 
 interface MembersManagementPageProps {}

@@ -11,10 +11,10 @@ import {
   VisitorStats
 } from '@modules/church-management/visitors/domain/entities/Visitor';
 import { format } from 'date-fns';
-import { CreateVisitorModal } from '../components/visitors/CreateVisitorModal';
-import { VisitorDetailsModal } from '../components/visitors/VisitorDetailsModal';
-import { ContactVisitorModal } from '../components/visitors/ContactVisitorModal';
-import { RecordVisitModal } from '../components/visitors/RecordVisitModal';
+import { CreateVisitorModal } from '@modules/church-management/visitors/presentation/components/visitors/CreateVisitorModal';
+import { VisitorDetailsModal } from '@modules/church-management/visitors/presentation/components/visitors/VisitorDetailsModal';
+import { ContactVisitorModal } from '@modules/church-management/visitors/presentation/components/visitors/ContactVisitorModal';
+import { RecordVisitModal } from '@modules/church-management/visitors/presentation/components/visitors/RecordVisitModal';
 
 export const VisitorsPage: React.FC = () => {
   const { currentUser } = useAuth();

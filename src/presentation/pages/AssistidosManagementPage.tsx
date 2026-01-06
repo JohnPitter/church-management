@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
-import AssistidoModal from '../components/AssistidoModal';
+import AssistidoModal from '@modules/assistance/assistidos/presentation/components/AssistidoModal';
 import AtendimentoModal from '../components/AtendimentoModal';
 import {
   Assistido,

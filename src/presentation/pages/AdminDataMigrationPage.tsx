@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { DataMigrationService } from '@modules/shared-kernel/migration/application/services/DataMigrationService';
 import { useSettings } from '../contexts/SettingsContext';
 import {
-  HiCloudArrowUp,
+  HiOutlineCloudUpload as HiCloudArrowUp,
   HiCheckCircle,
   HiXCircle,
-  HiArrowPath,
-  HiExclamationTriangle,
+  HiRefresh as HiArrowPath,
+  HiExclamation as HiExclamationTriangle,
   HiDocumentText
-} from 'react-icons/hi2';
+} from 'react-icons/hi';
 
 interface MigrationProgress {
   collection: string;

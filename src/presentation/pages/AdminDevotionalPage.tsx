@@ -17,9 +17,9 @@ import {
   DevotionalFilters,
   DevotionalStats 
 } from '@modules/church-management/devotionals/application/services/DevotionalService';
-import { CreateDevotionalModal } from '../components/CreateDevotionalModal';
-import { EditDevotionalModal } from '../components/EditDevotionalModal';
-import { DevotionalDetailModal } from '../components/DevotionalDetailModal';
+import { CreateDevotionalModal } from '@modules/church-management/devotionals/presentation/components/CreateDevotionalModal';
+import { EditDevotionalModal } from '@modules/church-management/devotionals/presentation/components/EditDevotionalModal';
+import { DevotionalDetailModal } from '@modules/church-management/devotionals/presentation/components/DevotionalDetailModal';
 
 export const AdminDevotionalPage: React.FC = () => {
   const { currentUser } = useAuth();

@@ -18,7 +18,7 @@ import {
   TopicFilters
 } from '@modules/content-management/forum/infrastructure/services/ForumService';
 import { CreateTopicModal } from '../components/CreateTopicModal';
-import { CreateForumCategoryModal } from '../components/CreateForumCategoryModal';
+import { CreateForumCategoryModal } from '@modules/content-management/forum/presentation/components/CreateForumCategoryModal';
 
 export const AdminForumPage: React.FC = () => {
   const { currentUser } = useAuth();
