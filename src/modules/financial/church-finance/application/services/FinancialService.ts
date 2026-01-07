@@ -450,6 +450,12 @@ export class FinancialService {
       q = query(q, orderBy('date', 'desc'));
 
       const snapshot = await getDocs(q);
+
+      // If no donations exist, return empty array instead of throwing error
+      if (snapshot.empty) {
+        return [];
+      }
+
       return snapshot.docs.map(doc => {
         const data = doc.data();
         return {
@@ -460,9 +466,18 @@ export class FinancialService {
           updatedAt: data.updatedAt.toDate()
         } as Donation;
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error getting donations:', error);
-      throw new Error('Erro ao buscar doações');
+
+      // If it's a permission error, return empty array instead of throwing
+      if (error?.code === 'permission-denied' ||
+          error?.message?.includes('Missing or insufficient permissions')) {
+        console.warn('Donations collection not accessible (permission denied). Returning empty list.');
+        return [];
+      }
+
+      // For other errors, still return empty array to prevent chart from breaking
+      return [];
     }
   }
 
