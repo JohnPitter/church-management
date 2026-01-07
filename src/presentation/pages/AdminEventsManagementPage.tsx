@@ -552,13 +552,11 @@ export const AdminEventsManagementPage: React.FC = () => {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+              <div className="flex-shrink-0 p-3 bg-blue-100 rounded-lg">
+                <span className="text-2xl">📅</span>
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Agendados</p>
@@ -571,10 +569,8 @@ export const AdminEventsManagementPage: React.FC = () => {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="flex-shrink-0 p-3 bg-green-100 rounded-lg">
+                <span className="text-2xl">⏰</span>
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Hoje</p>
@@ -587,10 +583,8 @@ export const AdminEventsManagementPage: React.FC = () => {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="flex-shrink-0 p-3 bg-purple-100 rounded-lg">
+                <span className="text-2xl">✅</span>
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Finalizados</p>
@@ -612,62 +606,49 @@ export const AdminEventsManagementPage: React.FC = () => {
           </div>
           
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-1/4">
                     Evento
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Data/Hora
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-28">
+                    Data
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-40">
                     Local
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Responsável
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase w-32">
                     Ações
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredEvents.map((event) => (
-                  <tr key={event.id}>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        <div 
-                          className="h-10 w-4 rounded"
+                  <tr key={event.id} className="hover:bg-gray-50">
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-8 w-1 rounded flex-shrink-0"
                           style={{ backgroundColor: event.category.color }}
                         ></div>
-                        <div className="ml-4">
-                          <div className="flex items-center">
-                            <div className="text-sm font-medium text-gray-900">{event.title}</div>
-                            {!event.isPublic && (
-                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                🔒 Privado
-                              </span>
-                            )}
-                            {isEventToday(event.date) && (
-                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                📅 Hoje
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-sm text-gray-500">{event.category.name}</div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium text-gray-900 truncate">{event.title}</div>
+                          <div className="text-xs text-gray-500">{event.category.name}</div>
                         </div>
+                        {!event.isPublic && <span className="text-xs">🔒</span>}
+                        {isEventToday(event.date) && <span className="text-xs">📅</span>}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 py-3">
                       <select
                         value={event.status}
                         onChange={(e) => handleStatusChange(event.id, e.target.value)}
                         disabled={loading}
-                        className={`text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50 ${getStatusColor(event.status)}`}
+                        className={`text-xs w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-green-500 disabled:opacity-50 ${getStatusColor(event.status)}`}
                       >
                         {statuses.slice(1).map(status => (
                           <option key={status} value={status}>
@@ -676,46 +657,55 @@ export const AdminEventsManagementPage: React.FC = () => {
                         ))}
                       </select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div>{format(event.date, "dd/MM/yyyy")}</div>
-                      <div className="text-xs text-gray-400">{event.time}</div>
+                    <td className="px-3 py-3 text-xs text-gray-900">
+                      <div>{format(event.date, "dd/MM/yy")}</div>
+                      <div className="text-gray-500">{event.time}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-3 py-3 text-xs text-gray-500 truncate max-w-[160px]" title={event.location}>
                       {event.location}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {event.responsible}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
+                    <td className="px-3 py-3">
+                      <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => handleEditEvent(event)}
-                          className="text-indigo-600 hover:text-indigo-900"
+                          className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                          title="Editar"
                         >
-                          Editar
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
                         </button>
                         {event.requiresConfirmation && (
                           <button
                             onClick={() => handleViewConfirmations(event)}
                             disabled={loading}
-                            className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
+                            title="Confirmações"
                           >
-                            Confirmações
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                           </button>
                         )}
                         <button
                           onClick={() => handleDuplicateEvent(event)}
                           disabled={loading}
-                          className="text-green-600 hover:text-green-900 disabled:opacity-50"
+                          className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
+                          title="Duplicar"
                         >
-                          Duplicar
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
                         </button>
                         <button
                           onClick={() => handleDeleteEvent(event.id)}
                           disabled={loading}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                          className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                          title="Excluir"
                         >
-                          Excluir
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
                         </button>
                       </div>
                     </td>
