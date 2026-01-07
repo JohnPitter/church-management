@@ -60,13 +60,33 @@ export class BackupService {
         collections.map(async (collectionName) => {
           try {
             const collectionRef = collection(db, collectionName);
-            const countSnap = await getCountFromServer(collectionRef);
-            const count = countSnap.data().count;
-            
+            let count = 0;
+
+            try {
+              // Try to use getCountFromServer first (more efficient)
+              const countSnap = await getCountFromServer(collectionRef);
+              count = countSnap.data().count;
+            } catch (countError: any) {
+              // If permission denied or aggregation not allowed, fallback to getDocs
+              if (countError?.code === 'permission-denied' ||
+                  countError?.message?.includes('permission')) {
+                try {
+                  const snapshot = await getDocs(collectionRef);
+                  count = snapshot.size;
+                } catch (docsError) {
+                  // If getDocs also fails, return 0
+                  console.warn(`Cannot access collection ${collectionName}, returning 0`);
+                  count = 0;
+                }
+              } else {
+                throw countError;
+              }
+            }
+
             // Estimate size based on average document size
             // This is an approximation since Firestore doesn't expose actual storage size
             const estimatedSize = this.estimateCollectionSize(collectionName, count);
-            
+
             return {
               name: collectionName,
               records: count,
@@ -74,7 +94,7 @@ export class BackupService {
               lastUpdated: new Date()
             };
           } catch (error) {
-            console.warn(`Error getting stats for collection ${collectionName}:`, error);
+            console.warn(`Error getting stats for collection ${collectionName}`);
             return {
               name: collectionName,
               records: 0,
