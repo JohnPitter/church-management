@@ -745,9 +745,16 @@ service cloud.firestore {
       allow write: if hasRole('admin');
     }
 
+    // Home Settings - Simple configuration
+    match /homeSettings/{document} {
+      allow read: if true; // Anyone can read
+      allow write: if hasRole('admin') || hasRole('secretary');
+    }
+
     // Default deny all other collections
     match /{document=**} {
       allow read, write: if false;
     }
+
   }
 }

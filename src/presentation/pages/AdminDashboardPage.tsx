@@ -232,13 +232,13 @@ export const AdminDashboardPage: React.FC = () => {
       show: currentUser?.role === 'admin'
     },
     {
-      title: 'Construtor da Home',
-      description: 'Personalizar página inicial do site',
-      href: '/admin/home-builder',
+      title: 'Configurar Home Page',
+      description: 'Escolher estilo e configurar seções da home',
+      href: '/admin/home-settings',
       icon: '🏗️',
-      color: 'bg-pink-400 hover:bg-pink-500',
+      color: 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700',
       category: 'system',
-      show: hasPermission(SystemModule.HomeBuilder, PermissionAction.Manage)
+      show: hasPermission(SystemModule.Settings, PermissionAction.Update)
     }
   ];
 

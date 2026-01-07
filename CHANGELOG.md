@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-01-07
+
+### Added
+- **Simplified Home Page Configuration System**: Complete redesign of home page management
+  - Removed complex drag-and-drop builder in favor of simple style selection
+  - Three pre-designed professional layouts:
+    - **Canva Design**: Vibrant, colorful with bold gradients (pink, purple, orange)
+    - **Apple Design**: Minimalist, elegant inspired by Apple's iPhone pages (black, white, blue)
+    - **Enterprise Design**: Professional, structured inspired by Lagoinha Global (corporate blues and greens)
+  - New `AdminHomeSettingsPage` with intuitive style selector and section toggles
+  - Visual color palette display for each design style
+  - Section visibility controls (hero, verse of day, quick actions, features, events, etc.)
+  - Real-time preview of selected style
+- New domain entities in `home-settings` module:
+  - `HomeSettings`: Configuration model with layout style and section visibility
+  - `HomeLayoutStyle` enum: CANVA, APPLE, ENTERPRISE
+  - `HomeSectionVisibility`: Toggle controls for 10 different sections
+  - `LAYOUT_STYLE_INFO`: Detailed metadata for each design style
+- New service layer:
+  - `HomeSettingsService`: CRUD operations for home configuration
+  - Firestore collection `homeSettings` with real-time updates
+- Complete layout implementations:
+  - `CanvaHomeLayout.tsx`: Vibrant design with colorful gradients and animations
+  - `AppleHomeLayout.tsx`: Minimalist design with massive typography and white space
+  - `EnterpriseHomeLayout.tsx`: Professional design with statistics, testimonials, and structured layout
+  - `HomeSimplified.tsx`: Dynamic layout renderer based on configuration
+
+### Changed
+- Replaced `/admin/home-builder` route with `/admin/home-settings`
+- Updated admin dashboard to link to new home settings page
+- Modified home page import to use `HomeSimplified` instead of complex builder
+- Enhanced color palette visibility with inline styles to avoid Tailwind conflicts
+- Updated admin dashboard card for home configuration:
+  - New title: "Configurar Home Page"
+  - New description: "Escolher estilo e configurar seções da home"
+  - New icon: 🎨
+  - Permission changed to `SystemModule.Settings` with `PermissionAction.Update`
+
+### Fixed
+- Firestore rules syntax errors: Moved `homeSettings` collection rules to correct position
+- Added missing service closing brace in `firestore.rules`
+- Color display issues in admin interface by using pure inline styles
+- Dynamic Tailwind class generation issues (text-${color}-600) by using complete class names
+- App.tsx route syntax error (missing comma and closing brace)
+
+### Removed
+- Complex home builder system with 30+ draggable components
+- `AdminHomeBuilderPage.tsx` and related builder infrastructure
+- `/admin/home-builder` route and associated imports
+
 ## [1.1.0] - 2026-01-06
 
 ### Added

@@ -5,7 +5,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../hooks/useTheme';
-import { useSettings } from '../contexts/SettingsContext';
 import { HomeBuilderService } from '@modules/content-management/home-builder/application/services/HomeBuilderService';
 import {
   HomeLayout,
@@ -14,15 +13,12 @@ import {
   ComponentType,
   HomeBuilderEntity
 } from '@modules/content-management/home-builder/domain/entities/HomeBuilder';
-import { LayoutStyle, LayoutTemplateFactory } from '@modules/content-management/home-builder/domain/entities/LayoutTemplates';
 import { ComponentRenderer } from '../components/HomeBuilder/ComponentRenderer';
 import { ComponentSettings } from '../components/HomeBuilder/ComponentSettings';
-import { LayoutTemplateSelector } from '../components/HomeBuilder/LayoutTemplateSelector';
 
 export const AdminHomeBuilderPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { isDarkMode } = useTheme();
-  const { settings } = useSettings();
 
   // State
   const [layouts, setLayouts] = useState<HomeLayout[]>([]);
@@ -35,7 +31,6 @@ export const AdminHomeBuilderPage: React.FC = () => {
   const [showLayoutManager, setShowLayoutManager] = useState(false);
   const [showComponentPalette, setShowComponentPalette] = useState(true);
   const [showPageSettings, setShowPageSettings] = useState(false);
-  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [searchComponents, setSearchComponents] = useState('');
 
@@ -356,33 +351,6 @@ export const AdminHomeBuilderPage: React.FC = () => {
       alert('❌ Erro ao criar layout');
     }
   };
-
-  
-  const handleCreateFromTemplate = async (style: LayoutStyle) => {
-    try {
-      const churchName = settings?.churchName || 'Nossa Igreja';
-      const newLayout = LayoutTemplateFactory.createLayoutFromStyle(style, churchName);
-
-      // Get template metadata for name
-      const templates = LayoutTemplateFactory.getAllTemplates();
-      const template = templates.find(t => t.style === style);
-
-      newLayout.name = template?.name || `Layout ${style}`;
-      newLayout.createdBy = currentUser?.email || 'unknown';
-      newLayout.isActive = false;
-      newLayout.isDefault = false;
-
-      const createdLayout = await homeBuilderService.createLayout(newLayout);
-      setCurrentLayout(createdLayout);
-      setShowTemplateSelector(false);
-      await loadData();
-      alert(`✅ Layout "${newLayout.name}" criado com sucesso!`);
-    } catch (error) {
-      console.error('Error creating layout from template:', error);
-      alert('❌ Erro ao criar layout do template');
-    }
-  };
-
 
   const handleToggleDefault = async (layoutId: string, currentIsDefault: boolean) => {
     try {
@@ -1070,26 +1038,15 @@ export const AdminHomeBuilderPage: React.FC = () => {
             </div>
 
             <div className="p-6 overflow-y-auto max-h-[calc(80vh-140px)]">
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <button
-                  onClick={() => {
-                    setShowLayoutManager(false);
-                    setShowTemplateSelector(true);
-                  }}
-                  className="p-4 border-2 border-dashed border-indigo-300 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors font-medium"
-                >
-                  🎨 Criar de Template
-                </button>
-                <button
-                  onClick={() => {
-                    handleCreateNewLayout();
-                    setShowLayoutManager(false);
-                  }}
-                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors font-medium"
-                >
-                  ➕ Layout Vazio
-                </button>
-              </div>
+              <button
+                onClick={() => {
+                  handleCreateNewLayout();
+                  setShowLayoutManager(false);
+                }}
+                className="w-full mb-4 p-4 border-2 border-dashed border-indigo-300 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors font-medium"
+              >
+                ➕ Criar Novo Layout
+              </button>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {layouts.map((layout) => (
@@ -1167,14 +1124,6 @@ export const AdminHomeBuilderPage: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Template Selector Modal */}
-      {showTemplateSelector && (
-        <LayoutTemplateSelector
-          onSelect={handleCreateFromTemplate}
-          onCancel={() => setShowTemplateSelector(false)}
-        />
       )}
     </div>
   );

@@ -14,7 +14,7 @@ import { NotificationProvider } from './presentation/contexts/NotificationContex
 import { DynamicFavicon } from './presentation/components/DynamicFavicon';
 
 // Pages
-import Home from './modules/church-management/home/presentation/pages/Home';
+import Home from './modules/church-management/home/presentation/pages/HomeSimplified';
 import { LoginPage } from './presentation/pages/LoginPage';
 import { RegisterPage } from './presentation/pages/RegisterPage';
 import { PainelPage } from './presentation/pages/PainelPage';
@@ -37,7 +37,7 @@ import { AdminReportsPage } from './presentation/pages/AdminReportsPage';
 import { AdminBackupPage } from './presentation/pages/AdminBackupPage';
 import { AdminFinancialPage } from './presentation/pages/AdminFinancialPage';
 import { AdminLogsPage } from './presentation/pages/AdminLogsPage';
-import { AdminHomeBuilderPage } from './presentation/pages/AdminHomeBuilderPage';
+import AdminHomeSettingsPage from './presentation/pages/AdminHomeSettingsPage';
 import AdminDataMigrationPage from './presentation/pages/AdminDataMigrationPage';
 import { AdminDevotionalPage } from './presentation/pages/AdminDevotionalPage';
 import { Devotionals } from './presentation/pages/Devotionals';
@@ -642,14 +642,14 @@ const router = createBrowserRouter([
         )
       },
       {
-        path: 'admin/home-builder',
+        path: 'admin/home-settings',
         element: (
           <ProtectedRoute
-            requireModule={SystemModule.HomeBuilder}
-            requireAction={PermissionAction.View}
+            requireModule={SystemModule.Settings}
+            requireAction={PermissionAction.Update}
           >
             <Layout>
-              <AdminHomeBuilderPage />
+              <AdminHomeSettingsPage />
             </Layout>
           </ProtectedRoute>
         )

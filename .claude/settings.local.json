@@ -41,7 +41,13 @@
       "Bash(node scripts/fix-all-service-imports.js:*)",
       "Bash(node scripts/fix-remaining-imports.js:*)",
       "Bash(cut:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(node scripts/apply-home-builder-template-patch.js:*)",
+      "Bash(node scripts/create-simple-home-layouts.js:*)",
+      "Bash(node scripts/finalize-simple-home.js:*)",
+      "Bash(npm start)",
+      "WebFetch(domain:www.apple.com)",
+      "WebFetch(domain:l2.lagoinha.com)"
     ],
     "deny": [],
     "ask": []

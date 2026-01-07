@@ -18,6 +18,7 @@ Uma aplicação completa para gerenciamento de igrejas, construída com princíp
   - Biblioteca de mídia
   - Gerenciamento de transmissões ao vivo
   - Configuração de páginas públicas
+  - Sistema simplificado de configuração de home page com 3 estilos profissionais (Canva, Apple, Enterprise)
 
 - **Gestão Financeira**
   - Controle de finanças da igreja
