@@ -168,21 +168,12 @@ export const AdminDashboardPage: React.FC = () => {
     // Financial
     {
       title: 'Sistema Financeiro',
-      description: 'Gerenciar transações financeiras',
+      description: 'Gerenciar transações financeiras e doações',
       href: '/admin/financial',
       icon: '💰',
       color: 'bg-emerald-500 hover:bg-emerald-600',
       category: 'financial',
       show: hasPermission(SystemModule.Finance, PermissionAction.Manage)
-    },
-    {
-      title: 'Gerenciar Doações',
-      description: 'Controle e gerenciamento de doações',
-      href: '/admin/financial',
-      icon: '🎁',
-      color: 'bg-green-400 hover:bg-green-500',
-      category: 'financial',
-      show: hasPermission(SystemModule.Donations, PermissionAction.Manage)
     },
     {
       title: 'Gerenciar Patrimônio',
