@@ -6,6 +6,22 @@ import { useAuth } from '../contexts/AuthContext';
 import { format as formatDate } from 'date-fns';
 import { FirebaseLogRepository, SystemLog } from '@modules/shared-kernel/logging/infrastructure/repositories/FirebaseLogRepository';
 import { LogSeederService } from '@modules/shared-kernel/logging/infrastructure/services/LogSeederService';
+import {
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  Search,
+  FileText,
+  Lock,
+  Database,
+  Link,
+  Settings,
+  User,
+  Shield,
+  RefreshCw,
+  Download,
+  Trash2
+} from 'lucide-react';
 
 
 
@@ -78,12 +94,13 @@ export const AdminLogsPage: React.FC = () => {
   };
 
   const getLevelIcon = (level: string) => {
+    const iconClass = "w-3.5 h-3.5";
     switch (level) {
-      case 'error': return '🚨';
-      case 'warning': return '⚠️';
-      case 'info': return 'ℹ️';
-      case 'debug': return '🔍';
-      default: return '📝';
+      case 'error': return <AlertCircle className={iconClass} />;
+      case 'warning': return <AlertTriangle className={iconClass} />;
+      case 'info': return <Info className={iconClass} />;
+      case 'debug': return <Search className={iconClass} />;
+      default: return <FileText className={iconClass} />;
     }
   };
 
@@ -100,14 +117,15 @@ export const AdminLogsPage: React.FC = () => {
   };
 
   const getCategoryIcon = (category: string) => {
+    const iconClass = "w-3.5 h-3.5";
     switch (category) {
-      case 'auth': return '🔐';
-      case 'database': return '🗄️';
-      case 'api': return '🔗';
-      case 'system': return '⚙️';
-      case 'user_action': return '👤';
-      case 'security': return '🛡️';
-      default: return '📋';
+      case 'auth': return <Lock className={iconClass} />;
+      case 'database': return <Database className={iconClass} />;
+      case 'api': return <Link className={iconClass} />;
+      case 'system': return <Settings className={iconClass} />;
+      case 'user_action': return <User className={iconClass} />;
+      case 'security': return <Shield className={iconClass} />;
+      default: return <FileText className={iconClass} />;
     }
   };
 
@@ -233,16 +251,18 @@ export const AdminLogsPage: React.FC = () => {
               <button
                 onClick={handleRefresh}
                 disabled={loading}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors"
               >
-                🔄 Atualizar
+                <RefreshCw className="w-4 h-4" />
+                Atualizar
               </button>
               <button
                 onClick={() => handleExportLogs('json')}
                 disabled={loading}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors"
               >
-                📄 Exportar
+                <Download className="w-4 h-4" />
+                Exportar
               </button>
             </div>
           </div>
@@ -366,9 +386,10 @@ export const AdminLogsPage: React.FC = () => {
               <button
                 onClick={handleClearLogs}
                 disabled={loading}
-                className="w-full px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 disabled:opacity-50"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 disabled:opacity-50 transition-colors"
               >
-                🗑️ Limpar Logs
+                <Trash2 className="w-4 h-4" />
+                Limpar Logs
               </button>
             </div>
           </div>
@@ -421,13 +442,15 @@ export const AdminLogsPage: React.FC = () => {
                       {formatDate(log.timestamp, 'dd/MM/yyyy HH:mm:ss')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLevelColor(log.level)}`}>
-                        {getLevelIcon(log.level)} {log.level.toUpperCase()}
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${getLevelColor(log.level)}`}>
+                        {getLevelIcon(log.level)}
+                        <span>{log.level.toUpperCase()}</span>
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(log.category)}`}>
-                        {getCategoryIcon(log.category)} {log.category.replace('_', ' ')}
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(log.category)}`}>
+                        {getCategoryIcon(log.category)}
+                        <span>{log.category.replace('_', ' ').toUpperCase()}</span>
                       </span>
                     </td>
                     <td className="px-6 py-4">
