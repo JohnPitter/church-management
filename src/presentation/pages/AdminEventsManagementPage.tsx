@@ -1007,7 +1007,10 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSave, onCancel
     const selectedCategory = categoryOptions.find(cat => cat.name === formData.category) || categoryOptions[0];
 
     // Combine date and time into a single Date object
-    const eventDate = new Date(formData.date);
+    // Parse date string as local timezone to avoid UTC conversion issues
+    const [year, month, day] = formData.date.split('-').map(Number);
+    const eventDate = new Date(year, month - 1, day); // month is 0-indexed
+
     if (formData.time) {
       const [hours, minutes] = formData.time.split(':');
       eventDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
@@ -1278,7 +1281,10 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ onSave, onCancel, l
     const selectedCategory = categoryOptions.find(cat => cat.name === formData.category) || categoryOptions[0];
 
     // Combine date and time into a single Date object
-    const eventDate = new Date(formData.date);
+    // Parse date string as local timezone to avoid UTC conversion issues
+    const [year, month, day] = formData.date.split('-').map(Number);
+    const eventDate = new Date(year, month - 1, day); // month is 0-indexed
+
     if (formData.time) {
       const [hours, minutes] = formData.time.split(':');
       eventDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
