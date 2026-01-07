@@ -11,7 +11,7 @@ on:
       - develop
 
 env:
-  NODE_VERSION: '16.x'
+  NODE_VERSION: '20.x'
 
 jobs:
   # Job 1: Build and Test
