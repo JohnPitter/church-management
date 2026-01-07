@@ -804,10 +804,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
               onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Novo Membro
+              ➕ Novo Membro
             </button>
           </div>
         </div>
@@ -863,9 +860,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                 <div className="bg-white rounded-lg shadow p-6">
                   <div className="flex items-center">
                     <div className="p-2 bg-green-100 rounded-lg">
-                      <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+                      <span className="text-2xl">✅</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-500">Membros Ativos</p>
@@ -877,9 +872,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                 <div className="bg-white rounded-lg shadow p-6">
                   <div className="flex items-center">
                     <div className="p-2 bg-blue-100 rounded-lg">
-                      <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
+                      <span className="text-2xl">👥</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-500">Total de Membros</p>
@@ -891,9 +884,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                 <div className="bg-white rounded-lg shadow p-6">
                   <div className="flex items-center">
                     <div className="p-2 bg-yellow-100 rounded-lg">
-                      <svg className="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                      </svg>
+                      <span className="text-2xl">🎂</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-500">Aniversários</p>
@@ -905,9 +896,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                 <div className="bg-white rounded-lg shadow p-6">
                   <div className="flex items-center">
                     <div className="p-2 bg-purple-100 rounded-lg">
-                      <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
+                      <span className="text-2xl">📈</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-500">Novos este Mês</p>
@@ -1040,10 +1029,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                               className="inline-flex items-center justify-center px-3 py-2.5 sm:py-1.5 bg-indigo-600 sm:bg-indigo-50 text-white sm:text-indigo-700 rounded-lg sm:rounded-md hover:bg-indigo-700 sm:hover:bg-indigo-100 transition-colors border-0 sm:border sm:border-indigo-200 sm:hover:border-indigo-300 font-medium text-sm shadow-sm sm:shadow-none"
                               title="Editar membro"
                             >
-                              <svg className="w-5 h-5 sm:w-4 sm:h-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                              </svg>
-                              <span className="ml-2 sm:ml-0 text-sm font-medium">Editar</span>
+                              ✏️ <span className="ml-2 sm:ml-0 text-sm font-medium">Editar</span>
                             </button>
 
                             {/* Delete Button */}
@@ -1052,10 +1038,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                               className="inline-flex items-center justify-center px-3 py-2.5 sm:py-1.5 bg-red-600 sm:bg-red-50 text-white sm:text-red-700 rounded-lg sm:rounded-md hover:bg-red-700 sm:hover:bg-red-100 transition-colors border-0 sm:border sm:border-red-200 sm:hover:border-red-300 font-medium text-sm shadow-sm sm:shadow-none"
                               title="Excluir membro"
                             >
-                              <svg className="w-5 h-5 sm:w-4 sm:h-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                              <span className="ml-2 sm:ml-0 text-sm font-medium">Excluir</span>
+                              🗑️ <span className="ml-2 sm:ml-0 text-sm font-medium">Excluir</span>
                             </button>
 
                             {/* Status Select - Larger and more touch-friendly on mobile */}
@@ -1126,9 +1109,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                         className="px-2 py-1 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                         title="Primeira página"
                       >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                        </svg>
+                        <span className="text-lg">⏮️</span>
                       </button>
 
                       <button
@@ -1188,9 +1169,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                         className="px-2 py-1 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                         title="Última página"
                       >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                        </svg>
+                        <span className="text-lg">⏭️</span>
                       </button>
                     </div>
                   </div>
@@ -1224,9 +1203,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                     <div className="flex items-center space-x-3">
                       <div className="flex-shrink-0">
                         <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                          <svg className="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                          </svg>
+                          <span className="text-2xl">🎂</span>
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -1329,9 +1306,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
               <div className="mt-6 bg-blue-50 border-l-4 border-blue-400 p-4">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
+                    <span className="text-xl text-blue-400">ℹ️</span>
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-blue-700">
@@ -1658,20 +1633,14 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                   onClick={exportSignatureListToPDF}
                   className="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 shadow-md hover:shadow-lg transition-all"
                 >
-                  <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                  <span className="font-medium">Lista de Assinatura em PDF</span>
+                  📄 <span className="font-medium ml-2">Lista de Assinatura em PDF</span>
                 </button>
 
                 <button
                   onClick={exportSignatureListToWord}
                   className="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all"
                 >
-                  <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <span className="font-medium">Lista de Assinatura em Word</span>
+                  📝 <span className="font-medium ml-2">Lista de Assinatura em Word</span>
                 </button>
               </div>
             </div>
@@ -1691,9 +1660,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                   onClick={exportToExcel}
                   className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  <svg className="w-5 h-5 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+                  <span className="text-xl text-green-600 mr-2">📊</span>
                   Exportar Excel
                 </button>
 
@@ -1701,9 +1668,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                   onClick={exportToPDF}
                   className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  <svg className="w-5 h-5 mr-2 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
+                  <span className="text-xl text-red-600 mr-2">📄</span>
                   Exportar PDF
                 </button>
 
@@ -1711,9 +1676,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                   onClick={exportToCSV}
                   className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+                  <span className="text-xl text-blue-600 mr-2">📋</span>
                   Exportar CSV
                 </button>
               </div>
