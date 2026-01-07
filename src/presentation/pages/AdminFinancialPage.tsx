@@ -371,9 +371,7 @@ export const AdminFinancialPage: React.FC = () => {
                 onClick={() => setShowCreateModal(true)}
                 className="inline-flex items-center px-3 py-2 sm:px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
               >
-                <svg className="w-4 h-4 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
+                <span className="sm:mr-2">➕</span>
                 <span className="hidden sm:inline">Nova Transação</span>
                 <span className="sm:hidden ml-1">Nova</span>
               </button>
@@ -421,9 +419,7 @@ export const AdminFinancialPage: React.FC = () => {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
+                    <span className="text-xl">ℹ️</span>
                   </div>
                   <div className="ml-3">
                     <h3 className="text-sm font-medium text-blue-800">
@@ -533,27 +529,21 @@ export const AdminFinancialPage: React.FC = () => {
                       onClick={() => setShowCreateModal(true)}
                       className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
                     >
-                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
+                      <span className="mr-2">➕</span>
                       Nova Transação
                     </button>
                     <button
                       onClick={() => setShowDonationModal(true)}
                       className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
                     >
-                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
+                      <span className="mr-2">➕</span>
                       Nova Doação
                     </button>
                     <button
                       onClick={() => setShowCategoryModal(true)}
                       className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
                     >
-                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
+                      <span className="mr-2">➕</span>
                       Nova Categoria
                     </button>
                   </div>
@@ -859,9 +849,7 @@ export const AdminFinancialPage: React.FC = () => {
                           onClick={() => setShowCreateModal(true)}
                           className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                         >
-                          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                          </svg>
+                          <span className="mr-2">➕</span>
                           Criar Primeira Transação
                         </button>
                       </div>
@@ -1032,9 +1020,7 @@ export const AdminFinancialPage: React.FC = () => {
                   onClick={() => setShowDonationModal(true)}
                   className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                 >
-                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
+                  <span className="mr-2">➕</span>
                   Nova Doação
                 </button>
               </div>
@@ -1120,9 +1106,7 @@ export const AdminFinancialPage: React.FC = () => {
                         onClick={() => setShowDonationModal(true)}
                         className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                       >
-                        <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
+                        <span className="mr-2">➕</span>
                         Registrar Primeira Doação
                       </button>
                     </div>
@@ -1179,9 +1163,7 @@ export const AdminFinancialPage: React.FC = () => {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
+                  <span className="text-xl">ℹ️</span>
                 </div>
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-blue-800">
@@ -1287,9 +1269,7 @@ export const AdminFinancialPage: React.FC = () => {
                     onClick={() => setShowCreateDepartmentModal(true)}
                     className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                   >
-                    <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
+                    <span className="mr-2">➕</span>
                     Novo Departamento
                   </button>
                 </div>
@@ -1350,9 +1330,7 @@ export const AdminFinancialPage: React.FC = () => {
                       onClick={() => setShowCreateDepartmentModal(true)}
                       className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                     >
-                      <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
+                      <span className="mr-2">➕</span>
                       Criar Primeiro Departamento
                     </button>
                   </div>
@@ -1370,9 +1348,7 @@ export const AdminFinancialPage: React.FC = () => {
                       onClick={() => setShowCreateDepartmentModal(true)}
                       className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                     >
-                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
+                      <span className="mr-2">➕</span>
                       Novo Departamento
                     </button>
                   </div>
