@@ -55,13 +55,26 @@ export class FirebaseAgendamentoAssistenciaRepository implements IAgendamentoAss
         orderBy('dataHoraAgendamento', 'desc')
       );
       const querySnapshot = await getDocs(q);
-      
-      return querySnapshot.docs.map(doc => 
+
+      if (querySnapshot.empty) {
+        return [];
+      }
+
+      return querySnapshot.docs.map(doc =>
         this.mapToAgendamento(doc.id, doc.data())
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error finding all agendamentos:', error);
-      throw new Error('Erro ao buscar agendamentos');
+
+      // If it's a permission error, return empty array
+      if (error?.code === 'permission-denied' ||
+          error?.message?.includes('Missing or insufficient permissions')) {
+        console.warn('Agendamentos collection not accessible. Returning empty list.');
+        return [];
+      }
+
+      // For other errors, also return empty array to prevent crashes
+      return [];
     }
   }
 

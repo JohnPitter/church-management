@@ -204,6 +204,14 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && hasPermission('assistance', 'delete');
     }
 
+    // Agendamentos Assistencia collection
+    match /agendamentosAssistencia/{agendamentoId} {
+      allow read: if isAuthenticated() && hasPermission('assistance', 'view');
+      allow create: if isAuthenticated() && hasPermission('assistance', 'create');
+      allow update: if isAuthenticated() && hasPermission('assistance', 'update');
+      allow delete: if isAuthenticated() && hasPermission('assistance', 'delete');
+    }
+
     // Prayer requests collection
     match /prayerRequests/{requestId} {
       allow read: if isAuthenticated();
@@ -504,6 +512,171 @@ service cloud.firestore {
       allow create: if isAuthenticated();
       allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // ========================================
+    // FINANCIAL COLLECTIONS (Additional)
+    // ========================================
+    match /budgets/{budgetId} {
+      allow read: if isAuthenticated() && hasPermission('financial', 'view');
+      allow create: if isAuthenticated() && hasPermission('financial', 'create');
+      allow update: if isAuthenticated() && hasPermission('financial', 'update');
+      allow delete: if isAuthenticated() && hasPermission('financial', 'delete');
+    }
+
+    match /financialCategories/{categoryId} {
+      allow read: if isAuthenticated() && hasPermission('financial', 'view');
+      allow create: if isAuthenticated() && hasPermission('financial', 'create');
+      allow update: if isAuthenticated() && hasPermission('financial', 'update');
+      allow delete: if isAuthenticated() && hasPermission('financial', 'delete');
+    }
+
+    match /church_budgets/{budgetId} {
+      allow read: if isAuthenticated() && hasPermission('financial', 'view');
+      allow create: if isAuthenticated() && hasPermission('financial', 'create');
+      allow update: if isAuthenticated() && hasPermission('financial', 'update');
+      allow delete: if isAuthenticated() && hasPermission('financial', 'delete');
+    }
+
+    match /church_categories/{categoryId} {
+      allow read: if isAuthenticated() && hasPermission('financial', 'view');
+      allow create: if isAuthenticated() && hasPermission('financial', 'create');
+      allow update: if isAuthenticated() && hasPermission('financial', 'update');
+      allow delete: if isAuthenticated() && hasPermission('financial', 'delete');
+    }
+
+    match /church_transactions/{transactionId} {
+      allow read: if isAuthenticated() && hasPermission('financial', 'view');
+      allow create: if isAuthenticated() && hasPermission('financial', 'create');
+      allow update: if isAuthenticated() && hasPermission('financial', 'update');
+      allow delete: if isAuthenticated() && hasPermission('financial', 'delete');
+    }
+
+    match /church_donations/{donationId} {
+      allow read: if isAuthenticated() && hasPermission('financial', 'view');
+      allow create: if isAuthenticated() && hasPermission('financial', 'create');
+      allow update: if isAuthenticated() && hasPermission('financial', 'update');
+      allow delete: if isAuthenticated() && hasPermission('financial', 'delete');
+    }
+
+    match /church_departments/{deptId} {
+      allow read: if isAuthenticated() && hasPermission('financial', 'view');
+      allow create: if isAuthenticated() && hasPermission('financial', 'create');
+      allow update: if isAuthenticated() && hasPermission('financial', 'update');
+      allow delete: if isAuthenticated() && hasPermission('financial', 'delete');
+    }
+
+    match /church_department_transactions/{transactionId} {
+      allow read: if isAuthenticated() && hasPermission('financial', 'view');
+      allow create: if isAuthenticated() && hasPermission('financial', 'create');
+      allow update: if isAuthenticated() && hasPermission('financial', 'update');
+      allow delete: if isAuthenticated() && hasPermission('financial', 'delete');
+    }
+
+    match /church_department_transfers/{transferId} {
+      allow read: if isAuthenticated() && hasPermission('financial', 'view');
+      allow create: if isAuthenticated() && hasPermission('financial', 'create');
+      allow update: if isAuthenticated() && hasPermission('financial', 'update');
+      allow delete: if isAuthenticated() && hasPermission('financial', 'delete');
+    }
+
+    match /ong_budgets/{budgetId} {
+      allow read: if hasAnyRole(['admin', 'secretary']);
+      allow create: if hasAnyRole(['admin', 'secretary']);
+      allow update: if hasAnyRole(['admin', 'secretary']);
+      allow delete: if hasRole('admin');
+    }
+
+    match /ong_categories/{categoryId} {
+      allow read: if hasAnyRole(['admin', 'secretary']);
+      allow create: if hasAnyRole(['admin', 'secretary']);
+      allow update: if hasAnyRole(['admin', 'secretary']);
+      allow delete: if hasRole('admin');
+    }
+
+    match /ong_transactions/{transactionId} {
+      allow read: if hasAnyRole(['admin', 'secretary']);
+      allow create: if hasAnyRole(['admin', 'secretary']);
+      allow update: if hasAnyRole(['admin', 'secretary']);
+      allow delete: if hasRole('admin');
+    }
+
+    // ========================================
+    // ASSISTANCE COLLECTIONS (Additional)
+    // ========================================
+    match /profissionaisAssistencia/{profissionalId} {
+      allow read: if isAuthenticated() && hasPermission('assistance', 'view');
+      allow create: if isAuthenticated() && hasPermission('assistance', 'create');
+      allow update: if isAuthenticated() && hasPermission('assistance', 'update');
+      allow delete: if isAuthenticated() && hasPermission('assistance', 'delete');
+    }
+
+    match /atendimentos/{atendimentoId} {
+      allow read: if isAuthenticated() && hasPermission('assistance', 'view');
+      allow create: if isAuthenticated() && hasPermission('assistance', 'create');
+      allow update: if isAuthenticated() && hasPermission('assistance', 'update');
+      allow delete: if isAuthenticated() && hasPermission('assistance', 'delete');
+    }
+
+    // ========================================
+    // FORUM COLLECTIONS (Additional)
+    // ========================================
+    match /forumActivities/{activityId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if hasAnyRole(['admin', 'secretary']);
+      allow delete: if hasAnyRole(['admin', 'secretary']);
+    }
+
+    match /forumNotifications/{notifId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    match /userForumProfiles/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && userId == request.auth.uid;
+      allow update: if isAuthenticated() && userId == request.auth.uid;
+      allow delete: if hasRole('admin');
+    }
+
+    // ========================================
+    // EVENT COLLECTIONS (Additional)
+    // ========================================
+    match /eventCategories/{categoryId} {
+      allow read: if true; // Public read
+      allow create: if hasAnyRole(['admin', 'secretary']);
+      allow update: if hasAnyRole(['admin', 'secretary']);
+      allow delete: if hasRole('admin');
+    }
+
+    // ========================================
+    // DEVOTIONAL COLLECTIONS (Additional)
+    // ========================================
+    match /devotionalComments/{commentId} {
+      allow read: if true; // Public read
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || hasAnyRole(['admin', 'secretary']));
+      allow delete: if hasAnyRole(['admin', 'secretary']);
+    }
+
+    match /userPlanProgress/{progressId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // ========================================
+    // CUSTOM ROLES
+    // ========================================
+    match /customRoles/{roleId} {
+      allow read: if isAuthenticated();
+      allow create: if hasRole('admin');
+      allow update: if hasRole('admin');
+      allow delete: if hasRole('admin');
     }
 
     // Default deny all other collections

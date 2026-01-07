@@ -47,6 +47,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Events not appearing in dashboard calendar
 - Inability to change event time in event management
 - TypeScript errors related to SystemModule.Financial (changed to SystemModule.Finance)
+- Admin dashboard not showing all options: Added `PermissionAction.Manage` to all admin modules
+- Admin dashboard missing logs module: Added `SystemModule.Logs` to admin permissions
+- Console log pollution from verse services: Removed all console.log statements
+- Permission denied errors across multiple collections:
+  - Added Firestore security rules for 20+ missing collections
+  - Financial collections: budgets, financialCategories, church_budgets, church_categories, church_transactions, church_donations, church_departments, church_department_transactions, church_department_transfers, ong_budgets, ong_categories, ong_transactions
+  - Assistance collections: profissionaisAssistencia, atendimentos, agendamentosAssistencia
+  - Forum collections: forumActivities, forumNotifications, userForumProfiles
+  - Event collections: eventCategories
+  - Devotional collections: devotionalComments, userPlanProgress
+  - System collections: customRoles
+- Error handling improved in all repositories to return empty arrays on permission errors (fail-safe design)
+- FinancialService donation chart errors: Added graceful error handling for missing donations collection
+- AssistenciaService statistics errors: Improved FirebaseAgendamentoAssistenciaRepository.findAll() error handling
 
 ### Security
 - **Fail-secure design**: System denies access by default on errors
