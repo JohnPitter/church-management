@@ -170,22 +170,18 @@ export class PermissionService {
     // Check cache first
     const cached = this.getCachedData<RolePermissionConfig>(cacheKey);
     if (cached) {
-      console.log(`[PermissionService] Using cached permissions for role: ${role}`, cached);
       return cached;
     }
 
     try {
       // First, check if it's a custom role
       if (!this.getDefaultRoles().includes(role)) {
-        console.log(`[PermissionService] Role "${role}" is not a default role, checking custom roles...`);
-
         // Try to get from custom roles collection
         const customRoleRef = doc(db, this.customRolesCollection, role);
         const customRoleSnap = await getDoc(customRoleRef);
 
         if (customRoleSnap.exists()) {
           const customRoleData = customRoleSnap.data();
-          console.log(`[PermissionService] Custom role found:`, customRoleData);
 
           if (customRoleData?.isActive) {
             const result: RolePermissionConfig = {
@@ -195,20 +191,14 @@ export class PermissionService {
               updatedAt: customRoleData.updatedAt?.toDate() || customRoleData.createdAt?.toDate()
             };
 
-            console.log(`[PermissionService] Custom role is active, returning permissions:`, result);
-
             // Cache the result
             this.setCachedData(cacheKey, result);
 
             return result;
           } else {
-            console.warn(`[PermissionService] Custom role "${role}" exists but is not active`);
+            console.warn(`Custom role "${role}" exists but is not active`);
           }
-        } else {
-          console.warn(`[PermissionService] Custom role "${role}" not found in Firestore`);
         }
-      } else {
-        console.log(`[PermissionService] Role "${role}" is a default role`);
       }
 
       // If not a custom role or custom role not found, check role permissions collection
@@ -225,7 +215,6 @@ export class PermissionService {
           updatedBy: data.updatedBy,
           updatedAt: data.updatedAt?.toDate()
         };
-        console.log(`[PermissionService] Found role permissions in rolePermissions collection:`, result);
       } else {
         // Return default permissions if no custom config exists
         const defaultPerms = DEFAULT_ROLE_PERMISSIONS[role] || [];
@@ -233,7 +222,6 @@ export class PermissionService {
           role,
           modules: defaultPerms
         };
-        console.log(`[PermissionService] Using default permissions for role "${role}":`, result);
       }
 
       // Cache the result
@@ -243,28 +231,26 @@ export class PermissionService {
     } catch (error: any) {
       // If it's a permission error or the collection doesn't exist, return defaults
       // Check for various Firebase error formats
-      const isPermissionError = 
-        error?.code === 'permission-denied' || 
+      const isPermissionError =
+        error?.code === 'permission-denied' ||
         error?.message?.includes('Missing or insufficient permissions') ||
         error?.message?.includes('permissions') ||
         error?.name === 'FirebaseError';
-        
+
       if (isPermissionError) {
-        // Don't log permission errors as they're expected when Firestore rules aren't set up
-        console.warn(`🚨 FIRESTORE ERROR - Using default permissions for role: ${role} (Firestore rules not configured)`);
         const defaultPerms = DEFAULT_ROLE_PERMISSIONS[role] || [];
         const result = {
           role,
           modules: defaultPerms
         };
-        
+
         // Cache default permissions too
         this.rolePermissionsCache.set(role, result);
         this.cacheExpiry.set(cacheKey, Date.now() + this.CACHE_DURATION);
-        
+
         return result;
       }
-      
+
       // Only log unexpected errors
       console.error('Error getting role permissions:', error);
       throw new Error('Erro ao buscar permissões da função');
@@ -353,16 +339,11 @@ export class PermissionService {
     revokedModules: { module: SystemModule; actions: PermissionAction[] }[],
     updatedBy: string
   ): Promise<void> {
-    console.log(`💾 SAVING user permission overrides for ${userId} (${userEmail})`);
-    console.log(`📝 Granted modules:`, grantedModules.length);
-    console.log(`🚫 Revoked modules:`, revokedModules.length);
-    
     try {
       const docRef = doc(db, this.userPermissionOverridesCollection, userId);
-      
+
       // If no overrides, clear the document
       if (grantedModules.length === 0 && revokedModules.length === 0) {
-        console.log(`🗑️  Clearing all overrides for ${userId}`);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           await updateDoc(docRef, {
@@ -371,14 +352,13 @@ export class PermissionService {
             updatedBy,
             updatedAt: Timestamp.now()
           });
-          console.log(`✅ Successfully cleared overrides for ${userId}`);
         }
-        
+
         // Clear cache immediately
         this.clearCache(`user_${userId}`);
         return;
       }
-      
+
       const dataToSave = {
         userId,
         userEmail,
@@ -388,28 +368,20 @@ export class PermissionService {
         updatedBy,
         updatedAt: Timestamp.now()
       };
-      
-      console.log(`🔄 Saving to Firestore:`, JSON.stringify(dataToSave, null, 2));
-      
+
       await setDoc(docRef, dataToSave);
-      
-      console.log(`✅ Successfully saved user permission overrides for ${userId}`);
-      
+
       // Clear cache immediately after save
       this.clearCache(`user_${userId}`);
-      
+
       // Verify the save worked by reading it back
       const verifyDoc = await getDoc(docRef);
-      if (verifyDoc.exists()) {
-        const verifyData = verifyDoc.data();
-        console.log(`🔍 Verification: Document exists with ${verifyData.grantedModules?.length || 0} granted and ${verifyData.revokedModules?.length || 0} revoked modules`);
-      } else {
-        console.warn(`⚠️  Verification FAILED: Document does not exist after save!`);
+      if (!verifyDoc.exists()) {
+        console.warn('Verification failed: Document does not exist after save');
       }
-      
+
     } catch (error) {
-      console.error('❌ ERROR updating user permission overrides:', error);
-      console.error('❌ Error details:', JSON.stringify(error, null, 2));
+      console.error('Error updating user permission overrides:', error);
       throw new Error('Erro ao atualizar permissões do usuário');
     }
   }
@@ -441,8 +413,6 @@ export class PermissionService {
         error?.name === 'FirebaseError';
         
       if (isPermissionError) {
-        // Don't log permission errors as they're expected when Firestore rules aren't set up
-        console.log('No user permission overrides found (Firestore not configured)');
         return [];
       }
       
@@ -664,17 +634,12 @@ export class PermissionService {
 
   // Get ALL permissions for a user at once (OPTIMIZED)
   async getAllUserPermissions(userId: string, userRole: string): Promise<Map<string, boolean>> {
-    console.log(`[PermissionService] getAllUserPermissions called for user: ${userId}, role: ${userRole}`);
-
     // Check cache first
     const cacheKey = `all_permissions_${userId}_${userRole}`;
     const cached = this.getCachedData<Map<string, boolean>>(cacheKey);
     if (cached) {
-      console.log(`[PermissionService] Returning cached permissions (${cached.size} permissions)`);
       return cached;
     }
-
-    console.log(`[PermissionService] Cache miss, loading fresh permissions...`);
 
     try {
       // Get role permissions and user overrides in parallel
@@ -683,18 +648,13 @@ export class PermissionService {
         this.getUserPermissionOverrides(userId)
       ]);
 
-      console.log(`[PermissionService] Role config modules:`, roleConfig.modules.length, roleConfig.modules);
-      if (userOverrides) {
-        console.log(`[PermissionService] User has overrides`);
-      }
-      
       // Build override object if user has overrides
       let overrideObj: UserPermissionOverride | undefined;
-      
+
       if (userOverrides) {
         const grantedPermissions: Permission[] = [];
         const revokedPermissions: Permission[] = [];
-        
+
         userOverrides.grantedModules.forEach(m => {
           m.actions.forEach(a => {
             grantedPermissions.push({
@@ -705,7 +665,7 @@ export class PermissionService {
             });
           });
         });
-        
+
         userOverrides.revokedModules.forEach(m => {
           m.actions.forEach(a => {
             revokedPermissions.push({
@@ -716,27 +676,27 @@ export class PermissionService {
             });
           });
         });
-        
+
         overrideObj = {
           userId,
           grantedPermissions,
           revokedPermissions
         };
-        
+
       }
-      
+
       // Build permission map for all possible combinations
       const permissionMap = new Map<string, boolean>();
       const allModules = Object.values(SystemModule);
       const allActions = Object.values(PermissionAction);
-      
+
       for (const module of allModules) {
         for (const action of allActions) {
           const key = `${module}_${action}`;
-          
+
           // Check if permission is revoked via override
           let hasAccess = false;
-          
+
           if (overrideObj?.revokedPermissions) {
             const isRevoked = overrideObj.revokedPermissions.some(
               p => p.module === module && p.action === action
@@ -746,7 +706,7 @@ export class PermissionService {
               continue;
             }
           }
-          
+
           // Check if permission is granted via override
           if (overrideObj?.grantedPermissions) {
             const isGranted = overrideObj.grantedPermissions.some(
@@ -757,25 +717,16 @@ export class PermissionService {
               continue;
             }
           }
-          
+
           // Check role permissions from Firestore (NOT defaults)
           const moduleConfig = roleConfig.modules.find(m => m.module === module);
           if (moduleConfig && moduleConfig.actions.includes(action)) {
             hasAccess = true;
           }
-          
+
           permissionMap.set(key, hasAccess);
         }
       }
-
-      // Log the final result
-      const grantedPermissions = Array.from(permissionMap.entries())
-        .filter(([_, hasAccess]) => hasAccess)
-        .map(([key, _]) => key);
-
-      console.log(`[PermissionService] Built ${permissionMap.size} total permissions, ${grantedPermissions.length} granted`);
-      console.log(`[PermissionService] Granted permissions:`, grantedPermissions);
-      console.log(`[PermissionService] Dashboard_View permission:`, permissionMap.get('Dashboard_View'));
 
       // Cache the result
       this.setCachedData(cacheKey, permissionMap);
