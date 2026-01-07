@@ -18,6 +18,8 @@ export const AdminLogsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
   const logRepository = useMemo(() => new FirebaseLogRepository(), []);
   const logSeederService = useMemo(() => new LogSeederService(), []);
@@ -50,9 +52,20 @@ export const AdminLogsPage: React.FC = () => {
                          (log.details && log.details.toLowerCase().includes(searchTerm.toLowerCase())) ||
                          (log.userEmail && log.userEmail.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesDate = !selectedDate || formatDate(log.timestamp, 'yyyy-MM-dd') === selectedDate;
-    
+
     return matchesLevel && matchesCategory && matchesSearch && matchesDate;
   });
+
+  // Pagination calculation
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedLogs = filteredLogs.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedLevel, selectedCategory, searchTerm, selectedDate]);
 
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -401,8 +414,8 @@ export const AdminLogsPage: React.FC = () => {
                       <p className="mt-2 text-sm text-gray-500">Carregando logs...</p>
                     </td>
                   </tr>
-                ) : filteredLogs.length > 0 ? (
-                  filteredLogs.map((log) => (
+                ) : paginatedLogs.length > 0 ? (
+                  paginatedLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(log.timestamp, 'dd/MM/yyyy HH:mm:ss')}
@@ -455,6 +468,106 @@ export const AdminLogsPage: React.FC = () => {
               <p className="mt-1 text-sm text-gray-500">
                 Tente ajustar os filtros ou fazer uma nova busca.
               </p>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {filteredLogs.length > 0 && (
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                {/* Items per page selector */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700">Mostrar</span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                  <span className="text-sm text-gray-700">por página</span>
+                </div>
+
+                {/* Page info */}
+                <div className="text-sm text-gray-700">
+                  Mostrando <span className="font-medium">{startIndex + 1}</span> a{' '}
+                  <span className="font-medium">{Math.min(endIndex, filteredLogs.length)}</span> de{' '}
+                  <span className="font-medium">{filteredLogs.length}</span> resultados
+                </div>
+
+                {/* Pagination buttons */}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Primeira página"
+                  >
+                    Primeira
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Página anterior"
+                  >
+                    ← Anterior
+                  </button>
+
+                  {/* Page numbers */}
+                  <div className="flex gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum: number;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`px-3 py-1 rounded border text-sm font-medium ${
+                            currentPage === pageNum
+                              ? 'bg-indigo-600 text-white border-indigo-600'
+                              : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Próxima página"
+                  >
+                    Próxima →
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Última página"
+                  >
+                    Última
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
