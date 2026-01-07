@@ -556,16 +556,22 @@ class ForumService {
       // Get recent activities
       const recentActivity = await this.getRecentActivities(10);
 
-      // Get popular topics (simplified)
-      const popularTopics = topics
+      // Get popular topics (simplified) - convert Firestore Timestamps to Date
+      const popularTopics = topicsSnapshot.docs
+        .map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt?.toDate() || new Date(),
+            updatedAt: data.updatedAt?.toDate() || new Date(),
+            lastReplyAt: data.lastReplyAt?.toDate(),
+            moderatedAt: data.moderatedAt?.toDate()
+          } as ForumTopic;
+        })
         .filter(t => t.status === TopicStatus.PUBLISHED)
         .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-        .slice(0, 5)
-        .map(t => ({
-          ...t,
-          createdAt: t.createdAt || new Date(),
-          updatedAt: t.updatedAt || new Date()
-        } as ForumTopic));
+        .slice(0, 5);
 
       return {
         totalTopics,

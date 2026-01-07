@@ -33,6 +33,14 @@ export const AdminForumPage: React.FC = () => {
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
   const [hasMore, setHasMore] = useState(false);
 
+  // Helper function to safely format dates
+  const safeFormatDate = (date: Date | undefined, format: string) => {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      return 'Data inválida';
+    }
+    return formatDate(date, format, { locale: ptBR });
+  };
+
   useEffect(() => {
     loadData();
   }, [filters]);
@@ -231,7 +239,7 @@ export const AdminForumPage: React.FC = () => {
                     {topic.category.name}
                   </span>
                   <span>Por {topic.authorName}</span>
-                  <span>{formatDate(topic.createdAt, "d 'de' MMM", { locale: ptBR })}</span>
+                  <span>{safeFormatDate(topic.createdAt, "d 'de' MMM")}</span>
                   <span className="flex items-center gap-1">
                     👁️ {topic.viewCount}
                   </span>
@@ -433,7 +441,7 @@ export const AdminForumPage: React.FC = () => {
                 <div>
                   <p className="font-medium text-gray-900">{topic.title}</p>
                   <p className="text-sm text-gray-600">
-                    {formatDate(topic.createdAt, "d 'de' MMMM", { locale: ptBR })}
+                    {safeFormatDate(topic.createdAt, "d 'de' MMMM")}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-500">
@@ -460,7 +468,7 @@ export const AdminForumPage: React.FC = () => {
                     <span className="font-medium">{activity.userName}</span> {activity.description}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {formatDate(activity.timestamp, "d 'de' MMM 'às' HH:mm", { locale: ptBR })}
+                    {safeFormatDate(activity.timestamp, "d 'de' MMM 'às' HH:mm")}
                   </p>
                 </div>
               </div>
