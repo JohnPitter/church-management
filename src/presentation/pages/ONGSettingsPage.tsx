@@ -66,11 +66,6 @@ const ONGSettingsPage: React.FC = () => {
   const loadONGInfo = async () => {
     setLoading(true);
     try {
-      // Debug: Log current user info
-      console.log('Current user:', currentUser);
-      console.log('User role:', currentUser?.role);
-      console.log('User status:', currentUser?.status);
-      
       const info = await ongRepository.getONGInfo();
       if (info) {
         setFormData(info);
