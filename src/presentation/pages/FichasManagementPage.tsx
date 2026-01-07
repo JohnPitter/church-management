@@ -124,13 +124,6 @@ const FichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, ficha, onSave,
 
   if (!isOpen || !ficha) return null;
 
-  // DEBUG: Log dos dados da ficha
-  console.log('🔍 Dados da ficha carregada:', {
-    id: ficha.id,
-    dadosEspecializados: ficha.dadosEspecializados,
-    tipoAssistencia: ficha.tipoAssistencia
-  });
-
   const tabs = [
     { id: 'detalhes', label: 'Detalhes da Ficha' },
     { id: 'dados-especializados', label: 'Dados Especializados' },
@@ -897,16 +890,6 @@ const FichasManagementPage: React.FC = () => {
 
   const fichaRepository = new FirebaseFichaAcompanhamentoRepository();
 
-  // Debug: Log user info when component loads
-  useEffect(() => {
-    console.log('🔍 [AUTH] Usuario logado:', currentUser);
-    console.log('🔍 [AUTH] Email:', currentUser?.email);
-    console.log('🔍 [AUTH] ID:', currentUser?.id);
-    console.log('🔍 [AUTH] Role:', currentUser?.role);
-    console.log('🔍 [AUTH] Status:', currentUser?.status);
-    console.log('🔍 [AUTH] Display Name:', currentUser?.displayName);
-  }, [currentUser]);
-
   useEffect(() => {
     loadData();
   }, []);
@@ -922,19 +905,15 @@ const FichasManagementPage: React.FC = () => {
       // Verificar role do usuário e carregar fichas apropriadas
       if (currentUser?.role === 'admin') {
         // Administrador vê todas as fichas
-        console.log('🔍 [FICHAS] Usuário Admin - Carregando todas as fichas');
         const todasFichas = await fichaRepository.getAllFichas();
         setFichas(todasFichas);
       } else if (currentUser?.role === 'professional') {
         // Profissional vê apenas suas próprias fichas
-        console.log('🔍 [FICHAS] Usuário Professional - Carregando apenas fichas próprias');
-        console.log('🔍 [FICHAS] Professional ID:', currentUser.id);
         const fichasProfissional = await fichaRepository.getFichasByProfissional(currentUser.id);
         setFichas(fichasProfissional);
       } else {
         // Outros roles não devem ter acesso (não deveriam chegar aqui devido ao ProtectedRoute)
-        console.warn('⚠️ [FICHAS] Usuário sem permissão tentou acessar fichas');
-        console.warn('⚠️ [FICHAS] Role:', currentUser?.role);
+        console.error('User without permission tried to access fichas:', currentUser?.role);
         setFichas([]);
       }
     } catch (error) {
@@ -980,31 +959,22 @@ const FichasManagementPage: React.FC = () => {
   };
 
   const handleDeleteFicha = async (fichaId: string) => {
-    console.log('🔍 [DELETE] Tentando excluir ficha:', fichaId);
-    console.log('🔍 [DELETE] Usuário atual:', currentUser);
-    console.log('🔍 [DELETE] Email do usuário:', currentUser?.email);
-    
     if (window.confirm('Tem certeza que deseja excluir esta ficha de acompanhamento?')) {
       try {
-        console.log('🔍 [DELETE] Iniciando exclusão...');
         await fichaRepository.deleteFicha(fichaId);
-        console.log('✅ [DELETE] Ficha excluída com sucesso!');
-        
+
         setFichas(prev => prev.filter(f => f.id !== fichaId));
         setIsModalOpen(false);
         setSelectedFicha(null);
-        alert('✅ Ficha excluída com sucesso!');
+        alert('Ficha excluída com sucesso!');
       } catch (error: any) {
-        console.error('❌ [DELETE] Erro ao excluir ficha:', error);
-        console.error('❌ [DELETE] Tipo do erro:', typeof error);
-        console.error('❌ [DELETE] Code do erro:', error?.code);
-        console.error('❌ [DELETE] Message do erro:', error?.message);
+        console.error('Error deleting ficha:', error);
         
         let errorMessage = 'Erro ao excluir ficha. Por favor, tente novamente.';
         if (error?.code === 'permission-denied') {
-          errorMessage = '❌ Erro de permissão: Você não tem autorização para excluir fichas. Verifique se está logado como administrador.';
+          errorMessage = 'Erro de permissão: Você não tem autorização para excluir fichas. Verifique se está logado como administrador.';
         } else if (error?.message) {
-          errorMessage = `❌ Erro: ${error.message}`;
+          errorMessage = `Erro: ${error.message}`;
         }
         
         alert(errorMessage);
