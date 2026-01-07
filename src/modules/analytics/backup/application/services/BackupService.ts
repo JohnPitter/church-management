@@ -1,10 +1,9 @@
 // Infrastructure Service - Backup Service
 // Service for managing system backups and database statistics
 
-import { 
-  collection, 
-  getDocs, 
-  getCountFromServer,
+import {
+  collection,
+  getDocs,
   doc,
   setDoc,
   query,
@@ -62,25 +61,15 @@ export class BackupService {
             const collectionRef = collection(db, collectionName);
             let count = 0;
 
+            // Use getDocs instead of getCountFromServer to avoid aggregation permission issues
+            // This is less efficient but works with standard Firestore security rules
             try {
-              // Try to use getCountFromServer first (more efficient)
-              const countSnap = await getCountFromServer(collectionRef);
-              count = countSnap.data().count;
-            } catch (countError: any) {
-              // If permission denied or aggregation not allowed, fallback to getDocs
-              if (countError?.code === 'permission-denied' ||
-                  countError?.message?.includes('permission')) {
-                try {
-                  const snapshot = await getDocs(collectionRef);
-                  count = snapshot.size;
-                } catch (docsError) {
-                  // If getDocs also fails, return 0
-                  console.warn(`Cannot access collection ${collectionName}, returning 0`);
-                  count = 0;
-                }
-              } else {
-                throw countError;
-              }
+              const snapshot = await getDocs(collectionRef);
+              count = snapshot.size;
+            } catch (docsError) {
+              // If getDocs fails (permission denied), return 0
+              console.warn(`Cannot access collection ${collectionName}, returning 0`);
+              count = 0;
             }
 
             // Estimate size based on average document size
