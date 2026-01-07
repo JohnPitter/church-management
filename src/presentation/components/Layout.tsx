@@ -145,7 +145,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </span>
                 </h1>
               </div>
-              <div className="hidden lg:ml-8 lg:flex lg:space-x-5">
+              <div className="hidden lg:ml-8 lg:flex lg:space-x-4 lg:flex-1">
                 {navigation.filter(item => item.show).map((item) => (
                   <Link
                     key={item.name}
@@ -163,12 +163,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 {/* Admin Navigation */}
                 {adminNavigation.some(item => item.show) && (
                   <>
-                    <div className="border-l border-gray-300 h-6 self-center mx-8"></div>
+                    <div className="border-l border-gray-300 h-6 self-center mx-6"></div>
                     {adminNavigation.filter(item => item.show).map((item) => (
                       <Link
                         key={item.name}
                         to={item.href}
-                        className={`inline-flex items-center px-3 pt-1 mr-4 border-b-2 text-sm font-medium whitespace-nowrap ${
+                        className={`inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium whitespace-nowrap ${
                           isActive(item.href)
                             ? 'border-red-500 text-gray-900'
                             : 'border-transparent text-red-600 hover:border-red-300 hover:text-red-700'
@@ -183,7 +183,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
 
             {/* Desktop Right Menu */}
-            <div className="hidden lg:flex items-center space-x-6 ml-auto">
+            <div className="hidden lg:flex items-center space-x-8 flex-shrink-0 ml-12">
               {/* Notification Bell */}
               <NotificationBell />
 
