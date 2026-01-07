@@ -28,9 +28,12 @@ export class SimpleVerseService {
     const verseIndex = (dayOfYear - 1) % DAILY_VERSES.length;
     
     const verse = DAILY_VERSES[verseIndex];
-    
-    console.log(`📖 Versículo do dia ${dayOfYear}: ${verse.reference}`);
-    
+
+    // Only log in development mode
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📖 Versículo do dia ${dayOfYear}: ${verse.reference}`);
+    }
+
     return verse;
   }
 

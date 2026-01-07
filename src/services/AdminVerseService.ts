@@ -24,14 +24,17 @@ export class AdminVerseService {
   getTodaysAdminVerse(): AdminVerse {
     const today = new Date();
     const dayOfYear = getDayOfYear(today);
-    
+
     // Use modulo to handle leap years (day 366 becomes day 1)
     const verseIndex = (dayOfYear - 1) % ADMIN_VERSES.length;
-    
+
     const verse = ADMIN_VERSES[verseIndex];
-    
-    console.log(`👑 Versículo administrativo do dia ${dayOfYear}: ${verse.reference}`);
-    
+
+    // Only log in development mode
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`👑 Versículo administrativo do dia ${dayOfYear}: ${verse.reference}`);
+    }
+
     return verse;
   }
 
