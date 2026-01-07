@@ -7,10 +7,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-01-06
+
 ### Added
-- Initial CHANGELOG.md file for tracking project changes
-- CLAUDE.md documentation file with architecture overview and development guidelines
-- Core development principles including Clean Architecture, performance optimization, and security best practices
+- **Atomic Permission System**: Complete rebuild of permission system with atomicity and better database security
+  - `AtomicPermissionService`: Singleton service with 5-minute TTL cache and real-time Firebase subscriptions
+  - `useAtomicPermissions` hook: Modern React hook with sync/async permission checks
+  - Support for multiple permission checks (hasAnyPermission, hasAllPermissions)
+  - Real-time permission updates via Firebase onSnapshot
+  - Batch permission operations for better performance
+  - Role-based helper flags (isAdmin, isSecretary, isLeader, isMember)
+- Enhanced `PermissionGuard` component with support for multiple permissions (any/all logic)
+- `usePermissionCheck` hook for conditional rendering
+- `withPermission` HOC for protecting entire components
+- Comprehensive documentation in `docs/ATOMIC_PERMISSIONS_SYSTEM.md`
+- Member deletion functionality in Members Management page
+- Volunteer birthdays display in dashboard calendar
+- User search and filtering by role in Notifications page
+- "Others" field in assisted persons' needs form
+- Configurable observability system with Firebase-based logging configuration
+
+### Changed
+- **Firestore Security Rules**: Complete overhaul with atomic permission validation
+  - Server-side permission checking functions (hasPermission, hasModuleAction, etc.)
+  - Role-based permission validation (hasSecretaryPermission, hasLeaderPermission, etc.)
+  - Support for custom permission grants and revokes
+  - Applied to all major collections (members, events, blog, financial, visitors, assistance, etc.)
+- Migrated all pages and components from `usePermissions` to `useAtomicPermissions`:
+  - AdminDashboardPage, ONGSettingsPage, PermissionsManagementPage
+  - Layout, ProtectedRoute, PublicRoute, PermissionButton
+- Updated volunteer permissions to allow all authenticated users to read (for calendar birthdays)
+- Improved error handling in FirebaseONGRepository for graceful permission denial
+- Enhanced EventsCalendar to silently handle permission errors for volunteers
+- Event time editing now properly combines date and time in both create and edit modals
+- Logo display now uses configured church logo from admin settings
+
+### Fixed
+- Volunteer loading error: "Missing or insufficient permissions" in EventsCalendar
+- Events not appearing in dashboard calendar
+- Inability to change event time in event management
+- TypeScript errors related to SystemModule.Financial (changed to SystemModule.Finance)
+
+### Security
+- **Fail-secure design**: System denies access by default on errors
+- **Multi-layer validation**: Client-side (UI/UX) + Service Layer + Server-side (Firestore Rules)
+- Atomic permission checks ensure consistency across all layers
+- Custom permission grants/revokes with proper precedence (Custom Grants > Role Permissions > Custom Revokes)
+- Server-side validation cannot be bypassed by client code
+
+### Performance
+- 5-minute client-side cache reduces Firebase calls
+- Batch permission operations minimize network requests
+- Real-time subscriptions only for active users
+- Synchronous permission checks (cached) for instant UI updates
+
+### Documentation
+- Added comprehensive atomic permissions system documentation
+- Migration guide from old permission system
+- Troubleshooting section for common issues
+- Complete API reference with examples
 
 ## [1.0.0] - 2026-01-05
 

@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
-import { usePermissions } from '../hooks/usePermissions';
+import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
 import { PermissionManager } from '../../domain/entities/Permission';
 
 interface PermissionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -24,7 +24,7 @@ export const PermissionButton: React.FC<PermissionButtonProps> = ({
   className = '',
   ...buttonProps
 }) => {
-  const { hasPermission } = usePermissions();
+  const { hasPermission } = useAtomicPermissions();
   const [showModal, setShowModal] = useState(false);
 
   const hasRequiredPermission = hasPermission(requireModule, requireAction);

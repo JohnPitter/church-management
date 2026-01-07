@@ -110,7 +110,8 @@ export enum NecessidadeAssistido {
   Documentacao = 'documentacao',
   Juridico = 'juridico',
   Psicologico = 'psicologico',
-  Espiritual = 'espiritual'
+  Espiritual = 'espiritual',
+  Outros = 'outros'
 }
 
 export enum TipoMoradia {
@@ -225,9 +226,10 @@ export class AssistidoEntity {
       [NecessidadeAssistido.Documentacao]: 'Documentação',
       [NecessidadeAssistido.Juridico]: 'Jurídico',
       [NecessidadeAssistido.Psicologico]: 'Psicológico',
-      [NecessidadeAssistido.Espiritual]: 'Espiritual'
+      [NecessidadeAssistido.Espiritual]: 'Espiritual',
+      [NecessidadeAssistido.Outros]: 'Outros'
     };
-    
+
     return necessidades.map(n => labels[n]);
   }
 

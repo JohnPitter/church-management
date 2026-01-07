@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { usePermissions } from '../hooks/usePermissions';
+import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
 import { ONGInfo, ONGEntity } from '@modules/ong-management/settings/domain/entities/ONG';
 
 const ONGSettingsPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const { hasPermission } = usePermissions();
+  const { hasPermission } = useAtomicPermissions();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState(0);

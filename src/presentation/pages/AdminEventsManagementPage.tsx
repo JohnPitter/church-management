@@ -1006,9 +1006,17 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSave, onCancel
 
     const selectedCategory = categoryOptions.find(cat => cat.name === formData.category) || categoryOptions[0];
 
+    // Combine date and time into a single Date object
+    const eventDate = new Date(formData.date);
+    if (formData.time) {
+      const [hours, minutes] = formData.time.split(':');
+      eventDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    }
+
     onSave({
       ...formData,
-      date: new Date(formData.date),
+      date: eventDate,
+      time: formData.time,
       category: {
         id: event.category.id,
         name: selectedCategory.name,
@@ -1269,9 +1277,17 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ onSave, onCancel, l
 
     const selectedCategory = categoryOptions.find(cat => cat.name === formData.category) || categoryOptions[0];
 
+    // Combine date and time into a single Date object
+    const eventDate = new Date(formData.date);
+    if (formData.time) {
+      const [hours, minutes] = formData.time.split(':');
+      eventDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    }
+
     onSave({
       ...formData,
-      date: new Date(formData.date),
+      date: eventDate,
+      time: formData.time,
       category: {
         id: Date.now().toString(),
         name: selectedCategory.name,

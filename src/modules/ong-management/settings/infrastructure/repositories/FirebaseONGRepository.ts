@@ -246,20 +246,20 @@ export class FirebaseONGRepository {
     try {
       const docRef = doc(db, this.voluntariosCollection, id);
       const docSnap = await getDoc(docRef);
-      
+
       if (!docSnap.exists()) {
         return null;
       }
-      
+
       const data = docSnap.data();
       return {
         id: docSnap.id,
         ...data,
-        dataNascimento: data.dataNascimento.toDate(),
-        dataInicio: data.dataInicio.toDate(),
-        dataFim: data.dataFim?.toDate(),
-        createdAt: data.createdAt.toDate(),
-        updatedAt: data.updatedAt.toDate()
+        dataNascimento: data.dataNascimento?.toDate ? data.dataNascimento.toDate() : new Date(),
+        dataInicio: data.dataInicio?.toDate ? data.dataInicio.toDate() : new Date(),
+        dataFim: data.dataFim?.toDate ? data.dataFim.toDate() : undefined,
+        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date()
       } as Voluntario;
     } catch (error) {
       console.error('Error getting voluntario:', error);
@@ -273,22 +273,30 @@ export class FirebaseONGRepository {
         collection(db, this.voluntariosCollection),
         orderBy('nome', 'asc')
       );
-      
+
       const querySnapshot = await getDocs(q);
-      
+
       return querySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
-          dataNascimento: data.dataNascimento.toDate(),
-          dataInicio: data.dataInicio.toDate(),
-          dataFim: data.dataFim?.toDate(),
-          createdAt: data.createdAt.toDate(),
-          updatedAt: data.updatedAt.toDate()
+          dataNascimento: data.dataNascimento?.toDate ? data.dataNascimento.toDate() : new Date(),
+          dataInicio: data.dataInicio?.toDate ? data.dataInicio.toDate() : new Date(),
+          dataFim: data.dataFim?.toDate ? data.dataFim.toDate() : undefined,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date()
         } as Voluntario;
       });
-    } catch (error) {
+    } catch (error: any) {
+      // Silently return empty array for permission errors
+      // This allows the calendar to work even if user doesn't have volunteer permissions
+      if (error?.code === 'permission-denied' ||
+          error?.message?.includes('Missing or insufficient permissions')) {
+        console.warn('Volunteer data not accessible (permission denied). Returning empty list.');
+        return [];
+      }
+
       console.error('Error getting all voluntarios:', error);
       throw new Error('Failed to get volunteers');
     }
@@ -301,19 +309,19 @@ export class FirebaseONGRepository {
         where('status', '==', status),
         orderBy('nome', 'asc')
       );
-      
+
       const querySnapshot = await getDocs(q);
-      
+
       return querySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
-          dataNascimento: data.dataNascimento.toDate(),
-          dataInicio: data.dataInicio.toDate(),
-          dataFim: data.dataFim?.toDate(),
-          createdAt: data.createdAt.toDate(),
-          updatedAt: data.updatedAt.toDate()
+          dataNascimento: data.dataNascimento?.toDate ? data.dataNascimento.toDate() : new Date(),
+          dataInicio: data.dataInicio?.toDate ? data.dataInicio.toDate() : new Date(),
+          dataFim: data.dataFim?.toDate ? data.dataFim.toDate() : undefined,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date()
         } as Voluntario;
       });
     } catch (error) {

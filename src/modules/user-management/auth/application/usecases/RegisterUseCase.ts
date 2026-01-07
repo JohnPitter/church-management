@@ -5,6 +5,14 @@ export interface INotificationService {
   notifyNewEvent(eventId: string, eventTitle: string): Promise<void>;
   notifyNewMember(memberId: string, memberName: string): Promise<void>;
   notifyAll(title: string, message: string): Promise<void>;
+  send(notification: {
+    title: string;
+    message: string;
+    userId?: string;
+    type?: string;
+    priority?: string;
+    actionUrl?: string;
+  }): Promise<void>;
 }
 
 export interface RegisterInput {

@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { usePermissions } from '../hooks/usePermissions';
+import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 import { PublicLayout } from './PublicLayout';
 import { NotificationBell } from './NotificationBell';
@@ -17,10 +17,19 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { currentUser, logout } = useAuth();
   const { settings } = useSettings();
-  const { hasPermission, hasAnyManagePermission } = usePermissions();
+  const { hasPermission, hasAnyPermission } = useAtomicPermissions();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Helper to check if user has any manage permission
+  const hasAnyManagePermission = () => {
+    const modules = [
+      SystemModule.Users, SystemModule.Members, SystemModule.Events,
+      SystemModule.Blog, SystemModule.Finance, SystemModule.Assistance
+    ];
+    return modules.some(module => hasPermission(module, PermissionAction.Manage));
+  };
 
   // If user is not logged in, use public layout
   if (!currentUser) {
@@ -98,14 +107,27 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <h1 
+              <div className="flex-shrink-0 flex items-center space-x-3">
+                {/* Church Logo */}
+                {settings?.logoURL && (
+                  <img
+                    src={settings.logoURL}
+                    alt={settings.churchName || 'Logo da Igreja'}
+                    className="h-10 w-10 object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                )}
+
+                <h1
                   className="text-sm md:text-lg lg:text-xl font-bold leading-tight max-w-xs md:max-w-sm lg:max-w-none"
                   style={{ color: settings?.primaryColor || '#6366F1' }}
                 >
                   <span className="block md:hidden">
                     {/* Versão mobile - mais compacta */}
-                    {(settings?.churchTagline || 'Conectados pela fé').length > 15 
+                    {(settings?.churchTagline || 'Conectados pela fé').length > 15
                       ? `${(settings?.churchTagline || 'Conectados pela fé').substring(0, 15)}...`
                       : (settings?.churchTagline || 'Conectados pela fé')
                     }

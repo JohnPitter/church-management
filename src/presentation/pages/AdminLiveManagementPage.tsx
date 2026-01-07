@@ -9,7 +9,7 @@ import { FirebaseLiveStreamRepository } from '@modules/content-management/live-s
 import { LiveStream as DomainLiveStream, StreamCategory, StreamStatus } from '@modules/content-management/live-streaming/domain/entities/LiveStream';
 import { db, storage } from '@/config/firebase';
 import { onSnapshot, collection } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 // Optimized image component without flickering

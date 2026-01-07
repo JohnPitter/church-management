@@ -1,24 +1,58 @@
 // Component - Permission Guard
-// Wrapper component that shows/hides content based on permissions
+// Wrapper component that shows/hides content based on atomic permissions
 
-import React from 'react';
-import { usePermissions } from '../hooks/usePermissions';
+import React, { ReactNode } from 'react';
+import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 
 interface PermissionGuardProps {
   children: React.ReactNode;
-  module: SystemModule;
-  action: PermissionAction;
+  module?: SystemModule;
+  action?: PermissionAction;
   fallback?: React.ReactNode;
+  requireAll?: boolean;
+  permissions?: Array<{ module: SystemModule; action: PermissionAction }>;
 }
 
+/**
+ * PermissionGuard - Wraps content that requires specific permissions
+ * Now uses atomic permission system with real-time updates and caching
+ *
+ * @example Single permission check
+ * <PermissionGuard module={SystemModule.MEMBERS} action={PermissionAction.CREATE}>
+ *   <button>Add Member</button>
+ * </PermissionGuard>
+ *
+ * @example Multiple permissions (any)
+ * <PermissionGuard
+ *   permissions={[
+ *     { module: SystemModule.MEMBERS, action: PermissionAction.CREATE },
+ *     { module: SystemModule.MEMBERS, action: PermissionAction.UPDATE }
+ *   ]}
+ * >
+ *   <button>Edit or Add Member</button>
+ * </PermissionGuard>
+ *
+ * @example Multiple permissions (all required)
+ * <PermissionGuard
+ *   requireAll
+ *   permissions={[
+ *     { module: SystemModule.MEMBERS, action: PermissionAction.VIEW },
+ *     { module: SystemModule.FINANCIAL, action: PermissionAction.VIEW }
+ *   ]}
+ * >
+ *   <AdminDashboard />
+ * </PermissionGuard>
+ */
 export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   children,
   module,
   action,
-  fallback = null
+  fallback = null,
+  requireAll = false,
+  permissions
 }) => {
-  const { hasPermission, loading } = usePermissions();
+  const { hasPermission, hasAnyPermission, hasAllPermissions, loading } = useAtomicPermissions();
 
   if (loading) {
     return (
@@ -26,7 +60,19 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
     );
   }
 
-  if (!hasPermission(module, action)) {
+  let hasAccess = false;
+
+  if (permissions && permissions.length > 0) {
+    // Multiple permissions check
+    hasAccess = requireAll
+      ? hasAllPermissions(permissions)
+      : hasAnyPermission(permissions);
+  } else if (module && action) {
+    // Single permission check
+    hasAccess = hasPermission(module, action);
+  }
+
+  if (!hasAccess) {
     return <>{fallback}</>;
   }
 
@@ -73,15 +119,53 @@ export const CanManageMembers: React.FC<{ children: React.ReactNode; fallback?: 
   </PermissionGuard>
 );
 
-export const CanManagePermissions: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({ 
-  children, 
-  fallback = null 
+export const CanManagePermissions: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({
+  children,
+  fallback = null
 }) => (
-  <PermissionGuard 
-    module={SystemModule.Permissions} 
+  <PermissionGuard
+    module={SystemModule.Permissions}
     action={PermissionAction.Manage}
     fallback={fallback}
   >
     {children}
   </PermissionGuard>
 );
+
+/**
+ * Hook-based alternative for conditional rendering
+ *
+ * @example
+ * const canEdit = usePermissionCheck(SystemModule.MEMBERS, PermissionAction.UPDATE);
+ * return canEdit ? <EditButton /> : null;
+ */
+export const usePermissionCheck = (module: SystemModule, action: PermissionAction): boolean => {
+  const { hasPermission } = useAtomicPermissions();
+  return hasPermission(module, action);
+};
+
+/**
+ * HOC for protecting entire components
+ *
+ * @example
+ * const ProtectedMemberPage = withPermission(
+ *   MemberManagementPage,
+ *   SystemModule.MEMBERS,
+ *   PermissionAction.VIEW,
+ *   <AccessDenied />
+ * );
+ */
+export function withPermission<P extends object>(
+  Component: React.ComponentType<P>,
+  module: SystemModule,
+  action: PermissionAction,
+  fallback?: ReactNode
+) {
+  return function PermissionWrappedComponent(props: P) {
+    return (
+      <PermissionGuard module={module} action={action} fallback={fallback}>
+        <Component {...props} />
+      </PermissionGuard>
+    );
+  };
+}

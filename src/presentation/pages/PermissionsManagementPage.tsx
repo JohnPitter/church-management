@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { usePermissions } from '../hooks/usePermissions';
+import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
 import { PermissionService, RolePermissionConfig, UserPermissionConfig, CustomRoleConfig } from '@modules/user-management/permissions/application/services/PermissionService';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { PublicPageService } from '@modules/content-management/public-pages/application/services/PublicPageService';
@@ -22,7 +22,7 @@ import { CreateRoleModal } from '../components/CreateRoleModal';
 
 export const PermissionsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const { refreshPermissions } = usePermissions();
+  const { refreshPermissions } = useAtomicPermissions();
   const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'custom-roles' | 'public-pages'>('roles');
   const [selectedRole, setSelectedRole] = useState<string>('member');
   const [selectedUserId, setSelectedUserId] = useState<string>('');

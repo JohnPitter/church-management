@@ -4,7 +4,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { usePermissions } from '../hooks/usePermissions';
+import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
 import { SystemModule, PermissionAction, PermissionManager } from '../../domain/entities/Permission';
 
 interface ProtectedRouteProps {
@@ -29,7 +29,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAnyManagePermission = false
 }) => {
   const { currentUser, loading, canAccessSystem } = useAuth();
-  const { hasPermission, hasAnyManagePermission, loading: permissionsLoading } = usePermissions();
+  const { hasPermission, hasAnyPermission, loading: permissionsLoading } = useAtomicPermissions();
+
+  // Helper to check if user has any manage permission
+  const hasAnyManagePermission = () => {
+    const modules = [
+      SystemModule.Users, SystemModule.Members, SystemModule.Events,
+      SystemModule.Blog, SystemModule.Finance, SystemModule.Assistance
+    ];
+    return modules.some(module => hasPermission(module, PermissionAction.Manage));
+  };
 
   if (loading || permissionsLoading) {
     return (

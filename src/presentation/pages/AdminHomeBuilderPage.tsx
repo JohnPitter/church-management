@@ -39,11 +39,13 @@ export const AdminHomeBuilderPage: React.FC = () => {
   // Component Templates
   const componentTemplates: ComponentTemplate[] = [
     {
+      id: 'menu',
       type: ComponentType.MENU,
       name: 'Menu de Navegação',
       description: 'Barra de navegação com logo e links',
       icon: '☰',
-      category: 'Header',
+      category: 'navigation',
+      configurable: true,
       defaultSettings: {
         title: 'Menu Principal',
         backgroundColor: '#ffffff',
@@ -51,11 +53,13 @@ export const AdminHomeBuilderPage: React.FC = () => {
       }
     },
     {
+      id: 'hero',
       type: ComponentType.HERO,
       name: 'Hero Section',
       description: 'Grande seção de boas-vindas com título e subtítulo',
       icon: '🎯',
-      category: 'Header',
+      category: 'layout',
+      configurable: true,
       defaultSettings: {
         title: 'Bem-vindo à Nossa Igreja',
         subtitle: 'Um lugar de fé, esperança e amor',
@@ -64,76 +68,90 @@ export const AdminHomeBuilderPage: React.FC = () => {
       }
     },
     {
+      id: 'devotional',
       type: ComponentType.DEVOTIONAL,
       name: 'Versículo do Dia',
       description: 'Exibe o versículo bíblico do dia',
       icon: '📖',
-      category: 'Content',
+      category: 'content',
+      configurable: true,
       defaultSettings: {
         title: 'Versículo do Dia'
       }
     },
     {
+      id: 'events',
       type: ComponentType.EVENTS,
       name: 'Próximos Eventos',
       description: 'Lista de eventos futuros',
       icon: '📅',
-      category: 'Content',
+      category: 'content',
+      configurable: true,
       defaultSettings: {
         title: 'Próximos Eventos',
         itemsToShow: 3
       }
     },
     {
+      id: 'blog',
       type: ComponentType.BLOG,
       name: 'Últimas Postagens',
       description: 'Posts recentes do blog',
       icon: '📝',
-      category: 'Content',
+      category: 'content',
+      configurable: true,
       defaultSettings: {
         title: 'Últimas Mensagens',
         itemsToShow: 3
       }
     },
     {
+      id: 'gallery',
       type: ComponentType.GALLERY,
       name: 'Galeria de Fotos',
       description: 'Grade de imagens',
       icon: '🖼️',
-      category: 'Media',
+      category: 'media',
+      configurable: true,
       defaultSettings: {
         title: 'Nossa Galeria',
         columns: 3
       }
     },
     {
+      id: 'video',
       type: ComponentType.VIDEO,
       name: 'Vídeo Destaque',
       description: 'Player de vídeo do YouTube',
       icon: '🎥',
-      category: 'Media',
+      category: 'media',
+      configurable: true,
       defaultSettings: {
         title: 'Assista',
         videoUrl: ''
       }
     },
     {
+      id: 'custom-html',
       type: ComponentType.CUSTOM_HTML,
       name: 'Bloco de Texto',
       description: 'Texto formatado com título',
       icon: '📄',
-      category: 'Content',
+      category: 'content',
+      configurable: true,
       defaultSettings: {
         title: 'Nossa Missão',
         customHTML: '<p>Digite aqui...</p>'
       }
     },
     {
+      id: 'donation',
       type: ComponentType.DONATION,
       name: 'Chamada para Ação',
       description: 'Botão de ação destacado',
       icon: '🎯',
-      category: 'Action',
+      category: 'action',
+      configurable: true,
       defaultSettings: {
         title: 'Junte-se a Nós',
         primaryButtonText: 'Saiba Mais',
@@ -141,11 +159,13 @@ export const AdminHomeBuilderPage: React.FC = () => {
       }
     },
     {
+      id: 'statistics',
       type: ComponentType.STATISTICS,
       name: 'Estatísticas',
       description: 'Números e métricas importantes',
       icon: '📊',
-      category: 'Data',
+      category: 'data',
+      configurable: true,
       defaultSettings: {
         title: 'Números que Importam'
       }
@@ -275,6 +295,25 @@ export const AdminHomeBuilderPage: React.FC = () => {
   };
 
   // Layout actions
+  const handleSaveLayout = async () => {
+    if (!currentLayout) return;
+
+    try {
+      setSaving(true);
+      await homeBuilderService.updateLayout(currentLayout.id, {
+        components: currentLayout.components,
+        globalSettings: currentLayout.globalSettings,
+        updatedAt: new Date()
+      });
+      await loadData();
+    } catch (error) {
+      console.error('Error saving layout:', error);
+      alert('Erro ao salvar layout');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handlePublishLayout = async () => {
     if (!currentLayout) return;
 
@@ -283,11 +322,11 @@ export const AdminHomeBuilderPage: React.FC = () => {
     try {
       setSaving(true);
       await homeBuilderService.setActiveLayout(currentLayout.id);
-      alert('✅ Layout publicado com sucesso!');
+      alert('Layout publicado com sucesso!');
       await loadData();
     } catch (error) {
       console.error('Error publishing:', error);
-      alert('❌ Erro ao publicar layout');
+      alert('Erro ao publicar layout');
     } finally {
       setSaving(false);
     }
@@ -1047,7 +1086,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteLayout(layout.id, layout.name, layout.isActive, layout.isDefault);
+                          handleDeleteLayout(layout.id, layout.name, layout.isActive, layout.isDefault || false);
                         }}
                         disabled={layout.isActive}
                         className={`ml-2 p-2 rounded-lg transition-colors ${

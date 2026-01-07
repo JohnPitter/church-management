@@ -24,7 +24,26 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
               onClick={() => navigate('/')}
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
             >
-              <div className="text-2xl">⛪</div>
+              {settings?.logoURL ? (
+                <img
+                  src={settings.logoURL}
+                  alt={settings.churchName || 'Logo da Igreja'}
+                  className="h-10 w-10 object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent && !parent.querySelector('.fallback-icon')) {
+                      const icon = document.createElement('div');
+                      icon.className = 'fallback-icon text-2xl';
+                      icon.textContent = '⛪';
+                      parent.appendChild(icon);
+                    }
+                  }}
+                />
+              ) : (
+                <div className="text-2xl">⛪</div>
+              )}
               <h1 className="text-xl font-bold text-gray-800">
                 {settings?.churchName || 'Igreja'}
               </h1>

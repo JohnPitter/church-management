@@ -3,7 +3,7 @@ import { User } from '@modules/user-management/users/domain/entities/User';
 import { IUserRepository } from '@modules/user-management/users/domain/repositories/IUserRepository';
 
 // Re-export IAuthService for backward compatibility
-export { IAuthService } from '@modules/user-management/users/domain/services/IAuthService';
+export type { IAuthService } from '@modules/user-management/users/domain/services/IAuthService';
 
 export interface LoginInput {
   email: string;

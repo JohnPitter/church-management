@@ -1,7 +1,7 @@
 // Unit Tests - Member Entity
 // Tests for Member business rules and validations
 
-import { Member, MemberStatus, MaritalStatus, MemberEntity } from '../Member';
+import { Member, MemberStatus, MaritalStatus, MemberEntity, MemberType } from '../Member';
 
 describe('MemberEntity', () => {
   const createTestMember = (overrides: Partial<Member> = {}): Member => ({
@@ -19,6 +19,7 @@ describe('MemberEntity', () => {
       zipCode: '01234567'
     },
     maritalStatus: MaritalStatus.Single,
+    memberType: MemberType.Member,
     baptismDate: new Date('2010-01-01'),
     conversionDate: new Date('2009-01-01'),
     ministries: ['Louvor'],

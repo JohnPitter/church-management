@@ -1,7 +1,7 @@
 // Use Case - Create Member
 // Business logic for creating a new church member
 
-import { Member, MemberEntity, Address, MemberStatus } from '@modules/church-management/members/domain/entities/Member';
+import { Member, MemberEntity, Address, MemberStatus, MemberType } from '@modules/church-management/members/domain/entities/Member';
 import { User, UserEntity } from '@modules/user-management/users/domain/entities/User';
 import { IMemberRepository } from '@modules/church-management/members/domain/repositories/IMemberRepository';
 import { IAuditService } from '@modules/church-management/members/domain/services/IAuditService';
@@ -13,6 +13,7 @@ export interface CreateMemberUseCaseInput {
   birthDate: string;
   address: Address;
   maritalStatus: Member['maritalStatus'];
+  memberType?: MemberType;
   baptismDate?: string;
   conversionDate?: string;
   ministries?: string[];
@@ -53,6 +54,7 @@ export class CreateMemberUseCase {
       birthDate: new Date(input.birthDate),
       address: this.validateAddress(input.address),
       maritalStatus: input.maritalStatus,
+      memberType: input.memberType || MemberType.Member,
       baptismDate: input.baptismDate ? new Date(input.baptismDate) : undefined,
       conversionDate: input.conversionDate ? new Date(input.conversionDate) : undefined,
       ministries: input.ministries || [],

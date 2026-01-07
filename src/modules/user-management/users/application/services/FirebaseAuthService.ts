@@ -19,6 +19,24 @@ import {
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 
 export class FirebaseAuthService implements IAuthService {
+  async signIn(credentials: { email: string; password: string }): Promise<User> {
+    return this.login(credentials.email, credentials.password);
+  }
+
+  async signOut(): Promise<void> {
+    return this.logout();
+  }
+
+  async resetPassword(email: string): Promise<void> {
+    // Stub - would use Firebase sendPasswordResetEmail
+    console.log('Reset password for:', email);
+  }
+
+  async updatePassword(currentPassword: string, newPassword: string): Promise<void> {
+    // Stub - would use Firebase reauthenticateWithCredential + updatePassword
+    console.log('Update password:', currentPassword, newPassword);
+  }
+
   async login(email: string, password: string): Promise<User> {
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);

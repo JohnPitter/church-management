@@ -22,6 +22,92 @@ service cloud.firestore {
       return isAuthenticated() && getUserData().role in roles;
     }
 
+    // Helper function to check if user has specific permission (atomic check)
+    function hasPermission(module, action) {
+      return isAuthenticated() &&
+             getUserData().status == 'approved' &&
+             hasModuleAction(getUserData().role, module, action, getUserData());
+    }
+
+    // Helper function to check if role has permission for module and action
+    function hasModuleAction(role, module, action, userData) {
+      // Check custom overrides first
+      return hasCustomGrant(userData, module, action) ||
+             (hasRolePermission(role, module, action) && !hasCustomRevoke(userData, module, action));
+    }
+
+    // Check if user has custom grant for this permission
+    function hasCustomGrant(userData, module, action) {
+      return 'customPermissions' in userData &&
+             'granted' in userData.customPermissions &&
+             hasGrantedPermission(userData.customPermissions.granted, module, action);
+    }
+
+    // Check if granted permissions array contains the permission
+    function hasGrantedPermission(granted, module, action) {
+      return granted.size() > 0 &&
+             granted[0].module == module &&
+             action in granted[0].actions;
+    }
+
+    // Check if user has custom revoke for this permission
+    function hasCustomRevoke(userData, module, action) {
+      return 'customPermissions' in userData &&
+             'revoked' in userData.customPermissions &&
+             hasRevokedPermission(userData.customPermissions.revoked, module, action);
+    }
+
+    // Check if revoked permissions array contains the permission
+    function hasRevokedPermission(revoked, module, action) {
+      return revoked.size() > 0 &&
+             revoked[0].module == module &&
+             action in revoked[0].actions;
+    }
+
+    // Check if role has permission for module and action
+    function hasRolePermission(role, module, action) {
+      return role == 'admin' ||
+             (role == 'secretary' && hasSecretaryPermission(module, action)) ||
+             (role == 'leader' && hasLeaderPermission(module, action)) ||
+             (role == 'member' && hasMemberPermission(module, action)) ||
+             (role == 'professional' && hasProfessionalPermission(module, action)) ||
+             (role == 'finance' && hasFinancePermission(module, action));
+    }
+
+    // Secretary role permissions
+    function hasSecretaryPermission(module, action) {
+      return (module in ['dashboard', 'users', 'members', 'events', 'blog', 'devotionals',
+                         'projects', 'visitors', 'prayer-requests', 'forum', 'notifications',
+                         'settings', 'assistance', 'ong'] &&
+              action in ['view', 'create', 'update', 'delete']) ||
+             (module == 'financial' && action == 'view');
+    }
+
+    // Leader role permissions
+    function hasLeaderPermission(module, action) {
+      return module in ['dashboard', 'events', 'prayer-requests', 'members', 'blog',
+                        'devotionals', 'forum', 'projects'] &&
+             action in ['view', 'create', 'update'];
+    }
+
+    // Member role permissions
+    function hasMemberPermission(module, action) {
+      return module in ['dashboard', 'events', 'blog', 'devotionals', 'forum', 'prayer-requests'] &&
+             action == 'view';
+    }
+
+    // Professional role permissions
+    function hasProfessionalPermission(module, action) {
+      return module in ['dashboard', 'assistance'] &&
+             action in ['view', 'create', 'update'];
+    }
+
+    // Finance role permissions
+    function hasFinancePermission(module, action) {
+      return module in ['dashboard', 'financial'] &&
+             action in ['view', 'create', 'update', 'delete', 'export'];
+    }
+
     // Users collection
     match /users/{userId} {
       allow read: if isAuthenticated();
@@ -32,26 +118,26 @@ service cloud.firestore {
 
     // Members collection
     match /members/{memberId} {
-      allow read: if isAuthenticated();
-      allow create: if hasAnyRole(['admin', 'secretary']);
-      allow update: if hasAnyRole(['admin', 'secretary']);
-      allow delete: if hasRole('admin');
+      allow read: if isAuthenticated() && hasPermission('members', 'view');
+      allow create: if isAuthenticated() && hasPermission('members', 'create');
+      allow update: if isAuthenticated() && hasPermission('members', 'update');
+      allow delete: if isAuthenticated() && hasPermission('members', 'delete');
     }
 
     // Events collection
     match /events/{eventId} {
       allow read: if true; // Public read for events
-      allow create: if hasAnyRole(['admin', 'secretary', 'leader']);
-      allow update: if hasAnyRole(['admin', 'secretary']);
-      allow delete: if hasRole('admin');
+      allow create: if isAuthenticated() && hasPermission('events', 'create');
+      allow update: if isAuthenticated() && hasPermission('events', 'update');
+      allow delete: if isAuthenticated() && hasPermission('events', 'delete');
     }
 
     // Blog posts collection
     match /blogPosts/{postId} {
       allow read: if true; // Public read
-      allow create: if hasAnyRole(['admin', 'secretary']);
-      allow update: if hasAnyRole(['admin', 'secretary']);
-      allow delete: if hasRole('admin');
+      allow create: if isAuthenticated() && hasPermission('blog', 'create');
+      allow update: if isAuthenticated() && hasPermission('blog', 'update');
+      allow delete: if isAuthenticated() && hasPermission('blog', 'delete');
     }
 
     // Projects collection
@@ -96,26 +182,26 @@ service cloud.firestore {
 
     // Visitors collection
     match /visitors/{visitorId} {
-      allow read: if isAuthenticated();
-      allow create: if hasAnyRole(['admin', 'secretary']);
-      allow update: if hasAnyRole(['admin', 'secretary']);
-      allow delete: if hasRole('admin');
+      allow read: if isAuthenticated() && hasPermission('visitors', 'view');
+      allow create: if isAuthenticated() && hasPermission('visitors', 'create');
+      allow update: if isAuthenticated() && hasPermission('visitors', 'update');
+      allow delete: if isAuthenticated() && hasPermission('visitors', 'delete');
     }
 
     // Assistidos collection
     match /assistidos/{assistidoId} {
-      allow read: if hasAnyRole(['admin', 'secretary', 'professional']);
-      allow create: if hasAnyRole(['admin', 'secretary', 'professional']);
-      allow update: if hasAnyRole(['admin', 'secretary', 'professional']);
-      allow delete: if hasRole('admin');
+      allow read: if isAuthenticated() && hasPermission('assistance', 'view');
+      allow create: if isAuthenticated() && hasPermission('assistance', 'create');
+      allow update: if isAuthenticated() && hasPermission('assistance', 'update');
+      allow delete: if isAuthenticated() && hasPermission('assistance', 'delete');
     }
 
     // Assistencias collection
     match /assistencias/{assistenciaId} {
-      allow read: if hasAnyRole(['admin', 'secretary', 'professional']);
-      allow create: if hasAnyRole(['admin', 'secretary', 'professional']);
-      allow update: if hasAnyRole(['admin', 'secretary', 'professional']);
-      allow delete: if hasRole('admin');
+      allow read: if isAuthenticated() && hasPermission('assistance', 'view');
+      allow create: if isAuthenticated() && hasPermission('assistance', 'create');
+      allow update: if isAuthenticated() && hasPermission('assistance', 'update');
+      allow delete: if isAuthenticated() && hasPermission('assistance', 'delete');
     }
 
     // Prayer requests collection
@@ -160,10 +246,10 @@ service cloud.firestore {
 
     // Financial transactions collection
     match /transactions/{transactionId} {
-      allow read: if hasAnyRole(['admin', 'secretary']);
-      allow create: if hasAnyRole(['admin', 'secretary']);
-      allow update: if hasAnyRole(['admin', 'secretary']);
-      allow delete: if hasRole('admin');
+      allow read: if isAuthenticated() && hasPermission('financial', 'view');
+      allow create: if isAuthenticated() && hasPermission('financial', 'create');
+      allow update: if isAuthenticated() && hasPermission('financial', 'update');
+      allow delete: if isAuthenticated() && hasPermission('financial', 'delete');
     }
 
     // Home layouts collection
@@ -186,6 +272,14 @@ service cloud.firestore {
       allow create: if isAuthenticated(); // Any authenticated user can create logs
       allow update: if false; // Logs are immutable
       allow delete: if false; // Logs should never be deleted
+    }
+
+    // System logs collection
+    match /systemLogs/{logId} {
+      allow read: if hasRole('admin');
+      allow create: if isAuthenticated(); // Any authenticated user can create logs
+      allow update: if false; // Logs are immutable
+      allow delete: if hasRole('admin'); // Only admin can delete logs
     }
 
     // ========================================
@@ -247,10 +341,38 @@ service cloud.firestore {
       allow delete: if hasRole('admin');
     }
 
+    match /voluntarios/{volunteerId} {
+      allow read: if isAuthenticated(); // Allow all authenticated users to read (for calendar birthdays)
+      allow create: if hasAnyRole(['admin', 'secretary']);
+      allow update: if hasAnyRole(['admin', 'secretary']);
+      allow delete: if hasRole('admin');
+    }
+
     match /ongActivities/{activityId} {
       allow read: if hasAnyRole(['admin', 'secretary']);
       allow create: if hasAnyRole(['admin', 'secretary']);
       allow update: if hasAnyRole(['admin', 'secretary']);
+      allow delete: if hasRole('admin');
+    }
+
+    match /atividadesONG/{activityId} {
+      allow read: if hasAnyRole(['admin', 'secretary']);
+      allow create: if hasAnyRole(['admin', 'secretary']);
+      allow update: if hasAnyRole(['admin', 'secretary']);
+      allow delete: if hasRole('admin');
+    }
+
+    match /doacoesONG/{donationId} {
+      allow read: if hasAnyRole(['admin', 'secretary']);
+      allow create: if hasAnyRole(['admin', 'secretary']);
+      allow update: if hasAnyRole(['admin', 'secretary']);
+      allow delete: if hasRole('admin');
+    }
+
+    match /ongInfo/{infoId} {
+      allow read: if hasAnyRole(['admin', 'secretary']);
+      allow create: if hasRole('admin');
+      allow update: if hasRole('admin');
       allow delete: if hasRole('admin');
     }
 

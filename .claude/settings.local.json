@@ -39,7 +39,9 @@
       "Bash(git ls-tree:*)",
       "Bash(bash scripts/restore-services.sh:*)",
       "Bash(node scripts/fix-all-service-imports.js:*)",
-      "Bash(node scripts/fix-remaining-imports.js:*)"
+      "Bash(node scripts/fix-remaining-imports.js:*)",
+      "Bash(cut:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

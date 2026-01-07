@@ -24,7 +24,10 @@ export enum ComponentType {
   STATISTICS = 'statistics',
   TEAM = 'team',
   FAQ = 'faq',
-  NEWSLETTER = 'newsletter'
+  NEWSLETTER = 'newsletter',
+  VERSE_OF_DAY = 'verse_of_day',
+  ACTION_CARDS = 'action_cards',
+  SECTION_TITLE = 'section_title'
 }
 
 export interface ComponentSettings {
@@ -35,10 +38,10 @@ export interface ComponentSettings {
   textColor?: string;
   backgroundImage?: string;
   height?: string;
-  padding?: string;
-  margin?: string;
+  padding?: string | { top?: string; bottom?: string };
+  margin?: string | { top?: string; bottom?: string };
   alignment?: 'left' | 'center' | 'right';
-  columns?: number;
+  columns?: number | { mobile?: number; tablet?: number; desktop?: number };
   itemsToShow?: number;
   autoplay?: boolean;
   interval?: number;
@@ -73,6 +76,39 @@ export interface ComponentSettings {
   buttonLink?: string;
   buttonBackground?: string;
   buttonTextColor?: string;
+  // Background settings
+  backgroundType?: 'solid' | 'gradient' | 'image';
+  gradientDirection?: string;
+  gradientStartColor?: string;
+  gradientEndColor?: string;
+  backgroundPosition?: string;
+  backgroundSize?: string;
+  // Header specific
+  showClock?: boolean;
+  showDate?: boolean;
+  // Advanced styling
+  backgroundGradient?: string;
+  titleGradient?: string;
+  gradient?: string;
+  borderRadius?: string;
+  shadow?: string;
+  maxWidth?: string;
+  gap?: string;
+  layout?: string;
+  // Card styling
+  cardStyle?: string | Record<string, unknown>;
+  // Icon settings
+  icon?: string;
+  iconColor?: string;
+  // Conditional display
+  showOnlyForLoggedUsers?: boolean;
+  decorativeCircles?: boolean;
+  message?: string;
+  // Feature/action cards
+  cards?: Array<Record<string, unknown>>;
+  features?: Array<Record<string, unknown>>;
+  // Allow any additional properties for flexibility
+  [key: string]: unknown;
 }
 
 export interface HomeComponent {
@@ -115,7 +151,7 @@ export interface ComponentTemplate {
   description: string;
   type: ComponentType;
   icon: string;
-  category: 'content' | 'media' | 'interaction' | 'layout' | 'custom';
+  category: 'content' | 'media' | 'interaction' | 'layout' | 'custom' | 'navigation' | 'data' | 'action';
   defaultSettings: ComponentSettings;
   configurable: boolean;
   premium?: boolean;

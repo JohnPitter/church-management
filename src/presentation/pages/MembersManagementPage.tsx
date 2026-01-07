@@ -81,6 +81,26 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
     }
   };
 
+  const handleDeleteMember = async (member: Member) => {
+    const confirmed = window.confirm(
+      `Tem certeza que deseja excluir o membro "${member.name}"?\n\n` +
+      `Esta ação NÃO pode ser desfeita. Todos os dados do membro serão permanentemente removidos.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await memberService.deleteMember(member.id);
+      await loadMembers();
+      await loadStatistics();
+      alert(`Membro ${member.name} excluído com sucesso!`);
+    } catch (error) {
+      console.error('Error deleting member:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      alert('Erro ao excluir membro: ' + errorMessage);
+    }
+  };
+
   const filteredMembers = members.filter(member => {
     const matchesStatus = filterStatus === 'all' || member.status === filterStatus;
     const matchesMemberType = filterMemberType === 'all' || member.memberType === filterMemberType;
@@ -1026,6 +1046,18 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                               <span className="ml-2 sm:ml-0 text-sm font-medium">Editar</span>
                             </button>
 
+                            {/* Delete Button */}
+                            <button
+                              onClick={() => handleDeleteMember(member)}
+                              className="inline-flex items-center justify-center px-3 py-2.5 sm:py-1.5 bg-red-600 sm:bg-red-50 text-white sm:text-red-700 rounded-lg sm:rounded-md hover:bg-red-700 sm:hover:bg-red-100 transition-colors border-0 sm:border sm:border-red-200 sm:hover:border-red-300 font-medium text-sm shadow-sm sm:shadow-none"
+                              title="Excluir membro"
+                            >
+                              <svg className="w-5 h-5 sm:w-4 sm:h-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                              <span className="ml-2 sm:ml-0 text-sm font-medium">Excluir</span>
+                            </button>
+
                             {/* Status Select - Larger and more touch-friendly on mobile */}
                             <select
                               value={member.status}
@@ -1110,7 +1142,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                       {/* Page numbers */}
                       <div className="hidden sm:flex items-center gap-1">
                         {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                          let pageNum;
+                          let pageNum: number;
                           if (totalPages <= 5) {
                             pageNum = i + 1;
                           } else if (currentPage <= 3) {
