@@ -454,9 +454,7 @@ export const AdminLiveManagementPage: React.FC = () => {
               onClick={handleCreateStream}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700"
             >
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
+              <span className="mr-2">➕</span>
               Nova Transmissão
             </button>
           </div>
@@ -511,9 +509,7 @@ export const AdminLiveManagementPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-red-100 rounded-lg">
-                <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
+                <span className="text-2xl">📡</span>
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Ao Vivo</p>
@@ -527,9 +523,7 @@ export const AdminLiveManagementPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <span className="text-2xl">📅</span>
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Agendados</p>
@@ -543,9 +537,7 @@ export const AdminLiveManagementPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <span className="text-2xl">✅</span>
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Finalizados</p>
@@ -559,10 +551,7 @@ export const AdminLiveManagementPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-purple-100 rounded-lg">
-                <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
+                <span className="text-2xl">👁️</span>
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total de Visualizações</p>
@@ -741,25 +730,13 @@ export const AdminLiveManagementPage: React.FC = () => {
 
           {!loading && filteredStreams.length === 0 && (
             <div className="text-center py-12">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
+              <div className="text-5xl mb-4">📡</div>
               <h3 className="mt-2 text-sm font-medium text-gray-900">
                 {streams.length === 0 ? 'Nenhuma transmissão cadastrada' : 'Nenhuma transmissão encontrada'}
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                {streams.length === 0 
-                  ? 'Comece criando sua primeira transmissão ao vivo' 
+                {streams.length === 0
+                  ? 'Comece criando sua primeira transmissão ao vivo'
                   : 'Tente ajustar os filtros ou fazer uma nova busca.'
                 }
               </p>
