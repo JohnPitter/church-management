@@ -499,10 +499,7 @@ export const AdminEventsManagementPage: React.FC = () => {
               onClick={handleCreateEvent}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
             >
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Novo Evento
+              ➕ Novo Evento
             </button>
           </div>
         </div>
@@ -671,9 +668,7 @@ export const AdminEventsManagementPage: React.FC = () => {
                           className="p-2 text-white bg-indigo-500 hover:bg-indigo-600 rounded-md shadow-sm transition-all hover:scale-105"
                           title="Editar evento"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                          </svg>
+                          <span className="text-base">✏️</span>
                         </button>
                         {event.requiresConfirmation && (
                           <button
@@ -682,9 +677,7 @@ export const AdminEventsManagementPage: React.FC = () => {
                             className="p-2 text-white bg-blue-500 hover:bg-blue-600 rounded-md shadow-sm transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
                             title="Ver confirmações"
                           >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
+                            <span className="text-base">👥</span>
                           </button>
                         )}
                         <button
@@ -693,9 +686,7 @@ export const AdminEventsManagementPage: React.FC = () => {
                           className="p-2 text-white bg-green-500 hover:bg-green-600 rounded-md shadow-sm transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
                           title="Duplicar evento"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
-                          </svg>
+                          <span className="text-base">📋</span>
                         </button>
                         <button
                           onClick={() => handleDeleteEvent(event.id)}
@@ -703,9 +694,7 @@ export const AdminEventsManagementPage: React.FC = () => {
                           className="p-2 text-white bg-red-500 hover:bg-red-600 rounded-md shadow-sm transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
                           title="Excluir evento"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
+                          <span className="text-base">🗑️</span>
                         </button>
                       </div>
                     </td>
@@ -727,19 +716,7 @@ export const AdminEventsManagementPage: React.FC = () => {
 
           {!loading && filteredEvents.length === 0 && (
             <div className="text-center py-12">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
+              <span className="text-5xl text-gray-400 block">📅</span>
               <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhum evento encontrado</h3>
               <p className="mt-1 text-sm text-gray-500">
                 Tente ajustar os filtros ou fazer uma nova busca.
