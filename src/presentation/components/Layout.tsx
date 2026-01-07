@@ -145,7 +145,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </span>
                 </h1>
               </div>
-              <div className="hidden lg:ml-8 lg:flex lg:space-x-4 lg:flex-1">
+              <div className="hidden lg:ml-8 lg:flex lg:space-x-3 lg:flex-1 lg:max-w-4xl">
                 {navigation.filter(item => item.show).map((item) => (
                   <Link
                     key={item.name}
@@ -183,7 +183,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
 
             {/* Desktop Right Menu */}
-            <div className="hidden lg:flex items-center space-x-8 flex-shrink-0 ml-12">
+            <div className="hidden lg:flex items-center gap-8 flex-shrink-0 ml-16 pl-6 border-l border-gray-200">
               {/* Notification Bell */}
               <NotificationBell />
 
