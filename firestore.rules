@@ -222,7 +222,10 @@ service cloud.firestore {
 
     // Notifications collection
     match /notifications/{notificationId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        hasRole('admin')
+      );
       allow create: if hasAnyRole(['admin', 'secretary']);
       allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow delete: if hasRole('admin');
