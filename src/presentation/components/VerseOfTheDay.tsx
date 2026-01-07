@@ -17,9 +17,6 @@ export const VerseOfTheDay: React.FC = () => {
     const interval = setInterval(() => {
       const newDate = new Date().toLocaleDateString('pt-BR');
       if (newDate !== currentDate) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('📅 Novo dia detectado, atualizando versículo...');
-        }
         setCurrentDate(newDate);
         loadVerse();
       }
@@ -29,9 +26,6 @@ export const VerseOfTheDay: React.FC = () => {
     const handleFocus = () => {
       const newDate = new Date().toLocaleDateString('pt-BR');
       if (newDate !== currentDate) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('📅 Novo dia detectado ao focar janela, atualizando versículo...');
-        }
         setCurrentDate(newDate);
         loadVerse();
       }
@@ -50,9 +44,6 @@ export const VerseOfTheDay: React.FC = () => {
       setLoading(true);
       const todaysVerse = simpleVerseService.getTodaysVerse();
       setVerse(todaysVerse);
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Versículo do dia carregado:', todaysVerse.reference);
-      }
     } catch (error) {
       console.error('❌ Erro ao carregar versículo:', error);
       // Fallback verse if something goes wrong

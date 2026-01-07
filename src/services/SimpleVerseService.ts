@@ -29,11 +29,6 @@ export class SimpleVerseService {
     
     const verse = DAILY_VERSES[verseIndex];
 
-    // Only log in development mode
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`📖 Versículo do dia ${dayOfYear}: ${verse.reference}`);
-    }
-
     return verse;
   }
 

@@ -21,9 +21,6 @@ export const AdminVerseOfTheDay: React.FC = () => {
     const interval = setInterval(() => {
       const newDate = new Date().toLocaleDateString('pt-BR');
       if (newDate !== currentDate) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('📅 Novo dia detectado no admin, atualizando versículo...');
-        }
         setCurrentDate(newDate);
         loadVerse();
       }
@@ -33,9 +30,6 @@ export const AdminVerseOfTheDay: React.FC = () => {
     const handleFocus = () => {
       const newDate = new Date().toLocaleDateString('pt-BR');
       if (newDate !== currentDate) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('📅 Novo dia detectado ao focar janela (admin), atualizando versículo...');
-        }
         setCurrentDate(newDate);
         loadVerse();
       }
@@ -54,10 +48,6 @@ export const AdminVerseOfTheDay: React.FC = () => {
       setLoading(true);
       const todaysVerse = adminVerseService.getTodaysAdminVerse();
       setVerse(todaysVerse);
-      // Only log in development mode
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Versículo administrativo carregado:', todaysVerse.reference);
-      }
     } catch (error) {
       console.error('❌ Erro ao carregar versículo administrativo:', error);
       // Fallback verse if something goes wrong

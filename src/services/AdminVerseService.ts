@@ -30,11 +30,6 @@ export class AdminVerseService {
 
     const verse = ADMIN_VERSES[verseIndex];
 
-    // Only log in development mode
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`👑 Versículo administrativo do dia ${dayOfYear}: ${verse.reference}`);
-    }
-
     return verse;
   }
 
