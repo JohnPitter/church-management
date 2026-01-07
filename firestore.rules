@@ -707,6 +707,13 @@ service cloud.firestore {
     // ========================================
     // BACKUP COLLECTIONS
     // ========================================
+    match /system_backups/{backupId} {
+      allow read: if hasRole('admin');
+      allow create: if hasRole('admin');
+      allow update: if hasRole('admin');
+      allow delete: if hasRole('admin');
+    }
+
     match /backups/{backupId} {
       allow read: if hasRole('admin');
       allow create: if hasRole('admin');
