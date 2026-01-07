@@ -145,7 +145,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </span>
                 </h1>
               </div>
-              <div className="hidden lg:ml-8 lg:flex lg:space-x-8">
+              <div className="hidden lg:ml-8 lg:flex lg:space-x-8 lg:mr-8">
                 {navigation.filter(item => item.show).map((item) => (
                   <Link
                     key={item.name}
@@ -159,7 +159,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     {item.name}
                   </Link>
                 ))}
-                
+
                 {/* Admin Navigation */}
                 {adminNavigation.some(item => item.show) && (
                   <>
@@ -168,7 +168,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       <Link
                         key={item.name}
                         to={item.href}
-                        className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                        className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium whitespace-nowrap ${
                           isActive(item.href)
                             ? 'border-red-500 text-gray-900'
                             : 'border-transparent text-red-600 hover:border-red-300 hover:text-red-700'
@@ -183,10 +183,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             
             {/* Desktop Right Menu */}
-            <div className="hidden lg:flex items-center space-x-4">
+            <div className="hidden lg:flex items-center space-x-6 ml-6">
               {/* Notification Bell */}
               <NotificationBell />
-              
+
               {/* Profile dropdown would go here */}
               <div className="relative">
                 <Link
