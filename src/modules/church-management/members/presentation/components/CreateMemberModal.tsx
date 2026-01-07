@@ -2,7 +2,7 @@
 // Modal for registering new church members with complete information
 
 import React, { useState } from 'react';
-import { Member, MaritalStatus, MemberStatus } from 'domain/entities/Member';
+import { Member, MaritalStatus, MemberStatus, MemberType } from 'domain/entities/Member';
 import { useMemberService } from 'presentation/hooks/useMemberService';
 import { useAuth } from 'presentation/contexts/AuthContext';
 
@@ -47,6 +47,7 @@ export const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
     zipCode: '',
 
     // Church Information
+    memberType: MemberType.Member,
     baptismDate: '',
     conversionDate: '',
     ministries: [] as string[],
@@ -76,6 +77,7 @@ export const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
         city: member.address?.city || '',
         state: member.address?.state || '',
         zipCode: member.address?.zipCode || '',
+        memberType: member.memberType || MemberType.Member,
         baptismDate: member.baptismDate ? new Date(member.baptismDate).toISOString().split('T')[0] : '',
         conversionDate: member.conversionDate ? new Date(member.conversionDate).toISOString().split('T')[0] : '',
         ministries: member.ministries || [],
@@ -99,6 +101,7 @@ export const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
         city: '',
         state: '',
         zipCode: '',
+        memberType: MemberType.Member,
         baptismDate: '',
         conversionDate: '',
         ministries: [],
@@ -290,6 +293,7 @@ export const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
         birthDate: new Date(formData.birthDate),
         address,
         maritalStatus: formData.maritalStatus,
+        memberType: formData.memberType,
         ministries: formData.ministries,
         status: formData.status,
         createdBy: currentUser.id
@@ -335,6 +339,7 @@ export const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
         city: '',
         state: '',
         zipCode: '',
+        memberType: MemberType.Member,
         baptismDate: '',
         conversionDate: '',
         ministries: [],
@@ -649,6 +654,27 @@ export const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tipo de Membro <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="memberType"
+                    value={formData.memberType}
+                    onChange={handleInputChange}
+                    required
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      fieldErrors.memberType ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  >
+                    <option value={MemberType.Member}>Membro</option>
+                    <option value={MemberType.Congregant}>Congregado</option>
+                  </select>
+                  {fieldErrors.memberType && (
+                    <p className="mt-1 text-sm text-red-600">{fieldErrors.memberType}</p>
+                  )}
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Data de Conversão (opcional)

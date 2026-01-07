@@ -794,57 +794,117 @@ export const ComponentSettings: React.FC<ComponentSettingsProps> = ({
     }
   };
 
+  const getComponentIcon = () => {
+    switch (component.type) {
+      case ComponentType.HERO: return '🎯';
+      case ComponentType.DEVOTIONAL: return '📖';
+      case ComponentType.EVENTS: return '📅';
+      case ComponentType.BLOG: return '✍️';
+      case ComponentType.GALLERY: return '🖼️';
+      case ComponentType.TESTIMONIALS: return '💬';
+      case ComponentType.VIDEO: return '🎥';
+      case ComponentType.MAP: return '📍';
+      case ComponentType.CUSTOM_HTML: return '💻';
+      default: return '⚙️';
+    }
+  };
+
+  const getComponentLabel = () => {
+    switch (component.type) {
+      case ComponentType.HERO: return 'Hero Section';
+      case ComponentType.DEVOTIONAL: return 'Devocional';
+      case ComponentType.EVENTS: return 'Eventos';
+      case ComponentType.BLOG: return 'Blog';
+      case ComponentType.GALLERY: return 'Galeria';
+      case ComponentType.TESTIMONIALS: return 'Testemunhos';
+      case ComponentType.VIDEO: return 'Vídeo';
+      case ComponentType.MAP: return 'Mapa';
+      case ComponentType.CUSTOM_HTML: return 'HTML Customizado';
+      default: return 'Componente';
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-      <div className="flex justify-between items-center p-6 border-b border-gray-200">
-        <h3 className="text-xl font-semibold text-gray-900">
-          Configurações do Componente
-        </h3>
-        <button
-          onClick={onCancel}
-          className="text-gray-400 hover:text-gray-600"
-        >
-          ✕
-        </button>
+    <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+      {/* Header with gradient */}
+      <div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 p-6">
+        <div className="flex justify-between items-start">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">{getComponentIcon()}</span>
+              <div>
+                <h3 className="text-2xl font-bold text-white">
+                  Configurações
+                </h3>
+                <p className="text-indigo-100 text-sm mt-1">
+                  {getComponentLabel()}
+                </p>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onCancel}
+            className="text-white/80 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-        <div className="space-y-8">
+      <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)] bg-gray-50">
+        <div className="space-y-6">
           {/* Configurações Básicas */}
-          <div>
-            <h4 className="text-lg font-medium text-gray-900 mb-4">Conteúdo</h4>
+          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-1 h-6 bg-indigo-500 rounded-full"></div>
+              <h4 className="text-lg font-semibold text-gray-900">📝 Conteúdo</h4>
+            </div>
             {renderBasicSettings()}
           </div>
 
           {/* Configurações Específicas */}
           {renderSpecificSettings() && (
-            <div>
-              <h4 className="text-lg font-medium text-gray-900 mb-4">Configurações Específicas</h4>
+            <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-1 h-6 bg-purple-500 rounded-full"></div>
+                <h4 className="text-lg font-semibold text-gray-900">✨ Configurações Específicas</h4>
+              </div>
               {renderSpecificSettings()}
             </div>
           )}
 
           {/* Configurações de Estilo */}
-          <div>
-            <h4 className="text-lg font-medium text-gray-900 mb-4">Estilo</h4>
+          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-1 h-6 bg-pink-500 rounded-full"></div>
+              <h4 className="text-lg font-semibold text-gray-900">🎨 Estilo Visual</h4>
+            </div>
             {renderStyleSettings()}
           </div>
         </div>
       </div>
 
-      <div className="flex justify-end gap-4 p-6 border-t border-gray-200">
-        <button
-          onClick={onCancel}
-          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-        >
-          Cancelar
-        </button>
-        <button
-          onClick={handleSave}
-          className="px-6 py-2 theme-primary rounded-md text-white font-semibold"
-        >
-          Salvar
-        </button>
+      {/* Footer with actions */}
+      <div className="flex justify-between items-center gap-4 p-6 border-t border-gray-200 bg-white">
+        <div className="text-sm text-gray-500">
+          💡 As alterações serão aplicadas imediatamente
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            className="px-6 py-2.5 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 hover:border-gray-400 font-medium transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSave}
+            className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+          >
+            💾 Salvar Alterações
+          </button>
+        </div>
       </div>
     </div>
   );

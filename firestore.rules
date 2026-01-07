@@ -708,6 +708,22 @@ service cloud.firestore {
     }
 
     // ========================================
+    // FICHAS DE ACOMPANHAMENTO (ASSISTANCE)
+    // ========================================
+    match /fichasAcompanhamento/{fichaId} {
+      allow read: if isAuthenticated() && hasAnyRole(['admin', 'secretary', 'professional']);
+      allow create: if isAuthenticated() && hasAnyRole(['admin', 'secretary', 'professional']);
+      allow update: if isAuthenticated() && hasAnyRole(['admin', 'secretary', 'professional']);
+      allow delete: if hasAnyRole(['admin', 'secretary']);
+
+      // Subcoleção de sessões
+      match /sessoes/{sessaoId} {
+        allow read: if isAuthenticated() && hasAnyRole(['admin', 'secretary', 'professional']);
+        allow write: if isAuthenticated() && hasAnyRole(['admin', 'secretary', 'professional']);
+      }
+    }
+
+    // ========================================
     // BACKUP COLLECTIONS
     // ========================================
     match /system_backups/{backupId} {

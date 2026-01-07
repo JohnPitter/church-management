@@ -75,10 +75,7 @@ export const ProfilePage: React.FC = () => {
       
       // Se só tem Google como provider, é usuário Google
       const isOnlyGoogleUser = hasGoogleProvider && providerData.length === 1;
-      
-      console.log('🔍 [AUTH] Provider data:', providerData);
-      console.log('🔍 [AUTH] Is Google user:', isOnlyGoogleUser);
-      
+
       setIsGoogleUser(isOnlyGoogleUser);
     } else {
       setIsGoogleUser(false);

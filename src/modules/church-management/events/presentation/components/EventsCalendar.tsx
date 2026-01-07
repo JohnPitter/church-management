@@ -319,16 +319,21 @@ export const EventsCalendar: React.FC<EventsCalendarProps> = ({ className = '' }
                         <div
                           key={event.id}
                           onClick={() => setSelectedEvent(event)}
-                          className={`text-xs px-1 py-0.5 rounded cursor-pointer truncate ${
+                          className={`text-xs px-1 py-0.5 rounded cursor-pointer ${
                             event.type === 'event'
                               ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
                               : event.type === 'volunteer-birthday'
                               ? 'bg-purple-100 text-purple-800 hover:bg-purple-200'
                               : 'bg-pink-100 text-pink-800 hover:bg-pink-200'
                           }`}
-                          title={event.title}
+                          title={event.type === 'event' && event.event ? `${event.title} - ${event.event.time}` : event.title}
                         >
-                          {event.type === 'event' ? '📅' : '🎂'} {event.title.length > 12 ? event.title.substring(0, 12) + '...' : event.title}
+                          <div className="truncate">
+                            {event.type === 'event' ? '📅' : '🎂'} {event.title.length > 10 ? event.title.substring(0, 10) + '...' : event.title}
+                          </div>
+                          {event.type === 'event' && event.event && (
+                            <div className="text-[10px] font-semibold">⏰ {event.event.time}</div>
+                          )}
                         </div>
                       ))}
                       {dayEvents.length > 2 && (
@@ -373,12 +378,17 @@ export const EventsCalendar: React.FC<EventsCalendarProps> = ({ className = '' }
 
               {selectedEvent.type === 'event' && selectedEvent.event && (
                 <div className="space-y-3">
+                  {selectedEvent.event.time && (
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">⏰ Horário:</span> {selectedEvent.event.time}
+                    </p>
+                  )}
                   {selectedEvent.event.description && (
                     <p className="text-sm text-gray-700">{selectedEvent.event.description}</p>
                   )}
                   {selectedEvent.event.location && (
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Local:</span> {selectedEvent.event.location}
+                      <span className="font-medium">📍 Local:</span> {selectedEvent.event.location}
                     </p>
                   )}
                   <div className="flex justify-center">

@@ -612,7 +612,7 @@ export const AdminEventsManagementPage: React.FC = () => {
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-1/4">
                     Evento
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-64">
                     Status
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-28">

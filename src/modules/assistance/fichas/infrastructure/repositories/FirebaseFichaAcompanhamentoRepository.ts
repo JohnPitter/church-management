@@ -133,7 +133,7 @@ export class FirebaseFichaAcompanhamentoRepository {
       } as FichaAcompanhamento;
     } catch (error) {
       console.error('Error getting ficha:', error);
-      throw new Error('Failed to get patient record');
+      return null;
     }
   }
 
@@ -160,7 +160,7 @@ export class FirebaseFichaAcompanhamentoRepository {
       });
     } catch (error) {
       console.error('Error getting fichas by professional:', error);
-      throw new Error('Failed to get patient records');
+      return [];
     }
   }
 
@@ -172,31 +172,24 @@ export class FirebaseFichaAcompanhamentoRepository {
       );
 
       const querySnapshot = await getDocs(q);
-      
+
       return querySnapshot.docs.map(doc => {
         const data = doc.data();
-        console.log('🔥 [getAllFichas] Dados brutos do Firestore:', doc.id, data);
-        console.log('🔥 [getAllFichas] DadosEspecializados no Firestore:', data.dadosEspecializados);
-        
+
         // Remove o campo 'id' dos dados para evitar conflito com o ID do documento
         const { id: _, ...cleanData } = data;
-        
-        const mappedFicha = {
+
+        return {
           id: doc.id, // Usar sempre o ID real do documento Firestore
           ...cleanData,
           dataInicio: data.dataInicio.toDate(),
           createdAt: data.createdAt.toDate(),
           updatedAt: data.updatedAt.toDate()
         } as FichaAcompanhamento;
-        
-        console.log('🔥 [getAllFichas] Ficha mapeada com ID correto:', mappedFicha.id);
-        console.log('🔥 [getAllFichas] DadosEspecializados na ficha mapeada:', mappedFicha.dadosEspecializados);
-        
-        return mappedFicha;
       });
     } catch (error) {
       console.error('Error getting all fichas:', error);
-      throw new Error('Failed to get patient records');
+      return [];
     }
   }
 
@@ -223,7 +216,7 @@ export class FirebaseFichaAcompanhamentoRepository {
       });
     } catch (error) {
       console.error('Error getting fichas by patient:', error);
-      throw new Error('Failed to get patient records');
+      return [];
     }
   }
 
@@ -316,12 +309,7 @@ export class FirebaseFichaAcompanhamentoRepository {
       });
     } catch (error: any) {
       console.error('Error getting sessoes:', error);
-      // Se for erro de permissão, retorna array vazio em vez de quebrar
-      if (error?.code === 'permission-denied') {
-        console.warn('Permission denied for sessions, returning empty array');
-        return [];
-      }
-      throw new Error('Failed to get sessions: ' + (error?.message || 'Unknown error'));
+      return [];
     }
   }
 
@@ -344,7 +332,7 @@ export class FirebaseFichaAcompanhamentoRepository {
       } as SessaoAcompanhamento;
     } catch (error) {
       console.error('Error getting sessao:', error);
-      throw new Error('Failed to get session');
+      return null;
     }
   }
 }
