@@ -183,7 +183,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
 
             {/* Desktop Right Menu */}
-            <div className="hidden lg:flex items-center gap-8 flex-shrink-0 ml-16 pl-6 border-l border-gray-200">
+            <div className="hidden lg:flex items-center gap-8 flex-shrink-0 ml-20">
               {/* Notification Bell */}
               <NotificationBell />
 
