@@ -511,7 +511,10 @@ service cloud.firestore {
     // USER DEVOTIONAL PROGRESS
     // ========================================
     match /userDevotionalProgress/{progressId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        hasAnyRole(['admin', 'secretary'])
+      );
       allow create: if isAuthenticated();
       allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
@@ -666,7 +669,10 @@ service cloud.firestore {
     }
 
     match /userPlanProgress/{progressId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        hasAnyRole(['admin', 'secretary'])
+      );
       allow create: if isAuthenticated();
       allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
