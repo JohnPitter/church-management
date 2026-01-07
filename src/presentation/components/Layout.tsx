@@ -145,12 +145,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </span>
                 </h1>
               </div>
-              <div className="hidden lg:ml-8 lg:flex lg:space-x-8 lg:mr-8">
+              <div className="hidden lg:ml-8 lg:flex lg:space-x-6 lg:mr-12">
                 {navigation.filter(item => item.show).map((item) => (
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium whitespace-nowrap ${
                       isActive(item.href)
                         ? 'border-indigo-500 text-gray-900'
                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
@@ -163,12 +163,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 {/* Admin Navigation */}
                 {adminNavigation.some(item => item.show) && (
                   <>
-                    <div className="border-l border-gray-300 h-6 self-center mx-4"></div>
+                    <div className="border-l border-gray-300 h-6 self-center mx-6"></div>
                     {adminNavigation.filter(item => item.show).map((item) => (
                       <Link
                         key={item.name}
                         to={item.href}
-                        className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium whitespace-nowrap ${
+                        className={`inline-flex items-center px-2 pt-1 border-b-2 text-sm font-medium whitespace-nowrap ${
                           isActive(item.href)
                             ? 'border-red-500 text-gray-900'
                             : 'border-transparent text-red-600 hover:border-red-300 hover:text-red-700'
@@ -181,9 +181,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 )}
               </div>
             </div>
-            
+
             {/* Desktop Right Menu */}
-            <div className="hidden lg:flex items-center space-x-6 ml-6">
+            <div className="hidden lg:flex items-center space-x-8 ml-auto pl-8">
               {/* Notification Bell */}
               <NotificationBell />
 
