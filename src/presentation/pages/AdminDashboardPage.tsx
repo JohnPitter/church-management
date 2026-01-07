@@ -220,7 +220,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: '📋',
       color: 'bg-yellow-500 hover:bg-yellow-600',
       category: 'system',
-      show: hasPermission(SystemModule.Audit, PermissionAction.View)
+      show: hasPermission(SystemModule.Logs, PermissionAction.View)
     },
     {
       title: 'Backup & Dados',
