@@ -1,7 +1,7 @@
 // Apple Design Home Layout - Inspired by Apple's Minimalist Excellence
 // Reference: apple.com/br/iphone-17
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSettings } from '../../contexts/SettingsContext';
 import { HomeSectionVisibility } from '@modules/content-management/home-settings/domain/entities/HomeSettings';
@@ -33,9 +33,27 @@ export const AppleHomeLayout: React.FC<AppleHomeLayoutProps> = ({ sections, curr
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-semibold text-black mb-8 tracking-tight leading-none">
                 {settings?.churchName || 'Nossa Igreja'}
               </h1>
-              <p className="text-xl md:text-3xl lg:text-4xl text-gray-600 font-light leading-snug">
+              <p className="text-xl md:text-3xl lg:text-4xl text-gray-600 font-light leading-snug mb-12">
                 Onde a fé encontra comunidade.
               </p>
+
+              {/* Login/Register Buttons - Only show when not authenticated */}
+              {!currentUser && (
+                <div className="flex justify-center gap-4 flex-wrap">
+                  <Link
+                    to="/login"
+                    className="bg-black text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-900 transition-colors shadow-lg"
+                  >
+                    Entrar
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="bg-white text-black px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-100 transition-colors border border-gray-300 shadow-sm"
+                  >
+                    Criar Conta
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </section>

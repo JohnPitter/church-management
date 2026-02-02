@@ -350,11 +350,19 @@ export class FirebaseProfissionalAssistenciaRepository implements IProfissionalA
     return {
       id,
       nome: data.nome,
-      cpf: data.cpf,
+      cpf: data.cpf || '',
       rg: data.rg,
       telefone: data.telefone,
       email: data.email,
-      endereco: data.endereco,
+      endereco: data.endereco || {
+        logradouro: '',
+        numero: '',
+        complemento: '',
+        bairro: '',
+        cidade: '',
+        estado: '',
+        cep: ''
+      },
       especialidade: data.especialidade,
       subespecialidades: data.subespecialidades || [],
       registroProfissional: data.registroProfissional,
@@ -372,7 +380,8 @@ export class FirebaseProfissionalAssistenciaRepository implements IProfissionalA
       avaliacoes: data.avaliacoes || [],
       createdAt: data.createdAt?.toDate() || new Date(),
       updatedAt: data.updatedAt?.toDate() || new Date(),
-      createdBy: data.createdBy
+      createdBy: data.createdBy,
+      userId: data.userId
     };
   }
 

@@ -3,6 +3,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
+import jsPDF from 'jspdf';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import { saveAs } from 'file-saver';
 
 interface FichaModalProps {
   isOpen: boolean;
@@ -59,10 +62,10 @@ const FichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, ficha, onSave,
       
       onSave(fichaAtualizada);
       setNovoComentario('');
-      alert('✅ Comentário adicionado com sucesso!');
+      alert('✅ Registro adicionado ao prontuário com sucesso!');
     } catch (error) {
-      console.error('Error adding comment:', error);
-      alert('❌ Erro ao adicionar comentário');
+      console.error('Error adding to prontuário:', error);
+      alert('❌ Erro ao adicionar registro ao prontuário');
     } finally {
       setIsLoading(false);
     }
@@ -128,8 +131,155 @@ const FichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, ficha, onSave,
     { id: 'detalhes', label: 'Detalhes da Ficha' },
     { id: 'dados-especializados', label: 'Dados Especializados' },
     { id: 'sessoes', label: 'Sessões' },
-    { id: 'comentarios', label: 'Comentários' }
+    { id: 'prontuario', label: 'Prontuário' }
   ];
+
+  // Function to generate PDF of prontuário
+  const generateProntuarioPDF = () => {
+    if (!ficha) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+
+    // Title
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PRONTUÁRIO DO PACIENTE', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Patient info
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Informações do Paciente', 20, yPos);
+    yPos += 8;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Nome: ${ficha.pacienteNome}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Profissional: ${ficha.profissionalNome}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Tipo de Assistência: ${ficha.tipoAssistencia}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Data de Início: ${new Date(ficha.dataInicio).toLocaleDateString('pt-BR')}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Status: ${ficha.status}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Objetivo: ${ficha.objetivo || 'Não informado'}`, 20, yPos);
+    yPos += 12;
+
+    // Prontuário content
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Registro do Prontuário', 20, yPos);
+    yPos += 8;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+
+    if (ficha.observacoes) {
+      const splitText = doc.splitTextToSize(ficha.observacoes, pageWidth - 40);
+      for (const line of splitText) {
+        if (yPos > 270) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.text(line, 20, yPos);
+        yPos += 5;
+      }
+    } else {
+      doc.text('Nenhum registro no prontuário.', 20, yPos);
+    }
+
+    // Footer
+    yPos = 280;
+    doc.setFontSize(8);
+    doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 20, yPos);
+
+    // Save
+    doc.save(`prontuario_${ficha.pacienteNome.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  // Function to generate Word document of prontuário
+  const generateProntuarioWord = async () => {
+    if (!ficha) return;
+
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: [
+          new Paragraph({
+            text: 'PRONTUÁRIO DO PACIENTE',
+            heading: HeadingLevel.TITLE,
+            alignment: AlignmentType.CENTER,
+          }),
+          new Paragraph({ text: '' }),
+          new Paragraph({
+            text: 'Informações do Paciente',
+            heading: HeadingLevel.HEADING_1,
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Nome: ', bold: true }),
+              new TextRun(ficha.pacienteNome),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Profissional: ', bold: true }),
+              new TextRun(ficha.profissionalNome),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Tipo de Assistência: ', bold: true }),
+              new TextRun(ficha.tipoAssistencia),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Data de Início: ', bold: true }),
+              new TextRun(new Date(ficha.dataInicio).toLocaleDateString('pt-BR')),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Status: ', bold: true }),
+              new TextRun(ficha.status),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Objetivo: ', bold: true }),
+              new TextRun(ficha.objetivo || 'Não informado'),
+            ],
+          }),
+          new Paragraph({ text: '' }),
+          new Paragraph({
+            text: 'Registro do Prontuário',
+            heading: HeadingLevel.HEADING_1,
+          }),
+          new Paragraph({ text: '' }),
+          ...(ficha.observacoes
+            ? ficha.observacoes.split('\n').map(line =>
+                new Paragraph({ text: line })
+              )
+            : [new Paragraph({ text: 'Nenhum registro no prontuário.' })]
+          ),
+          new Paragraph({ text: '' }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: `Gerado em: ${new Date().toLocaleString('pt-BR')}`, italics: true, size: 18 }),
+            ],
+          }),
+        ],
+      }],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, `prontuario_${ficha.pacienteNome.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.docx`);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -838,35 +988,54 @@ const FichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, ficha, onSave,
             </div>
           )}
 
-          {/* Tab 4: Comentários */}
+          {/* Tab 4: Prontuário */}
           {activeTab === 3 && (
             <div className="space-y-6">
+              {/* Download Buttons */}
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={generateProntuarioPDF}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
+                >
+                  <span>📄</span> Baixar PDF
+                </button>
+                <button
+                  onClick={generateProntuarioWord}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+                >
+                  <span>📝</span> Baixar Word
+                </button>
+              </div>
+
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Histórico de Comentários</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Registro do Prontuário</h3>
                 {ficha.observacoes ? (
-                  <div className="bg-gray-50 p-4 rounded max-h-60 overflow-y-auto">
-                    <pre className="whitespace-pre-wrap text-sm text-gray-700">{ficha.observacoes}</pre>
+                  <div className="bg-gray-50 p-4 rounded max-h-80 overflow-y-auto border border-gray-200">
+                    <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">{ficha.observacoes}</pre>
                   </div>
                 ) : (
-                  <p className="text-gray-500">Nenhum comentário ainda.</p>
+                  <div className="bg-gray-50 p-8 rounded text-center">
+                    <span className="text-4xl mb-2 block">📋</span>
+                    <p className="text-gray-500">Nenhum registro no prontuário ainda.</p>
+                  </div>
                 )}
               </div>
 
               <div className="border-t pt-6">
-                <h4 className="text-md font-semibold text-gray-900 mb-4">Adicionar Novo Comentário</h4>
+                <h4 className="text-md font-semibold text-gray-900 mb-4">Adicionar Registro ao Prontuário</h4>
                 <textarea
                   value={novoComentario}
                   onChange={(e) => setNovoComentario(e.target.value)}
-                  placeholder="Adicione suas observações sobre o acompanhamento..."
+                  placeholder="Adicione suas observações sobre o acompanhamento do paciente..."
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <button
                   onClick={handleAddComentario}
                   disabled={isLoading || !novoComentario.trim()}
-                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors"
                 >
-                  {isLoading ? 'Salvando...' : 'Adicionar Comentário'}
+                  {isLoading ? 'Salvando...' : 'Adicionar ao Prontuário'}
                 </button>
               </div>
             </div>

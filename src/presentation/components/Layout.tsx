@@ -26,7 +26,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const hasAnyManagePermission = () => {
     const modules = [
       SystemModule.Users, SystemModule.Members, SystemModule.Events,
-      SystemModule.Blog, SystemModule.Finance, SystemModule.Assistance
+      SystemModule.Blog, SystemModule.Finance, SystemModule.Assistance,
+      SystemModule.Leadership, SystemModule.Transmissions, SystemModule.Projects,
+      SystemModule.Devotionals, SystemModule.Forum, SystemModule.Visitors,
+      SystemModule.Notifications, SystemModule.Settings, SystemModule.ONG
     ];
     return modules.some(module => hasPermission(module, PermissionAction.Manage));
   };
@@ -76,10 +79,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       href: '/devotionals',
       show: hasPermission(SystemModule.Devotionals, PermissionAction.View)
     },
-    { 
-      name: 'Fórum', 
+    {
+      name: 'Fórum',
       href: '/forum',
       show: hasPermission(SystemModule.Forum, PermissionAction.View)
+    },
+    {
+      name: 'Liderança',
+      href: '/leadership',
+      show: hasPermission(SystemModule.Leadership, PermissionAction.View)
     },
   ];
 

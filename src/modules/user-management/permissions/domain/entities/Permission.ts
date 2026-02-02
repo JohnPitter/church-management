@@ -6,7 +6,7 @@ export enum SystemModule {
   Dashboard = 'dashboard',
   Users = 'users',
   Members = 'members',
-  
+
   // Content Management
   Blog = 'blog',
   Events = 'events',
@@ -14,7 +14,8 @@ export enum SystemModule {
   Transmissions = 'transmissions',
   Projects = 'projects',
   Forum = 'forum',
-  
+  Leadership = 'leadership',
+
   // Church Management
   Visitors = 'visitors',
   Calendar = 'calendar',
@@ -23,7 +24,7 @@ export enum SystemModule {
   Notifications = 'notifications',
   Communication = 'communication',
   ONG = 'ong',
-  
+
   // Financial
   Finance = 'finance',
   Donations = 'donations',
@@ -81,6 +82,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, { module: SystemModule; ac
     { module: SystemModule.Transmissions, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
     { module: SystemModule.Projects, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
     { module: SystemModule.Forum, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
+    { module: SystemModule.Leadership, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
     { module: SystemModule.Visitors, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
     { module: SystemModule.Calendar, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
     { module: SystemModule.Assistance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
@@ -142,7 +144,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, { module: SystemModule; ac
     { module: SystemModule.Transmissions, actions: [PermissionAction.View] },
     { module: SystemModule.Projects, actions: [PermissionAction.View] },
     { module: SystemModule.Forum, actions: [PermissionAction.View, PermissionAction.Create] },
-    { module: SystemModule.Calendar, actions: [PermissionAction.View] }
+    { module: SystemModule.Calendar, actions: [PermissionAction.View] },
+    { module: SystemModule.Leadership, actions: [PermissionAction.View] }
   ],
 
   finance: [
@@ -228,6 +231,7 @@ export class PermissionManager {
       [SystemModule.Transmissions]: 'Transmissões',
       [SystemModule.Projects]: 'Projetos',
       [SystemModule.Forum]: 'Fórum',
+      [SystemModule.Leadership]: 'Liderança',
       [SystemModule.Visitors]: 'Visitantes',
       [SystemModule.Calendar]: 'Calendário',
       [SystemModule.Assistance]: 'Assistência',

@@ -66,7 +66,7 @@ export interface HorarioFuncionamento {
 export interface ProfissionalAssistencia {
   id: string;
   nome: string;
-  cpf: string;
+  cpf?: string;
   rg?: string;
   telefone: string;
   email: string;

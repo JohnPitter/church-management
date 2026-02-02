@@ -35,7 +35,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const hasAnyManagePermission = () => {
     const modules = [
       SystemModule.Users, SystemModule.Members, SystemModule.Events,
-      SystemModule.Blog, SystemModule.Finance, SystemModule.Assistance
+      SystemModule.Blog, SystemModule.Finance, SystemModule.Assistance,
+      SystemModule.Leadership, SystemModule.Transmissions, SystemModule.Projects,
+      SystemModule.Devotionals, SystemModule.Forum, SystemModule.Visitors,
+      SystemModule.Notifications, SystemModule.Settings, SystemModule.ONG
     ];
     return modules.some(module => hasPermission(module, PermissionAction.Manage));
   };

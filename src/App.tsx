@@ -66,6 +66,8 @@ import ONGActivitiesPage from './presentation/pages/ONGActivitiesPage';
 import ONGReportsPage from './presentation/pages/ONGReportsPage';
 import ONGFinancialPage from './presentation/pages/ONGFinancialPage';
 import AssetsManagementPage from './presentation/pages/AssetsManagementPage';
+import { LeadershipPage } from './presentation/pages/LeadershipPage';
+import { AdminLeadershipPage } from './presentation/pages/AdminLeadershipPage';
 
 // Components
 import { ProtectedRoute } from './presentation/components/ProtectedRoute';
@@ -271,9 +273,12 @@ const router = createBrowserRouter([
       {
         path: 'leadership',
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute
+            requireModule={SystemModule.Leadership}
+            requireAction={PermissionAction.View}
+          >
             <Layout>
-              <ComingSoon title="Liderança" />
+              <LeadershipPage />
             </Layout>
           </ProtectedRoute>
         )
@@ -461,12 +466,25 @@ const router = createBrowserRouter([
       {
         path: 'admin/devotionals',
         element: (
-          <ProtectedRoute 
-            requireModule={SystemModule.Devotionals} 
+          <ProtectedRoute
+            requireModule={SystemModule.Devotionals}
             requireAction={PermissionAction.Manage}
           >
             <Layout>
               <AdminDevotionalPage />
+            </Layout>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'admin/leadership',
+        element: (
+          <ProtectedRoute
+            requireModule={SystemModule.Leadership}
+            requireAction={PermissionAction.Manage}
+          >
+            <Layout>
+              <AdminLeadershipPage />
             </Layout>
           </ProtectedRoute>
         )

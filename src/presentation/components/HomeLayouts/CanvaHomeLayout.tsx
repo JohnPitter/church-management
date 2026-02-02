@@ -2,13 +2,13 @@
 // Complete ready-to-use layout with vibrant design
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSettings } from '../../contexts/SettingsContext';
 import { HomeSectionVisibility } from '@modules/content-management/home-settings/domain/entities/HomeSettings';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { BibleVerse, getVerseOfTheDay } from '@/data/verses';
+import { BibleVerse } from '@/data/verses';
 
 interface CanvaHomeLayoutProps {
   sections: HomeSectionVisibility;
@@ -47,9 +47,27 @@ export const CanvaHomeLayout: React.FC<CanvaHomeLayoutProps> = ({
             <h1 className="text-6xl md:text-7xl font-bold mb-6 text-white drop-shadow-lg">
               Bem-vindo à {settings?.churchName || 'Nossa Igreja'}! ✨
             </h1>
-            <p className="text-xl md:text-2xl text-white/95 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-white/95 max-w-3xl mx-auto leading-relaxed mb-8">
               Juntos construímos uma comunidade de amor, fé e transformação
             </p>
+
+            {/* Login/Register Buttons - Only show when not authenticated */}
+            {!currentUser && (
+              <div className="flex justify-center gap-4 flex-wrap">
+                <Link
+                  to="/login"
+                  className="bg-white text-purple-600 px-8 py-3 rounded-full font-bold text-lg hover:bg-purple-50 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105"
+                >
+                  🔐 Entrar
+                </Link>
+                <Link
+                  to="/register"
+                  className="bg-purple-800 text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-purple-900 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105 border-2 border-white/30"
+                >
+                  ✨ Criar Conta
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

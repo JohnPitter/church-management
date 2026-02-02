@@ -95,7 +95,7 @@ export class ProfissionalAssistenciaService implements IProfissionalAssistenciaS
           cep: profissional.endereco.cep ? AssistenciaEntity.formatarCEP(profissional.endereco.cep) : ''
         } : {
           cep: '',
-          rua: '',
+          logradouro: '',
           numero: '',
           complemento: '',
           bairro: '',

@@ -1,7 +1,7 @@
 // Enterprise Design Home Layout - Inspired by Lagoinha Global
 // Reference: l2.lagoinha.com
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSettings } from '../../contexts/SettingsContext';
 import { HomeSectionVisibility } from '@modules/content-management/home-settings/domain/entities/HomeSettings';
@@ -56,6 +56,24 @@ export const EnterpriseHomeLayout: React.FC<EnterpriseHomeLayoutProps> = ({ sect
                   Sobre nós
                 </button>
               </div>
+
+              {/* Login/Register Buttons - Only show when not authenticated */}
+              {!currentUser && (
+                <div className="flex justify-center gap-4 flex-wrap mt-8 pt-8 border-t border-blue-700/50">
+                  <Link
+                    to="/login"
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-4 rounded-full font-semibold hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
+                  >
+                    Entrar
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="bg-transparent border-2 border-blue-300 text-blue-100 px-8 py-4 rounded-full font-semibold hover:bg-blue-300 hover:text-blue-900 transition-all"
+                  >
+                    Criar Conta
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
           {/* Decorative bottom wave */}

@@ -108,6 +108,15 @@ export const AdminDashboardPage: React.FC = () => {
       category: 'content',
       show: hasPermission(SystemModule.Forum, PermissionAction.Manage)
     },
+    {
+      title: 'Gerenciar Liderança',
+      description: 'Administrar líderes e equipe pastoral',
+      href: '/admin/leadership',
+      icon: '👥',
+      color: 'bg-indigo-500 hover:bg-indigo-600',
+      category: 'content',
+      show: hasPermission(SystemModule.Leadership, PermissionAction.Manage)
+    },
 
     // Church Management
     {
