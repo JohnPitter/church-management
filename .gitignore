@@ -36,6 +36,10 @@ serviceAccountKey.json
 *.swo
 *~
 
+# Claude Code
+.claude/
+CLAUDE.md
+
 # OS
 Thumbs.db
 .DS_Store
