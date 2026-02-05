@@ -17,7 +17,8 @@ import {
   StatusProfissional,
   ModalidadeAtendimento,
   PrioridadeAtendimento,
-  AssistenciaEntity
+  AssistenciaEntity,
+  EstatisticasAssistencia
 } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import { httpsCallable } from 'firebase/functions';
 
@@ -135,10 +136,14 @@ describe('ProfissionalAssistenciaService', () => {
       },
       especialidade: TipoAssistencia.Psicologica,
       registroProfissional: 'CRP-123456',
+      status: StatusProfissional.Ativo,
+      dataCadastro: new Date(),
       horariosFuncionamento: [{ diaSemana: 1, horaInicio: '08:00', horaFim: '18:00' }],
       valorConsulta: 100,
       tempoConsulta: 50,
       modalidadesAtendimento: [ModalidadeAtendimento.Presencial],
+      documentos: [],
+      avaliacoes: [],
       createdBy: 'admin'
     };
 
@@ -149,7 +154,7 @@ describe('ProfissionalAssistenciaService', () => {
       mockProfissionalRepository.findByEmail.mockResolvedValue(null);
       mockProfissionalRepository.findByRegistroProfissional.mockResolvedValue(null);
       mockProfissionalRepository.create.mockResolvedValue(createdProfissional);
-      mockNotificationService.createCustomNotification.mockResolvedValue(undefined);
+      mockNotificationService.createCustomNotification.mockResolvedValue(0);
 
       const result = await service.createProfissional(validProfissionalData);
 
@@ -319,7 +324,7 @@ describe('ProfissionalAssistenciaService', () => {
       const profissional = createTestProfissional();
       mockProfissionalRepository.findById.mockResolvedValue(profissional);
       mockProfissionalRepository.update.mockResolvedValue({ ...profissional, status: StatusProfissional.Inativo });
-      mockNotificationService.createCustomNotification.mockResolvedValue(undefined);
+      mockNotificationService.createCustomNotification.mockResolvedValue(0);
 
       await service.inativarProfissional('prof-1', 'Férias prolongadas');
 
@@ -341,7 +346,7 @@ describe('ProfissionalAssistenciaService', () => {
       const profissional = createTestProfissional();
       mockProfissionalRepository.findById.mockResolvedValue(profissional);
       mockProfissionalRepository.update.mockResolvedValue({ ...profissional, status: StatusProfissional.Inativo });
-      mockNotificationService.createCustomNotification.mockResolvedValue(undefined);
+      mockNotificationService.createCustomNotification.mockResolvedValue(0);
 
       await service.inativarProfissional('prof-1');
 
@@ -356,7 +361,7 @@ describe('ProfissionalAssistenciaService', () => {
       const profissional = createTestProfissional({ userId: undefined });
       mockProfissionalRepository.findById.mockResolvedValue(profissional);
       mockProfissionalRepository.deletePhysically.mockResolvedValue(undefined);
-      mockNotificationService.createCustomNotification.mockResolvedValue(undefined);
+      mockNotificationService.createCustomNotification.mockResolvedValue(0);
 
       // Force delete bypasses appointment checks
       await service.deleteProfissionalPermanente('prof-1', true);
@@ -380,7 +385,7 @@ describe('ProfissionalAssistenciaService', () => {
         data: { success: true, message: 'Account deleted' }
       });
       (httpsCallable as jest.Mock).mockReturnValue(mockCloudFunction);
-      mockNotificationService.createCustomNotification.mockResolvedValue(undefined);
+      mockNotificationService.createCustomNotification.mockResolvedValue(0);
 
       await service.deleteProfissionalPermanente('prof-1', false);
 
@@ -522,6 +527,7 @@ describe('ProfissionalAssistenciaService', () => {
         email: 'test@example.com',
         endereco: {
           logradouro: 'Rua Test',
+          numero: '100',
           bairro: 'Centro',
           cidade: 'São Paulo',
           estado: 'SP',
@@ -848,6 +854,8 @@ describe('AgendamentoAssistenciaService', () => {
       status: StatusAgendamento.Agendado,
       motivo: 'Consulta inicial',
       valor: 100,
+      anexos: [] as any[],
+      historico: [] as any[],
       createdBy: 'admin'
     };
 
@@ -856,7 +864,7 @@ describe('AgendamentoAssistenciaService', () => {
 
       mockAgendamentoRepository.findByProfissionalAndDateRange.mockResolvedValue([]);
       mockAgendamentoRepository.create.mockResolvedValue(createdAgendamento);
-      mockNotificationService.createCustomNotification.mockResolvedValue(undefined);
+      mockNotificationService.createCustomNotification.mockResolvedValue(0);
 
       const result = await service.createAgendamento(validAgendamentoData);
 
@@ -887,7 +895,7 @@ describe('AgendamentoAssistenciaService', () => {
 
       mockAgendamentoRepository.findByProfissionalAndDateRange.mockResolvedValue([]);
       mockAgendamentoRepository.create.mockResolvedValue(createdAgendamento);
-      mockNotificationService.createCustomNotification.mockResolvedValue(undefined);
+      mockNotificationService.createCustomNotification.mockResolvedValue(0);
 
       (AssistenciaEntity.calcularValorFinalConsulta as jest.Mock).mockReturnValue(80);
 
@@ -1100,14 +1108,19 @@ describe('AgendamentoAssistenciaService', () => {
 
   describe('getStatistics', () => {
     it('should return appointment statistics', async () => {
-      const stats = {
+      const stats: EstatisticasAssistencia = {
         totalAgendamentos: 10,
         agendamentosHoje: 2,
         agendamentosSemana: 5,
         agendamentosMes: 10,
         porTipo: {} as any,
         porStatus: {} as any,
-        taxaOcupacao: 85
+        porProfissional: {} as any,
+        porModalidade: {} as any,
+        taxaConclusao: 85,
+        tempoMedioConsulta: 50,
+        avaliacaoMedia: 4.5,
+        crescimentoMensal: []
       };
       mockAgendamentoRepository.getEstatisticasGerais.mockResolvedValue(stats);
 
@@ -1379,14 +1392,19 @@ describe('AgendamentoAssistenciaService', () => {
 
   describe('getEstatisticasPorProfissional', () => {
     it('should return statistics for a professional', async () => {
-      const stats = {
+      const stats: EstatisticasAssistencia = {
         totalAgendamentos: 5,
         agendamentosHoje: 1,
         agendamentosSemana: 3,
         agendamentosMes: 5,
         porTipo: {} as any,
         porStatus: {} as any,
-        taxaOcupacao: 75
+        porProfissional: {} as any,
+        porModalidade: {} as any,
+        taxaConclusao: 75,
+        tempoMedioConsulta: 50,
+        avaliacaoMedia: 4.0,
+        crescimentoMensal: []
       };
       mockAgendamentoRepository.getEstatisticasPorProfissional.mockResolvedValue(stats);
 

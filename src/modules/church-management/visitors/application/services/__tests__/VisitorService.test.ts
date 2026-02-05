@@ -129,7 +129,7 @@ const createQuerySnapshotMock = (docs: any[]): Partial<QuerySnapshot> => ({
     };
   }) as any[],
   size: docs.length,
-  forEach: function(callback: (doc: any) => void) {
+  forEach: function(this: { docs: any[] }, callback: (doc: any) => void) {
     this.docs.forEach(callback);
   }
 });
@@ -166,7 +166,7 @@ describe('VisitorService', () => {
       expect(result).toBe('new-visitor-id');
       expect(mockAddDoc).toHaveBeenCalledTimes(1);
 
-      const calledData = mockAddDoc.mock.calls[0][1];
+      const calledData = mockAddDoc.mock.calls[0][1] as any;
       expect(calledData.name).toBe('Maria Santos');
       expect(calledData.email).toBe('maria@example.com');
       expect(calledData.totalVisits).toBe(1);
@@ -193,7 +193,7 @@ describe('VisitorService', () => {
       expect(result).toBe('minimal-visitor-id');
       expect(mockAddDoc).toHaveBeenCalledTimes(1);
 
-      const calledData = mockAddDoc.mock.calls[0][1];
+      const calledData = mockAddDoc.mock.calls[0][1] as any;
       expect(calledData.name).toBe('João Silva');
       expect(calledData.totalVisits).toBe(1);
       expect(calledData.email).toBeUndefined();
@@ -207,7 +207,7 @@ describe('VisitorService', () => {
 
       await visitorService.createVisitor(visitorData);
 
-      const calledData = mockAddDoc.mock.calls[0][1];
+      const calledData = mockAddDoc.mock.calls[0][1] as any;
       expect(calledData.firstVisitDate).toHaveProperty('toDate');
       expect(calledData.createdAt).toHaveProperty('toDate');
       expect(calledData.updatedAt).toHaveProperty('toDate');
@@ -485,7 +485,7 @@ describe('VisitorService', () => {
       });
 
       expect(mockUpdateDoc).toHaveBeenCalledTimes(1);
-      const calledData = mockUpdateDoc.mock.calls[0][1];
+      const calledData = mockUpdateDoc.mock.calls[0][1] as any;
       expect(calledData.name).toBe('Updated Name');
       expect(calledData.email).toBe('updated@example.com');
       expect(calledData.status).toBe(VisitorStatus.INACTIVE);
@@ -500,7 +500,7 @@ describe('VisitorService', () => {
         lastVisitDate
       });
 
-      const calledData = mockUpdateDoc.mock.calls[0][1];
+      const calledData = mockUpdateDoc.mock.calls[0][1] as any;
       expect(calledData.lastVisitDate).toHaveProperty('toDate');
     });
 
@@ -522,7 +522,7 @@ describe('VisitorService', () => {
 
       await visitorService.updateVisitor('visitor-1', { contactAttempts });
 
-      const calledData = mockUpdateDoc.mock.calls[0][1];
+      const calledData = mockUpdateDoc.mock.calls[0][1] as any;
       expect(calledData.contactAttempts).toHaveLength(1);
       expect(calledData.contactAttempts[0].date).toHaveProperty('toDate');
       expect(calledData.contactAttempts[0].nextContactDate).toHaveProperty('toDate');
@@ -545,7 +545,7 @@ describe('VisitorService', () => {
 
       await visitorService.updateVisitor('visitor-1', { contactAttempts });
 
-      const calledData = mockUpdateDoc.mock.calls[0][1];
+      const calledData = mockUpdateDoc.mock.calls[0][1] as any;
       expect(calledData.contactAttempts[0].nextContactDate).toBeNull();
     });
 
@@ -559,7 +559,7 @@ describe('VisitorService', () => {
         followUpStatus: FollowUpStatus.COMPLETED
       });
 
-      const calledData = mockUpdateDoc.mock.calls[0][1];
+      const calledData = mockUpdateDoc.mock.calls[0][1] as any;
       expect(calledData.status).toBe(VisitorStatus.CONVERTED);
       expect(calledData.isMember).toBe(true);
       expect(calledData.memberId).toBe('member-123');
@@ -652,7 +652,7 @@ describe('VisitorService', () => {
       await visitorService.addContactAttempt('visitor-1', contactAttempt);
 
       expect(mockUpdateDoc).toHaveBeenCalledTimes(1);
-      const updateCall = mockUpdateDoc.mock.calls[0][1];
+      const updateCall = mockUpdateDoc.mock.calls[0][1] as any;
       expect(updateCall.contactAttempts).toHaveLength(1);
       expect(updateCall.contactAttempts[0].type).toBe(ContactType.WELCOME);
       expect(updateCall.followUpStatus).toBe(FollowUpStatus.COMPLETED);
@@ -683,7 +683,7 @@ describe('VisitorService', () => {
 
       await visitorService.addContactAttempt('visitor-1', contactAttempt);
 
-      const updateCall = mockUpdateDoc.mock.calls[0][1];
+      const updateCall = mockUpdateDoc.mock.calls[0][1] as any;
       expect(updateCall.followUpStatus).toBe(FollowUpStatus.IN_PROGRESS);
     });
 
@@ -712,7 +712,7 @@ describe('VisitorService', () => {
 
       await visitorService.addContactAttempt('visitor-1', contactAttempt);
 
-      const updateCall = mockUpdateDoc.mock.calls[0][1];
+      const updateCall = mockUpdateDoc.mock.calls[0][1] as any;
       expect(updateCall.contactAttempts[0].id).toMatch(/^contact_\d+$/);
     });
 
@@ -773,7 +773,7 @@ describe('VisitorService', () => {
 
       await visitorService.addContactAttempt('visitor-1', newAttempt);
 
-      const updateCall = mockUpdateDoc.mock.calls[0][1];
+      const updateCall = mockUpdateDoc.mock.calls[0][1] as any;
       expect(updateCall.contactAttempts).toHaveLength(2);
     });
   });
@@ -988,7 +988,7 @@ describe('VisitorService', () => {
       await visitorService.convertToMember('visitor-1', 'member-123');
 
       expect(mockUpdateDoc).toHaveBeenCalledTimes(1);
-      const updateData = mockUpdateDoc.mock.calls[0][1];
+      const updateData = mockUpdateDoc.mock.calls[0][1] as any;
       expect(updateData.isMember).toBe(true);
       expect(updateData.memberId).toBe('member-123');
       expect(updateData.status).toBe(VisitorStatus.CONVERTED);

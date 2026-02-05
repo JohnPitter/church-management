@@ -65,7 +65,7 @@ const mockSettings = {
   churchPhone: '(11) 1234-5678',
   churchEmail: 'contact@testchurch.com',
   churchWebsite: 'https://testchurch.com',
-  logoURL: undefined,
+  logoURL: undefined as string | undefined,
   primaryColor: '#3B82F6',
   secondaryColor: '#8B5CF6',
   timezone: 'America/Sao_Paulo',
@@ -510,7 +510,7 @@ describe('AdminSettingsPage', () => {
     });
 
     it('should show saving state while saving', async () => {
-      let resolvePromise: () => void;
+      let resolvePromise: (value?: unknown) => void;
       mockUpdateSettings.mockImplementationOnce(() => new Promise(resolve => {
         resolvePromise = resolve;
       }));

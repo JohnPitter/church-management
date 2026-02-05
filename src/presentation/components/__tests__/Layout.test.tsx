@@ -59,7 +59,7 @@ describe('Layout Component', () => {
       displayName: 'Test User',
       role: 'member',
       status: 'approved',
-      photoURL: null
+      photoURL: null as string | null
     },
     user: {
       id: 'user-1',
@@ -67,7 +67,7 @@ describe('Layout Component', () => {
       displayName: 'Test User',
       role: 'member',
       status: 'approved',
-      photoURL: null
+      photoURL: null as string | null
     },
     loading: false,
     login: jest.fn(),
@@ -100,7 +100,7 @@ describe('Layout Component', () => {
   };
 
   const setupMocks = (overrides: {
-    auth?: Partial<typeof defaultAuthValue>;
+    auth?: any;
     settings?: Partial<typeof defaultSettingsValue>;
     permissions?: Partial<typeof defaultPermissionsValue>;
   } = {}) => {

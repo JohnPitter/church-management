@@ -22,8 +22,8 @@ jest.mock('@/config/firebase', () => ({
 }));
 
 jest.mock('firebase/firestore', () => ({
-  collection: (...args: any[]) => mockCollection(...args),
-  addDoc: (...args: any[]) => mockAddDoc(...args),
+  collection: (...args: any[]) => mockCollection.apply(null, args),
+  addDoc: (...args: any[]) => mockAddDoc.apply(null, args),
   serverTimestamp: () => mockServerTimestamp()
 }));
 
@@ -46,7 +46,7 @@ describe('PrayerPage', () => {
       loading: false
     });
     mockAddDoc.mockResolvedValue({ id: 'prayer-123' });
-    mockCollection.mockReturnValue({ _collectionPath: 'prayerRequests' });
+    mockCollection.mockReturnValue('prayerRequests' as any);
     mockServerTimestamp.mockReturnValue({ type: 'serverTimestamp' });
   });
 

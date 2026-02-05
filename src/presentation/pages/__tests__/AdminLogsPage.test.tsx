@@ -61,13 +61,10 @@ jest.mock('../../contexts/AuthContext', () => ({
 
 // Mock usePermissions hook
 const mockHasPermission = jest.fn();
-let mockPermissionsLoading = false;
+const mockUsePermissions = jest.fn();
 
 jest.mock('../../hooks/usePermissions', () => ({
-  usePermissions: () => ({
-    hasPermission: mockHasPermission,
-    loading: mockPermissionsLoading
-  })
+  usePermissions: () => mockUsePermissions()
 }));
 
 // Mock log data
@@ -147,18 +144,28 @@ jest.mock('@modules/shared-kernel/logging/infrastructure/services/LogSeederServi
 describe('AdminLogsPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Mock permissions - default: has all permissions
     mockHasPermission.mockImplementation((module: SystemModule, action: PermissionAction) => {
       if (module === SystemModule.Logs) {
         return action === PermissionAction.View || action === PermissionAction.Manage;
       }
       return false;
     });
-    mockPermissionsLoading = false;
-    mockFindAll.mockResolvedValue(mockLogs);
+
+    mockUsePermissions.mockReturnValue({
+      hasPermission: mockHasPermission,
+      loading: false
+    });
+
+    // Mock repository methods
+    mockFindAll.mockResolvedValue([...mockLogs]);
     mockClearAll.mockResolvedValue(undefined);
-    // Mock window.alert and window.confirm
+
+    // Mock window methods
     jest.spyOn(window, 'alert').mockImplementation(() => {});
     jest.spyOn(window, 'confirm').mockImplementation(() => true);
+
     // Mock URL methods
     global.URL.createObjectURL = jest.fn(() => 'blob:test');
     global.URL.revokeObjectURL = jest.fn();
@@ -166,6 +173,7 @@ describe('AdminLogsPage', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    jest.useRealTimers();
   });
 
   const renderComponent = () => {
@@ -178,7 +186,11 @@ describe('AdminLogsPage', () => {
 
   describe('Permission Checks', () => {
     it('should show loading spinner while checking permissions', () => {
-      mockPermissionsLoading = true;
+      mockUsePermissions.mockReturnValue({
+        hasPermission: mockHasPermission,
+        loading: true
+      });
+
       renderComponent();
 
       expect(screen.getByText('Verificando permissoes...')).toBeInTheDocument();
@@ -186,6 +198,11 @@ describe('AdminLogsPage', () => {
 
     it('should show access denied when user cannot view logs', () => {
       mockHasPermission.mockReturnValue(false);
+      mockUsePermissions.mockReturnValue({
+        hasPermission: mockHasPermission,
+        loading: false
+      });
+
       renderComponent();
 
       expect(screen.getByText('Acesso Negado')).toBeInTheDocument();
@@ -196,6 +213,11 @@ describe('AdminLogsPage', () => {
       mockHasPermission.mockImplementation((module: SystemModule, action: PermissionAction) => {
         return module === SystemModule.Logs && action === PermissionAction.View;
       });
+      mockUsePermissions.mockReturnValue({
+        hasPermission: mockHasPermission,
+        loading: false
+      });
+
       renderComponent();
 
       await waitFor(() => {
@@ -696,6 +718,90 @@ describe('AdminLogsPage', () => {
 
       jest.useRealTimers();
     });
+
+    it('should auto-refresh logs every 30 seconds when enabled', async () => {
+      jest.useFakeTimers();
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Auto-atualizar')).toBeInTheDocument();
+      });
+
+      // Enable auto-refresh
+      const autoRefreshCheckbox = screen.getByRole('checkbox');
+      await userEvent.click(autoRefreshCheckbox);
+
+      expect(autoRefreshCheckbox).toBeChecked();
+
+      // Initial load
+      expect(mockFindAll).toHaveBeenCalledTimes(1);
+
+      // Advance timer by 30 seconds
+      act(() => {
+        jest.advanceTimersByTime(30000);
+      });
+
+      await waitFor(() => {
+        expect(mockFindAll).toHaveBeenCalledTimes(2);
+      });
+
+      // Advance another 30 seconds
+      act(() => {
+        jest.advanceTimersByTime(30000);
+      });
+
+      await waitFor(() => {
+        expect(mockFindAll).toHaveBeenCalledTimes(3);
+      });
+
+      jest.useRealTimers();
+    });
+
+    it('should stop auto-refresh when disabled', async () => {
+      jest.useFakeTimers();
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Auto-atualizar')).toBeInTheDocument();
+      });
+
+      // Enable auto-refresh
+      const autoRefreshCheckbox = screen.getByRole('checkbox');
+      await userEvent.click(autoRefreshCheckbox);
+
+      expect(mockFindAll).toHaveBeenCalledTimes(1);
+
+      // Advance timer by 30 seconds
+      act(() => {
+        jest.advanceTimersByTime(30000);
+      });
+
+      await waitFor(() => {
+        expect(mockFindAll).toHaveBeenCalledTimes(2);
+      });
+
+      // Disable auto-refresh
+      await userEvent.click(autoRefreshCheckbox);
+
+      // Advance timer again
+      act(() => {
+        jest.advanceTimersByTime(30000);
+      });
+
+      // Should not call again
+      expect(mockFindAll).toHaveBeenCalledTimes(2);
+
+      jest.useRealTimers();
+    });
+
+    it('should disable refresh button while loading', async () => {
+      mockFindAll.mockImplementation(() => new Promise(() => {})); // Never resolves
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Atualizar')).toBeDisabled();
+      });
+    });
   });
 
   describe('Clear Logs', () => {
@@ -711,6 +817,11 @@ describe('AdminLogsPage', () => {
       mockHasPermission.mockImplementation((module: SystemModule, action: PermissionAction) => {
         return module === SystemModule.Logs && action === PermissionAction.View;
       });
+      mockUsePermissions.mockReturnValue({
+        hasPermission: mockHasPermission,
+        loading: false
+      });
+
       renderComponent();
 
       await waitFor(() => {
@@ -776,6 +887,22 @@ describe('AdminLogsPage', () => {
   });
 
   describe('Export Logs', () => {
+    let mockCreateElement: jest.SpyInstance;
+    let mockClick: jest.Mock;
+
+    beforeEach(() => {
+      mockClick = jest.fn();
+      mockCreateElement = jest.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+        const element = document.createElement.bind(document)(tagName) as HTMLAnchorElement;
+        element.click = mockClick;
+        return element;
+      });
+    });
+
+    afterEach(() => {
+      mockCreateElement.mockRestore();
+    });
+
     it('should show export button when user has manage permission', async () => {
       renderComponent();
 
@@ -788,6 +915,11 @@ describe('AdminLogsPage', () => {
       mockHasPermission.mockImplementation((module: SystemModule, action: PermissionAction) => {
         return module === SystemModule.Logs && action === PermissionAction.View;
       });
+      mockUsePermissions.mockReturnValue({
+        hasPermission: mockHasPermission,
+        loading: false
+      });
+
       renderComponent();
 
       await waitFor(() => {
@@ -806,7 +938,69 @@ describe('AdminLogsPage', () => {
 
       await waitFor(() => {
         expect(URL.createObjectURL).toHaveBeenCalled();
+        expect(mockClick).toHaveBeenCalled();
         expect(window.alert).toHaveBeenCalledWith('Logs exportados em JSON com sucesso!');
+      });
+    });
+
+    it('should export filtered logs when filters are applied', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('User logged in')).toBeInTheDocument();
+      });
+
+      // Apply filter
+      const searchInput = screen.getByPlaceholderText('Buscar logs...');
+      await userEvent.type(searchInput, 'database');
+
+      await waitFor(() => {
+        expect(screen.getByText('Database connection failed')).toBeInTheDocument();
+      });
+
+      // Export
+      await userEvent.click(screen.getByText('Exportar'));
+
+      await waitFor(() => {
+        expect(URL.createObjectURL).toHaveBeenCalled();
+        expect(window.alert).toHaveBeenCalledWith('Logs exportados em JSON com sucesso!');
+      });
+    });
+
+    it('should handle export error gracefully', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      URL.createObjectURL = jest.fn(() => {
+        throw new Error('Export failed');
+      });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Exportar')).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getByText('Exportar'));
+
+      await waitFor(() => {
+        expect(window.alert).toHaveBeenCalledWith('Erro ao exportar logs.');
+      });
+
+      consoleSpy.mockRestore();
+      URL.createObjectURL = jest.fn(() => 'blob:test');
+    });
+
+    it('should export all logs when no filters are applied', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('User logged in')).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getByText('Exportar'));
+
+      await waitFor(() => {
+        expect(URL.createObjectURL).toHaveBeenCalled();
+        expect(mockClick).toHaveBeenCalled();
       });
     });
   });
@@ -899,6 +1093,441 @@ describe('AdminLogsPage', () => {
         expect(screen.getByLabelText('Nivel')).toBeInTheDocument();
         expect(screen.getByLabelText('Categoria')).toBeInTheDocument();
         expect(screen.getByLabelText('Data')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Advanced Search Functionality', () => {
+    it('should search in message field', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('User logged in')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText('Buscar logs...');
+      await userEvent.type(searchInput, 'logged in');
+
+      await waitFor(() => {
+        expect(screen.getByText('User logged in')).toBeInTheDocument();
+        expect(screen.queryByText('Database connection failed')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should search in details field', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('User logged in')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText('Buscar logs...');
+      await userEvent.type(searchInput, 'Connection timeout');
+
+      await waitFor(() => {
+        expect(screen.getByText('Database connection failed')).toBeInTheDocument();
+        expect(screen.queryByText('User logged in')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should search in user email field', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('User logged in')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText('Buscar logs...');
+      await userEvent.type(searchInput, 'attacker@example.com');
+
+      await waitFor(() => {
+        expect(screen.getByText('Multiple failed login attempts')).toBeInTheDocument();
+        expect(screen.queryByText('User logged in')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should be case insensitive', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('User logged in')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText('Buscar logs...');
+      await userEvent.type(searchInput, 'DATABASE');
+
+      await waitFor(() => {
+        expect(screen.getByText('Database connection failed')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Combined Filters', () => {
+    it('should apply multiple filters simultaneously', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('User logged in')).toBeInTheDocument();
+      });
+
+      // Apply level filter
+      const levelSelect = screen.getByLabelText('Nivel') as HTMLSelectElement;
+      await userEvent.selectOptions(levelSelect, 'info');
+
+      // Apply search
+      const searchInput = screen.getByPlaceholderText('Buscar logs...');
+      await userEvent.type(searchInput, 'logged');
+
+      await waitFor(() => {
+        expect(screen.getByText('User logged in')).toBeInTheDocument();
+        expect(screen.queryByText('Database connection failed')).not.toBeInTheDocument();
+        expect(screen.queryByText('Multiple failed login attempts')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should apply level and category filters together', async () => {
+      const testLogs = [
+        ...mockLogs,
+        {
+          id: 'log-6',
+          timestamp: new Date('2024-01-15T15:00:00'),
+          level: 'error',
+          category: 'security',
+          message: 'Security error',
+          details: 'Critical security issue',
+          userEmail: 'admin@example.com',
+          ipAddress: '192.168.1.100'
+        }
+      ];
+      mockFindAll.mockResolvedValue(testLogs);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('User logged in')).toBeInTheDocument();
+      });
+
+      // Apply level filter
+      const levelSelect = screen.getByLabelText('Nivel') as HTMLSelectElement;
+      await userEvent.selectOptions(levelSelect, 'error');
+
+      // Apply category filter
+      const categorySelect = screen.getByLabelText('Categoria') as HTMLSelectElement;
+      await userEvent.selectOptions(categorySelect, 'security');
+
+      await waitFor(() => {
+        expect(screen.getByText('Security error')).toBeInTheDocument();
+        expect(screen.queryByText('Database connection failed')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should apply all filters together', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('User logged in')).toBeInTheDocument();
+      });
+
+      // Apply all filters
+      const levelSelect = screen.getByLabelText('Nivel') as HTMLSelectElement;
+      await userEvent.selectOptions(levelSelect, 'info');
+
+      const categorySelect = screen.getByLabelText('Categoria') as HTMLSelectElement;
+      await userEvent.selectOptions(categorySelect, 'auth');
+
+      const searchInput = screen.getByPlaceholderText('Buscar logs...');
+      await userEvent.type(searchInput, 'logged');
+
+      await waitFor(() => {
+        expect(screen.getByText('User logged in')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Pagination Advanced', () => {
+    it('should navigate to first page', async () => {
+      const manyLogs = Array.from({ length: 50 }, (_, i) => ({
+        id: `log-${i}`,
+        timestamp: new Date(),
+        level: 'info',
+        category: 'system',
+        message: `Log message ${i}`,
+        details: null,
+        userEmail: null,
+        ipAddress: null
+      }));
+      mockFindAll.mockResolvedValue(manyLogs);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Log message 0')).toBeInTheDocument();
+      });
+
+      // Go to page 3
+      await userEvent.click(screen.getByText('Proxima →'));
+      await userEvent.click(screen.getByText('Proxima →'));
+
+      await waitFor(() => {
+        expect(screen.queryByText('Log message 0')).not.toBeInTheDocument();
+      });
+
+      // Go to first page
+      await userEvent.click(screen.getByText('Primeira'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Log message 0')).toBeInTheDocument();
+      });
+    });
+
+    it('should navigate to last page', async () => {
+      const manyLogs = Array.from({ length: 50 }, (_, i) => ({
+        id: `log-${i}`,
+        timestamp: new Date(),
+        level: 'info',
+        category: 'system',
+        message: `Log message ${i}`,
+        details: null,
+        userEmail: null,
+        ipAddress: null
+      }));
+      mockFindAll.mockResolvedValue(manyLogs);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Log message 0')).toBeInTheDocument();
+      });
+
+      // Go to last page
+      await userEvent.click(screen.getByText('Ultima'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Log message 49')).toBeInTheDocument();
+        expect(screen.queryByText('Log message 0')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should disable next button on last page', async () => {
+      const manyLogs = Array.from({ length: 15 }, (_, i) => ({
+        id: `log-${i}`,
+        timestamp: new Date(),
+        level: 'info',
+        category: 'system',
+        message: `Log message ${i}`,
+        details: null,
+        userEmail: null,
+        ipAddress: null
+      }));
+      mockFindAll.mockResolvedValue(manyLogs);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Log message 0')).toBeInTheDocument();
+      });
+
+      // Go to last page
+      await userEvent.click(screen.getByText('Ultima'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Proxima →')).toBeDisabled();
+        expect(screen.getByText('Ultima')).toBeDisabled();
+      });
+    });
+
+    it('should display correct page numbers', async () => {
+      const manyLogs = Array.from({ length: 50 }, (_, i) => ({
+        id: `log-${i}`,
+        timestamp: new Date(),
+        level: 'info',
+        category: 'system',
+        message: `Log message ${i}`,
+        details: null,
+        userEmail: null,
+        ipAddress: null
+      }));
+      mockFindAll.mockResolvedValue(manyLogs);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Log message 0')).toBeInTheDocument();
+      });
+
+      // Should show page buttons
+      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByText('2')).toBeInTheDocument();
+    });
+
+    it('should navigate by clicking page number', async () => {
+      const manyLogs = Array.from({ length: 50 }, (_, i) => ({
+        id: `log-${i}`,
+        timestamp: new Date(),
+        level: 'info',
+        category: 'system',
+        message: `Log message ${i}`,
+        details: null,
+        userEmail: null,
+        ipAddress: null
+      }));
+      mockFindAll.mockResolvedValue(manyLogs);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Log message 0')).toBeInTheDocument();
+      });
+
+      // Click page 2
+      const page2Button = screen.getByRole('button', { name: '2' });
+      await userEvent.click(page2Button);
+
+      await waitFor(() => {
+        expect(screen.getByText('Log message 10')).toBeInTheDocument();
+        expect(screen.queryByText('Log message 0')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should show correct range info', async () => {
+      const manyLogs = Array.from({ length: 25 }, (_, i) => ({
+        id: `log-${i}`,
+        timestamp: new Date(),
+        level: 'info',
+        category: 'system',
+        message: `Log message ${i}`,
+        details: null,
+        userEmail: null,
+        ipAddress: null
+      }));
+      mockFindAll.mockResolvedValue(manyLogs);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText(/Mostrando/)).toBeInTheDocument();
+        expect(screen.getByText('1')).toBeInTheDocument();
+        expect(screen.getByText(/de/)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Date Filter', () => {
+    it('should filter by specific date', async () => {
+      // Mock format to return different dates
+      const mockFormat = require('date-fns').format as jest.Mock;
+      mockFormat.mockImplementation((date: Date, formatStr: string) => {
+        if (formatStr === 'yyyy-MM-dd') {
+          const time = date.getTime();
+          if (time === new Date('2024-01-15T10:30:00').getTime()) {
+            return '2024-01-15';
+          }
+          return '2024-01-16';
+        }
+        if (formatStr === 'dd/MM/yyyy HH:mm:ss') {
+          return '15/01/2024 10:30:45';
+        }
+        return '2024-01-15';
+      });
+
+      const testLogs = [
+        {
+          id: 'log-1',
+          timestamp: new Date('2024-01-15T10:30:00'),
+          level: 'info',
+          category: 'auth',
+          message: 'Log from Jan 15',
+          details: null,
+          userEmail: null,
+          ipAddress: null
+        },
+        {
+          id: 'log-2',
+          timestamp: new Date('2024-01-16T10:30:00'),
+          level: 'info',
+          category: 'auth',
+          message: 'Log from Jan 16',
+          details: null,
+          userEmail: null,
+          ipAddress: null
+        }
+      ];
+      mockFindAll.mockResolvedValue(testLogs);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Log from Jan 15')).toBeInTheDocument();
+        expect(screen.getByText('Log from Jan 16')).toBeInTheDocument();
+      });
+
+      const dateInput = screen.getByLabelText('Data') as HTMLInputElement;
+      await userEvent.type(dateInput, '2024-01-15');
+
+      await waitFor(() => {
+        expect(screen.getByText('Log from Jan 15')).toBeInTheDocument();
+        expect(screen.queryByText('Log from Jan 16')).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Statistics Calculation', () => {
+    it('should calculate today logs correctly', async () => {
+      const mockFormat = require('date-fns').format as jest.Mock;
+      mockFormat.mockImplementation((date: Date, formatStr: string) => {
+        if (formatStr === 'yyyy-MM-dd') {
+          return '2024-01-15';
+        }
+        if (formatStr === 'dd/MM/yyyy HH:mm:ss') {
+          return '15/01/2024 10:30:45';
+        }
+        return '2024-01-15';
+      });
+
+      renderComponent();
+
+      await waitFor(() => {
+        const todayCard = screen.getByText('Hoje').closest('div');
+        expect(todayCard).toContainElement(screen.getByText('5')); // All logs are "today"
+      });
+    });
+
+    it('should update statistics after filtering', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        // Initially shows count including filtered out items
+        const logsCount = screen.getByText(/Logs \(/);
+        expect(logsCount).toHaveTextContent('5');
+      });
+
+      // Apply filter
+      const levelSelect = screen.getByLabelText('Nivel') as HTMLSelectElement;
+      await userEvent.selectOptions(levelSelect, 'error');
+
+      await waitFor(() => {
+        const logsCount = screen.getByText(/Logs \(/);
+        expect(logsCount).toHaveTextContent('1');
+      });
+    });
+  });
+
+  describe('Button States', () => {
+    it('should disable export button while loading', async () => {
+      mockFindAll.mockImplementation(() => new Promise(() => {})); // Never resolves
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Exportar')).toBeDisabled();
+      });
+    });
+
+    it('should disable clear logs button while loading', async () => {
+      mockFindAll.mockImplementation(() => new Promise(() => {})); // Never resolves
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Limpar Logs')).toBeDisabled();
       });
     });
   });

@@ -134,7 +134,7 @@ describe('DonatePage', () => {
     });
 
     it('should fallback to churchEmail when pixKey is not configured', () => {
-      const settingsWithoutPix = { ...mockSettings };
+      const settingsWithoutPix = { ...mockSettings } as any;
       delete settingsWithoutPix.pixKey;
 
       (useSettings as jest.Mock).mockReturnValue({ settings: settingsWithoutPix });
@@ -299,7 +299,7 @@ describe('DonatePage', () => {
 
   describe('Bank Account Fallback Values', () => {
     it('should use default bank name when not configured', () => {
-      const settingsWithoutBank = { ...mockSettings };
+      const settingsWithoutBank = { ...mockSettings } as any;
       delete settingsWithoutBank.bankAccount;
 
       (useSettings as jest.Mock).mockReturnValue({ settings: settingsWithoutBank });
@@ -310,7 +310,7 @@ describe('DonatePage', () => {
     });
 
     it('should use default agency when not configured', () => {
-      const settingsWithoutBank = { ...mockSettings };
+      const settingsWithoutBank = { ...mockSettings } as any;
       delete settingsWithoutBank.bankAccount;
 
       (useSettings as jest.Mock).mockReturnValue({ settings: settingsWithoutBank });
@@ -321,7 +321,7 @@ describe('DonatePage', () => {
     });
 
     it('should use default account number when not configured', () => {
-      const settingsWithoutBank = { ...mockSettings };
+      const settingsWithoutBank = { ...mockSettings } as any;
       delete settingsWithoutBank.bankAccount;
 
       (useSettings as jest.Mock).mockReturnValue({ settings: settingsWithoutBank });
@@ -332,7 +332,7 @@ describe('DonatePage', () => {
     });
 
     it('should use default account type "Corrente" when not configured', () => {
-      const settingsWithoutBank = { ...mockSettings };
+      const settingsWithoutBank = { ...mockSettings } as any;
       delete settingsWithoutBank.bankAccount;
 
       (useSettings as jest.Mock).mockReturnValue({ settings: settingsWithoutBank });

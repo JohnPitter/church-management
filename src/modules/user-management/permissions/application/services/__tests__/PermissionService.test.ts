@@ -44,14 +44,14 @@ import {
 } from 'firebase/firestore';
 
 // Get mock functions from the mocked module
-const mockGetDoc = getDoc as jest.MockedFunction<typeof getDoc>;
-const mockSetDoc = setDoc as jest.MockedFunction<typeof setDoc>;
-const mockUpdateDoc = updateDoc as jest.MockedFunction<typeof updateDoc>;
-const mockGetDocs = getDocs as jest.MockedFunction<typeof getDocs>;
-const mockDoc = doc as jest.MockedFunction<typeof doc>;
-const mockCollection = collection as jest.MockedFunction<typeof collection>;
-const mockQuery = query as jest.MockedFunction<typeof query>;
-const mockWhere = where as jest.MockedFunction<typeof where>;
+const mockGetDoc = getDoc as jest.Mock;
+const mockSetDoc = setDoc as jest.Mock;
+const mockUpdateDoc = updateDoc as jest.Mock;
+const mockGetDocs = getDocs as jest.Mock;
+const mockDoc = doc as jest.Mock;
+const mockCollection = collection as jest.Mock;
+const mockQuery = query as jest.Mock;
+const mockWhere = where as jest.Mock;
 
 describe('PermissionService', () => {
   let service: PermissionService;

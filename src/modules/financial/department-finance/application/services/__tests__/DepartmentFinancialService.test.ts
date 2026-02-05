@@ -188,7 +188,9 @@ describe('DepartmentFinancialService', () => {
       it('should set default values when creating department', async () => {
         const departmentData = {
           name: 'Youth Department',
-          createdBy: 'user-admin'
+          createdBy: 'user-admin',
+          isActive: true,
+          currentBalance: 0
         };
 
         mockAddDoc.mockResolvedValue({ id: 'new-dept-id' });
@@ -204,7 +206,9 @@ describe('DepartmentFinancialService', () => {
       it('should throw error when validation fails', async () => {
         const invalidDepartment = {
           name: '',
-          createdBy: 'user-admin'
+          createdBy: 'user-admin',
+          isActive: true,
+          currentBalance: 0
         };
 
         (DepartmentEntity.validateDepartment as jest.Mock).mockReturnValueOnce([
@@ -218,7 +222,9 @@ describe('DepartmentFinancialService', () => {
       it('should throw error when Firebase operation fails', async () => {
         const departmentData = {
           name: 'Youth Department',
-          createdBy: 'user-admin'
+          createdBy: 'user-admin',
+          isActive: true,
+          currentBalance: 0
         };
 
         mockAddDoc.mockRejectedValue(new Error('Firebase error'));

@@ -19,7 +19,7 @@ const mockCurrentUser = {
   status: 'approved'
 };
 
-const mockAuthContext = {
+const mockAuthContext: Record<string, any> = {
   currentUser: mockCurrentUser,
   user: mockCurrentUser,
   loading: false,

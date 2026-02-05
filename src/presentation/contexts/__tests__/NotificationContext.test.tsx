@@ -25,7 +25,7 @@ const mockUpdateUserPreferences = jest.fn();
 jest.mock('@modules/shared-kernel/notifications/infrastructure/services/NotificationService', () => {
   // Return a factory that creates a mock service with the external mock functions
   return {
-    NotificationService: function() {
+    NotificationService: function(this: any) {
       this.getUserNotifications = mockGetUserNotifications;
       this.getUnreadCount = mockGetUnreadCount;
       this.markAsRead = mockMarkAsRead;
@@ -1035,7 +1035,7 @@ describe('NotificationContext', () => {
 
   describe('Context Value', () => {
     it('should provide all required context values', async () => {
-      let contextValue: ReturnType<typeof useNotifications> | null = null;
+      let contextValue: any = null;
 
       const TestComponent: React.FC = () => {
         contextValue = useNotifications();

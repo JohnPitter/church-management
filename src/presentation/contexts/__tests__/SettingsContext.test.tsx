@@ -781,7 +781,7 @@ describe('SettingsContext', () => {
     it('should return loading true initially', () => {
       mockGetDoc.mockImplementation(() => new Promise(() => {}));
 
-      let hookResult: { loading: boolean; settings: any } | null = null;
+      let hookResult: any = null;
 
       const TestComponent: React.FC = () => {
         hookResult = useSettings();
@@ -802,7 +802,7 @@ describe('SettingsContext', () => {
       mockGetDoc.mockResolvedValueOnce({ exists: () => false });
       mockSetDoc.mockResolvedValueOnce(undefined);
 
-      let hookResult: { loading: boolean; settings: any; updateSettings: any } | null = null;
+      let hookResult: any = null;
 
       const TestComponent: React.FC = () => {
         hookResult = useSettings();

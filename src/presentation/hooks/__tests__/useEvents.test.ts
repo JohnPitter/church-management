@@ -296,13 +296,12 @@ describe('useEvents Hook', () => {
         createdEvent = await result.current.createEvent({
           title: 'New Event',
           description: 'Description',
-          date: new Date('2026-03-15'),
+          date: '2026-03-15',
           time: '10:00',
           location: 'Test Location',
           categoryId: 'cat-1',
           isPublic: true,
-          requiresConfirmation: false,
-          responsible: 'admin-123'
+          requiresConfirmation: false
         });
       });
 
@@ -328,13 +327,12 @@ describe('useEvents Hook', () => {
           await result.current.createEvent({
             title: 'New Event',
             description: 'Description',
-            date: new Date('2026-03-15'),
+            date: '2026-03-15',
             time: '10:00',
             location: 'Test Location',
             categoryId: 'cat-1',
             isPublic: true,
-            requiresConfirmation: false,
-            responsible: 'admin-123'
+            requiresConfirmation: false
           });
         });
       }).rejects.toThrow('Usuário não autenticado');
@@ -360,13 +358,12 @@ describe('useEvents Hook', () => {
           await result.current.createEvent({
             title: 'New Event',
             description: 'Description',
-            date: new Date('2026-03-15'),
+            date: '2026-03-15',
             time: '10:00',
             location: 'Test Location',
             categoryId: 'cat-1',
             isPublic: true,
-            requiresConfirmation: false,
-            responsible: 'admin-123'
+            requiresConfirmation: false
           });
         });
       }).rejects.toThrow(errorMessage);
@@ -394,13 +391,12 @@ describe('useEvents Hook', () => {
           await result.current.createEvent({
             title: 'New Event',
             description: 'Description',
-            date: new Date('2026-03-15'),
+            date: '2026-03-15',
             time: '10:00',
             location: 'Test Location',
             categoryId: 'cat-1',
             isPublic: true,
-            requiresConfirmation: false,
-            responsible: 'admin-123'
+            requiresConfirmation: false
           });
         });
       }).rejects.toThrow();
