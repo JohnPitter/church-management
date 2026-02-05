@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
-import { PermissionService, RolePermissionConfig, UserPermissionConfig, CustomRoleConfig } from '@modules/user-management/permissions/application/services/PermissionService';
+import { usePermissions } from '../hooks/usePermissions';
+import { PermissionService, UserPermissionConfig, CustomRoleConfig } from '@modules/user-management/permissions/application/services/PermissionService';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { PublicPageService } from '@modules/content-management/public-pages/application/services/PublicPageService';
 import { 
@@ -22,7 +22,7 @@ import { CreateRoleModal } from '../components/CreateRoleModal';
 
 export const PermissionsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const { refreshPermissions } = useAtomicPermissions();
+  const { refreshPermissions } = usePermissions();
   const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'custom-roles' | 'public-pages'>('roles');
   const [selectedRole, setSelectedRole] = useState<string>('member');
   const [selectedUserId, setSelectedUserId] = useState<string>('');
@@ -46,6 +46,7 @@ export const PermissionsManagementPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadData = async () => {
@@ -122,13 +123,12 @@ export const PermissionsManagementPage: React.FC = () => {
         currentUser?.email || 'Admin'
       );
       
-      // Clear service cache and force reload to ensure everything is fresh
+      // Clear service cache and refresh permissions
       permissionService.clearAllCache();
-      
-      alert('Permissões da função atualizadas com sucesso! Recarregando página...');
-      
-      // Force complete page reload
-      window.location.reload();
+      await refreshPermissions();
+      await loadData();
+
+      alert('Permissões da função atualizadas com sucesso!');
     } catch (error: any) {
       console.error('Error saving role permissions:', error);
       
@@ -153,13 +153,12 @@ export const PermissionsManagementPage: React.FC = () => {
     try {
       await permissionService.resetRolePermissionsToDefault(role, currentUser?.email || 'Admin');
       
-      // Clear cache and force reload
+      // Clear cache and refresh permissions
       permissionService.clearAllCache();
-      
-      alert('Permissões resetadas com sucesso! Recarregando página...');
-      
-      // Force complete page reload
-      window.location.reload();
+      await refreshPermissions();
+      await loadData();
+
+      alert('Permissões resetadas com sucesso!');
     } catch (error) {
       console.error('Error resetting permissions:', error);
       alert('Erro ao resetar permissões');
@@ -288,13 +287,12 @@ export const PermissionsManagementPage: React.FC = () => {
         );
       }
       
-      // Clear service cache and force reload to ensure everything is fresh
+      // Clear service cache and refresh permissions
       permissionService.clearAllCache();
-      
-      alert('Permissões do usuário atualizadas com sucesso! Recarregando página...');
-      
-      // Force complete page reload
-      window.location.reload();
+      await refreshPermissions();
+      await loadData();
+
+      alert('Permissões do usuário atualizadas com sucesso!');
     } catch (error) {
       console.error('Error saving user overrides:', error);
       alert('Erro ao salvar permissões do usuário');
@@ -456,40 +454,6 @@ export const PermissionsManagementPage: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* ONG Integration Notice */}
-        <div className="mb-8 bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <span className="text-2xl">🏢</span>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-indigo-800">
-                Gestão de ONG Integrada
-              </h3>
-              <div className="mt-1 text-sm text-indigo-700">
-                <p>O módulo de <strong>Gerenciamento ONG</strong> agora está integrado ao painel administrativo. 
-                Configure as permissões abaixo para controlar quem pode gerenciar voluntários, atividades, doações e relatórios da ONG.</p>
-              </div>
-              <div className="mt-3">
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
-                    👥 Voluntários
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
-                    📅 Atividades
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
-                    💝 Doações
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
-                    📊 Relatórios
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Navigation Tabs */}
         <div className="border-b border-gray-200 mb-8">
           <nav className="-mb-px flex space-x-8">

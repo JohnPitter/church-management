@@ -19,6 +19,7 @@ export const useNotificationActions = () => {
       console.error('Error notifying new event:', error);
       throw error;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshNotifications]);
 
   const notifyNewBlogPost = useCallback(async (postId: string, postTitle: string, postImageUrl?: string) => {
@@ -30,6 +31,7 @@ export const useNotificationActions = () => {
       console.error('Error notifying new blog post:', error);
       throw error;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshNotifications]);
 
   const notifyNewProject = useCallback(async (projectId: string, projectName: string) => {
@@ -41,6 +43,7 @@ export const useNotificationActions = () => {
       console.error('Error notifying new project:', error);
       throw error;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshNotifications]);
 
   const notifyNewLiveStream = useCallback(async (streamId: string, streamTitle: string, streamImageUrl?: string) => {
@@ -52,6 +55,7 @@ export const useNotificationActions = () => {
       console.error('Error notifying new live stream:', error);
       throw error;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshNotifications]);
 
   const cleanupExpiredNotifications = useCallback(async () => {
@@ -63,6 +67,7 @@ export const useNotificationActions = () => {
       console.error('Error cleaning up expired notifications:', error);
       throw error;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshNotifications]);
 
   return {

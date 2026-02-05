@@ -4,9 +4,14 @@ export const useTheme = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
+    // Verifica se matchMedia está disponível
+    if (!window.matchMedia) {
+      return;
+    }
+
     // Verifica o tema inicial
     const checkTheme = () => {
-      const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       setIsDarkMode(isDark);
     };
 
@@ -21,7 +26,7 @@ export const useTheme = () => {
     // Adiciona listener para mudanças
     if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', handleChange);
-    } else {
+    } else if (mediaQuery.addListener) {
       // Fallback para navegadores antigos
       mediaQuery.addListener(handleChange);
     }
@@ -30,7 +35,7 @@ export const useTheme = () => {
     return () => {
       if (mediaQuery.removeEventListener) {
         mediaQuery.removeEventListener('change', handleChange);
-      } else {
+      } else if (mediaQuery.removeListener) {
         mediaQuery.removeListener(handleChange);
       }
     };

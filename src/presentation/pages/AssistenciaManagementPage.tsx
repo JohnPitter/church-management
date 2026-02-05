@@ -38,9 +38,9 @@ import {
 
 const AssistenciaManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const { settings } = useSettings();
+  const { settings: _settings } = useSettings();
   const [activeTab, setActiveTab] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
   
   // Agendamentos state
   const [agendamentos, setAgendamentos] = useState<AgendamentoAssistencia[]>([]);
@@ -52,8 +52,8 @@ const AssistenciaManagementPage: React.FC = () => {
   // Profissionais state
   const [profissionais, setProfissionais] = useState<ProfissionalAssistencia[]>([]);
   const [profissionaisFiltrados, setProfissionaisFiltrados] = useState<ProfissionalAssistencia[]>([]);
-  const [searchProfissional, setSearchProfissional] = useState('');
-  const [statusProfissionalFilter, setStatusProfissionalFilter] = useState<StatusProfissional | 'all'>('all');
+  const [searchProfissional, _setSearchProfissional] = useState('');
+  const [statusProfissionalFilter, _setStatusProfissionalFilter] = useState<StatusProfissional | 'all'>('all');
 
   // Help Requests state
   const [helpRequests, setHelpRequests] = useState<ProfessionalHelpRequest[]>([]);
@@ -98,18 +98,22 @@ const AssistenciaManagementPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     filterAgendamentos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agendamentos, searchTerm, statusFilter, tipoFilter]);
 
   useEffect(() => {
     filterProfissionais();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profissionais, searchProfissional, statusProfissionalFilter]);
 
   useEffect(() => {
     filterHelpRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [helpRequests, searchHelpRequest, statusHelpRequestFilter, prioridadeHelpRequestFilter]);
 
 
@@ -392,7 +396,7 @@ const AssistenciaManagementPage: React.FC = () => {
   };
 
   // Anamnese handlers
-  const handleCreateAnamnese = (agendamento: AgendamentoAssistencia) => {
+  const _handleCreateAnamnese = (agendamento: AgendamentoAssistencia) => {
     setAnamneseAssistidoId(agendamento.pacienteId || '');
     setAnamneseAssistidoNome(agendamento.pacienteNome);
     setSelectedAnamnese(null);

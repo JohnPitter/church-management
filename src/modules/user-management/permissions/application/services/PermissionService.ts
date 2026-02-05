@@ -15,7 +15,6 @@ import {
 import { db } from '@/config/firebase';
 import {
   Permission,
-  RolePermission,
   UserPermissionOverride,
   SystemModule,
   PermissionAction,
@@ -76,8 +75,11 @@ const GLOBAL_PERMISSION_CACHE = {
 
 export class PermissionService {
   private readonly rolePermissionsCollection = 'rolePermissions';
-  private readonly userPermissionOverridesCollection = 'userPermissionOverrides';
+  private readonly usersCollection = 'users'; // NEW: permissions stored in user document
   private readonly customRolesCollection = 'customRoles';
+
+  // DEPRECATED: kept for backward compatibility during migration
+  private readonly userPermissionOverridesCollection = 'userPermissionOverrides';
 
   // Use GLOBAL cache (shared across ALL instances)
   private rolePermissionsCache = GLOBAL_PERMISSION_CACHE.rolePermissionsCache;
@@ -184,11 +186,26 @@ export class PermissionService {
           const customRoleData = customRoleSnap.data();
 
           if (customRoleData?.isActive) {
+            const originalModules = customRoleData.modules || [];
+
+            // Clean obsolete actions
+            const { cleaned: cleanedModules, hadObsolete } = this.cleanObsoleteActions(originalModules);
+
+            // If had obsolete actions, update Firestore
+            if (hadObsolete) {
+              console.log(`Migrating custom role "${role}" - removing obsolete permissions`);
+              await updateDoc(customRoleRef, {
+                modules: cleanedModules,
+                updatedAt: Timestamp.now(),
+                updatedBy: 'system-migration'
+              });
+            }
+
             const result: RolePermissionConfig = {
               role,
-              modules: customRoleData.modules || [],
-              updatedBy: customRoleData.updatedBy || customRoleData.createdBy,
-              updatedAt: customRoleData.updatedAt?.toDate() || customRoleData.createdAt?.toDate()
+              modules: cleanedModules,
+              updatedBy: hadObsolete ? 'system-migration' : (customRoleData.updatedBy || customRoleData.createdBy),
+              updatedAt: hadObsolete ? new Date() : (customRoleData.updatedAt?.toDate() || customRoleData.createdAt?.toDate())
             };
 
             // Cache the result
@@ -209,11 +226,26 @@ export class PermissionService {
 
       if (docSnap.exists()) {
         const data = docSnap.data();
+        const originalModules = data.modules || [];
+
+        // Clean obsolete actions
+        const { cleaned: cleanedModules, hadObsolete } = this.cleanObsoleteActions(originalModules);
+
+        // If had obsolete actions, update Firestore
+        if (hadObsolete) {
+          console.log(`Migrating role "${role}" - removing obsolete permissions`);
+          await updateDoc(doc(db, this.rolePermissionsCollection, role), {
+            modules: cleanedModules,
+            updatedAt: Timestamp.now(),
+            updatedBy: 'system-migration'
+          });
+        }
+
         result = {
           role,
-          modules: data.modules || [],
-          updatedBy: data.updatedBy,
-          updatedAt: data.updatedAt?.toDate()
+          modules: cleanedModules,
+          updatedBy: hadObsolete ? 'system-migration' : data.updatedBy,
+          updatedAt: hadObsolete ? new Date() : data.updatedAt?.toDate()
         };
       } else {
         // Return default permissions if no custom config exists
@@ -281,9 +313,10 @@ export class PermissionService {
   }
 
   // Get user permission overrides (with cache)
+  // NEW: Now reads from /users/{userId}.customPermissions instead of separate collection
   async getUserPermissionOverrides(userId: string): Promise<UserPermissionConfig | null> {
     const cacheKey = `user_overrides_${userId}`;
-    
+
     // Check cache first
     const cached = this.getCachedData<UserPermissionConfig | null>(cacheKey);
     if (cached !== null) {
@@ -291,46 +324,56 @@ export class PermissionService {
     }
 
     try {
-      const docRef = doc(db, this.userPermissionOverridesCollection, userId);
-      const docSnap = await getDoc(docRef);
-      
+      // NEW: Read from user document
+      const userRef = doc(db, this.usersCollection, userId);
+      const userSnap = await getDoc(userRef);
+
       let result: UserPermissionConfig | null = null;
-      
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        result = {
-          userId,
-          userEmail: data.userEmail,
-          userName: data.userName,
-          grantedModules: data.grantedModules || [],
-          revokedModules: data.revokedModules || [],
-          updatedBy: data.updatedBy,
-          updatedAt: data.updatedAt?.toDate()
-        };
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        const customPermissions = userData.customPermissions;
+
+        // Check if user has custom permissions
+        if (customPermissions && (
+          (customPermissions.granted && customPermissions.granted.length > 0) ||
+          (customPermissions.revoked && customPermissions.revoked.length > 0)
+        )) {
+          result = {
+            userId,
+            userEmail: userData.email || '',
+            userName: userData.displayName || userData.name || '',
+            grantedModules: customPermissions.granted || [],
+            revokedModules: customPermissions.revoked || [],
+            updatedBy: userData.customPermissionsUpdatedBy,
+            updatedAt: userData.customPermissionsUpdatedAt?.toDate()
+          };
+        }
       }
-      
+
       // Cache the result (even if null)
       this.setCachedData(cacheKey, result);
-      
+
       return result;
     } catch (error) {
       console.error('Error getting user permission overrides:', error);
-      
+
       // Cache null result for permission errors
-      const isPermissionError = 
-        error instanceof Error && 
+      const isPermissionError =
+        error instanceof Error &&
         (error.message.includes('permissions') || error.message.includes('Missing or insufficient'));
-        
+
       if (isPermissionError) {
         this.setCachedData(cacheKey, null);
         return null;
       }
-      
+
       throw new Error('Erro ao buscar permissões do usuário');
     }
   }
 
   // Update user permission overrides
+  // NEW: Now writes to /users/{userId}.customPermissions instead of separate collection
   async updateUserPermissionOverrides(
     userId: string,
     userEmail: string,
@@ -340,45 +383,34 @@ export class PermissionService {
     updatedBy: string
   ): Promise<void> {
     try {
-      const docRef = doc(db, this.userPermissionOverridesCollection, userId);
+      // NEW: Write to user document
+      const userRef = doc(db, this.usersCollection, userId);
 
-      // If no overrides, clear the document
-      if (grantedModules.length === 0 && revokedModules.length === 0) {
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          await updateDoc(docRef, {
-            grantedModules: [],
-            revokedModules: [],
-            updatedBy,
-            updatedAt: Timestamp.now()
-          });
-        }
-
-        // Clear cache immediately
-        this.clearCache(`user_${userId}`);
-        return;
-      }
-
-      const dataToSave = {
-        userId,
-        userEmail,
-        userName,
-        grantedModules,
-        revokedModules,
-        updatedBy,
-        updatedAt: Timestamp.now()
+      // Prepare customPermissions in new format
+      const customPermissions = {
+        granted: grantedModules,
+        revoked: revokedModules
       };
 
-      await setDoc(docRef, dataToSave);
+      // Update user document with custom permissions
+      await updateDoc(userRef, {
+        customPermissions,
+        customPermissionsUpdatedBy: updatedBy,
+        customPermissionsUpdatedAt: Timestamp.now()
+      });
 
-      // Clear cache immediately after save
-      this.clearCache(`user_${userId}`);
+      // Clear all related caches
+      this.clearCache(`user_overrides_${userId}`);
+      this.clearCache(`all_permissions_${userId}`);
 
-      // Verify the save worked by reading it back
-      const verifyDoc = await getDoc(docRef);
-      if (!verifyDoc.exists()) {
-        console.warn('Verification failed: Document does not exist after save');
-      }
+      // Clear all permission caches for this user (handles role variants)
+      const keysToDelete: string[] = [];
+      this.cacheExpiry.forEach((_, key) => {
+        if (key.includes(userId)) {
+          keysToDelete.push(key);
+        }
+      });
+      keysToDelete.forEach(key => this.clearCache(key));
 
     } catch (error) {
       console.error('Error updating user permission overrides:', error);
@@ -387,35 +419,53 @@ export class PermissionService {
   }
 
   // Get all users with permission overrides
+  // NEW: Now queries users collection for documents with customPermissions
   async getAllUserOverrides(): Promise<UserPermissionConfig[]> {
     try {
-      const querySnapshot = await getDocs(collection(db, this.userPermissionOverridesCollection));
-      
-      return querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          userId: doc.id,
-          userEmail: data.userEmail,
-          userName: data.userName,
-          grantedModules: data.grantedModules || [],
-          revokedModules: data.revokedModules || [],
-          updatedBy: data.updatedBy,
-          updatedAt: data.updatedAt?.toDate()
-        };
-      });
+      // Query users that have customPermissions field
+      const usersQuery = query(
+        collection(db, this.usersCollection),
+        where('customPermissions', '!=', null)
+      );
+      const querySnapshot = await getDocs(usersQuery);
+
+      const results: UserPermissionConfig[] = [];
+
+      for (const userDoc of querySnapshot.docs) {
+        const userData = userDoc.data();
+        const customPermissions = userData.customPermissions;
+
+        // Skip if no actual permissions
+        if (!customPermissions ||
+          ((!customPermissions.granted || customPermissions.granted.length === 0) &&
+           (!customPermissions.revoked || customPermissions.revoked.length === 0))) {
+          continue;
+        }
+
+        results.push({
+          userId: userDoc.id,
+          userEmail: userData.email || '',
+          userName: userData.displayName || userData.name || '',
+          grantedModules: customPermissions.granted || [],
+          revokedModules: customPermissions.revoked || [],
+          updatedBy: userData.customPermissionsUpdatedBy,
+          updatedAt: userData.customPermissionsUpdatedAt?.toDate()
+        });
+      }
+
+      return results;
     } catch (error: any) {
       // If it's a permission error or the collection doesn't exist, return empty array
-      // Check for various Firebase error formats
-      const isPermissionError = 
-        error?.code === 'permission-denied' || 
+      const isPermissionError =
+        error?.code === 'permission-denied' ||
         error?.message?.includes('Missing or insufficient permissions') ||
         error?.message?.includes('permissions') ||
         error?.name === 'FirebaseError';
-        
+
       if (isPermissionError) {
         return [];
       }
-      
+
       // Only log unexpected errors
       console.error('Error getting all user overrides:', error);
       throw new Error('Erro ao buscar todas as permissões de usuários');
@@ -484,37 +534,85 @@ export class PermissionService {
     }
   }
 
+  // Get valid actions (current PermissionAction enum values)
+  private getValidActions(): PermissionAction[] {
+    return Object.values(PermissionAction);
+  }
+
+  // Clean obsolete actions from modules
+  private cleanObsoleteActions(modules: { module: SystemModule; actions: PermissionAction[] }[]): {
+    cleaned: { module: SystemModule; actions: PermissionAction[] }[];
+    hadObsolete: boolean
+  } {
+    const validActions = this.getValidActions();
+    let hadObsolete = false;
+
+    const cleaned = modules
+      .map(m => {
+        const cleanedActions = m.actions.filter(action => {
+          const isValid = validActions.includes(action);
+          if (!isValid) {
+            hadObsolete = true;
+            console.log(`Removing obsolete action "${action}" from module "${m.module}"`);
+          }
+          return isValid;
+        });
+        return { module: m.module, actions: cleanedActions };
+      })
+      .filter(m => m.actions.length > 0); // Remove modules with no valid actions
+
+    return { cleaned, hadObsolete };
+  }
+
   // Get all custom roles
   async getAllCustomRoles(): Promise<CustomRoleConfig[]> {
     try {
       const querySnapshot = await getDocs(collection(db, this.customRolesCollection));
-      
-      return querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          roleId: doc.id,
+      const roles: CustomRoleConfig[] = [];
+
+      for (const docSnapshot of querySnapshot.docs) {
+        const data = docSnapshot.data();
+        const originalModules = data.modules || [];
+
+        // Clean obsolete actions
+        const { cleaned: cleanedModules, hadObsolete } = this.cleanObsoleteActions(originalModules);
+
+        // If had obsolete actions, update Firestore
+        if (hadObsolete) {
+          console.log(`Migrating custom role "${docSnapshot.id}" - removing obsolete permissions`);
+          await updateDoc(doc(db, this.customRolesCollection, docSnapshot.id), {
+            modules: cleanedModules,
+            updatedAt: Timestamp.now(),
+            updatedBy: 'system-migration'
+          });
+        }
+
+        roles.push({
+          roleId: docSnapshot.id,
           roleName: data.roleName,
           displayName: data.displayName,
           description: data.description,
-          modules: data.modules || [],
+          modules: cleanedModules,
           isActive: data.isActive ?? true,
           createdBy: data.createdBy,
           createdAt: data.createdAt?.toDate() || new Date(),
-          updatedBy: data.updatedBy,
-          updatedAt: data.updatedAt?.toDate(),
-        };
-      });
+          updatedBy: hadObsolete ? 'system-migration' : data.updatedBy,
+          updatedAt: hadObsolete ? new Date() : data.updatedAt?.toDate(),
+        });
+      }
+
+      return roles;
     } catch (error: any) {
-      const isPermissionError = 
-        error?.code === 'permission-denied' || 
+      const isPermissionError =
+        error?.code === 'permission-denied' ||
         error?.message?.includes('Missing or insufficient permissions') ||
         error?.message?.includes('permissions') ||
         error?.name === 'FirebaseError';
-        
+
       if (isPermissionError) {
         return [];
       }
-      
+
       console.error('Error getting custom roles:', error);
       throw new Error('Erro ao buscar funções personalizadas');
     }
@@ -539,22 +637,37 @@ export class PermissionService {
       }
 
       const data = docSnap.data();
+      const originalModules = data.modules || [];
+
+      // Clean obsolete actions
+      const { cleaned: cleanedModules, hadObsolete } = this.cleanObsoleteActions(originalModules);
+
+      // If had obsolete actions, update Firestore
+      if (hadObsolete) {
+        console.log(`Migrating custom role "${roleId}" - removing obsolete permissions`);
+        await updateDoc(docRef, {
+          modules: cleanedModules,
+          updatedAt: Timestamp.now(),
+          updatedBy: 'system-migration'
+        });
+      }
+
       const customRole: CustomRoleConfig = {
         roleId,
         roleName: data.roleName,
         displayName: data.displayName,
         description: data.description,
-        modules: data.modules || [],
+        modules: cleanedModules,
         isActive: data.isActive ?? true,
         createdBy: data.createdBy,
         createdAt: data.createdAt?.toDate() || new Date(),
-        updatedBy: data.updatedBy,
-        updatedAt: data.updatedAt?.toDate(),
+        updatedBy: hadObsolete ? 'system-migration' : data.updatedBy,
+        updatedAt: hadObsolete ? new Date() : data.updatedAt?.toDate(),
       };
 
       // Cache the result
       this.setCachedData(cacheKey, customRole);
-      
+
       return customRole;
     } catch (error) {
       console.error('Error getting custom role:', error);
@@ -571,7 +684,7 @@ export class PermissionService {
     try {
       const docRef = doc(db, this.customRolesCollection, roleId);
       const existingRole = await getDoc(docRef);
-      
+
       if (!existingRole.exists()) {
         throw new Error('Função personalizada não encontrada');
       }
@@ -585,6 +698,11 @@ export class PermissionService {
       // Clear cache for this role
       this.clearCache(`custom_role_${roleId}`);
       this.clearCache(`role_${roleId}`);
+
+      // NEW: Sync rolePermissions for all users with this role
+      if (updates.modules || updates.isActive !== undefined) {
+        await this.syncRolePermissionsForRole(roleId);
+      }
 
       // Clear all user permission caches so users with this role get updated permissions
       this.clearAllUserPermissionCaches();
@@ -602,7 +720,7 @@ export class PermissionService {
     try {
       const docRef = doc(db, this.customRolesCollection, roleId);
       const existingRole = await getDoc(docRef);
-      
+
       if (!existingRole.exists()) {
         throw new Error('Função personalizada não encontrada');
       }
@@ -615,6 +733,9 @@ export class PermissionService {
       // Clear cache for this role
       this.clearCache(`custom_role_${roleId}`);
       this.clearCache(`role_${roleId}`);
+
+      // NEW: Clear rolePermissions for all users with this role
+      await this.syncRolePermissionsForRole(roleId);
 
       // Clear all user permission caches so users with this role lose permissions
       this.clearAllUserPermissionCaches();
@@ -632,7 +753,101 @@ export class PermissionService {
     return ['admin', 'secretary', 'professional', 'leader', 'member', 'finance'];
   }
 
+  // NEW: Update role permissions in user document
+  // Called when assigning a custom role to a user
+  async updateUserRolePermissions(
+    userId: string,
+    roleId: string
+  ): Promise<void> {
+    try {
+      const userRef = doc(db, this.usersCollection, userId);
+
+      // Check if it's a default role
+      if (this.getDefaultRoles().includes(roleId)) {
+        // For default roles, remove rolePermissions (will use DEFAULT_ROLE_PERMISSIONS)
+        await updateDoc(userRef, {
+          rolePermissions: null,
+          rolePermissionsUpdatedAt: Timestamp.now()
+        });
+      } else {
+        // For custom roles, copy permissions from custom role to user document
+        const customRole = await this.getCustomRole(roleId);
+
+        if (customRole && customRole.isActive) {
+          await updateDoc(userRef, {
+            rolePermissions: customRole.modules,
+            rolePermissionsUpdatedAt: Timestamp.now()
+          });
+        } else {
+          console.warn(`Custom role "${roleId}" not found or inactive`);
+          // Clear rolePermissions if role not found
+          await updateDoc(userRef, {
+            rolePermissions: null,
+            rolePermissionsUpdatedAt: Timestamp.now()
+          });
+        }
+      }
+
+      // Clear caches for this user
+      this.clearCache(`user_overrides_${userId}`);
+      const keysToDelete: string[] = [];
+      this.cacheExpiry.forEach((_, key) => {
+        if (key.includes(userId)) {
+          keysToDelete.push(key);
+        }
+      });
+      keysToDelete.forEach(key => this.clearCache(key));
+
+    } catch (error) {
+      console.error('Error updating user role permissions:', error);
+      throw new Error('Erro ao atualizar permissões da função do usuário');
+    }
+  }
+
+  // NEW: Sync role permissions for all users with a specific custom role
+  // Called when a custom role is updated
+  async syncRolePermissionsForRole(roleId: string): Promise<number> {
+    try {
+      // Get the custom role
+      const customRole = await this.getCustomRole(roleId);
+      if (!customRole) {
+        console.warn(`Custom role "${roleId}" not found`);
+        return 0;
+      }
+
+      // Find all users with this role
+      const usersQuery = query(
+        collection(db, this.usersCollection),
+        where('role', '==', roleId)
+      );
+      const usersSnapshot = await getDocs(usersQuery);
+
+      let updatedCount = 0;
+
+      for (const userDoc of usersSnapshot.docs) {
+        await updateDoc(userDoc.ref, {
+          rolePermissions: customRole.isActive ? customRole.modules : null,
+          rolePermissionsUpdatedAt: Timestamp.now()
+        });
+        updatedCount++;
+
+        // Clear cache for this user
+        const userId = userDoc.id;
+        this.clearCache(`user_overrides_${userId}`);
+      }
+
+      // Clear all permission caches
+      this.clearAllUserPermissionCaches();
+
+      return updatedCount;
+    } catch (error) {
+      console.error('Error syncing role permissions:', error);
+      throw new Error('Erro ao sincronizar permissões da função');
+    }
+  }
+
   // Get ALL permissions for a user at once (OPTIMIZED)
+  // NEW: Also considers rolePermissions from user document for custom roles
   async getAllUserPermissions(userId: string, userRole: string): Promise<Map<string, boolean>> {
     // Check cache first
     const cacheKey = `all_permissions_${userId}_${userRole}`;
@@ -642,21 +857,36 @@ export class PermissionService {
     }
 
     try {
-      // Get role permissions and user overrides in parallel
-      const [roleConfig, userOverrides] = await Promise.all([
-        this.getRolePermissions(userRole),
-        this.getUserPermissionOverrides(userId)
-      ]);
+      // NEW: Get user document to check for rolePermissions and customPermissions
+      const userRef = doc(db, this.usersCollection, userId);
+      const userSnap = await getDoc(userRef);
+      const userData = userSnap.exists() ? userSnap.data() : null;
 
-      // Build override object if user has overrides
+      // Get role permissions - prefer user's rolePermissions field (for custom roles)
+      let roleModules: { module: SystemModule; actions: PermissionAction[] }[] = [];
+
+      if (userData?.rolePermissions && Array.isArray(userData.rolePermissions)) {
+        // Use rolePermissions from user document (custom role or cached)
+        roleModules = userData.rolePermissions;
+      } else {
+        // Fallback to querying role permissions collection
+        const roleConfig = await this.getRolePermissions(userRole);
+        roleModules = roleConfig.modules;
+      }
+
+      // Get custom permission overrides from user document
+      const customPermissions = userData?.customPermissions;
       let overrideObj: UserPermissionOverride | undefined;
 
-      if (userOverrides) {
+      if (customPermissions && (
+        (customPermissions.granted && customPermissions.granted.length > 0) ||
+        (customPermissions.revoked && customPermissions.revoked.length > 0)
+      )) {
         const grantedPermissions: Permission[] = [];
         const revokedPermissions: Permission[] = [];
 
-        userOverrides.grantedModules.forEach(m => {
-          m.actions.forEach(a => {
+        (customPermissions.granted || []).forEach((m: any) => {
+          (m.actions || []).forEach((a: PermissionAction) => {
             grantedPermissions.push({
               id: `${m.module}_${a}`,
               module: m.module,
@@ -666,8 +896,8 @@ export class PermissionService {
           });
         });
 
-        userOverrides.revokedModules.forEach(m => {
-          m.actions.forEach(a => {
+        (customPermissions.revoked || []).forEach((m: any) => {
+          (m.actions || []).forEach((a: PermissionAction) => {
             revokedPermissions.push({
               id: `${m.module}_${a}`,
               module: m.module,
@@ -682,7 +912,6 @@ export class PermissionService {
           grantedPermissions,
           revokedPermissions
         };
-
       }
 
       // Build permission map for all possible combinations
@@ -694,20 +923,9 @@ export class PermissionService {
         for (const action of allActions) {
           const key = `${module}_${action}`;
 
-          // Check if permission is revoked via override
-          let hasAccess = false;
+          // Priority: 1. Custom grants, 2. Custom revokes, 3. Role permissions
 
-          if (overrideObj?.revokedPermissions) {
-            const isRevoked = overrideObj.revokedPermissions.some(
-              p => p.module === module && p.action === action
-            );
-            if (isRevoked) {
-              permissionMap.set(key, false);
-              continue;
-            }
-          }
-
-          // Check if permission is granted via override
+          // Check if permission is granted via override (highest priority)
           if (overrideObj?.grantedPermissions) {
             const isGranted = overrideObj.grantedPermissions.some(
               p => p.module === module && p.action === action
@@ -718,8 +936,20 @@ export class PermissionService {
             }
           }
 
-          // Check role permissions from Firestore (NOT defaults)
-          const moduleConfig = roleConfig.modules.find(m => m.module === module);
+          // Check if permission is revoked via override
+          if (overrideObj?.revokedPermissions) {
+            const isRevoked = overrideObj.revokedPermissions.some(
+              p => p.module === module && p.action === action
+            );
+            if (isRevoked) {
+              permissionMap.set(key, false);
+              continue;
+            }
+          }
+
+          // Check role permissions
+          let hasAccess = false;
+          const moduleConfig = roleModules.find(m => m.module === module);
           if (moduleConfig && moduleConfig.actions.includes(action)) {
             hasAccess = true;
           }

@@ -15,6 +15,7 @@ const ProfessionalAssistenciaPage: React.FC = () => {
 
   useEffect(() => {
     loadAgendamentos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const loadAgendamentos = async () => {

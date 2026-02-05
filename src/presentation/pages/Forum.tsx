@@ -23,10 +23,10 @@ import SocialShareButtons from '../components/SocialShareButtons';
 
 export const Forum: React.FC = () => {
   const { currentUser } = useAuth();
-  const { settings } = useSettings();
+  const { settings: _settings } = useSettings();
   const navigate = useNavigate();
   const { categorySlug, topicId } = useParams();
-  
+
   const [loading, setLoading] = useState(true);
   const [indexBuilding, setIndexBuilding] = useState(false);
   const [categories, setCategories] = useState<ForumCategory[]>([]);
@@ -35,10 +35,10 @@ export const Forum: React.FC = () => {
   const [replies, setReplies] = useState<ForumReply[]>([]);
   const [showCreateTopicModal, setShowCreateTopicModal] = useState(false);
   const [newReply, setNewReply] = useState('');
-  const [filters, setFilters] = useState<TopicFilters>({ status: TopicStatus.PUBLISHED });
+  const [filters, _setFilters] = useState<TopicFilters>({ status: TopicStatus.PUBLISHED });
   const [viewMode, setViewMode] = useState<'categories' | 'topics' | 'topic'>('categories');
-  const [hasMoreTopics, setHasMoreTopics] = useState(false);
-  const [hasMoreReplies, setHasMoreReplies] = useState(false);
+  const [_hasMoreTopics, setHasMoreTopics] = useState(false);
+  const [_hasMoreReplies, setHasMoreReplies] = useState(false);
 
   useEffect(() => {
     loadInitialData();
@@ -54,6 +54,7 @@ export const Forum: React.FC = () => {
     } else {
       setViewMode('categories');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categorySlug, topicId]);
 
   const loadInitialData = async () => {

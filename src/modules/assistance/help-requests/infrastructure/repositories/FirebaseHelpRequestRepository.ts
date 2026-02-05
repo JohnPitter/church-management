@@ -12,8 +12,7 @@ import {
   where,
   orderBy,
   Timestamp,
-  DocumentSnapshot,
-  QuerySnapshot
+  DocumentSnapshot
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { HelpRequest, HelpRequestStatus } from '@modules/assistance/help-requests/domain/entities/HelpRequest';

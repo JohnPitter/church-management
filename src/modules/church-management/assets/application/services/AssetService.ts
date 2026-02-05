@@ -12,8 +12,7 @@ import {
   query,
   where,
   orderBy,
-  Timestamp,
-  writeBatch
+  Timestamp
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import {

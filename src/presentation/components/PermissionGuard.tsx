@@ -1,8 +1,8 @@
 // Component - Permission Guard
-// Wrapper component that shows/hides content based on atomic permissions
+// Wrapper component that shows/hides content based on permissions
 
 import React, { ReactNode } from 'react';
-import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
+import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 
 interface PermissionGuardProps {
@@ -52,7 +52,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   requireAll = false,
   permissions
 }) => {
-  const { hasPermission, hasAnyPermission, hasAllPermissions, loading } = useAtomicPermissions();
+  const { hasPermission, hasAnyPermission, hasAllPermissions, loading } = usePermissions();
 
   if (loading) {
     return (
@@ -140,7 +140,7 @@ export const CanManagePermissions: React.FC<{ children: React.ReactNode; fallbac
  * return canEdit ? <EditButton /> : null;
  */
 export const usePermissionCheck = (module: SystemModule, action: PermissionAction): boolean => {
-  const { hasPermission } = useAtomicPermissions();
+  const { hasPermission } = usePermissions();
   return hasPermission(module, action);
 };
 

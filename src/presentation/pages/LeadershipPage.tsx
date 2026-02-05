@@ -2,7 +2,7 @@
 // Displays church leaders and pastoral team
 
 import React, { useState, useEffect } from 'react';
-import { Leader, LeaderStatus, LEADER_ROLE_LABELS } from '@modules/content-management/leadership/domain/entities/Leader';
+import { Leader, LEADER_ROLE_LABELS } from '@modules/content-management/leadership/domain/entities/Leader';
 import { LeadershipService } from '@modules/content-management/leadership/application/services/LeadershipService';
 
 export const LeadershipPage: React.FC = () => {
@@ -13,6 +13,7 @@ export const LeadershipPage: React.FC = () => {
 
   useEffect(() => {
     loadLeaders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadLeaders = async () => {

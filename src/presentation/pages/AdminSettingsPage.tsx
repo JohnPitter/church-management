@@ -8,6 +8,25 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/config/firebase';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
+interface AboutStatistic {
+  value: string;
+  label: string;
+  icon: string;
+}
+
+interface AboutPageSettings {
+  mission: string;
+  vision: string;
+  statistics: AboutStatistic[];
+}
+
+interface BankAccountSettings {
+  bankName: string;
+  agency: string;
+  accountNumber: string;
+  accountType?: string;
+}
+
 interface SystemSettings {
   churchName: string;
   churchTagline: string;
@@ -28,6 +47,10 @@ interface SystemSettings {
   maxEventParticipants: number;
   allowPublicRegistration: boolean;
   maintenanceMode: boolean;
+  about?: AboutPageSettings;
+  pixKey?: string;
+  bankAccount?: BankAccountSettings;
+  whatsappNumber?: string;
 }
 
 export const AdminSettingsPage: React.FC = () => {
@@ -39,27 +62,43 @@ export const AdminSettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('general');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load settings from context when available, with additional local-only settings
+  // Default about settings
+  const defaultAboutSettings: AboutPageSettings = {
+    mission: 'Nossa igreja tem como missão transformar vidas através do amor de Deus, promovendo comunhão, discipulado e serviço à comunidade.',
+    vision: 'Ser uma igreja relevante, que impacta positivamente a sociedade através do evangelho de Jesus Cristo.',
+    statistics: [
+      { value: '10+', label: 'Anos de História', icon: '📅' },
+      { value: '100+', label: 'Membros Ativos', icon: '👥' },
+      { value: '5+', label: 'Ministérios', icon: '⛪' },
+      { value: '500+', label: 'Vidas Impactadas', icon: '❤️' }
+    ]
+  };
+
+  // Load settings from context when available
   useEffect(() => {
     if (contextSettings) {
       setSettings({
         ...contextSettings,
-        // Additional settings not stored in church context - using defaults
-        emailNotifications: true,
-        smsNotifications: false,
-        eventReminders: true,
-        autoApproveMembers: false,
-        requireEventConfirmation: true,
-        maxEventParticipants: 200,
-        allowPublicRegistration: true,
-        maintenanceMode: false
+        // Use context values or defaults
+        emailNotifications: contextSettings.emailNotifications ?? true,
+        smsNotifications: contextSettings.smsNotifications ?? false,
+        eventReminders: contextSettings.eventReminders ?? true,
+        autoApproveMembers: contextSettings.autoApproveMembers ?? false,
+        requireEventConfirmation: contextSettings.requireEventConfirmation ?? true,
+        maxEventParticipants: contextSettings.maxEventParticipants ?? 200,
+        allowPublicRegistration: contextSettings.allowPublicRegistration ?? true,
+        maintenanceMode: contextSettings.maintenanceMode ?? false,
+        about: contextSettings.about || defaultAboutSettings
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contextSettings]);
 
   const tabs = [
     { id: 'general', label: 'Geral', icon: '⚙️' },
     { id: 'appearance', label: 'Aparência', icon: '🎨' },
+    { id: 'about', label: 'Sobre Nós', icon: '📄' },
+    { id: 'payments', label: 'Pagamentos', icon: '💰' },
     { id: 'notifications', label: 'Notificações', icon: '🔔' },
     { id: 'events', label: 'Eventos', icon: '📅' },
     { id: 'security', label: 'Segurança', icon: '🔒' }
@@ -80,7 +119,7 @@ export const AdminSettingsPage: React.FC = () => {
 
   const handleSave = async () => {
     if (!settings) return;
-    
+
     setSaving(true);
     try {
       // Update context settings (which saves to Firebase)
@@ -95,7 +134,24 @@ export const AdminSettingsPage: React.FC = () => {
         primaryColor: settings.primaryColor,
         secondaryColor: settings.secondaryColor,
         timezone: settings.timezone,
-        language: settings.language
+        language: settings.language,
+        about: settings.about,
+        // Notification settings
+        emailNotifications: settings.emailNotifications,
+        smsNotifications: settings.smsNotifications,
+        eventReminders: settings.eventReminders,
+        // Event settings
+        requireEventConfirmation: settings.requireEventConfirmation,
+        maxEventParticipants: settings.maxEventParticipants,
+        // Security settings
+        autoApproveMembers: settings.autoApproveMembers,
+        allowPublicRegistration: settings.allowPublicRegistration,
+        maintenanceMode: settings.maintenanceMode,
+        // Payment settings
+        pixKey: settings.pixKey,
+        bankAccount: settings.bankAccount,
+        // Contact settings
+        whatsappNumber: settings.whatsappNumber
       });
       
       await loggingService.logSystem('info', 'System settings updated', 
@@ -497,6 +553,289 @@ export const AdminSettingsPage: React.FC = () => {
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                           />
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* About Tab */}
+                {activeTab === 'about' && (
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Missão da Igreja
+                      </label>
+                      <textarea
+                        value={settings?.about?.mission || ''}
+                        onChange={(e) => {
+                          if (!settings) return;
+                          setSettings({
+                            ...settings,
+                            about: {
+                              ...settings.about || defaultAboutSettings,
+                              mission: e.target.value
+                            }
+                          });
+                        }}
+                        rows={4}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Descreva a missão da sua igreja..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Visão da Igreja
+                      </label>
+                      <textarea
+                        value={settings?.about?.vision || ''}
+                        onChange={(e) => {
+                          if (!settings) return;
+                          setSettings({
+                            ...settings,
+                            about: {
+                              ...settings.about || defaultAboutSettings,
+                              vision: e.target.value
+                            }
+                          });
+                        }}
+                        rows={4}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Descreva a visão da sua igreja..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-4">
+                        Estatísticas (exibidas na página Sobre Nós)
+                      </label>
+                      <div className="space-y-4">
+                        {(settings?.about?.statistics || defaultAboutSettings.statistics).map((stat, index) => (
+                          <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div className="flex-shrink-0">
+                              <label className="block text-xs font-medium text-gray-500 mb-1">Ícone</label>
+                              <input
+                                type="text"
+                                value={stat.icon}
+                                onChange={(e) => {
+                                  if (!settings) return;
+                                  const newStats = [...(settings.about?.statistics || defaultAboutSettings.statistics)];
+                                  newStats[index] = { ...newStats[index], icon: e.target.value };
+                                  setSettings({
+                                    ...settings,
+                                    about: {
+                                      ...settings.about || defaultAboutSettings,
+                                      statistics: newStats
+                                    }
+                                  });
+                                }}
+                                className="w-16 px-2 py-2 text-center text-2xl border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="block text-xs font-medium text-gray-500 mb-1">Valor</label>
+                              <input
+                                type="text"
+                                value={stat.value}
+                                onChange={(e) => {
+                                  if (!settings) return;
+                                  const newStats = [...(settings.about?.statistics || defaultAboutSettings.statistics)];
+                                  newStats[index] = { ...newStats[index], value: e.target.value };
+                                  setSettings({
+                                    ...settings,
+                                    about: {
+                                      ...settings.about || defaultAboutSettings,
+                                      statistics: newStats
+                                    }
+                                  });
+                                }}
+                                placeholder="Ex: 10+"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="block text-xs font-medium text-gray-500 mb-1">Descrição</label>
+                              <input
+                                type="text"
+                                value={stat.label}
+                                onChange={(e) => {
+                                  if (!settings) return;
+                                  const newStats = [...(settings.about?.statistics || defaultAboutSettings.statistics)];
+                                  newStats[index] = { ...newStats[index], label: e.target.value };
+                                  setSettings({
+                                    ...settings,
+                                    about: {
+                                      ...settings.about || defaultAboutSettings,
+                                      statistics: newStats
+                                    }
+                                  });
+                                }}
+                                placeholder="Ex: Anos de História"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-xs text-gray-500">
+                        Dica: Use emojis como ícones (📅, 👥, ⛪, ❤️, 🙏, etc.)
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Payments Tab */}
+                {activeTab === 'payments' && (
+                  <div className="space-y-6">
+                    <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+                      <div className="flex">
+                        <span className="text-xl text-blue-400">💳</span>
+                        <div className="ml-3">
+                          <h3 className="text-sm font-medium text-blue-800">
+                            Configurações de Pagamento
+                          </h3>
+                          <div className="mt-2 text-sm text-blue-700">
+                            <p>
+                              Configure as informações de pagamento que serão exibidas na página de doações.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Chave PIX
+                      </label>
+                      <input
+                        type="text"
+                        value={settings?.pixKey || ''}
+                        onChange={(e) => handleChange('pixKey', e.target.value)}
+                        placeholder="Ex: email@igreja.com.br ou CNPJ ou telefone"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Esta chave PIX será exibida para os doadores
+                      </p>
+                    </div>
+
+                    <div className="border-t border-gray-200 pt-6">
+                      <h4 className="text-base font-medium text-gray-900 mb-4">Dados Bancários</h4>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Nome do Banco
+                          </label>
+                          <input
+                            type="text"
+                            value={settings?.bankAccount?.bankName || ''}
+                            onChange={(e) => {
+                              if (!settings) return;
+                              setSettings({
+                                ...settings,
+                                bankAccount: {
+                                  ...settings.bankAccount || { bankName: '', agency: '', accountNumber: '' },
+                                  bankName: e.target.value
+                                }
+                              });
+                            }}
+                            placeholder="Ex: Banco do Brasil, Caixa Econômica, etc."
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Agência
+                            </label>
+                            <input
+                              type="text"
+                              value={settings?.bankAccount?.agency || ''}
+                              onChange={(e) => {
+                                if (!settings) return;
+                                setSettings({
+                                  ...settings,
+                                  bankAccount: {
+                                    ...settings.bankAccount || { bankName: '', agency: '', accountNumber: '' },
+                                    agency: e.target.value
+                                  }
+                                });
+                              }}
+                              placeholder="Ex: 1234"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Conta
+                            </label>
+                            <input
+                              type="text"
+                              value={settings?.bankAccount?.accountNumber || ''}
+                              onChange={(e) => {
+                                if (!settings) return;
+                                setSettings({
+                                  ...settings,
+                                  bankAccount: {
+                                    ...settings.bankAccount || { bankName: '', agency: '', accountNumber: '' },
+                                    accountNumber: e.target.value
+                                  }
+                                });
+                              }}
+                              placeholder="Ex: 12345-6"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Tipo de Conta
+                          </label>
+                          <select
+                            value={settings?.bankAccount?.accountType || 'Corrente'}
+                            onChange={(e) => {
+                              if (!settings) return;
+                              setSettings({
+                                ...settings,
+                                bankAccount: {
+                                  ...settings.bankAccount || { bankName: '', agency: '', accountNumber: '' },
+                                  accountType: e.target.value
+                                }
+                              });
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                          >
+                            <option value="Corrente">Conta Corrente</option>
+                            <option value="Poupança">Conta Poupança</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-200 pt-6">
+                      <h4 className="text-base font-medium text-gray-900 mb-4">Contato via WhatsApp</h4>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Número do WhatsApp
+                        </label>
+                        <input
+                          type="tel"
+                          value={settings?.whatsappNumber || ''}
+                          onChange={(e) => handleChange('whatsappNumber', e.target.value)}
+                          placeholder="Ex: 5511999999999 (apenas números com DDI e DDD)"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                          Este número será usado no botão "Fale Conosco" para abrir o WhatsApp
+                        </p>
+                        <p className="mt-1 text-xs text-gray-500">
+                          Formato: DDI + DDD + Número (ex: 5511999999999)
+                        </p>
                       </div>
                     </div>
                   </div>

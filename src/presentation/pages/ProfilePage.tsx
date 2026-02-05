@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { format } from 'date-fns';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
-import { User, UserRole, UserStatus } from '@/domain/entities/User';
+import { UserRole, UserStatus } from '@/domain/entities/User';
 import { PermissionService } from '@modules/user-management/permissions/application/services/PermissionService';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { auth, storage } from '@/config/firebase';
@@ -41,7 +41,7 @@ interface UserProfile {
 
 
 export const ProfilePage: React.FC = () => {
-  const { currentUser, canCreateContent, refreshUser } = useAuth();
+  const { currentUser, canCreateContent: _canCreateContent, refreshUser } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<UserProfile | null>(null);
@@ -63,6 +63,7 @@ export const ProfilePage: React.FC = () => {
   useEffect(() => {
     loadUserProfile();
     checkAuthProvider();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const checkAuthProvider = () => {

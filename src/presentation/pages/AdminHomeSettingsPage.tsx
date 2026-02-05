@@ -15,7 +15,7 @@ import {
 
 export const AdminHomeSettingsPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const { settings: churchSettings } = useSettings();
+  const { settings: _churchSettings } = useSettings();
   const [homeSettings, setHomeSettings] = useState<HomeSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -37,6 +37,7 @@ export const AdminHomeSettingsPage: React.FC = () => {
 
   useEffect(() => {
     loadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadSettings = async () => {

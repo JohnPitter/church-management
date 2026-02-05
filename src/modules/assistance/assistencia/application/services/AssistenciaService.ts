@@ -10,16 +10,13 @@ import { FirebaseAgendamentoAssistenciaRepository } from '@modules/assistance/ag
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '@/config/firebase';
-import { UserRole, UserStatus } from '@/domain/entities/User';
+import { functions } from '@/config/firebase';
 import {
   ProfissionalAssistencia,
   AgendamentoAssistencia,
   TipoAssistencia,
   StatusAgendamento,
   StatusProfissional,
-  ModalidadeAtendimento,
-  PrioridadeAtendimento,
   EstatisticasAssistencia,
   HorarioFuncionamento,
   AssistenciaEntity

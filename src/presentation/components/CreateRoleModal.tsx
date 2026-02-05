@@ -21,6 +21,7 @@ interface CreateRoleModalProps {
   }) => Promise<void>;
   loading: boolean;
   editingRole?: CustomRoleConfig | null;
+  existingCustomRoles?: CustomRoleConfig[];
 }
 
 export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({

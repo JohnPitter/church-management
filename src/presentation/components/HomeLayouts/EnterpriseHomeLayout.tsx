@@ -68,7 +68,7 @@ export const EnterpriseHomeLayout: React.FC<EnterpriseHomeLayoutProps> = ({ sect
                   </Link>
                   <Link
                     to="/register"
-                    className="bg-transparent border-2 border-blue-300 text-blue-100 px-8 py-4 rounded-full font-semibold hover:bg-blue-300 hover:text-blue-900 transition-all"
+                    className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-blue-900 transition-all"
                   >
                     Criar Conta
                   </Link>
@@ -333,10 +333,25 @@ export const EnterpriseHomeLayout: React.FC<EnterpriseHomeLayoutProps> = ({ sect
                 Tire suas dúvidas, conheça mais sobre nós ou simplesmente diga olá
               </p>
               <div className="flex justify-center gap-4 flex-wrap">
-                <button className="bg-white text-gray-900 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                <button
+                  onClick={() => navigate('/contact')}
+                  className="flex items-center gap-3 bg-white text-gray-900 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                >
+                  <span className="text-2xl">✉️</span>
                   Enviar Mensagem
                 </button>
-                <button className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-all">
+                <button
+                  onClick={() => {
+                    const address = settings?.churchAddress;
+                    if (address) {
+                      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
+                    } else {
+                      navigate('/contact');
+                    }
+                  }}
+                  className="flex items-center gap-3 bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-all"
+                >
+                  <span className="text-2xl">📍</span>
                   Nossa Localização
                 </button>
               </div>
@@ -347,24 +362,51 @@ export const EnterpriseHomeLayout: React.FC<EnterpriseHomeLayoutProps> = ({ sect
 
       {/* Social Media Footer */}
       {sections.socialMedia && (
-        <section className="py-12 bg-gray-800 text-white border-t border-gray-700">
+        <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100">
           <div className="container mx-auto px-6">
-            <div className="max-w-4xl mx-auto">
-              <p className="text-center text-gray-400 mb-6">Siga-nos nas redes sociais</p>
-              <div className="flex justify-center gap-6 flex-wrap">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-12">
+                Siga-nos nas Redes Sociais
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
-                  { name: 'Instagram', icon: '📷' },
-                  { name: 'Facebook', icon: '👍' },
-                  { name: 'YouTube', icon: '▶️' },
-                  { name: 'Twitter', icon: '🐦' }
-                ].map((social) => (
-                  <button
-                    key={social.name}
-                    className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg transition-colors"
+                  {
+                    title: 'Instagram',
+                    desc: 'Fotos e Stories',
+                    icon: '📸',
+                    hoverBg: 'hover:bg-pink-50',
+                    hoverBorder: 'hover:border-pink-500'
+                  },
+                  {
+                    title: 'Facebook',
+                    desc: 'Nossa comunidade',
+                    icon: '👥',
+                    hoverBg: 'hover:bg-blue-50',
+                    hoverBorder: 'hover:border-blue-500'
+                  },
+                  {
+                    title: 'YouTube',
+                    desc: 'Vídeos e Lives',
+                    icon: '🎬',
+                    hoverBg: 'hover:bg-red-50',
+                    hoverBorder: 'hover:border-red-500'
+                  },
+                  {
+                    title: 'X (Twitter)',
+                    desc: 'Atualizações',
+                    icon: '🐦',
+                    hoverBg: 'hover:bg-gray-100',
+                    hoverBorder: 'hover:border-gray-500'
+                  }
+                ].map((social, i) => (
+                  <div
+                    key={i}
+                    className={`bg-white rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-transparent text-center cursor-pointer ${social.hoverBg} ${social.hoverBorder}`}
                   >
-                    <span className="text-xl">{social.icon}</span>
-                    <span className="font-medium">{social.name}</span>
-                  </button>
+                    <div className="text-5xl mb-4">{social.icon}</div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">{social.title}</h3>
+                    <p className="text-gray-600 text-sm">{social.desc}</p>
+                  </div>
                 ))}
               </div>
             </div>

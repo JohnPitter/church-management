@@ -238,6 +238,7 @@ export const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
     const errors = validateForm();
     setFieldErrors(errors);
     setIsFormValid(checkFormValid() && Object.keys(errors).length === 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {

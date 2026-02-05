@@ -4,9 +4,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FirebaseLiveStreamRepository } from '@modules/content-management/live-streaming/infrastructure/repositories/FirebaseLiveStreamRepository';
-import { LiveStream, StreamCategory, StreamStatus } from '@modules/content-management/live-streaming/domain/entities/LiveStream';
+import { LiveStream } from '@modules/content-management/live-streaming/domain/entities/LiveStream';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { db } from '@/config/firebase';
 import { doc, setDoc, deleteDoc, onSnapshot, collection, serverTimestamp } from 'firebase/firestore';
 import SocialShareButtons from '../components/SocialShareButtons';
@@ -142,7 +141,7 @@ export const LivePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showLiveOnly, setShowLiveOnly] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [_lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [viewerCounts, setViewerCounts] = useState<Record<string, number>>({});
   const [totalViewerCounts, setTotalViewerCounts] = useState<Record<string, number>>({});
   const [watchingStreams, setWatchingStreams] = useState<Set<string>>(new Set());
@@ -253,13 +252,14 @@ export const LivePage: React.FC = () => {
     if (!currentUser) return;
 
     const liveStreams = streams.filter(stream => stream.isLive || stream.status === 'live');
-    
+
     liveStreams.forEach(stream => {
       // Auto join ALL live streams when user visits the page
       if (!watchingStreams.has(stream.id)) {
         joinStream(stream.id);
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, streams]);
 
   // Auto leave streams when user leaves the page (visibility API)
@@ -329,6 +329,7 @@ export const LivePage: React.FC = () => {
       document.removeEventListener('click', handleActivity);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, streams, watchingStreams]);
 
   // Cleanup on unmount
@@ -339,6 +340,7 @@ export const LivePage: React.FC = () => {
         leaveStream(streamId);
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const categories = [
@@ -490,7 +492,7 @@ export const LivePage: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const _getStatusColor = (status: string) => {
     switch (status) {
       case 'live': return 'bg-red-100 text-red-800';
       case 'scheduled': return 'bg-blue-100 text-blue-800';
@@ -500,7 +502,7 @@ export const LivePage: React.FC = () => {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const _getStatusText = (status: string) => {
     switch (status) {
       case 'live': return 'Ao Vivo';
       case 'scheduled': return 'Agendado';

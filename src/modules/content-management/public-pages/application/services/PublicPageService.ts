@@ -2,11 +2,9 @@
 // Manages which pages are accessible to non-authenticated users
 
 import { 
-  collection, 
   doc, 
   getDoc, 
-  setDoc, 
-  getDocs,
+  setDoc,
   Timestamp 
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';

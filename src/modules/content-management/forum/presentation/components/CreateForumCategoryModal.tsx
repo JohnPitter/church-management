@@ -2,7 +2,6 @@
 // Modal for creating new forum categories
 
 import React, { useState } from 'react';
-import { ForumCategory } from '../../domain/entities/Forum';
 import { forumService } from '@modules/content-management/forum/infrastructure/services/ForumService';
 
 interface CreateForumCategoryModalProps {

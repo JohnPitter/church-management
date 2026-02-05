@@ -665,68 +665,108 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
                     justifyContent: 'center',
                     flexWrap: 'wrap'
                   }}>
-                    <a
-                      href={isEditMode ? '#' : (settings.primaryButtonLink || '#')}
-                      onClick={isEditMode ? (e) => e.preventDefault() : undefined}
-                      style={{
-                        backgroundColor: settings.primaryButtonBackground || '#ffffff',
-                        color: settings.primaryButtonTextColor || '#1e293b',
-                        padding: '18px 36px',
-                        borderRadius: '16px',
-                        textDecoration: 'none',
-                        fontSize: '1.125rem',
-                        fontWeight: '700',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minWidth: '160px',
-                        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
-                        transition: 'all 0.3s ease',
-                        border: 'none'
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-3px)';
-                        e.currentTarget.style.boxShadow = '0 15px 40px rgba(0, 0, 0, 0.3)';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)';
-                      }}
-                    >
-                      {settings.primaryButtonText || 'Saiba Mais'}
-                    </a>
+                    {!isEditMode && settings.primaryButtonLink ? (
+                      <a
+                        href={settings.primaryButtonLink}
+                        style={{
+                          backgroundColor: settings.primaryButtonBackground || '#ffffff',
+                          color: settings.primaryButtonTextColor || '#1e293b',
+                          padding: '18px 36px',
+                          borderRadius: '16px',
+                          textDecoration: 'none',
+                          fontSize: '1.125rem',
+                          fontWeight: '700',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '160px',
+                          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
+                          transition: 'all 0.3s ease',
+                          border: 'none'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-3px)';
+                          e.currentTarget.style.boxShadow = '0 15px 40px rgba(0, 0, 0, 0.3)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)';
+                        }}
+                      >
+                        {settings.primaryButtonText || 'Saiba Mais'}
+                      </a>
+                    ) : (
+                      <span
+                        style={{
+                          backgroundColor: settings.primaryButtonBackground || '#ffffff',
+                          color: settings.primaryButtonTextColor || '#1e293b',
+                          padding: '18px 36px',
+                          borderRadius: '16px',
+                          fontSize: '1.125rem',
+                          fontWeight: '700',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '160px',
+                          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
+                          cursor: isEditMode ? 'default' : 'pointer'
+                        }}
+                      >
+                        {settings.primaryButtonText || 'Saiba Mais'}
+                      </span>
+                    )}
                     
-                    <a
-                      href={isEditMode ? '#' : (settings.secondaryButtonLink || '#')}
-                      onClick={isEditMode ? (e) => e.preventDefault() : undefined}
-                      style={{
-                        backgroundColor: settings.secondaryButtonBackground || 'transparent',
-                        color: settings.secondaryButtonTextColor || '#ffffff',
-                        padding: '18px 36px',
-                        borderRadius: '16px',
-                        textDecoration: 'none',
-                        fontSize: '1.125rem',
-                        fontWeight: '700',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minWidth: '160px',
-                        border: `2px solid ${settings.secondaryButtonBorderColor || '#ffffff'}`,
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = settings.secondaryButtonBorderColor || '#ffffff';
-                        e.currentTarget.style.color = settings.backgroundColor || '#1e293b';
-                        e.currentTarget.style.transform = 'translateY(-3px)';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = settings.secondaryButtonBackground || 'transparent';
-                        e.currentTarget.style.color = settings.secondaryButtonTextColor || '#ffffff';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                      }}
-                    >
-                      {settings.secondaryButtonText || 'Visite-nos'}
-                    </a>
+                    {!isEditMode && settings.secondaryButtonLink ? (
+                      <a
+                        href={settings.secondaryButtonLink}
+                        style={{
+                          backgroundColor: settings.secondaryButtonBackground || 'transparent',
+                          color: settings.secondaryButtonTextColor || '#ffffff',
+                          padding: '18px 36px',
+                          borderRadius: '16px',
+                          textDecoration: 'none',
+                          fontSize: '1.125rem',
+                          fontWeight: '700',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '160px',
+                          border: `2px solid ${settings.secondaryButtonBorderColor || '#ffffff'}`,
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.backgroundColor = settings.secondaryButtonBorderColor || '#ffffff';
+                          e.currentTarget.style.color = settings.backgroundColor || '#1e293b';
+                          e.currentTarget.style.transform = 'translateY(-3px)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.backgroundColor = settings.secondaryButtonBackground || 'transparent';
+                          e.currentTarget.style.color = settings.secondaryButtonTextColor || '#ffffff';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                      >
+                        {settings.secondaryButtonText || 'Visite-nos'}
+                      </a>
+                    ) : (
+                      <span
+                        style={{
+                          backgroundColor: settings.secondaryButtonBackground || 'transparent',
+                          color: settings.secondaryButtonTextColor || '#ffffff',
+                          padding: '18px 36px',
+                          borderRadius: '16px',
+                          fontSize: '1.125rem',
+                          fontWeight: '700',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '160px',
+                          border: `2px solid ${settings.secondaryButtonBorderColor || '#ffffff'}`,
+                          cursor: isEditMode ? 'default' : 'pointer'
+                        }}
+                      >
+                        {settings.secondaryButtonText || 'Visite-nos'}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -2066,26 +2106,44 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
                 {/* Botão para mais devocionais */}
                 {settings.showButton !== false && (
                 <div style={{ textAlign: 'center', marginTop: '32px' }}>
-                  <a
-                    href={isEditMode ? '#' : (settings.buttonLink || '/devotionals')}
-                    onClick={isEditMode ? (e) => e.preventDefault() : undefined}
-                    style={{
-                      backgroundColor: isDarkMode ? '#3b82f6' : '#2563eb',
-                      color: 'white',
-                      padding: '12px 32px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s',
-                      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
-                      textDecoration: 'none',
-                      display: 'inline-block'
-                    }}
-                  >
-                    📚 Ver Mais Devocionais
-                  </a>
+                  {!isEditMode ? (
+                    <a
+                      href={settings.buttonLink || '/devotionals'}
+                      style={{
+                        backgroundColor: isDarkMode ? '#3b82f6' : '#2563eb',
+                        color: 'white',
+                        padding: '12px 32px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s',
+                        boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
+                        textDecoration: 'none',
+                        display: 'inline-block'
+                      }}
+                    >
+                      📚 Ver Mais Devocionais
+                    </a>
+                  ) : (
+                    <span
+                      style={{
+                        backgroundColor: isDarkMode ? '#3b82f6' : '#2563eb',
+                        color: 'white',
+                        padding: '12px 32px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        cursor: 'default',
+                        boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
+                        display: 'inline-block'
+                      }}
+                    >
+                      📚 Ver Mais Devocionais
+                    </span>
+                  )}
                 </div>
                 )}
               </div>
@@ -2284,8 +2342,7 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
                         border: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
                         transition: 'all 0.3s'
                       }}>
-                        <a
-                          href={isEditMode ? '#' : '#'}
+                        <span
                           style={{
                             backgroundColor: social.bgColor,
                             width: '64px',
@@ -2297,14 +2354,13 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
                             color: 'white',
                             fontSize: '1.75rem',
                             marginBottom: '16px',
-                            textDecoration: 'none',
                             transition: 'all 0.3s',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                            cursor: 'pointer'
                           }}
-                          onClick={isEditMode ? (e) => e.preventDefault() : undefined}
                         >
                           {getSocialIcon(social.name, 24)}
-                        </a>
+                        </span>
                         <h3 style={{
                           fontSize: '1.125rem',
                           fontWeight: '600',

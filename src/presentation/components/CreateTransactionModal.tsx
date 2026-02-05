@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Transaction, 
   FinancialCategory, 
   TransactionType, 
   PaymentMethod,
@@ -54,6 +53,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
     if (isOpen) {
       loadCategories();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, formData.type]);
 
   const loadCategories = async () => {

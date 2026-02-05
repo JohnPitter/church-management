@@ -9,7 +9,7 @@ import { SystemModule, PermissionAction } from 'domain/entities/Permission';
 import { useSettings } from 'presentation/contexts/SettingsContext';
 import { useNavigate } from 'react-router-dom';
 import { HomeBuilderService } from '@modules/content-management/home-builder/application/services/HomeBuilderService';
-import { HomeLayout, HomeBuilderEntity } from '@modules/content-management/home-builder/domain/entities/HomeBuilder';
+import { HomeLayout } from '@modules/content-management/home-builder/domain/entities/HomeBuilder';
 import { ComponentRenderer } from 'presentation/components/HomeBuilder/ComponentRenderer';
 import { BibleVerse, getVerseOfTheDay } from 'data/verses';
 import { format } from 'date-fns';
@@ -151,6 +151,7 @@ const Home: React.FC = () => {
         unsubscribe();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Remove dependency on currentUser since we want this to work for all users
 
   useEffect(() => {

@@ -8,16 +8,13 @@ import {
   TipoAssistencia,
   StatusAgendamento,
   StatusProfissional,
-  ModalidadeAtendimento,
-  PrioridadeAtendimento,
   EstatisticasAssistencia,
   HorarioFuncionamento,
   AvaliacaoServico
 } from '../entities/Assistencia';
 import {
   ProfissionalFilters,
-  AgendamentoFilters,
-  RelatorioFilters
+  AgendamentoFilters
 } from '../repositories/IAssistenciaRepository';
 
 export interface IProfissionalAssistenciaService {

@@ -50,13 +50,33 @@
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "typecheck": "tsc --noEmit",
     "predeploy": "npm run lint && npm run typecheck && npm run build",
-    "setup:indexes": "node scripts/setup-firestore-indexes.js"
+    "setup:indexes": "node scripts/setup-firestore-indexes.js",
+    "migrate:permissions": "npx ts-node scripts/migratePermissions.ts",
+    "migrate:permissions:validate": "npx ts-node scripts/migratePermissions.ts --validate-only"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "plugins": [
+      "unused-imports"
+    ],
+    "rules": {
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        {
+          "vars": "all",
+          "varsIgnorePattern": "^_",
+          "args": "none",
+          "ignoreRestSiblings": true
+        }
+      ],
+      "react-hooks/exhaustive-deps": "warn"
+    }
   },
   "browserslist": {
     "production": [
@@ -76,6 +96,7 @@
     "autoprefixer": "^10.4.21",
     "craco-alias": "^3.0.1",
     "dotenv": "^17.2.3",
+    "eslint-plugin-unused-imports": "^4.3.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "ts-node": "^10.9.2",

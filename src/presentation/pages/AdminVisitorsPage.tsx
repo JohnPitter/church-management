@@ -3,6 +3,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { visitorService, VisitorFilters } from '@modules/church-management/visitors/application/services/VisitorService';
 import {
   Visitor,
@@ -18,6 +20,15 @@ import { RecordVisitModal } from '@modules/church-management/visitors/presentati
 
 export const AdminVisitorsPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  // Permission checks
+  const canView = hasPermission(SystemModule.Visitors, PermissionAction.View);
+  const canCreate = hasPermission(SystemModule.Visitors, PermissionAction.Create);
+  const canUpdate = hasPermission(SystemModule.Visitors, PermissionAction.Update);
+  const canDelete = hasPermission(SystemModule.Visitors, PermissionAction.Delete);
+  const canManage = hasPermission(SystemModule.Visitors, PermissionAction.Manage);
+
   const [loading, setLoading] = useState(true);
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [stats, setStats] = useState<VisitorStats | null>(null);
@@ -201,6 +212,35 @@ export const AdminVisitorsPage: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  // Permission loading state
+  if (permissionsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Verificando permissões...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Access denied if user cannot view visitors
+  if (!canView) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600">Você não tem permissão para visualizar visitantes.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading && visitors.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -229,24 +269,28 @@ export const AdminVisitorsPage: React.FC = () => {
               </p>
             </div>
             <div className="flex space-x-3">
-              <button
-                onClick={exportToCSV}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Exportar CSV
-              </button>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Novo Visitante
-              </button>
+              {canManage && (
+                <button
+                  onClick={exportToCSV}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Exportar CSV
+                </button>
+              )}
+              {canCreate && (
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Novo Visitante
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -487,24 +531,30 @@ export const AdminVisitorsPage: React.FC = () => {
                       >
                         Detalhes
                       </button>
-                      <button
-                        onClick={() => handleContact(visitor)}
-                        className="flex-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-                      >
-                        Contato
-                      </button>
-                      <button
-                        onClick={() => handleRecordVisit(visitor)}
-                        className="flex-1 text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
-                      >
-                        Visita
-                      </button>
-                      <button
-                        onClick={() => handleDeleteVisitor(visitor)}
-                        className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
-                      >
-                        🗑️
-                      </button>
+                      {canUpdate && (
+                        <button
+                          onClick={() => handleContact(visitor)}
+                          className="flex-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                        >
+                          Contato
+                        </button>
+                      )}
+                      {canUpdate && (
+                        <button
+                          onClick={() => handleRecordVisit(visitor)}
+                          className="flex-1 text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+                        >
+                          Visita
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={() => handleDeleteVisitor(visitor)}
+                          className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                        >
+                          🗑️
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -571,24 +621,30 @@ export const AdminVisitorsPage: React.FC = () => {
                       >
                         Ver
                       </button>
-                      <button
-                        onClick={() => handleContact(visitor)}
-                        className="text-green-600 hover:text-green-900"
-                      >
-                        Contato
-                      </button>
-                      <button
-                        onClick={() => handleRecordVisit(visitor)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Visita
-                      </button>
-                      <button
-                        onClick={() => handleDeleteVisitor(visitor)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Excluir
-                      </button>
+                      {canUpdate && (
+                        <button
+                          onClick={() => handleContact(visitor)}
+                          className="text-green-600 hover:text-green-900"
+                        >
+                          Contato
+                        </button>
+                      )}
+                      {canUpdate && (
+                        <button
+                          onClick={() => handleRecordVisit(visitor)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          Visita
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={() => handleDeleteVisitor(visitor)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Excluir
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -632,17 +688,19 @@ export const AdminVisitorsPage: React.FC = () => {
                 ? 'Ajuste os filtros para encontrar visitantes.'
                 : 'Comece cadastrando o primeiro visitante da igreja.'}
             </p>
-            <div className="mt-6">
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Novo Visitante
-              </button>
-            </div>
+            {canCreate && (
+              <div className="mt-6">
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Novo Visitante
+                </button>
+              </div>
+            )}
           </div>
         )}
 

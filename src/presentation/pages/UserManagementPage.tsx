@@ -42,7 +42,7 @@ const mapDomainRoleToPresentation = (domainRole: UserRole | string): string => {
   }
 };
 
-const mapPresentationRoleToDomain = (presentationRole: string): UserRole | string => {
+const _mapPresentationRoleToDomain = (presentationRole: string): UserRole | string => {
   // If it's a custom role (not in standard list), return as-is
   const standardRoles = ['admin', 'secretary', 'professional', 'leader', 'member'];
   if (!standardRoles.includes(presentationRole)) {
@@ -158,6 +158,7 @@ export const UserManagementPage: React.FC = () => {
   // Load users on component mount
   useEffect(() => {
     loadUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userRepository]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {

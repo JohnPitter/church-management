@@ -697,6 +697,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onSave, onCancel, loa
 
   React.useEffect(() => {
     validateForm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
   const hasError = (fieldName: string) => {

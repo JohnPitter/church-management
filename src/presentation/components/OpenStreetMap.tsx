@@ -43,6 +43,8 @@ export const OpenStreetMap: React.FC<OpenStreetMapProps> = ({
   useEffect(() => {
     if (!mapRef.current) return;
 
+    // Captura o ref no início para uso seguro no cleanup
+    const mapContainer = mapRef.current;
     let currentMap: L.Map | null = null;
     let isMounted = true;
 
@@ -157,19 +159,19 @@ export const OpenStreetMap: React.FC<OpenStreetMapProps> = ({
         currentMap = null;
       }
       
-      // Clean up the container properly
-      if (mapRef.current) {
-        const container = mapRef.current as LeafletContainer;
+      // Clean up the container properly (usando variável capturada)
+      if (mapContainer) {
+        const container = mapContainer as LeafletContainer;
         container.innerHTML = '';
         container.className = container.className.replace(/leaflet-[\w-]*/g, '').trim();
-        
+
         // Remove all Leaflet-related attributes
         Array.from(container.attributes).forEach(attr => {
           if (attr.name.startsWith('data-leaflet')) {
             container.removeAttribute(attr.name);
           }
         });
-        
+
         if (container._leaflet_id) {
           delete container._leaflet_id;
         }

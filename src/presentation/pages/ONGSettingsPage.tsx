@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
+import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
 import { ONGInfo, ONGEntity } from '@modules/ong-management/settings/domain/entities/ONG';
 
 const ONGSettingsPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const { hasPermission } = useAtomicPermissions();
+  const { hasPermission } = usePermissions();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
@@ -61,6 +61,7 @@ const ONGSettingsPage: React.FC = () => {
 
   useEffect(() => {
     loadONGInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadONGInfo = async () => {

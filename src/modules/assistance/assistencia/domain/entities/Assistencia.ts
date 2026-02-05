@@ -370,13 +370,16 @@ export class AssistenciaEntity {
         let horaConsulta = new Date(inicioAtendimento);
         while (horaConsulta < fimAtendimento) {
           const fimConsulta = new Date(horaConsulta.getTime() + duracaoConsulta * 60000);
-          
+
+          // Captura o valor atual para evitar referência unsafe no closure
+          const horaConsultaAtual = new Date(horaConsulta);
+
           // Verificar se não há conflito com agendamentos existentes
           const temConflito = agendamentosExistentes.some(agendamento => {
             const inicioExistente = new Date(agendamento.dataHoraAgendamento);
             const fimExistente = new Date(agendamento.dataHoraFim);
-            
-            return (horaConsulta < fimExistente && fimConsulta > inicioExistente);
+
+            return (horaConsultaAtual < fimExistente && fimConsulta > inicioExistente);
           });
           
           if (!temConflito && fimConsulta <= fimAtendimento) {

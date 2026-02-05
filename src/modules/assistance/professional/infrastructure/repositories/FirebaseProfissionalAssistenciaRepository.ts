@@ -13,14 +13,11 @@ import {
   where,
   orderBy,
   limit as firestoreLimit,
-  Timestamp,
-  startAt,
-  endAt
+  Timestamp
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import {
-  IProfissionalAssistenciaRepository,
-  ProfissionalFilters
+  IProfissionalAssistenciaRepository
 } from '@modules/assistance/assistencia/domain/repositories/IAssistenciaRepository';
 import {
   ProfissionalAssistencia,

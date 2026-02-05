@@ -5,9 +5,7 @@ import {
   collection, 
   getDocs, 
   query, 
-  where, 
-  orderBy, 
-  limit,
+  where,
   Timestamp,
   getCountFromServer
 } from 'firebase/firestore';

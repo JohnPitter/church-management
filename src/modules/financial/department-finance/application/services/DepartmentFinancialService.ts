@@ -14,7 +14,6 @@ import {
   orderBy,
   limit,
   Timestamp,
-  writeBatch,
   runTransaction
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
@@ -28,7 +27,7 @@ import {
   DepartmentSummary,
   DepartmentEntity
 } from '@modules/financial/department-finance/domain/entities/Department';
-import { startOfMonth, endOfMonth, format as formatDate } from 'date-fns';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 export interface DepartmentFilters {
   isActive?: boolean;

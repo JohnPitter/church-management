@@ -244,7 +244,7 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
   mode
 }) => {
   const { currentUser } = useAuth();
-  const { settings } = useSettings();
+  const { settings: _settings } = useSettings();
   const [activeTab, setActiveTab] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -490,12 +490,12 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
     return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   };
 
-  const applyEmailValidation = (email: string): boolean => {
+  const _applyEmailValidation = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  const applyNameValidation = (name: string): boolean => {
+  const _applyNameValidation = (name: string): boolean => {
     return name.trim().length >= 2 && /^[a-zA-ZÀ-ÿ\s]+$/.test(name);
   };
 
@@ -509,7 +509,7 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
   ];
 
   // Validação de campos obrigatórios da anamnese psicológica
-  const validatePsychologyFields = (): { [key: string]: boolean } => {
+  const _validatePsychologyFields = (): { [key: string]: boolean } => {
     const errors: { [key: string]: boolean } = {};
 
     requiredPsychologyFields.forEach(field => {
@@ -603,17 +603,20 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
     if (formData.tipoAssistencia && isOpen) {
       loadProfissionaisDisponiveis();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.tipoAssistencia, isOpen]);
 
   useEffect(() => {
     if (formData.profissionalId && formData.dataAgendamento) {
       loadHorariosDisponiveis();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.profissionalId, formData.dataAgendamento]);
 
   // Valida o formulário em tempo real para habilitar/desabilitar o botão
   useEffect(() => {
     setIsFormValid(checkFormValid());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
   const loadProfissionaisDisponiveis = async () => {

@@ -2,7 +2,7 @@
 // Beautiful UI for selecting pre-designed layout templates
 
 import React, { useState } from 'react';
-import { LayoutStyle, LayoutTemplateFactory, LayoutTemplateMetadata } from '@modules/content-management/home-builder/domain/entities/LayoutTemplates';
+import { LayoutStyle, LayoutTemplateFactory } from '@modules/content-management/home-builder/domain/entities/LayoutTemplates';
 
 interface LayoutTemplateSelectorProps {
   onSelect: (style: LayoutStyle) => void;

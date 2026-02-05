@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  ForumTopic,
   ForumCategory,
   TopicStatus,
   TopicPriority
@@ -89,6 +88,7 @@ export const CreateTopicModal: React.FC<CreateTopicModalProps> = ({
   // Validate form whenever formData changes
   useEffect(() => {
     validateForm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
   const hasError = (fieldName: string) => {

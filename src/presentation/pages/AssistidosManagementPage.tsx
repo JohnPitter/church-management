@@ -34,7 +34,7 @@ import {
 interface AssistidosManagementPageProps {}
 
 const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => {
-  const { currentUser } = useAuth();
+  const { currentUser: _currentUser } = useAuth();
   const { settings } = useSettings();
   const [activeTab, setActiveTab] = useState<'assistidos' | 'atendimentos' | 'relatorios'>('assistidos');
   const [assistidos, setAssistidos] = useState<Assistido[]>([]);
@@ -54,6 +54,7 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
   useEffect(() => {
     loadAssistidos();
     loadStatistics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadAssistidos = async () => {
@@ -1013,6 +1014,7 @@ const RelatoriosView: React.FC<{
 
   React.useEffect(() => {
     generateReport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!reportData) {

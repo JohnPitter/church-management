@@ -1,7 +1,7 @@
 // Infrastructure Service - Daily Verse Update Service
 // Handles automatic verse of the day updates
 
-import { verseOfTheDayService, VerseOfTheDay } from './VerseOfTheDayService';
+import { verseOfTheDayService } from './VerseOfTheDayService';
 
 export class DailyVerseUpdateService {
   private static instance: DailyVerseUpdateService;
@@ -133,7 +133,7 @@ export class DailyVerseUpdateService {
       this.lastCheckedDate = null;
       
       // Try to delete today's verse from database to force refresh
-      const today = new Date().toISOString().split('T')[0];
+      const _today = new Date().toISOString().split('T')[0];
       try {
         // Note: We can't actually delete from Firestore here without importing Firebase
         // But we can force a new fetch anyway

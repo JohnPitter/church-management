@@ -68,6 +68,11 @@ import ONGFinancialPage from './presentation/pages/ONGFinancialPage';
 import AssetsManagementPage from './presentation/pages/AssetsManagementPage';
 import { LeadershipPage } from './presentation/pages/LeadershipPage';
 import { AdminLeadershipPage } from './presentation/pages/AdminLeadershipPage';
+import { PermissionTestPage } from './presentation/pages/PermissionTestPage';
+import { AboutPage } from './presentation/pages/AboutPage';
+import { DonatePage } from './presentation/pages/DonatePage';
+import { PrayerPage } from './presentation/pages/PrayerPage';
+import { ContactPage } from './presentation/pages/ContactPage';
 
 // Components
 import { ProtectedRoute } from './presentation/components/ProtectedRoute';
@@ -115,6 +120,10 @@ const router = createBrowserRouter([
       { path: 'setup-redirect', element: <SetupPageAlternative /> },
       { path: 'setup-simple', element: <SetupPageSimple /> },
       { path: 'welcome', element: <WelcomePage /> },
+      { path: 'about', element: <AboutPage /> },
+      { path: 'donate', element: <DonatePage /> },
+      { path: 'prayer', element: <PrayerPage /> },
+      { path: 'contact', element: <ContactPage /> },
       {
         path: 'painel',
         element: (
@@ -733,6 +742,20 @@ const router = createBrowserRouter([
           >
             <Layout>
               <ProfessionalHelpRequestsPage />
+            </Layout>
+          </ProtectedRoute>
+        )
+      },
+      // Permission Test Page (Admin only)
+      {
+        path: '/admin/permission-test',
+        element: (
+          <ProtectedRoute
+            requireModule={SystemModule.Permissions}
+            requireAction={PermissionAction.Manage}
+          >
+            <Layout>
+              <PermissionTestPage />
             </Layout>
           </ProtectedRoute>
         )

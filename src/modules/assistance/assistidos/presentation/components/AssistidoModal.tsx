@@ -12,7 +12,6 @@ import {
   EnderecoAssistido,
   FamiliarAssistido,
   TipoParentesco,
-  AtendimentoAssistido,
   TipoAtendimento,
   TipoMoradia
 } from '../../domain/entities/Assistido';

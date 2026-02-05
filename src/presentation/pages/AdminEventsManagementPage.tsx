@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNotificationActions } from '../hooks/useNotificationActions';
 import { format } from 'date-fns';
 import { FirebaseEventRepository } from '@modules/church-management/events/infrastructure/repositories/FirebaseEventRepository';
-import { Event as DomainEvent, EventCategory, EventStatus, EventConfirmation, ConfirmationStatus } from '../../domain/entities/Event';
+import { Event as DomainEvent, EventStatus, EventConfirmation, ConfirmationStatus } from '../../domain/entities/Event';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 interface Event {
@@ -158,7 +158,7 @@ export const AdminEventsManagementPage: React.FC = () => {
     }
   };
 
-  const isEventPast = (eventDate: Date) => {
+  const _isEventPast = (eventDate: Date) => {
     return eventDate < new Date();
   };
 

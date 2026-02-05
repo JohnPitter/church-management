@@ -176,11 +176,12 @@ describe('EventEntity', () => {
 
   describe('formatEventDateTime', () => {
     it('should format date and time correctly', () => {
+      // Use explicit local date to avoid timezone issues
       const event = createTestEvent({
-        date: new Date('2024-12-25'),
+        date: new Date(2024, 11, 25, 12, 0, 0), // December 25, 2024 at noon local time
         time: '19:00'
       });
-      
+
       const formatted = EventEntity.formatEventDateTime(event);
       expect(formatted).toContain('25');
       expect(formatted).toContain('dezembro');

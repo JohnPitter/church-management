@@ -56,10 +56,12 @@ const AssetsManagementPage: React.FC = () => {
   useEffect(() => {
     loadAssets();
     loadStatistics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     filterAssets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assets, searchTerm, filterCategory, filterStatus]);
 
   const loadAssets = async () => {

@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Donation, 
   FinancialCategory, 
   DonationType, 
   PaymentMethod,
@@ -62,6 +61,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
     if (isOpen) {
       loadCategories();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const loadCategories = async () => {

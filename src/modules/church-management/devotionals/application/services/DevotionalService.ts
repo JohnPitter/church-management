@@ -16,7 +16,6 @@ import {
   limit,
   startAfter,
   serverTimestamp,
-  FieldValue,
   increment,
   arrayUnion,
   arrayRemove,
@@ -28,9 +27,7 @@ import {
   DevotionalCategory,
   DevotionalComment,
   UserDevotionalProgress,
-  DevotionalPlan,
-  UserPlanProgress,
-  DevotionalCategoryType
+  DevotionalPlan
 } from '../../domain/entities/Devotional';
 
 export interface DevotionalFilters {

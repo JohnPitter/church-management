@@ -13,16 +13,13 @@ import {
   where,
   orderBy,
   limit,
-  startAfter,
   Timestamp,
-  writeBatch,
   getCountFromServer
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { 
   Transaction, 
   FinancialCategory, 
-  Budget, 
   Donation,
   TransactionType,
   TransactionStatus,
@@ -30,7 +27,7 @@ import {
   DonationType,
   FinancialEntity
 } from '../../domain/entities/Financial';
-import { startOfMonth, endOfMonth, startOfYear, endOfYear, format as formatDate } from 'date-fns';
+import { startOfMonth, endOfMonth, format as formatDate } from 'date-fns';
 
 export interface TransactionFilters {
   type?: TransactionType;

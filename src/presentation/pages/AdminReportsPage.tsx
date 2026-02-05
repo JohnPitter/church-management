@@ -3,13 +3,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { ReportData, reportsService } from '@modules/ong-management/settings/application/services/ReportsService';
 
-
-
 export const AdminReportsPage: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { currentUser: _currentUser } = useAuth();
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  // Permission checks
+  const canView = hasPermission(SystemModule.Reports, PermissionAction.View);
+  const canManage = hasPermission(SystemModule.Reports, PermissionAction.Manage);
+
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('3months');
@@ -48,6 +53,7 @@ export const AdminReportsPage: React.FC = () => {
 
   useEffect(() => {
     loadReportData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPeriod]);
 
   const handlePeriodChange = (newPeriod: string) => {
@@ -96,6 +102,31 @@ export const AdminReportsPage: React.FC = () => {
     alert('Funcionalidade de agendamento será implementada em breve!');
   };
 
+  // Permission loading state
+  if (permissionsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verificando permissões...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Access denied if user cannot view reports
+  if (!canView) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600">Você não tem permissão para visualizar relatórios.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -121,20 +152,24 @@ export const AdminReportsPage: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <button
-                onClick={() => handleExportReport('pdf')}
-                disabled={loading}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                📄 Exportar PDF
-              </button>
-              <button
-                onClick={() => handleExportReport('excel')}
-                disabled={loading}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
-              >
-                📊 Exportar Excel
-              </button>
+              {canManage && (
+                <>
+                  <button
+                    onClick={() => handleExportReport('pdf')}
+                    disabled={loading}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    📄 Exportar PDF
+                  </button>
+                  <button
+                    onClick={() => handleExportReport('excel')}
+                    disabled={loading}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                  >
+                    📊 Exportar Excel
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -371,20 +406,24 @@ export const AdminReportsPage: React.FC = () => {
         <div className="mt-8 bg-white shadow rounded-lg p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Ações Rápidas</h3>
           <div className="flex flex-wrap gap-3">
+            {canManage && (
+              <>
+                <button
+                  onClick={handleScheduleReport}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  📅 Agendar Relatório
+                </button>
+                <button
+                  onClick={() => handleExportReport('pdf')}
+                  disabled={loading}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                  📧 Enviar por Email
+                </button>
+              </>
+            )}
             <button
-              onClick={handleScheduleReport}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              📅 Agendar Relatório
-            </button>
-            <button
-              onClick={() => handleExportReport('pdf')}
-              disabled={loading}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-            >
-              📧 Enviar por Email
-            </button>
-            <button 
               onClick={loadReportData}
               disabled={loading}
               className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"

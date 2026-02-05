@@ -1,7 +1,7 @@
 // Presentation Page - Admin Home Builder (Professional Version)
 // Modern drag-and-drop page builder with real-time preview
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../hooks/useTheme';
@@ -180,6 +180,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
   // Load data
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadData = async () => {
@@ -460,7 +461,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
   }, {} as Record<string, ComponentTemplate[]>);
 
   // Preview device styles
-  const getPreviewContainerStyle = () => {
+  const _getPreviewContainerStyle = () => {
     const styles: Record<typeof previewDevice, string> = {
       desktop: 'w-full',
       tablet: 'w-[768px] mx-auto',

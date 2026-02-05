@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
+import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 import { useAuth } from '../contexts/AuthContext';
 import { PermissionService } from '@modules/user-management/permissions/application/services/PermissionService';
@@ -11,7 +11,7 @@ import { AdminVerseOfTheDay } from '../components/AdminVerseOfTheDay';
 
 export const AdminDashboardPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const { hasPermission } = useAtomicPermissions();
+  const { hasPermission } = usePermissions();
   const [roleDisplayName, setRoleDisplayName] = useState<string>('');
   const permissionService = new PermissionService();
 
@@ -20,6 +20,7 @@ export const AdminDashboardPage: React.FC = () => {
       const displayName = permissionService.getRoleDisplayNameSync(currentUser.role);
       setRoleDisplayName(displayName);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.role]);
   
   // Organized by category for better UX

@@ -17,8 +17,7 @@ import {
   serverTimestamp,
   increment,
   arrayUnion,
-  arrayRemove,
-  Timestamp
+  arrayRemove
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { 
@@ -26,10 +25,8 @@ import {
   ForumReply,
   ForumCategory,
   ForumNotification,
-  UserForumProfile,
   ForumStats,
   TopicStatus,
-  ReplyStatus,
   NotificationType,
   ActivityType,
   ForumActivity

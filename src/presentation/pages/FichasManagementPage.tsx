@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
 import jsPDF from 'jspdf';
@@ -35,6 +34,7 @@ const FichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, ficha, onSave,
     if (ficha && isOpen) {
       loadSessoes();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ficha, isOpen]);
 
   const loadSessoes = async () => {
@@ -1061,10 +1061,12 @@ const FichasManagementPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     filterFichas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fichas, searchTerm, statusFilter, tipoFilter]);
 
   const loadData = async () => {

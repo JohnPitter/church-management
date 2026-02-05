@@ -1,5 +1,9 @@
 // Presentation Hook - Atomic Permissions Hook
 // React hook for atomic permission checking with real-time updates
+//
+// @deprecated Use `usePermissions` from './usePermissions' instead.
+// This hook is re-exported as usePermissions for backwards compatibility.
+// All new code should import from usePermissions directly.
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';

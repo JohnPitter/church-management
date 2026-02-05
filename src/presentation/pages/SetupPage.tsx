@@ -8,7 +8,7 @@ import { UserRole, UserStatus } from '@/domain/entities/User';
 
 const SetupPage: React.FC = () => {
   const { currentUser, signInWithGoogle } = useAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);

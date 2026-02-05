@@ -64,6 +64,7 @@ export const SolicitarAjudaModal: React.FC<SolicitarAjudaModalProps> = ({
       setProfissionaisDisponiveis([]);
       setProfissionalSelecionado('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [especialidade]);
 
   // Reset form when modal closes

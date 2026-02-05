@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 import SocialShareButtons from '../components/SocialShareButtons';
 
 export const ProjectsPage: React.FC = () => {
-  const { currentUser, canCreateContent } = useAuth();
+  const { currentUser, canCreateContent: _canCreateContent } = useAuth();
   const { settings } = useSettings();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');

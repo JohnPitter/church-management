@@ -105,6 +105,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
@@ -126,6 +127,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const markAllAsRead = useCallback(async () => {
@@ -147,6 +149,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const updatePreferences = useCallback(async (newPreferences: Partial<NotificationPreferences>) => {
@@ -164,6 +167,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       console.error('Error updating notification preferences:', error);
       throw error;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, preferences]);
 
   const getUnreadNotifications = useCallback(() => {
@@ -200,6 +204,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       console.error('Error creating custom notification:', error);
       throw error;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshNotifications]);
 
   // Load notifications when user changes

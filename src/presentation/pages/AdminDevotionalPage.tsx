@@ -4,12 +4,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { format as formatDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   Devotional,
   DevotionalCategory,
-  DevotionalCategoryType,
   DevotionalComment
 } from '@modules/church-management/devotionals/domain/entities/Devotional';
 import { 
@@ -24,21 +25,31 @@ import { DevotionalDetailModal } from '@modules/church-management/devotionals/pr
 export const AdminDevotionalPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { settings } = useSettings();
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  // Permission checks
+  const canView = hasPermission(SystemModule.Devotionals, PermissionAction.View);
+  const canCreate = hasPermission(SystemModule.Devotionals, PermissionAction.Create);
+  const canUpdate = hasPermission(SystemModule.Devotionals, PermissionAction.Update);
+  const canDelete = hasPermission(SystemModule.Devotionals, PermissionAction.Delete);
+  const _canManage = hasPermission(SystemModule.Devotionals, PermissionAction.Manage);
+
   const [loading, setLoading] = useState(true);
   const [devotionals, setDevotionals] = useState<Devotional[]>([]);
   const [categories, setCategories] = useState<DevotionalCategory[]>([]);
   const [stats, setStats] = useState<DevotionalStats | null>(null);
   const [selectedTab, setSelectedTab] = useState('devotionals');
-  const [filters, setFilters] = useState<DevotionalFilters>({});
+  const [filters, _setFilters] = useState<DevotionalFilters>({});
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedDevotional, setSelectedDevotional] = useState<Devotional | null>(null);
-  const [pendingComments, setPendingComments] = useState<DevotionalComment[]>([]);
-  const [hasMore, setHasMore] = useState(false);
+  const [_pendingComments, setPendingComments] = useState<DevotionalComment[]>([]);
+  const [_hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const loadData = async () => {
@@ -117,7 +128,7 @@ export const AdminDevotionalPage: React.FC = () => {
     }
   };
 
-  const handleApproveComment = async (commentId: string) => {
+  const _handleApproveComment = async (commentId: string) => {
     try {
       await devotionalService.approveComment(commentId);
       await loadPendingComments();
@@ -211,12 +222,14 @@ export const AdminDevotionalPage: React.FC = () => {
         <div className="text-center py-12">
           <div className="text-5xl mb-4">📖</div>
           <p className="text-gray-600 mb-4">Nenhum devocional encontrado</p>
-          <button
-            onClick={handleCreateDevotional}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-          >
-            Criar Primeiro Devocional
-          </button>
+          {canCreate && (
+            <button
+              onClick={handleCreateDevotional}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            >
+              Criar Primeiro Devocional
+            </button>
+          )}
         </div>
       );
     }
@@ -278,33 +291,39 @@ export const AdminDevotionalPage: React.FC = () => {
                 >
                   <span className="text-xl">👁️</span>
                 </button>
-                <button
-                  onClick={() => handleEditDevotional(devotional)}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                  title="Editar"
-                >
-                  <span className="text-xl">✏️</span>
-                </button>
-                <button
-                  onClick={() => handleTogglePublish(devotional)}
-                  className={`p-2 ${
-                    devotional.isPublished ? 'text-yellow-600 hover:bg-yellow-50' : 'text-green-600 hover:bg-green-50'
-                  } rounded-lg`}
-                  title={devotional.isPublished ? 'Despublicar' : 'Publicar'}
-                >
-                  {devotional.isPublished ? (
-                    <span className="text-xl">🔒</span>
-                  ) : (
-                    <span className="text-xl">✅</span>
-                  )}
-                </button>
-                <button
-                  onClick={() => handleDeleteDevotional(devotional.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                  title="Excluir"
-                >
-                  <span className="text-xl">🗑️</span>
-                </button>
+                {canUpdate && (
+                  <button
+                    onClick={() => handleEditDevotional(devotional)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                    title="Editar"
+                  >
+                    <span className="text-xl">✏️</span>
+                  </button>
+                )}
+                {canUpdate && (
+                  <button
+                    onClick={() => handleTogglePublish(devotional)}
+                    className={`p-2 ${
+                      devotional.isPublished ? 'text-yellow-600 hover:bg-yellow-50' : 'text-green-600 hover:bg-green-50'
+                    } rounded-lg`}
+                    title={devotional.isPublished ? 'Despublicar' : 'Publicar'}
+                  >
+                    {devotional.isPublished ? (
+                      <span className="text-xl">🔒</span>
+                    ) : (
+                      <span className="text-xl">✅</span>
+                    )}
+                  </button>
+                )}
+                {canDelete && (
+                  <button
+                    onClick={() => handleDeleteDevotional(devotional.id)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    title="Excluir"
+                  >
+                    <span className="text-xl">🗑️</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -389,6 +408,31 @@ export const AdminDevotionalPage: React.FC = () => {
     );
   };
 
+  // Permission loading state
+  if (permissionsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verificando permissões...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Access denied if user cannot view devotionals
+  if (!canView) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600">Você não tem permissão para visualizar devocionais.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -401,12 +445,14 @@ export const AdminDevotionalPage: React.FC = () => {
                 Crie e gerencie devocionais diários para os membros da igreja
               </p>
             </div>
-            <button
-              onClick={handleCreateDevotional}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
-            >
-              ➕ Novo Devocional
-            </button>
+            {canCreate && (
+              <button
+                onClick={handleCreateDevotional}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+              >
+                ➕ Novo Devocional
+              </button>
+            )}
           </div>
         </div>
       </div>

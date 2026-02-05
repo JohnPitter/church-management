@@ -52,7 +52,7 @@ describe('LoginUseCase', () => {
     loginUseCase = new LoginUseCase(mockUserRepository);
   });
 
-  const createTestUser = (overrides: Partial<User> = {}): User => ({
+  const _createTestUser = (overrides: Partial<User> = {}): User => ({
     id: '1',
     email: 'test@example.com',
     displayName: 'Test User',

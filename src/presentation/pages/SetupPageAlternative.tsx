@@ -9,7 +9,7 @@ import { UserRole, UserStatus } from '@/domain/entities/User';
 
 const SetupPageAlternative: React.FC = () => {
   const { currentUser } = useAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);

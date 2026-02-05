@@ -26,6 +26,8 @@ yarn-error.log*
 # Firebase
 .firebase/
 .firebaserc
+serviceAccountKey.json
+*-service-account*.json
 
 # IDE
 .vscode/

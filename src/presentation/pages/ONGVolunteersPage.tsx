@@ -57,6 +57,7 @@ const ONGVolunteersPage: React.FC = () => {
 
   useEffect(() => {
     loadVolunteers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadVolunteers = async () => {

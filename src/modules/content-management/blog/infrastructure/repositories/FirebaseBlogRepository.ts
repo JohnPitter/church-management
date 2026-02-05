@@ -18,7 +18,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { IBlogRepository } from '../../domain/repositories/IBlogRepository';
-import { BlogPost, Comment, PostStatus, PostVisibility, CommentStatus } from '../../domain/entities/BlogPost';
+import { BlogPost, Comment, PostStatus, CommentStatus } from '../../domain/entities/BlogPost';
 
 export class FirebaseBlogRepository implements IBlogRepository {
   private readonly postsCollection = 'blogPosts';

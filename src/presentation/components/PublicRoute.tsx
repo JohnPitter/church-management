@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
+import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 import { PublicPage, PublicPageConfig } from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
 import { PublicPageService } from '@modules/content-management/public-pages/application/services/PublicPageService';
@@ -23,7 +23,7 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
   allowAdminAccess = false
 }) => {
   const { user, loading: authLoading } = useAuth();
-  const { hasPermission } = useAtomicPermissions();
+  const { hasPermission } = usePermissions();
   const [isPublic, setIsPublic] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 

@@ -8,7 +8,7 @@ interface AdminSetupGuardProps {
 }
 
 const AdminSetupGuard: React.FC<AdminSetupGuardProps> = ({ children }) => {
-  const { hasAdmin, loading, error } = useAdminCheck();
+  const { hasAdmin, loading, error: _error } = useAdminCheck();
 
   // Mostrar loading enquanto verifica
   if (loading) {

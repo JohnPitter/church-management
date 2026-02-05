@@ -10,13 +10,14 @@ export const ProfessionalDashboardPage: React.FC = () => {
   const [agendamentos, setAgendamentos] = useState<AgendamentoAssistencia[]>([]);
   const [isProfessional, setIsProfessional] = useState<boolean | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
+  const [_viewMode, _setViewMode] = useState<'month' | 'week' | 'day'>('month');
 
   const agendamentoService = new AgendamentoAssistenciaService();
   const profissionalService = new ProfissionalAssistenciaService();
 
   useEffect(() => {
     loadAgendamentos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const loadAgendamentos = async () => {

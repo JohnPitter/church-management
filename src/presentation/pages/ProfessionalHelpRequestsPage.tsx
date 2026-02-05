@@ -36,10 +36,12 @@ export const ProfessionalHelpRequestsPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   useEffect(() => {
     applyFilters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requests, statusFilter, typeFilter, priorityFilter, viewMode]);
 
   const loadData = async () => {
@@ -551,11 +553,13 @@ const CreateHelpRequestModal: React.FC<CreateHelpRequestModalProps> = ({
     if (isOpen) {
       loadProfessionals();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, formData.especialidadeNecessaria]);
 
   // Validate form in real-time
   useEffect(() => {
     validateForm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
   const loadProfessionals = async () => {

@@ -4,13 +4,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { format as formatDate, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import {
   Transaction,
   FinancialCategory,
   TransactionType,
   TransactionStatus,
-  PaymentMethod,
   FinancialEntity
 } from '@modules/financial/church-finance/domain/entities/Financial';
 import {
@@ -29,6 +30,15 @@ import { DonationDonutChart } from '../components/charts/DonationDonutChart';
 export const ONGFinancialPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { settings } = useSettings();
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  // Permission checks (uses ONG module permissions)
+  const canView = hasPermission(SystemModule.ONG, PermissionAction.View);
+  const canCreate = hasPermission(SystemModule.ONG, PermissionAction.Create);
+  const _canUpdate = hasPermission(SystemModule.ONG, PermissionAction.Update);
+  const _canDelete = hasPermission(SystemModule.ONG, PermissionAction.Delete);
+  const canManage = hasPermission(SystemModule.ONG, PermissionAction.Manage);
+
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<FinancialCategory[]>([]);
@@ -67,6 +77,7 @@ export const ONGFinancialPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPeriod, filters]);
 
   const getPeriodDates = (period: string): { startDate: Date; endDate: Date } => {
@@ -240,6 +251,31 @@ export const ONGFinancialPage: React.FC = () => {
     }
   };
 
+  // Show loading while checking permissions
+  if (permissionsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando permissões...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check view permission
+  if (!canView) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600">Você não tem permissão para acessar o sistema financeiro da ONG.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -265,22 +301,26 @@ export const ONGFinancialPage: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <button
-                onClick={() => handleExportData('csv')}
-                disabled={loading}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                📊 Exportar CSV
-              </button>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Nova Transação
-              </button>
+              {canManage && (
+                <button
+                  onClick={() => handleExportData('csv')}
+                  disabled={loading}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                  📊 Exportar CSV
+                </button>
+              )}
+              {canCreate && (
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Nova Transação
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -433,33 +473,39 @@ export const ONGFinancialPage: React.FC = () => {
                     <p className="text-white text-opacity-80">Gerencie as finanças da ONG de forma eficiente</p>
                   </div>
                   <div className="flex space-x-3">
-                    <button
-                      onClick={() => setShowCreateModal(true)}
-                      className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      Nova Transação
-                    </button>
-                    <button
-                      onClick={() => setShowDonationModal(true)}
-                      className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      Nova Doação
-                    </button>
-                    <button
-                      onClick={() => setShowCategoryModal(true)}
-                      className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
-                      Nova Categoria
-                    </button>
+                    {canCreate && (
+                      <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Nova Transação
+                      </button>
+                    )}
+                    {canCreate && (
+                      <button
+                        onClick={() => setShowDonationModal(true)}
+                        className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Nova Doação
+                      </button>
+                    )}
+                    {canManage && (
+                      <button
+                        onClick={() => setShowCategoryModal(true)}
+                        className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        Nova Categoria
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

@@ -4,7 +4,8 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
+import { usePermissions } from '../hooks/usePermissions';
+import { useSettings } from '../contexts/SettingsContext';
 import { SystemModule, PermissionAction, PermissionManager } from '../../domain/entities/Permission';
 
 interface ProtectedRouteProps {
@@ -29,7 +30,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAnyManagePermission = false
 }) => {
   const { currentUser, loading, canAccessSystem } = useAuth();
-  const { hasPermission, hasAnyPermission, loading: permissionsLoading } = useAtomicPermissions();
+  const { hasPermission, hasAnyPermission: _hasAnyPermission, loading: permissionsLoading } = usePermissions();
+  const { settings, loading: settingsLoading } = useSettings();
 
   // Helper to check if user has any manage permission
   const hasAnyManagePermission = () => {
@@ -43,7 +45,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return modules.some(module => hasPermission(module, PermissionAction.Manage));
   };
 
-  if (loading || permissionsLoading) {
+  if (loading || permissionsLoading || settingsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -56,6 +58,28 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (!currentUser) {
     return <Navigate to="/login" />;
+  }
+
+  // Check maintenance mode - only admins can access
+  if (settings?.maintenanceMode && currentUser?.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="max-w-md w-full mx-4">
+          <div className="text-center p-8 bg-white rounded-lg shadow-lg">
+            <div className="mx-auto mb-4 w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+              <span className="text-3xl">🔧</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Sistema em Manutenção</h1>
+            <p className="text-gray-600 mb-4">
+              O sistema está temporariamente em manutenção. Por favor, tente novamente mais tarde.
+            </p>
+            <p className="text-sm text-gray-500">
+              Apenas administradores podem acessar durante este período.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Check if user has system access (is approved)

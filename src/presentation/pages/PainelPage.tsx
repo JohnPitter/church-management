@@ -89,6 +89,7 @@ export const PainelPage: React.FC = () => {
       ];
     }
     return baseFeatures;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.role]);
 
   // Load dashboard data from Firebase

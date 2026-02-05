@@ -45,9 +45,6 @@ export enum PermissionAction {
   Create = 'create',
   Update = 'update',
   Delete = 'delete',
-  Export = 'export',
-  Import = 'import',
-  Approve = 'approve',
   Manage = 'manage'
 }
 
@@ -74,49 +71,49 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, { module: SystemModule; ac
   admin: [
     // Full access to all modules with Manage permission
     { module: SystemModule.Dashboard, actions: [PermissionAction.View, PermissionAction.Manage] },
-    { module: SystemModule.Users, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Import, PermissionAction.Approve, PermissionAction.Manage] },
-    { module: SystemModule.Members, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Import, PermissionAction.Approve, PermissionAction.Manage] },
-    { module: SystemModule.Blog, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
-    { module: SystemModule.Events, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
-    { module: SystemModule.Devotionals, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
-    { module: SystemModule.Transmissions, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
-    { module: SystemModule.Projects, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
-    { module: SystemModule.Forum, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
+    { module: SystemModule.Users, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Members, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Blog, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Events, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Devotionals, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Transmissions, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Projects, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Forum, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
     { module: SystemModule.Leadership, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
-    { module: SystemModule.Visitors, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
+    { module: SystemModule.Visitors, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
     { module: SystemModule.Calendar, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
-    { module: SystemModule.Assistance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
-    { module: SystemModule.Assistidos, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
+    { module: SystemModule.Assistance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Assistidos, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
     { module: SystemModule.Notifications, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
     { module: SystemModule.Communication, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
-    { module: SystemModule.ONG, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
-    { module: SystemModule.Finance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Import, PermissionAction.Approve, PermissionAction.Manage] },
-    { module: SystemModule.Donations, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
-    { module: SystemModule.Reports, actions: [PermissionAction.View, PermissionAction.Export, PermissionAction.Manage] },
-    { module: SystemModule.Assets, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Approve, PermissionAction.Manage] },
+    { module: SystemModule.ONG, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Finance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Donations, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Reports, actions: [PermissionAction.View, PermissionAction.Manage] },
+    { module: SystemModule.Assets, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
     { module: SystemModule.Settings, actions: [PermissionAction.View, PermissionAction.Update, PermissionAction.Manage] },
     { module: SystemModule.Permissions, actions: [PermissionAction.View, PermissionAction.Update, PermissionAction.Manage] },
-    { module: SystemModule.Audit, actions: [PermissionAction.View, PermissionAction.Export, PermissionAction.Manage] },
+    { module: SystemModule.Audit, actions: [PermissionAction.View, PermissionAction.Manage] },
     { module: SystemModule.Backup, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Manage] },
-    { module: SystemModule.Logs, actions: [PermissionAction.View, PermissionAction.Export, PermissionAction.Manage] },
+    { module: SystemModule.Logs, actions: [PermissionAction.View, PermissionAction.Manage] },
     { module: SystemModule.HomeBuilder, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] }
   ],
   
   secretary: [
     { module: SystemModule.Dashboard, actions: [PermissionAction.View] },
     { module: SystemModule.Users, actions: [PermissionAction.View, PermissionAction.Update] },
-    { module: SystemModule.Members, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Export] },
+    { module: SystemModule.Members, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
     { module: SystemModule.Blog, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
     { module: SystemModule.Events, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
     { module: SystemModule.Devotionals, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
     { module: SystemModule.Transmissions, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
     { module: SystemModule.Projects, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
     { module: SystemModule.Forum, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
-    { module: SystemModule.Visitors, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Export] },
+    { module: SystemModule.Visitors, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
     { module: SystemModule.Calendar, actions: [PermissionAction.View, PermissionAction.Manage] },
     { module: SystemModule.Assistidos, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
     { module: SystemModule.Notifications, actions: [PermissionAction.View, PermissionAction.Create] },
-    { module: SystemModule.Reports, actions: [PermissionAction.View, PermissionAction.Export] },
+    { module: SystemModule.Reports, actions: [PermissionAction.View] },
     { module: SystemModule.Settings, actions: [PermissionAction.View] }
   ],
   
@@ -150,9 +147,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, { module: SystemModule; ac
 
   finance: [
     { module: SystemModule.Dashboard, actions: [PermissionAction.View] },
-    { module: SystemModule.Finance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export, PermissionAction.Manage] },
-    { module: SystemModule.Donations, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Export] },
-    { module: SystemModule.Reports, actions: [PermissionAction.View, PermissionAction.Export] },
+    { module: SystemModule.Finance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Donations, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete] },
+    { module: SystemModule.Reports, actions: [PermissionAction.View] },
     { module: SystemModule.Members, actions: [PermissionAction.View] },
     { module: SystemModule.Calendar, actions: [PermissionAction.View] }
   ]
@@ -259,9 +256,6 @@ export class PermissionManager {
       [PermissionAction.Create]: 'Criar',
       [PermissionAction.Update]: 'Editar',
       [PermissionAction.Delete]: 'Excluir',
-      [PermissionAction.Export]: 'Exportar',
-      [PermissionAction.Import]: 'Importar',
-      [PermissionAction.Approve]: 'Aprovar',
       [PermissionAction.Manage]: 'Gerenciar'
     };
     return labels[action];

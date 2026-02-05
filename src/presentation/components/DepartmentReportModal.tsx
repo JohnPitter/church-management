@@ -32,6 +32,7 @@ export const DepartmentReportModal: React.FC<DepartmentReportModalProps> = ({
     if (isOpen) {
       loadTransactions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, selectedMonth, filterType]);
 
   const loadTransactions = async () => {

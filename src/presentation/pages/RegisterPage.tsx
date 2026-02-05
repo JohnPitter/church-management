@@ -4,8 +4,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
+import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
+import { UserStatus } from '@/domain/entities/User';
 
 export const RegisterPage: React.FC = () => {
+  const { settings, loading: settingsLoading } = useSettings();
   const [formData, setFormData] = useState({
     displayName: '',
     email: '',
@@ -16,6 +20,7 @@ export const RegisterPage: React.FC = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [autoApproved, setAutoApproved] = useState(false);
   
   const { register, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -39,10 +44,24 @@ export const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
-      await register(formData.email, formData.password, formData.displayName);
+      const user = await register(formData.email, formData.password, formData.displayName);
+
+      // Auto-approve if setting is enabled
+      let wasAutoApproved = false;
+      if (settings?.autoApproveMembers && user?.id) {
+        try {
+          const userRepository = new FirebaseUserRepository();
+          await userRepository.update(user.id, { status: UserStatus.Approved });
+          wasAutoApproved = true;
+          setAutoApproved(true);
+        } catch (approveError) {
+          console.warn('Could not auto-approve user:', approveError);
+        }
+      }
+
       setSuccess(true);
       setTimeout(() => {
-        navigate('/login');
+        navigate(wasAutoApproved ? '/painel' : '/login');
       }, 3000);
     } catch (err: any) {
       setError(err.message || 'Erro ao criar conta');
@@ -65,6 +84,45 @@ export const RegisterPage: React.FC = () => {
     }
   };
 
+  // Show loading while settings are being fetched
+  if (settingsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if public registration is allowed
+  if (settings && settings.allowPublicRegistration === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
+              <span className="text-2xl">🔒</span>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Registro Desabilitado
+            </h2>
+            <p className="text-gray-600 mb-4">
+              O registro público está temporariamente desabilitado. Entre em contato com a administração da igreja para obter acesso.
+            </p>
+            <Link
+              to="/login"
+              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Voltar ao Login
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -79,7 +137,9 @@ export const RegisterPage: React.FC = () => {
               Cadastro realizado!
             </h2>
             <p className="text-gray-600">
-              Sua conta foi criada e está aguardando aprovação. Você será redirecionado...
+              {autoApproved
+                ? 'Sua conta foi criada e aprovada automaticamente. Você será redirecionado para o painel...'
+                : 'Sua conta foi criada e está aguardando aprovação. Você será redirecionado...'}
             </p>
           </div>
         </div>

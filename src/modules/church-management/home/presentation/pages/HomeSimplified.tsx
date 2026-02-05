@@ -76,6 +76,7 @@ const HomeSimplified: React.FC = () => {
     };
 
     loadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Redirect professionals to their panel

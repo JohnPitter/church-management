@@ -4,6 +4,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotificationActions } from '../hooks/useNotificationActions';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { format } from 'date-fns';
 import { FirebaseProjectRepository } from '@modules/content-management/projects/infrastructure/repositories/FirebaseProjectRepository';
 import { Project as DomainProject, ProjectStatus, ProjectRegistration, RegistrationStatus } from '@modules/content-management/projects/domain/entities/Project';
@@ -64,6 +66,15 @@ const mapPresentationToDomain = (presentationProject: Partial<PresentationProjec
 export const AdminProjectsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { notifyNewProject } = useNotificationActions();
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  // Permission checks
+  const canView = hasPermission(SystemModule.Projects, PermissionAction.View);
+  const canCreate = hasPermission(SystemModule.Projects, PermissionAction.Create);
+  const canUpdate = hasPermission(SystemModule.Projects, PermissionAction.Update);
+  const canDelete = hasPermission(SystemModule.Projects, PermissionAction.Delete);
+  const _canManage = hasPermission(SystemModule.Projects, PermissionAction.Manage);
+
   const [projects, setProjects] = useState<PresentationProject[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -401,6 +412,31 @@ export const AdminProjectsManagementPage: React.FC = () => {
     }
   };
 
+  // Permission loading state
+  if (permissionsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verificando permissões...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Access denied if user cannot view projects
+  if (!canView) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600">Você não tem permissão para visualizar projetos.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -413,13 +449,15 @@ export const AdminProjectsManagementPage: React.FC = () => {
                 Administre projetos da igreja e seus participantes
               </p>
             </div>
-            <button
-              onClick={handleCreateProject}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700"
-            >
-              <span className="mr-2">➕</span>
-              Novo Projeto
-            </button>
+            {canCreate && (
+              <button
+                onClick={handleCreateProject}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700"
+              >
+                <span className="mr-2">➕</span>
+                Novo Projeto
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -667,19 +705,23 @@ export const AdminProjectsManagementPage: React.FC = () => {
                         >
                           Inscrições
                         </button>
-                        <button
-                          onClick={() => handleEditProject(project)}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleDeleteProject(project.id)}
-                          disabled={loading}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                        >
-                          Excluir
-                        </button>
+                        {canUpdate && (
+                          <button
+                            onClick={() => handleEditProject(project)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            Editar
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDeleteProject(project.id)}
+                            disabled={loading}
+                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                          >
+                            Excluir
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

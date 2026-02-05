@@ -20,9 +20,11 @@ import { httpsCallable } from 'firebase/functions';
 import { db, auth, functions } from '@/config/firebase';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { User, UserCredentials, UserRegistration, UserRole, UserStatus } from '@/domain/entities/User';
+import { PermissionService } from '@modules/user-management/permissions/application/services/PermissionService';
 
 export class FirebaseUserRepository implements IUserRepository {
   private readonly collectionName = 'users';
+  private readonly permissionService = new PermissionService();
 
   async findById(id: string): Promise<User | null> {
     try {
@@ -346,6 +348,11 @@ export class FirebaseUserRepository implements IUserRepository {
         roleUpdatedAt: Timestamp.now(),
         updatedAt: Timestamp.now()
       });
+
+      // Sync rolePermissions for custom roles
+      // This copies the role's permissions to the user document for faster access
+      await this.permissionService.updateUserRolePermissions(userId, newRole as string);
+
       console.log(`[FirebaseUserRepository] Role updated successfully`);
     } catch (error) {
       console.error('Error updating user role:', error);

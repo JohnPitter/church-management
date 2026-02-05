@@ -3,15 +3,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { format } from 'date-fns';
 import { BackupInfo, DatabaseStats, backupService } from '@modules/analytics/backup/application/services/BackupService';
 
-
-
-
-
 export const AdminBackupPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  // Permission checks
+  const canView = hasPermission(SystemModule.Backup, PermissionAction.View);
+  const canCreate = hasPermission(SystemModule.Backup, PermissionAction.Create);
+  const canManage = hasPermission(SystemModule.Backup, PermissionAction.Manage);
   const [backups, setBackups] = useState<BackupInfo[]>([]);
   const [databaseStats, setDatabaseStats] = useState<DatabaseStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -227,6 +231,31 @@ export const AdminBackupPage: React.FC = () => {
     }
   };
 
+  // Show loading while checking permissions
+  if (permissionsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando permissões...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check view permission
+  if (!canView) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600">Você não tem permissão para acessar esta página.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -239,12 +268,14 @@ export const AdminBackupPage: React.FC = () => {
                 Gerencie backups e dados do sistema
               </p>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-            >
-              ➕ Novo Backup
-            </button>
+            {canCreate && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+              >
+                ➕ Novo Backup
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -296,23 +327,31 @@ export const AdminBackupPage: React.FC = () => {
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Ações Rápidas</h3>
             <div className="space-y-3">
-              <button
-                onClick={() => handleExportData('json')}
-                disabled={loading}
-                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                📄 Exportar Dados (JSON)
-              </button>
-              <button
-                onClick={() => handleExportData('csv')}
-                disabled={loading}
-                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                📊 Exportar Dados (CSV)
-              </button>
-              <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                ⚙️ Configurar Backup Automático
-              </button>
+              {canManage ? (
+                <>
+                  <button
+                    onClick={() => handleExportData('json')}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    📄 Exportar Dados (JSON)
+                  </button>
+                  <button
+                    onClick={() => handleExportData('csv')}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    📊 Exportar Dados (CSV)
+                  </button>
+                  <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    ⚙️ Configurar Backup Automático
+                  </button>
+                </>
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  Você não tem permissão para exportar dados.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -380,12 +419,14 @@ export const AdminBackupPage: React.FC = () => {
               <p className="text-sm text-gray-500 mb-4">
                 Crie seu primeiro backup para começar a proteger seus dados.
               </p>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                ➕ Criar Primeiro Backup
-              </button>
+              {canCreate && (
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  ➕ Criar Primeiro Backup
+                </button>
+              )}
             </div>
           )}
 
@@ -446,29 +487,38 @@ export const AdminBackupPage: React.FC = () => {
                         <div className="flex space-x-2">
                           {backup.status === 'completed' && (
                             <>
-                              <button
-                                onClick={() => handleDownloadBackup(backup.id, backup.name)}
-                                disabled={loading}
-                                className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
-                              >
-                                Download
-                              </button>
-                              <button
-                                onClick={() => handleRestoreBackup(backup.id)}
-                                disabled={loading}
-                                className="text-green-600 hover:text-green-900 disabled:opacity-50"
-                              >
-                                Restaurar
-                              </button>
+                              {canManage && (
+                                <button
+                                  onClick={() => handleDownloadBackup(backup.id, backup.name)}
+                                  disabled={loading}
+                                  className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
+                                >
+                                  Download
+                                </button>
+                              )}
+                              {canManage && (
+                                <button
+                                  onClick={() => handleRestoreBackup(backup.id)}
+                                  disabled={loading}
+                                  className="text-green-600 hover:text-green-900 disabled:opacity-50"
+                                >
+                                  Restaurar
+                                </button>
+                              )}
                             </>
                           )}
-                          <button
-                            onClick={() => handleDeleteBackup(backup.id, backup.name)}
-                            disabled={loading || backup.status === 'in_progress'}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                          >
-                            Excluir
-                          </button>
+                          {canManage && (
+                            <button
+                              onClick={() => handleDeleteBackup(backup.id, backup.name)}
+                              disabled={loading || backup.status === 'in_progress'}
+                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                            >
+                              Excluir
+                            </button>
+                          )}
+                          {!canManage && (
+                            <span className="text-gray-400 text-xs">Sem permissão</span>
+                          )}
                         </div>
                       </td>
                     </tr>

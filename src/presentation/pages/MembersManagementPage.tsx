@@ -3,6 +3,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { MemberService } from '@modules/church-management/members/application/services/MemberService';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import {
   Member,
   MemberStatus,
@@ -10,11 +12,20 @@ import {
   MemberEntity
 } from '../../domain/entities/Member';
 import { CreateMemberModal } from '@modules/church-management/members/presentation/components/CreateMemberModal';
-import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } from 'docx';
+import { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } from 'docx';
 
 interface MembersManagementPageProps {}
 
 const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  // Permission checks
+  const canView = hasPermission(SystemModule.Members, PermissionAction.View);
+  const canCreate = hasPermission(SystemModule.Members, PermissionAction.Create);
+  const canUpdate = hasPermission(SystemModule.Members, PermissionAction.Update);
+  const canDelete = hasPermission(SystemModule.Members, PermissionAction.Delete);
+  const canManage = hasPermission(SystemModule.Members, PermissionAction.Manage);
+
   const [activeTab, setActiveTab] = useState<'members' | 'birthdays' | 'reports'>('members');
   const [members, setMembers] = useState<Member[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +49,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
   useEffect(() => {
     loadMembers();
     loadStatistics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadMembers = async () => {
@@ -780,6 +792,29 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
     return members.filter(member => MemberEntity.canSignDocuments(member));
   };
 
+  // Permission loading state
+  if (permissionsLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <span className="ml-2 text-gray-600">Verificando permissões...</span>
+      </div>
+    );
+  }
+
+  // Access denied if user cannot view members
+  if (!canView) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600">Você não tem permissão para visualizar membros.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -800,12 +835,14 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                 Administre os membros da igreja e suas informações
               </p>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              ➕ Novo Membro
-            </button>
+            {canCreate && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                ➕ Novo Membro
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -1024,39 +1061,45 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                             {/* Edit Button - More touch-friendly on mobile */}
-                            <button
-                              onClick={() => handleEditMember(member)}
-                              className="inline-flex items-center justify-center px-3 py-2.5 sm:py-1.5 bg-indigo-600 sm:bg-indigo-50 text-white sm:text-indigo-700 rounded-lg sm:rounded-md hover:bg-indigo-700 sm:hover:bg-indigo-100 transition-colors border-0 sm:border sm:border-indigo-200 sm:hover:border-indigo-300 font-medium text-sm shadow-sm sm:shadow-none"
-                              title="Editar membro"
-                            >
-                              ✏️ <span className="ml-2 sm:ml-0 text-sm font-medium">Editar</span>
-                            </button>
+                            {canUpdate && (
+                              <button
+                                onClick={() => handleEditMember(member)}
+                                className="inline-flex items-center justify-center px-3 py-2.5 sm:py-1.5 bg-indigo-600 sm:bg-indigo-50 text-white sm:text-indigo-700 rounded-lg sm:rounded-md hover:bg-indigo-700 sm:hover:bg-indigo-100 transition-colors border-0 sm:border sm:border-indigo-200 sm:hover:border-indigo-300 font-medium text-sm shadow-sm sm:shadow-none"
+                                title="Editar membro"
+                              >
+                                ✏️ <span className="ml-2 sm:ml-0 text-sm font-medium">Editar</span>
+                              </button>
+                            )}
 
                             {/* Delete Button */}
-                            <button
-                              onClick={() => handleDeleteMember(member)}
-                              className="inline-flex items-center justify-center px-3 py-2.5 sm:py-1.5 bg-red-600 sm:bg-red-50 text-white sm:text-red-700 rounded-lg sm:rounded-md hover:bg-red-700 sm:hover:bg-red-100 transition-colors border-0 sm:border sm:border-red-200 sm:hover:border-red-300 font-medium text-sm shadow-sm sm:shadow-none"
-                              title="Excluir membro"
-                            >
-                              🗑️ <span className="ml-2 sm:ml-0 text-sm font-medium">Excluir</span>
-                            </button>
+                            {canDelete && (
+                              <button
+                                onClick={() => handleDeleteMember(member)}
+                                className="inline-flex items-center justify-center px-3 py-2.5 sm:py-1.5 bg-red-600 sm:bg-red-50 text-white sm:text-red-700 rounded-lg sm:rounded-md hover:bg-red-700 sm:hover:bg-red-100 transition-colors border-0 sm:border sm:border-red-200 sm:hover:border-red-300 font-medium text-sm shadow-sm sm:shadow-none"
+                                title="Excluir membro"
+                              >
+                                🗑️ <span className="ml-2 sm:ml-0 text-sm font-medium">Excluir</span>
+                              </button>
+                            )}
 
                             {/* Status Select - Larger and more touch-friendly on mobile */}
-                            <select
-                              value={member.status}
-                              onChange={(e) => handleStatusChange(member, e.target.value as MemberStatus)}
-                              className="w-full sm:w-auto px-3 py-2.5 sm:py-1.5 border-2 sm:border border-gray-300 rounded-lg sm:rounded-md text-sm sm:text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium bg-white cursor-pointer appearance-none bg-no-repeat bg-right pr-8 sm:pr-7"
-                              style={{
-                                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                                backgroundPosition: 'right 0.5rem center',
-                                backgroundSize: '1.5em 1.5em'
-                              }}
-                            >
-                              <option value={MemberStatus.Active}>Ativo</option>
-                              <option value={MemberStatus.Inactive}>Inativo</option>
-                              <option value={MemberStatus.Transferred}>Transferido</option>
-                              <option value={MemberStatus.Disciplined}>Disciplinado</option>
-                            </select>
+                            {canUpdate && (
+                              <select
+                                value={member.status}
+                                onChange={(e) => handleStatusChange(member, e.target.value as MemberStatus)}
+                                className="w-full sm:w-auto px-3 py-2.5 sm:py-1.5 border-2 sm:border border-gray-300 rounded-lg sm:rounded-md text-sm sm:text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium bg-white cursor-pointer appearance-none bg-no-repeat bg-right pr-8 sm:pr-7"
+                                style={{
+                                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                                  backgroundPosition: 'right 0.5rem center',
+                                  backgroundSize: '1.5em 1.5em'
+                                }}
+                              >
+                                <option value={MemberStatus.Active}>Ativo</option>
+                                <option value={MemberStatus.Inactive}>Inativo</option>
+                                <option value={MemberStatus.Transferred}>Transferido</option>
+                                <option value={MemberStatus.Disciplined}>Disciplinado</option>
+                              </select>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1628,21 +1671,23 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                 Gere listas com espaço para assinatura dos membros, ideal para presenças, atas e documentos oficiais
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button
-                  onClick={exportSignatureListToPDF}
-                  className="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 shadow-md hover:shadow-lg transition-all"
-                >
-                  📄 <span className="font-medium ml-2">Lista de Assinatura em PDF</span>
-                </button>
+              {canManage && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <button
+                    onClick={exportSignatureListToPDF}
+                    className="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 shadow-md hover:shadow-lg transition-all"
+                  >
+                    📄 <span className="font-medium ml-2">Lista de Assinatura em PDF</span>
+                  </button>
 
-                <button
-                  onClick={exportSignatureListToWord}
-                  className="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all"
-                >
-                  📝 <span className="font-medium ml-2">Lista de Assinatura em Word</span>
-                </button>
-              </div>
+                  <button
+                    onClick={exportSignatureListToWord}
+                    className="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all"
+                  >
+                    📝 <span className="font-medium ml-2">Lista de Assinatura em Word</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Export Options */}
@@ -1655,31 +1700,33 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
                 Exporte todos os dados dos membros em diferentes formatos para análise e backup
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button
-                  onClick={exportToExcel}
-                  className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  <span className="text-xl text-green-600 mr-2">📊</span>
-                  Exportar Excel
-                </button>
+              {canManage && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <button
+                    onClick={exportToExcel}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    <span className="text-xl text-green-600 mr-2">📊</span>
+                    Exportar Excel
+                  </button>
 
-                <button
-                  onClick={exportToPDF}
-                  className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  <span className="text-xl text-red-600 mr-2">📄</span>
-                  Exportar PDF
-                </button>
+                  <button
+                    onClick={exportToPDF}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    <span className="text-xl text-red-600 mr-2">📄</span>
+                    Exportar PDF
+                  </button>
 
-                <button
-                  onClick={exportToCSV}
-                  className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  <span className="text-xl text-blue-600 mr-2">📋</span>
-                  Exportar CSV
-                </button>
-              </div>
+                  <button
+                    onClick={exportToCSV}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    <span className="text-xl text-blue-600 mr-2">📋</span>
+                    Exportar CSV
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}

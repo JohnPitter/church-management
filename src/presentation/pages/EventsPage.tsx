@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FirebaseEventRepository } from '@modules/church-management/events/infrastructure/repositories/FirebaseEventRepository';
-import { Event, EventStatus, EventConfirmation, ConfirmationStatus } from '../../domain/entities/Event';
+import { Event, EventConfirmation, ConfirmationStatus } from '../../domain/entities/Event';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import SocialShareButtons from '../components/SocialShareButtons';

@@ -1,7 +1,7 @@
 // Domain Repository Interface - Blog
 // Defines the contract for blog data operations
 
-import { BlogPost, Comment, Like } from '../entities/BlogPost';
+import { BlogPost, Comment } from '../entities/BlogPost';
 
 export interface IBlogRepository {
   // Post operations

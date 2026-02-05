@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
 import { 
   PeriodoRelatorio,
@@ -9,6 +11,12 @@ import {
 } from '@modules/ong-management/settings/domain/entities/ONG';
 
 const ONGReportsPage: React.FC = () => {
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  // Permission checks
+  const canView = hasPermission(SystemModule.ONG, PermissionAction.View);
+  const canManage = hasPermission(SystemModule.ONG, PermissionAction.Manage);
+
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(false);
   const [periodo, setPeriodo] = useState<PeriodoRelatorio>({
@@ -22,10 +30,6 @@ const ONGReportsPage: React.FC = () => {
   const [relatorioFinanceiro, setRelatorioFinanceiro] = useState<RelatorioFinanceiro | null>(null);
 
   const ongRepository = new FirebaseONGRepository();
-
-  useEffect(() => {
-    loadReports();
-  }, [periodo]);
 
   const loadReports = async () => {
     setLoading(true);
@@ -46,6 +50,11 @@ const ONGReportsPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadReports();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodo]);
 
   const handlePeriodChange = (field: keyof PeriodoRelatorio, value: any) => {
     setPeriodo(prev => ({ ...prev, [field]: value }));
@@ -118,6 +127,29 @@ const ONGReportsPage: React.FC = () => {
     { id: 'activities', label: 'Atividades', icon: '🎯' },
     { id: 'financial', label: 'Financeiro', icon: '💰' }
   ];
+
+  // Permission loading state
+  if (permissionsLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-2 text-gray-600">Verificando permissões...</span>
+      </div>
+    );
+  }
+
+  // Access denied if user cannot view ONG reports
+  if (!canView) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600">Você não tem permissão para visualizar relatórios da ONG.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -239,12 +271,14 @@ const ONGReportsPage: React.FC = () => {
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-medium text-gray-900">Relatório de Voluntários</h3>
-                  <button
-                    onClick={exportVoluntariosCSV}
-                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm"
-                  >
-                    📊 Exportar CSV
-                  </button>
+                  {canManage && (
+                    <button
+                      onClick={exportVoluntariosCSV}
+                      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm"
+                    >
+                      📊 Exportar CSV
+                    </button>
+                  )}
                 </div>
 
                 {/* Summary Cards */}
@@ -337,12 +371,14 @@ const ONGReportsPage: React.FC = () => {
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-medium text-gray-900">Relatório de Atividades</h3>
-                  <button
-                    onClick={exportAtividadesCSV}
-                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm"
-                  >
-                    📊 Exportar CSV
-                  </button>
+                  {canManage && (
+                    <button
+                      onClick={exportAtividadesCSV}
+                      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm"
+                    >
+                      📊 Exportar CSV
+                    </button>
+                  )}
                 </div>
 
                 {/* Summary Cards */}
@@ -434,12 +470,14 @@ const ONGReportsPage: React.FC = () => {
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-medium text-gray-900">Relatório Financeiro</h3>
-                  <button
-                    onClick={exportFinanceiroCSV}
-                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm"
-                  >
-                    📊 Exportar CSV
-                  </button>
+                  {canManage && (
+                    <button
+                      onClick={exportFinanceiroCSV}
+                      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm"
+                    >
+                      📊 Exportar CSV
+                    </button>
+                  )}
                 </div>
 
                 {/* Summary Cards */}

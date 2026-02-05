@@ -22,8 +22,7 @@ import {
   StatusAssistido, 
   AtendimentoAssistido, 
   FamiliarAssistido,
-  NecessidadeAssistido,
-  TipoAtendimento
+  NecessidadeAssistido
 } from '@modules/assistance/assistidos/domain/entities/Assistido';
 
 export class FirebaseAssistidoRepository implements IAssistidoRepository {

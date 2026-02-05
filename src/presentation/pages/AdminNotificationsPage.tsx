@@ -2,8 +2,9 @@
 // Administrative interface for managing and creating custom notifications
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { NotificationPriority } from '@modules/shared-kernel/notifications/domain/entities/Notification';
 
@@ -28,8 +29,13 @@ interface UserOption {
 }
 
 export const AdminNotificationsPage: React.FC = () => {
-  const { currentUser } = useAuth();
   const { createCustomNotification } = useNotifications();
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  // Permission checks
+  const canView = hasPermission(SystemModule.Notifications, PermissionAction.View);
+  const canCreate = hasPermission(SystemModule.Notifications, PermissionAction.Create);
+
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<UserOption[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -70,6 +76,7 @@ export const AdminNotificationsPage: React.FC = () => {
     };
 
     loadUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleInputChange = (field: keyof CustomNotificationForm, value: any) => {
@@ -182,6 +189,29 @@ export const AdminNotificationsPage: React.FC = () => {
     return matchesSearch && matchesRole;
   });
 
+  // Permission loading state
+  if (permissionsLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <span className="ml-2 text-gray-600">Verificando permissões...</span>
+      </div>
+    );
+  }
+
+  // Access denied if user cannot view notifications
+  if (!canView) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600">Você não tem permissão para gerenciar notificações.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -195,13 +225,15 @@ export const AdminNotificationsPage: React.FC = () => {
               </p>
             </div>
             
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-            >
-              <span className="mr-2">➕</span>
-              Nova Notificação
-            </button>
+            {canCreate && (
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+              >
+                <span className="mr-2">➕</span>
+                Nova Notificação
+              </button>
+            )}
           </div>
 
         </div>
@@ -605,15 +637,17 @@ export const AdminNotificationsPage: React.FC = () => {
                   }`}>
                     {template.priority}
                   </span>
-                  <button
-                    onClick={() => {
-                      setForm({ ...form, ...template, roles: template.roles || [] });
-                      setShowCreateForm(true);
-                    }}
-                    className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
-                  >
-                    Usar modelo
-                  </button>
+                  {canCreate && (
+                    <button
+                      onClick={() => {
+                        setForm({ ...form, ...template, roles: template.roles || [] });
+                        setShowCreateForm(true);
+                      }}
+                      className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                    >
+                      Usar modelo
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

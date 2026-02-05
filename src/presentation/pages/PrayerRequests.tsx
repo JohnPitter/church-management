@@ -40,6 +40,7 @@ const PrayerRequests: React.FC = () => {
 
   useEffect(() => {
     loadPrayerRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStatus]);
 
   const handleStatusChange = async (id: string, newStatus: PrayerRequestStatus) => {

@@ -3,14 +3,19 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { format as formatDate } from 'date-fns';
 import { FirebaseLogRepository, SystemLog } from '@modules/shared-kernel/logging/infrastructure/repositories/FirebaseLogRepository';
 import { LogSeederService } from '@modules/shared-kernel/logging/infrastructure/services/LogSeederService';
 
-
-
 export const AdminLogsPage: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { currentUser: _currentUser } = useAuth();
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  // Permission checks
+  const canView = hasPermission(SystemModule.Logs, PermissionAction.View);
+  const canManage = hasPermission(SystemModule.Logs, PermissionAction.Manage);
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
@@ -22,7 +27,7 @@ export const AdminLogsPage: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
   const logRepository = useMemo(() => new FirebaseLogRepository(), []);
-  const logSeederService = useMemo(() => new LogSeederService(), []);
+  const _logSeederService = useMemo(() => new LogSeederService(), []);
 
   const levels = ['all', 'error', 'warning', 'info', 'debug'];
   const categories = ['all', 'auth', 'database', 'api', 'system', 'user_action', 'security'];
@@ -30,6 +35,7 @@ export const AdminLogsPage: React.FC = () => {
   // Load logs on component mount
   useEffect(() => {
     loadLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadLogs = async () => {
@@ -195,6 +201,7 @@ export const AdminLogsPage: React.FC = () => {
         clearInterval(interval);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefresh]);
 
   const getLogStats = () => {
@@ -207,6 +214,31 @@ export const AdminLogsPage: React.FC = () => {
   };
 
   const stats = getLogStats();
+
+  // Show loading while checking permissions
+  if (permissionsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando permissões...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check view permission
+  if (!canView) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600">Você não tem permissão para acessar esta página.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -237,13 +269,15 @@ export const AdminLogsPage: React.FC = () => {
               >
                 🔄 Atualizar
               </button>
-              <button
-                onClick={() => handleExportLogs('json')}
-                disabled={loading}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                📄 Exportar
-              </button>
+              {canManage && (
+                <button
+                  onClick={() => handleExportLogs('json')}
+                  disabled={loading}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                  📄 Exportar
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -355,13 +389,17 @@ export const AdminLogsPage: React.FC = () => {
               />
             </div>
             <div className="flex items-end">
-              <button
-                onClick={handleClearLogs}
-                disabled={loading}
-                className="w-full px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 disabled:opacity-50"
-              >
-                🗑️ Limpar Logs
-              </button>
+              {canManage ? (
+                <button
+                  onClick={handleClearLogs}
+                  disabled={loading}
+                  className="w-full px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 disabled:opacity-50"
+                >
+                  🗑️ Limpar Logs
+                </button>
+              ) : (
+                <span className="text-xs text-gray-400 py-2">Sem permissão para limpar</span>
+              )}
             </div>
           </div>
         </div>

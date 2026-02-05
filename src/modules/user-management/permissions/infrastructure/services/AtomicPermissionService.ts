@@ -1,7 +1,7 @@
 // Infrastructure Service - Atomic Permission Service
 // Handles permission validation with Firebase integration and caching
 
-import { doc, getDoc, collection, query, where, getDocs, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { SystemModule, PermissionAction, DEFAULT_ROLE_PERMISSIONS } from '@modules/user-management/permissions/domain/entities/Permission';
 
@@ -13,6 +13,8 @@ interface PermissionCacheEntry {
 
 interface UserPermissionData {
   role: string;
+  // NEW: rolePermissions stored directly in user document (for custom roles)
+  rolePermissions?: Array<{ module: SystemModule; actions: PermissionAction[] }>;
   customPermissions?: {
     granted: Array<{ module: SystemModule; actions: PermissionAction[] }>;
     revoked: Array<{ module: SystemModule; actions: PermissionAction[] }>;
@@ -160,6 +162,7 @@ export class AtomicPermissionService {
 
   /**
    * Load user permissions from Firebase
+   * Priority: customPermissions.granted > customPermissions.revoked > rolePermissions > DEFAULT_ROLE_PERMISSIONS
    */
   private async loadUserPermissions(userId: string): Promise<Map<SystemModule, Set<PermissionAction>>> {
     const userDoc = await getDoc(doc(db, 'users', userId));
@@ -176,11 +179,23 @@ export class AtomicPermissionService {
     }
 
     // Start with role-based permissions
-    const permissions = this.getRolePermissions(userData.role);
+    // NEW: Check for rolePermissions in user document first (for custom roles)
+    let permissions: Map<SystemModule, Set<PermissionAction>>;
 
-    // Apply custom overrides
+    if (userData.rolePermissions && Array.isArray(userData.rolePermissions) && userData.rolePermissions.length > 0) {
+      // Use rolePermissions from user document (custom role)
+      permissions = new Map();
+      userData.rolePermissions.forEach(config => {
+        permissions.set(config.module, new Set(config.actions));
+      });
+    } else {
+      // Fallback to DEFAULT_ROLE_PERMISSIONS
+      permissions = this.getRolePermissions(userData.role);
+    }
+
+    // Apply custom overrides (these take precedence over role permissions)
     if (userData.customPermissions) {
-      // Apply granted permissions
+      // Apply granted permissions first (highest priority)
       userData.customPermissions.granted?.forEach(grant => {
         const modulePerms = permissions.get(grant.module) || new Set();
         grant.actions.forEach(action => modulePerms.add(action));

@@ -5,6 +5,28 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 
+// Statistics for About page
+interface AboutStatistic {
+  value: string;
+  label: string;
+  icon: string;
+}
+
+// About page configuration
+interface AboutPageSettings {
+  mission: string;
+  vision: string;
+  statistics: AboutStatistic[];
+}
+
+// Bank account configuration for donations
+interface BankAccountSettings {
+  bankName: string;
+  agency: string;
+  accountNumber: string;
+  accountType?: string; // "Corrente" or "Poupança"
+}
+
 interface ChurchSettings {
   churchName: string;
   churchTagline: string;
@@ -17,6 +39,24 @@ interface ChurchSettings {
   secondaryColor: string;
   timezone: string;
   language: string;
+  // About page settings
+  about?: AboutPageSettings;
+  // Notification settings
+  emailNotifications?: boolean;
+  smsNotifications?: boolean;
+  eventReminders?: boolean;
+  // Event settings
+  requireEventConfirmation?: boolean;
+  maxEventParticipants?: number;
+  // Security settings
+  autoApproveMembers?: boolean;
+  allowPublicRegistration?: boolean;
+  maintenanceMode?: boolean;
+  // Payment settings
+  pixKey?: string;
+  bankAccount?: BankAccountSettings;
+  // Contact settings
+  whatsappNumber?: string;
 }
 
 interface SettingsContextType {
@@ -37,6 +77,17 @@ const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   } : null;
 };
 
+const defaultAboutSettings: AboutPageSettings = {
+  mission: 'Nossa igreja tem como missão transformar vidas através do amor de Deus, promovendo comunhão, discipulado e serviço à comunidade. Acreditamos que cada pessoa é especial e tem um propósito único a ser descoberto e desenvolvido.',
+  vision: 'Ser uma igreja relevante, que impacta positivamente a sociedade através do evangelho de Jesus Cristo, formando discípulos que façam a diferença em suas famílias, trabalho e comunidade.',
+  statistics: [
+    { value: '10+', label: 'Anos de História', icon: '📅' },
+    { value: '100+', label: 'Membros Ativos', icon: '👥' },
+    { value: '5+', label: 'Ministérios', icon: '⛪' },
+    { value: '500+', label: 'Vidas Impactadas', icon: '❤️' }
+  ]
+};
+
 const defaultSettings: ChurchSettings = {
   churchName: 'Igreja Conectados pela Fé',
   churchTagline: 'Conectados pela fé',
@@ -48,7 +99,19 @@ const defaultSettings: ChurchSettings = {
   primaryColor: '#3B82F6',
   secondaryColor: '#8B5CF6',
   timezone: 'America/Sao_Paulo',
-  language: 'pt-BR'
+  language: 'pt-BR',
+  about: defaultAboutSettings,
+  // Notification defaults
+  emailNotifications: true,
+  smsNotifications: false,
+  eventReminders: true,
+  // Event defaults
+  requireEventConfirmation: true,
+  maxEventParticipants: 200,
+  // Security defaults
+  autoApproveMembers: false,
+  allowPublicRegistration: true,
+  maintenanceMode: false
 };
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

@@ -43,6 +43,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
       }
       setEditandoDadosEspecializados(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ficha, isOpen]);
 
   const loadSessoes = async () => {
@@ -227,6 +228,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
     if (editandoDadosEspecializados) {
       validateForm();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dadosEspecializadosForm, editandoDadosEspecializados, ficha]);
 
   // Função auxiliar para verificar se um campo tem erro
@@ -2615,10 +2617,12 @@ const ProfessionalFichasPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   useEffect(() => {
     filterFichas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fichas, searchTerm, filter]);
 
   const loadData = async () => {

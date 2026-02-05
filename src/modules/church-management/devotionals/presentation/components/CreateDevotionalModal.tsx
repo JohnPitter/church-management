@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Devotional,
   DevotionalCategory
 } from '../../domain/entities/Devotional';
 import { devotionalService } from '@modules/church-management/devotionals/application/services/DevotionalService';
@@ -111,6 +110,7 @@ export const CreateDevotionalModal: React.FC<CreateDevotionalModalProps> = ({
   // Validate form whenever formData changes
   useEffect(() => {
     validateForm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
   const hasError = (fieldName: string) => {

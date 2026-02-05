@@ -3,15 +3,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useSettings } from '../contexts/SettingsContext';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { format as formatDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
   ForumTopic,
   ForumCategory,
   ForumStats,
-  TopicStatus,
-  TopicPriority
+  TopicStatus
 } from '@modules/content-management/forum/domain/entities/Forum';
 import { 
   forumService,
@@ -22,16 +22,23 @@ import { CreateForumCategoryModal } from '@modules/content-management/forum/pres
 
 export const AdminForumPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const { settings } = useSettings();
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  // Permission checks
+  const canView = hasPermission(SystemModule.Forum, PermissionAction.View);
+  const canCreate = hasPermission(SystemModule.Forum, PermissionAction.Create);
+  const canDelete = hasPermission(SystemModule.Forum, PermissionAction.Delete);
+  const canManage = hasPermission(SystemModule.Forum, PermissionAction.Manage);
+
   const [loading, setLoading] = useState(true);
   const [topics, setTopics] = useState<ForumTopic[]>([]);
   const [categories, setCategories] = useState<ForumCategory[]>([]);
   const [stats, setStats] = useState<ForumStats | null>(null);
   const [selectedTab, setSelectedTab] = useState('topics');
-  const [filters, setFilters] = useState<TopicFilters>({});
+  const [filters, _setFilters] = useState<TopicFilters>({});
   const [showCreateTopicModal, setShowCreateTopicModal] = useState(false);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
+  const [_hasMore, setHasMore] = useState(false);
 
   // Helper function to safely format dates
   const safeFormatDate = (date: Date | undefined, format: string) => {
@@ -43,6 +50,7 @@ export const AdminForumPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const loadData = async () => {
@@ -208,12 +216,14 @@ export const AdminForumPage: React.FC = () => {
         <div className="text-center py-12">
           <div className="text-5xl mb-4">💬</div>
           <p className="text-gray-600 mb-4">Nenhum tópico encontrado</p>
-          <button
-            onClick={() => setShowCreateTopicModal(true)}
-            className="px-4 py-2 text-white rounded-lg transition-colors theme-primary hover:opacity-90"
-          >
-            Criar Primeiro Tópico
-          </button>
+          {canCreate && (
+            <button
+              onClick={() => setShowCreateTopicModal(true)}
+              className="px-4 py-2 text-white rounded-lg transition-colors theme-primary hover:opacity-90"
+            >
+              Criar Primeiro Tópico
+            </button>
+          )}
         </div>
       );
     }
@@ -267,59 +277,73 @@ export const AdminForumPage: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleTogglePin(topic)}
-                  className={`p-2 rounded-lg ${
-                    topic.isPinned ? 'text-yellow-600 hover:bg-yellow-50' : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                  title={topic.isPinned ? 'Desfixar' : 'Fixar'}
-                >
-                  📌
-                </button>
-                <button
-                  onClick={() => handleToggleLock(topic)}
-                  className={`p-2 rounded-lg ${
-                    topic.isLocked ? 'text-red-600 hover:bg-red-50' : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                  title={topic.isLocked ? 'Desbloquear' : 'Bloquear'}
-                >
-                  🔒
-                </button>
-                
-                <div className="relative group">
-                  <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-                    ⚙️
+                {canManage && (
+                  <button
+                    onClick={() => handleTogglePin(topic)}
+                    className={`p-2 rounded-lg ${
+                      topic.isPinned ? 'text-yellow-600 hover:bg-yellow-50' : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                    title={topic.isPinned ? 'Desfixar' : 'Fixar'}
+                  >
+                    📌
                   </button>
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 hidden group-hover:block z-10">
-                    <div className="py-1">
-                      <button
-                        onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.PUBLISHED)}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        ✅ Aprovar
-                      </button>
-                      <button
-                        onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.REJECTED)}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        ❌ Rejeitar
-                      </button>
-                      <button
-                        onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.ARCHIVED)}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        📦 Arquivar
-                      </button>
-                      <hr className="my-1" />
-                      <button
-                        onClick={() => handleDeleteTopic(topic.id)}
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                      >
-                        🗑️ Excluir
-                      </button>
+                )}
+                {canManage && (
+                  <button
+                    onClick={() => handleToggleLock(topic)}
+                    className={`p-2 rounded-lg ${
+                      topic.isLocked ? 'text-red-600 hover:bg-red-50' : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                    title={topic.isLocked ? 'Desbloquear' : 'Bloquear'}
+                  >
+                    🔒
+                  </button>
+                )}
+
+                {(canManage || canDelete) && (
+                  <div className="relative group">
+                    <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                      ⚙️
+                    </button>
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 hidden group-hover:block z-10">
+                      <div className="py-1">
+                        {canManage && (
+                          <>
+                            <button
+                              onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.PUBLISHED)}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
+                              ✅ Aprovar
+                            </button>
+                            <button
+                              onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.REJECTED)}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
+                              ❌ Rejeitar
+                            </button>
+                            <button
+                              onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.ARCHIVED)}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
+                              📦 Arquivar
+                            </button>
+                          </>
+                        )}
+                        {canDelete && (
+                          <>
+                            {canManage && <hr className="my-1" />}
+                            <button
+                              onClick={() => handleDeleteTopic(topic.id)}
+                              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                            >
+                              🗑️ Excluir
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -334,12 +358,14 @@ export const AdminForumPage: React.FC = () => {
         <div className="text-center py-12">
           <div className="text-5xl mb-4">🏷️</div>
           <p className="text-gray-600 mb-4">Nenhuma categoria encontrada</p>
-          <button
-            onClick={() => setShowCreateCategoryModal(true)}
-            className="px-4 py-2 text-white rounded-lg transition-colors theme-primary hover:opacity-90"
-          >
-            Criar Primeira Categoria
-          </button>
+          {canCreate && (
+            <button
+              onClick={() => setShowCreateCategoryModal(true)}
+              className="px-4 py-2 text-white rounded-lg transition-colors theme-primary hover:opacity-90"
+            >
+              Criar Primeira Categoria
+            </button>
+          )}
         </div>
       );
     }
@@ -404,20 +430,22 @@ export const AdminForumPage: React.FC = () => {
                     <h4 className="font-medium">{topic.title}</h4>
                     <p className="text-sm text-gray-600">Por {topic.authorName}</p>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.PUBLISHED)}
-                      className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-                    >
-                      Aprovar
-                    </button>
-                    <button
-                      onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.REJECTED)}
-                      className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
-                    >
-                      Rejeitar
-                    </button>
-                  </div>
+                  {canManage && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.PUBLISHED)}
+                        className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                      >
+                        Aprovar
+                      </button>
+                      <button
+                        onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.REJECTED)}
+                        className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                      >
+                        Rejeitar
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -479,6 +507,29 @@ export const AdminForumPage: React.FC = () => {
     );
   };
 
+  // Permission loading state
+  if (permissionsLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <span className="ml-2 text-gray-600">Verificando permissões...</span>
+      </div>
+    );
+  }
+
+  // Access denied if user cannot view forum
+  if (!canView) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600">Você não tem permissão para visualizar o fórum.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -492,18 +543,22 @@ export const AdminForumPage: React.FC = () => {
               </p>
             </div>
             <div className="flex space-x-3">
-              <button
-                onClick={() => setShowCreateCategoryModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                🏷️ Nova Categoria
-              </button>
-              <button
-                onClick={() => setShowCreateTopicModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors theme-primary hover:opacity-90"
-              >
-                💬 Novo Tópico
-              </button>
+              {canCreate && (
+                <button
+                  onClick={() => setShowCreateCategoryModal(true)}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  🏷️ Nova Categoria
+                </button>
+              )}
+              {canCreate && (
+                <button
+                  onClick={() => setShowCreateTopicModal(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors theme-primary hover:opacity-90"
+                >
+                  💬 Novo Tópico
+                </button>
+              )}
             </div>
           </div>
         </div>

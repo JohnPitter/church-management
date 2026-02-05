@@ -261,6 +261,7 @@ export const AdminLeadershipPage: React.FC = () => {
 
   useEffect(() => {
     loadLeaders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadLeaders = async () => {

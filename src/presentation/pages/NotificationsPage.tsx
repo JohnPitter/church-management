@@ -4,14 +4,13 @@
 import React, { useState } from 'react';
 import { useNotifications } from '../contexts/NotificationContext';
 import { NotificationsList } from '../components/NotificationsList';
-import { NotificationEntity } from '@modules/shared-kernel/notifications/domain/entities/Notification';
 
 export const NotificationsPage: React.FC = () => {
-  const { 
-    notifications, 
-    unreadCount, 
-    loading, 
-    preferences, 
+  const {
+    notifications,
+    unreadCount,
+    loading: _loading,
+    preferences,
     updatePreferences
   } = useNotifications();
   

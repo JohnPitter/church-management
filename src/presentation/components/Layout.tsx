@@ -1,11 +1,11 @@
 // Presentation Component - Layout
 // Main layout wrapper that chooses between authenticated and public layouts
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { useAtomicPermissions } from '../hooks/useAtomicPermissions';
+import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 import { PublicLayout } from './PublicLayout';
 import { NotificationBell } from './NotificationBell';
@@ -14,13 +14,46 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+interface NavItem {
+  name: string;
+  href: string;
+  show: boolean;
+}
+
+interface NavCategory {
+  name: string;
+  icon: string;
+  items: NavItem[];
+}
+
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { currentUser, logout } = useAuth();
   const { settings } = useSettings();
-  const { hasPermission, hasAnyPermission } = useAtomicPermissions();
+  const { hasPermission } = usePermissions();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [expandedMobileCategory, setExpandedMobileCategory] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close dropdown when route changes
+  useEffect(() => {
+    setOpenDropdown(null);
+    setExpandedMobileCategory(null);
+  }, [location.pathname]);
 
   // Helper to check if user has any manage permission
   const hasAnyManagePermission = () => {
@@ -48,73 +81,74 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   };
 
-  const navigation = [
-    { 
-      name: 'Painel', 
-      href: currentUser?.role === 'professional' ? '/professional' : '/painel',
-      show: hasPermission(SystemModule.Dashboard, PermissionAction.View)
-    },
-    { 
-      name: 'Eventos', 
-      href: '/events',
-      show: hasPermission(SystemModule.Events, PermissionAction.View)
-    },
-    { 
-      name: 'Blog', 
-      href: '/blog',
-      show: hasPermission(SystemModule.Blog, PermissionAction.View)
-    },
-    { 
-      name: 'Projetos', 
-      href: '/projects',
-      show: hasPermission(SystemModule.Projects, PermissionAction.View)
-    },
-    { 
-      name: 'Transmissões', 
-      href: '/live',
-      show: hasPermission(SystemModule.Transmissions, PermissionAction.View)
-    },
-    { 
-      name: 'Devocionais', 
-      href: '/devotionals',
-      show: hasPermission(SystemModule.Devotionals, PermissionAction.View)
+  // Dashboard item - always visible at top level
+  const dashboardItem: NavItem = {
+    name: 'Painel',
+    href: currentUser?.role === 'professional' ? '/professional' : '/painel',
+    show: hasPermission(SystemModule.Dashboard, PermissionAction.View)
+  };
+
+  // Categorized navigation
+  const categories: NavCategory[] = [
+    {
+      name: 'Comunidade',
+      icon: '👥',
+      items: [
+        { name: 'Eventos', href: '/events', show: hasPermission(SystemModule.Events, PermissionAction.View) },
+        { name: 'Fórum', href: '/forum', show: hasPermission(SystemModule.Forum, PermissionAction.View) },
+        { name: 'Liderança', href: '/leadership', show: hasPermission(SystemModule.Leadership, PermissionAction.View) },
+      ]
     },
     {
-      name: 'Fórum',
-      href: '/forum',
-      show: hasPermission(SystemModule.Forum, PermissionAction.View)
-    },
-    {
-      name: 'Liderança',
-      href: '/leadership',
-      show: hasPermission(SystemModule.Leadership, PermissionAction.View)
-    },
+      name: 'Conteúdo',
+      icon: '📚',
+      items: [
+        { name: 'Blog', href: '/blog', show: hasPermission(SystemModule.Blog, PermissionAction.View) },
+        { name: 'Devocionais', href: '/devotionals', show: hasPermission(SystemModule.Devotionals, PermissionAction.View) },
+        { name: 'Transmissões', href: '/live', show: hasPermission(SystemModule.Transmissions, PermissionAction.View) },
+        { name: 'Projetos', href: '/projects', show: hasPermission(SystemModule.Projects, PermissionAction.View) },
+      ]
+    }
   ];
+
+  // Filter categories to only show those with visible items
+  const visibleCategories = categories
+    .map(cat => ({
+      ...cat,
+      items: cat.items.filter(item => item.show)
+    }))
+    .filter(cat => cat.items.length > 0);
 
   const adminNavigation = [
     {
       name: 'Painel Admin',
       href: '/admin',
-      // Only show if user has at least one Manage permission
       show: hasAnyManagePermission()
     },
   ];
 
   const isActive = (href: string) => {
-    // Special case for professional painel - consider both painel routes active
     if (currentUser?.role === 'professional' && href === '/professional') {
       return location.pathname === '/professional';
     }
     return location.pathname === href;
   };
 
+  const isCategoryActive = (category: NavCategory) => {
+    return category.items.some(item => isActive(item.href));
+  };
+
+  const toggleDropdown = (categoryName: string) => {
+    setOpenDropdown(prev => prev === categoryName ? null : categoryName);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navigation */}
-      <nav className="bg-white shadow">
+      <nav className="bg-white shadow relative z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex">
+            <div className="flex flex-1 min-w-0">
               <div className="flex-shrink-0 flex items-center space-x-3">
                 {/* Church Logo */}
                 {settings?.logoURL && (
@@ -134,55 +168,99 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   style={{ color: settings?.primaryColor || '#6366F1' }}
                 >
                   <span className="block md:hidden">
-                    {/* Versão mobile - mais compacta */}
                     {(settings?.churchTagline || 'Conectados pela fé').length > 15
                       ? `${(settings?.churchTagline || 'Conectados pela fé').substring(0, 15)}...`
                       : (settings?.churchTagline || 'Conectados pela fé')
                     }
                   </span>
                   <span className="hidden md:block lg:hidden">
-                    {/* Versão tablet - média */}
                     {(settings?.churchTagline || 'Conectados pela fé').length > 25
                       ? `${(settings?.churchTagline || 'Conectados pela fé').substring(0, 25)}...`
                       : (settings?.churchTagline || 'Conectados pela fé')
                     }
                   </span>
                   <span className="hidden lg:block">
-                    {/* Versão desktop - completa */}
                     {settings?.churchTagline || 'Conectados pela fé'}
                   </span>
                 </h1>
               </div>
-              <div className="hidden lg:ml-8 lg:flex lg:space-x-3 lg:flex-1 lg:max-w-4xl">
-                {navigation.filter(item => item.show).map((item) => (
+
+              {/* Desktop Navigation with Categories */}
+              <div className="hidden lg:ml-8 lg:flex lg:items-center lg:space-x-1" ref={dropdownRef}>
+                {/* Dashboard - Always visible */}
+                {dashboardItem.show && (
                   <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium whitespace-nowrap ${
-                      isActive(item.href)
-                        ? 'border-indigo-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    to={dashboardItem.href}
+                    className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                      isActive(dashboardItem.href)
+                        ? 'bg-indigo-50 text-indigo-700'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                   >
-                    {item.name}
+                    {dashboardItem.name}
                   </Link>
+                )}
+
+                {/* Category Dropdowns */}
+                {visibleCategories.map((category) => (
+                  <div key={category.name} className="relative">
+                    <button
+                      onClick={() => toggleDropdown(category.name)}
+                      className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                        isCategoryActive(category) || openDropdown === category.name
+                          ? 'bg-indigo-50 text-indigo-700'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      <span className="mr-1">{category.icon}</span>
+                      {category.name}
+                      <svg
+                        className={`ml-1 h-4 w-4 transition-transform ${openDropdown === category.name ? 'rotate-180' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {openDropdown === category.name && (
+                      <div className="absolute left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                        {category.items.map((item) => (
+                          <Link
+                            key={item.name}
+                            to={item.href}
+                            onClick={() => setOpenDropdown(null)}
+                            className={`block px-4 py-2 text-sm ${
+                              isActive(item.href)
+                                ? 'bg-indigo-50 text-indigo-700 font-medium'
+                                : 'text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            {item.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
 
                 {/* Admin Navigation */}
                 {adminNavigation.some(item => item.show) && (
                   <>
-                    <div className="border-l border-gray-300 h-6 self-center mx-6"></div>
+                    <div className="border-l border-gray-300 h-6 mx-3"></div>
                     {adminNavigation.filter(item => item.show).map((item) => (
                       <Link
                         key={item.name}
                         to={item.href}
-                        className={`inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium whitespace-nowrap ${
+                        className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
                           isActive(item.href)
-                            ? 'border-red-500 text-gray-900'
-                            : 'border-transparent text-red-600 hover:border-red-300 hover:text-red-700'
+                            ? 'bg-red-50 text-red-700'
+                            : 'text-red-600 hover:bg-red-50 hover:text-red-700'
                         }`}
                       >
-                        {item.name}
+                        ⚙️ {item.name}
                       </Link>
                     ))}
                   </>
@@ -191,11 +269,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
 
             {/* Desktop Right Menu */}
-            <div className="hidden lg:flex items-center gap-8 flex-shrink-0 ml-20">
-              {/* Notification Bell */}
+            <div className="hidden lg:flex items-center gap-4 flex-shrink-0 ml-4">
               <NotificationBell />
 
-              {/* Profile dropdown would go here */}
               <div className="relative">
                 <Link
                   to="/profile"
@@ -225,7 +301,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       </span>
                     )}
                   </div>
-                  {currentUser?.displayName || 'Usuário'}
+                  <span className="hidden xl:inline">{currentUser?.displayName || 'Usuário'}</span>
                   {hasPermission(SystemModule.Dashboard, PermissionAction.Manage) && (
                     <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                       Admin
@@ -233,7 +309,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   )}
                 </Link>
               </div>
-              
+
               <button
                 onClick={handleLogout}
                 className="text-sm text-gray-500 hover:text-gray-700"
@@ -243,7 +319,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
 
             {/* Mobile and Tablet Hamburger Button */}
-            <div className="lg:hidden">
+            <div className="lg:hidden flex items-center">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
@@ -269,21 +345,66 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         {isMobileMenuOpen && (
           <div className="lg:hidden">
             <div className="pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
-              {navigation.filter(item => item.show).map((item) => (
+              {/* Dashboard */}
+              {dashboardItem.show && (
                 <Link
-                  key={item.name}
-                  to={item.href}
+                  to={dashboardItem.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                    isActive(item.href)
+                    isActive(dashboardItem.href)
                       ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
                       : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
                   }`}
                 >
-                  {item.name}
+                  🏠 {dashboardItem.name}
                 </Link>
+              )}
+
+              {/* Categories with expandable sections */}
+              {visibleCategories.map((category) => (
+                <div key={category.name}>
+                  <button
+                    onClick={() => setExpandedMobileCategory(
+                      expandedMobileCategory === category.name ? null : category.name
+                    )}
+                    className={`w-full flex items-center justify-between pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                      isCategoryActive(category)
+                        ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
+                        : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                    }`}
+                  >
+                    <span>{category.icon} {category.name}</span>
+                    <svg
+                      className={`h-5 w-5 transition-transform ${expandedMobileCategory === category.name ? 'rotate-180' : ''}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {expandedMobileCategory === category.name && (
+                    <div className="bg-gray-50">
+                      {category.items.map((item) => (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`block pl-8 pr-4 py-2 text-sm ${
+                            isActive(item.href)
+                              ? 'bg-indigo-100 text-indigo-700 font-medium'
+                              : 'text-gray-600 hover:bg-gray-100'
+                          }`}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
-              
+
               {/* Admin Mobile Navigation */}
               {adminNavigation.some(item => item.show) && (
                 <>
@@ -302,7 +423,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                           : 'border-transparent text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700'
                       }`}
                     >
-                      {item.name}
+                      ⚙️ {item.name}
                     </Link>
                   ))}
                 </>
@@ -357,7 +478,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
                   >
-                    Perfil
+                    👤 Perfil
                   </Link>
                   <div className="px-4 py-2">
                     <NotificationBell />
@@ -369,7 +490,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     }}
                     className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
                   >
-                    Sair
+                    🚪 Sair
                   </button>
                 </div>
               </div>
