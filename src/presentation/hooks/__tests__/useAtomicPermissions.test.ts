@@ -16,20 +16,18 @@ jest.mock('@/config/firebase', () => ({
   db: {}
 }));
 
-// Mock atomicPermissionService
-const mockGetUserPermissions = jest.fn();
+// Mock permissionService (unified singleton)
+const mockGetUserPermissionsMap = jest.fn();
 const mockSubscribeToUserPermissions = jest.fn();
 const mockUnsubscribeFromUser = jest.fn();
-const mockInvalidateCache = jest.fn();
-const mockHasPermission = jest.fn();
+const mockInvalidateUserPermissionCache = jest.fn();
 
-jest.mock('@modules/user-management/permissions/infrastructure/services/AtomicPermissionService', () => ({
-  atomicPermissionService: {
-    getUserPermissions: (...args: any[]) => mockGetUserPermissions(...args),
-    subscribeToUserPermissions: (...args: any[]) => mockSubscribeToUserPermissions(...args),
-    unsubscribeFromUser: (...args: any[]) => mockUnsubscribeFromUser(...args),
-    invalidateCache: (...args: any[]) => mockInvalidateCache(...args),
-    hasPermission: (...args: any[]) => mockHasPermission(...args)
+jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => ({
+  permissionService: {
+    getUserPermissionsMap: (...args: any) => mockGetUserPermissionsMap(...args),
+    subscribeToUserPermissions: (...args: any) => mockSubscribeToUserPermissions(...args),
+    unsubscribeFromUser: (...args: any) => mockUnsubscribeFromUser(...args),
+    invalidateUserPermissionCache: (...args: any) => mockInvalidateUserPermissionCache(...args)
   }
 }));
 
@@ -69,14 +67,14 @@ describe('useAtomicPermissions Hook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCurrentUser = null;
-    mockGetUserPermissions.mockResolvedValue(new Map());
+    mockGetUserPermissionsMap.mockResolvedValue(new Map());
     mockSubscribeToUserPermissions.mockImplementation(() => {});
   });
 
   describe('Initial State and Loading', () => {
     it('should return loading true initially when user is logged in', async () => {
       mockCurrentUser = createMockUser();
-      mockGetUserPermissions.mockImplementation(() => new Promise(() => {})); // Never resolves
+      mockGetUserPermissionsMap.mockImplementation(() => new Promise(() => {})); // Never resolves
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -109,7 +107,7 @@ describe('useAtomicPermissions Hook', () => {
 
     it('should set loading to false after permissions are loaded', async () => {
       mockCurrentUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -135,7 +133,7 @@ describe('useAtomicPermissions Hook', () => {
       const permissionMap = createPermissionMap([
         { module: SystemModule.Users, actions: [PermissionAction.View, PermissionAction.Create] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -152,7 +150,7 @@ describe('useAtomicPermissions Hook', () => {
       const permissionMap = createPermissionMap([
         { module: SystemModule.Events, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -169,7 +167,7 @@ describe('useAtomicPermissions Hook', () => {
       const permissionMap = createPermissionMap([
         { module: SystemModule.Blog, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -182,7 +180,7 @@ describe('useAtomicPermissions Hook', () => {
 
     it('should handle undefined module gracefully', async () => {
       mockCurrentUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -201,7 +199,7 @@ describe('useAtomicPermissions Hook', () => {
         { module: SystemModule.Members, actions: [PermissionAction.View] },
         { module: SystemModule.Events, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -223,7 +221,7 @@ describe('useAtomicPermissions Hook', () => {
       const permissionMap = createPermissionMap([
         { module: SystemModule.Blog, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -241,7 +239,7 @@ describe('useAtomicPermissions Hook', () => {
 
     it('should return false for empty checks array', async () => {
       mockCurrentUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -257,7 +255,7 @@ describe('useAtomicPermissions Hook', () => {
       const permissionMap = createPermissionMap([
         { module: SystemModule.Dashboard, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -278,7 +276,7 @@ describe('useAtomicPermissions Hook', () => {
         { module: SystemModule.Users, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
         { module: SystemModule.Members, actions: [PermissionAction.View, PermissionAction.Create] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -301,7 +299,7 @@ describe('useAtomicPermissions Hook', () => {
         { module: SystemModule.Users, actions: [PermissionAction.View] },
         { module: SystemModule.Members, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -319,7 +317,7 @@ describe('useAtomicPermissions Hook', () => {
 
     it('should return true for empty checks array', async () => {
       mockCurrentUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -335,7 +333,7 @@ describe('useAtomicPermissions Hook', () => {
       const permissionMap = createPermissionMap([
         { module: SystemModule.Finance, actions: [PermissionAction.Manage] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -350,10 +348,12 @@ describe('useAtomicPermissions Hook', () => {
   });
 
   describe('Asynchronous Permission Check - checkPermission', () => {
-    it('should call atomicPermissionService.hasPermission', async () => {
+    it('should check permission via getUserPermissionsMap', async () => {
       mockCurrentUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
-      mockHasPermission.mockResolvedValue(true);
+      const permissionMap = createPermissionMap([
+        { module: SystemModule.Users, actions: [PermissionAction.View] }
+      ]);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -366,7 +366,6 @@ describe('useAtomicPermissions Hook', () => {
         PermissionAction.View
       );
 
-      expect(mockHasPermission).toHaveBeenCalledWith('user-123', SystemModule.Users, PermissionAction.View);
       expect(hasPermission).toBe(true);
     });
 
@@ -385,13 +384,11 @@ describe('useAtomicPermissions Hook', () => {
       );
 
       expect(hasPermission).toBe(false);
-      expect(mockHasPermission).not.toHaveBeenCalled();
     });
 
-    it('should validate permission with Firebase', async () => {
+    it('should return false when permission is not in map', async () => {
       mockCurrentUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
-      mockHasPermission.mockResolvedValue(false);
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -405,14 +402,13 @@ describe('useAtomicPermissions Hook', () => {
       );
 
       expect(hasPermission).toBe(false);
-      expect(mockHasPermission).toHaveBeenCalledWith('user-123', SystemModule.Finance, PermissionAction.Delete);
     });
   });
 
   describe('Role Checks', () => {
     it('should correctly identify admin role', async () => {
       mockCurrentUser = createMockUser({ role: UserRole.Admin });
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -428,7 +424,7 @@ describe('useAtomicPermissions Hook', () => {
 
     it('should correctly identify secretary role', async () => {
       mockCurrentUser = createMockUser({ role: UserRole.Secretary });
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -444,7 +440,7 @@ describe('useAtomicPermissions Hook', () => {
 
     it('should correctly identify leader role', async () => {
       mockCurrentUser = createMockUser({ role: 'leader' });
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -460,7 +456,7 @@ describe('useAtomicPermissions Hook', () => {
 
     it('should correctly identify member role', async () => {
       mockCurrentUser = createMockUser({ role: UserRole.Member });
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -476,7 +472,7 @@ describe('useAtomicPermissions Hook', () => {
 
     it('should handle custom roles', async () => {
       mockCurrentUser = createMockUser({ role: 'custom_role' });
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -493,7 +489,7 @@ describe('useAtomicPermissions Hook', () => {
 
     it('should handle professional role', async () => {
       mockCurrentUser = createMockUser({ role: UserRole.Professional });
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -512,7 +508,7 @@ describe('useAtomicPermissions Hook', () => {
     it('should handle permission loading errors gracefully', async () => {
       mockCurrentUser = createMockUser();
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      mockGetUserPermissions.mockRejectedValue(new Error('Permission loading failed'));
+      mockGetUserPermissionsMap.mockRejectedValue(new Error('Permission loading failed'));
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -529,7 +525,7 @@ describe('useAtomicPermissions Hook', () => {
     it('should return false for all permissions when error occurs', async () => {
       mockCurrentUser = createMockUser();
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      mockGetUserPermissions.mockRejectedValue(new Error('Error'));
+      mockGetUserPermissionsMap.mockRejectedValue(new Error('Error'));
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -546,7 +542,7 @@ describe('useAtomicPermissions Hook', () => {
     it('should handle network timeout errors', async () => {
       mockCurrentUser = createMockUser();
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      mockGetUserPermissions.mockRejectedValue(new Error('Network timeout'));
+      mockGetUserPermissionsMap.mockRejectedValue(new Error('Network timeout'));
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -563,7 +559,7 @@ describe('useAtomicPermissions Hook', () => {
     it('should handle undefined errors', async () => {
       mockCurrentUser = createMockUser();
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      mockGetUserPermissions.mockRejectedValue(undefined);
+      mockGetUserPermissionsMap.mockRejectedValue(undefined);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -587,7 +583,7 @@ describe('useAtomicPermissions Hook', () => {
         { module: SystemModule.Blog, actions: [PermissionAction.View, PermissionAction.Create] }
       ]);
 
-      mockGetUserPermissions
+      mockGetUserPermissionsMap
         .mockResolvedValueOnce(initialPermissions)
         .mockResolvedValueOnce(updatedPermissions);
 
@@ -603,14 +599,14 @@ describe('useAtomicPermissions Hook', () => {
         await result.current.refreshPermissions();
       });
 
-      expect(mockInvalidateCache).toHaveBeenCalledWith('user-123');
+      expect(mockInvalidateUserPermissionCache).toHaveBeenCalledWith('user-123');
       expect(result.current.hasPermission(SystemModule.Blog, PermissionAction.Create)).toBe(true);
     });
 
     it('should handle refresh errors gracefully', async () => {
       mockCurrentUser = createMockUser();
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      mockGetUserPermissions
+      mockGetUserPermissionsMap
         .mockResolvedValueOnce(new Map())
         .mockRejectedValueOnce(new Error('Refresh failed'));
 
@@ -641,8 +637,8 @@ describe('useAtomicPermissions Hook', () => {
         await result.current.refreshPermissions();
       });
 
-      expect(mockInvalidateCache).not.toHaveBeenCalled();
-      expect(mockGetUserPermissions).not.toHaveBeenCalled();
+      expect(mockInvalidateUserPermissionCache).not.toHaveBeenCalled();
+      expect(mockGetUserPermissionsMap).not.toHaveBeenCalled();
     });
 
     it('should set loading state during refresh', async () => {
@@ -652,7 +648,7 @@ describe('useAtomicPermissions Hook', () => {
         resolvePromise = resolve;
       });
 
-      mockGetUserPermissions
+      mockGetUserPermissionsMap
         .mockResolvedValueOnce(new Map())
         .mockReturnValueOnce(promise as any);
 
@@ -681,7 +677,7 @@ describe('useAtomicPermissions Hook', () => {
   describe('Real-time Subscription', () => {
     it('should subscribe to permission updates on mount', async () => {
       mockCurrentUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       renderHook(() => useAtomicPermissions());
 
@@ -695,7 +691,7 @@ describe('useAtomicPermissions Hook', () => {
 
     it('should unsubscribe on unmount', async () => {
       mockCurrentUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { unmount } = renderHook(() => useAtomicPermissions());
 
@@ -718,7 +714,7 @@ describe('useAtomicPermissions Hook', () => {
       const initialPermissions = createPermissionMap([
         { module: SystemModule.Events, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(initialPermissions);
+      mockGetUserPermissionsMap.mockResolvedValue(initialPermissions);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -730,7 +726,7 @@ describe('useAtomicPermissions Hook', () => {
       const updatedPermissions = createPermissionMap([
         { module: SystemModule.Events, actions: [PermissionAction.View, PermissionAction.Manage] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(updatedPermissions);
+      mockGetUserPermissionsMap.mockResolvedValue(updatedPermissions);
 
       await act(async () => {
         subscriptionCallback!();
@@ -750,7 +746,7 @@ describe('useAtomicPermissions Hook', () => {
         subscriptionCallback = callback;
       });
 
-      mockGetUserPermissions
+      mockGetUserPermissionsMap
         .mockResolvedValueOnce(new Map())
         .mockRejectedValueOnce(new Error('Subscription error'));
 
@@ -781,7 +777,7 @@ describe('useAtomicPermissions Hook', () => {
       const user1Permissions = createPermissionMap([
         { module: SystemModule.Blog, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(user1Permissions);
+      mockGetUserPermissionsMap.mockResolvedValue(user1Permissions);
 
       const { result, rerender } = renderHook(() => useAtomicPermissions());
 
@@ -789,19 +785,19 @@ describe('useAtomicPermissions Hook', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(mockGetUserPermissions).toHaveBeenCalledWith('user-1');
+      expect(mockGetUserPermissionsMap).toHaveBeenCalledWith('user-1');
 
       // Change user
       mockCurrentUser = user2;
       const user2Permissions = createPermissionMap([
         { module: SystemModule.Finance, actions: [PermissionAction.Manage] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(user2Permissions);
+      mockGetUserPermissionsMap.mockResolvedValue(user2Permissions);
 
       rerender();
 
       await waitFor(() => {
-        expect(mockGetUserPermissions).toHaveBeenCalledWith('user-2');
+        expect(mockGetUserPermissionsMap).toHaveBeenCalledWith('user-2');
       });
     });
 
@@ -810,7 +806,7 @@ describe('useAtomicPermissions Hook', () => {
       const user2 = createMockUser({ id: 'user-2' });
 
       mockCurrentUser = user1;
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { rerender } = renderHook(() => useAtomicPermissions());
 
@@ -833,7 +829,7 @@ describe('useAtomicPermissions Hook', () => {
       const permissionMap = createPermissionMap([
         { module: SystemModule.Users, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result, rerender } = renderHook(() => useAtomicPermissions());
 
@@ -860,7 +856,7 @@ describe('useAtomicPermissions Hook', () => {
       const permissionMap = createPermissionMap([
         { module: SystemModule.Members, actions: [PermissionAction.View, PermissionAction.Create] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -873,7 +869,7 @@ describe('useAtomicPermissions Hook', () => {
       result.current.hasPermission(SystemModule.Members, PermissionAction.Create);
       result.current.hasPermission(SystemModule.Members, PermissionAction.Delete);
 
-      expect(mockGetUserPermissions).toHaveBeenCalledTimes(1);
+      expect(mockGetUserPermissionsMap).toHaveBeenCalledTimes(1);
     });
 
     it('should update cache after refreshPermissions', async () => {
@@ -885,7 +881,7 @@ describe('useAtomicPermissions Hook', () => {
         { module: SystemModule.Events, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] }
       ]);
 
-      mockGetUserPermissions
+      mockGetUserPermissionsMap
         .mockResolvedValueOnce(oldPermissions)
         .mockResolvedValueOnce(newPermissions);
 
@@ -916,7 +912,7 @@ describe('useAtomicPermissions Hook', () => {
           { module: SystemModule.Finance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
           { module: SystemModule.Permissions, actions: [PermissionAction.View, PermissionAction.Update, PermissionAction.Manage] }
         ]);
-        mockGetUserPermissions.mockResolvedValue(fullPermissions);
+        mockGetUserPermissionsMap.mockResolvedValue(fullPermissions);
 
         const { result } = renderHook(() => useAtomicPermissions());
 
@@ -939,7 +935,7 @@ describe('useAtomicPermissions Hook', () => {
           { module: SystemModule.Events, actions: [PermissionAction.View] },
           { module: SystemModule.Blog, actions: [PermissionAction.View] }
         ]);
-        mockGetUserPermissions.mockResolvedValue(memberPermissions);
+        mockGetUserPermissionsMap.mockResolvedValue(memberPermissions);
 
         const { result } = renderHook(() => useAtomicPermissions());
 
@@ -964,7 +960,7 @@ describe('useAtomicPermissions Hook', () => {
           { module: SystemModule.Blog, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
           { module: SystemModule.Events, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] }
         ]);
-        mockGetUserPermissions.mockResolvedValue(secretaryPermissions);
+        mockGetUserPermissionsMap.mockResolvedValue(secretaryPermissions);
 
         const { result } = renderHook(() => useAtomicPermissions());
 
@@ -987,7 +983,7 @@ describe('useAtomicPermissions Hook', () => {
           { module: SystemModule.Assistance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
           { module: SystemModule.Members, actions: [PermissionAction.View] }
         ]);
-        mockGetUserPermissions.mockResolvedValue(professionalPermissions);
+        mockGetUserPermissionsMap.mockResolvedValue(professionalPermissions);
 
         const { result } = renderHook(() => useAtomicPermissions());
 
@@ -1011,7 +1007,7 @@ describe('useAtomicPermissions Hook', () => {
         { module: SystemModule.Members, actions: [PermissionAction.View, PermissionAction.Create] },
         { module: SystemModule.Finance, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -1038,7 +1034,7 @@ describe('useAtomicPermissions Hook', () => {
       const initialPerms = createPermissionMap([
         { module: SystemModule.Blog, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(initialPerms);
+      mockGetUserPermissionsMap.mockResolvedValue(initialPerms);
 
       const { result } = renderHook(() => useAtomicPermissions());
 
@@ -1052,7 +1048,7 @@ describe('useAtomicPermissions Hook', () => {
       const updatedPerms = createPermissionMap([
         { module: SystemModule.Blog, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(updatedPerms);
+      mockGetUserPermissionsMap.mockResolvedValue(updatedPerms);
 
       await act(async () => {
         await result.current.refreshPermissions();

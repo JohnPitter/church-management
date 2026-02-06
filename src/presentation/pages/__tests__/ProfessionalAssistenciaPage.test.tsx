@@ -71,8 +71,8 @@ jest.mock('../../hooks/usePermissions', () => ({
 }));
 
 // Mock PermissionService
-jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => ({
-  PermissionService: class MockPermissionService {
+jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => {
+  const mockInstance = {
     getRoleDisplayNameSync(role: string): string {
       const displayNames: Record<string, string> = {
         admin: 'Administrador',
@@ -82,45 +82,23 @@ jest.mock('@modules/user-management/permissions/application/services/PermissionS
         member: 'Membro'
       };
       return displayNames[role] || role;
-    }
-
-    getAllRoles() {
-      return Promise.resolve(['admin', 'secretary', 'professional', 'leader', 'member']);
-    }
-
-    getAllRolesSync() {
-      return ['admin', 'secretary', 'professional', 'leader', 'member'];
-    }
-
-    getUserPermissions() {
-      return Promise.resolve([]);
-    }
-
-    hasPermission() {
-      return false;
-    }
-
-    getRolePermissions() {
-      return Promise.resolve([]);
-    }
-
-    saveRolePermissions() {
-      return Promise.resolve();
-    }
-
-    getUserPermissionOverrides() {
-      return Promise.resolve(null);
-    }
-
-    saveUserPermissionOverrides() {
-      return Promise.resolve();
-    }
-
-    clearAllCaches() {
-      return;
-    }
-  }
-}));
+    },
+    getAllRoles: () => Promise.resolve(['admin', 'secretary', 'professional', 'leader', 'member']),
+    getAllRolesSync: () => ['admin', 'secretary', 'professional', 'leader', 'member'],
+    getUserPermissions: () => Promise.resolve([]),
+    hasPermission: () => false,
+    getRolePermissions: () => Promise.resolve([]),
+    saveRolePermissions: () => Promise.resolve(),
+    getUserPermissionOverrides: () => Promise.resolve(null),
+    saveUserPermissionOverrides: () => Promise.resolve(),
+    clearAllCaches: () => {},
+    clearAllCache: () => {}
+  };
+  return {
+    PermissionService: function() { return mockInstance; },
+    permissionService: mockInstance
+  };
+});
 
 // Mock AdminVerseOfTheDay component
 jest.mock('../../components/AdminVerseOfTheDay', () => ({

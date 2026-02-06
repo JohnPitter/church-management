@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
-import { PermissionService, UserPermissionConfig, CustomRoleConfig } from '@modules/user-management/permissions/application/services/PermissionService';
+import { UserPermissionConfig, CustomRoleConfig, permissionService } from '@modules/user-management/permissions/application/services/PermissionService';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { PublicPageService } from '@modules/content-management/public-pages/application/services/PublicPageService';
 import { 
@@ -39,8 +39,7 @@ export const PermissionsManagementPage: React.FC = () => {
   const [editingRole, setEditingRole] = useState<CustomRoleConfig | null>(null);
   const [publicPageConfigs, setPublicPageConfigs] = useState<PublicPageConfig[]>([]);
 
-  // Use singleton instances to share cache
-  const permissionService = new PermissionService();
+  // permissionService is now a singleton import
   const userRepository = new FirebaseUserRepository();
   const publicPageService = new PublicPageService();
 

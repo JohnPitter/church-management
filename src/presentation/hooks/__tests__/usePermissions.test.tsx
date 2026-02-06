@@ -7,18 +7,7 @@ import { User, UserRole, UserStatus } from '@/domain/entities/User';
 
 // Import after mocks are set up
 import {
-  usePermissions,
-  useCanManageUsers,
-  useCanManageMembers,
-  useCanManageBlog,
-  useCanManageEvents,
-  useCanManageProjects,
-  useCanManageFinance,
-  useCanManagePermissions,
-  useCanAccessDashboard,
-  useCanManageAssistance,
-  useCanManageONG,
-  useCanManageLeadership
+  usePermissions
 } from '../usePermissions';
 
 // Mock Firebase config
@@ -26,25 +15,22 @@ jest.mock('@/config/firebase', () => ({
   db: {}
 }));
 
-// Mock atomicPermissionService
-const mockGetUserPermissions = jest.fn();
+// Mock permissionService (unified singleton)
+const mockGetUserPermissionsMap = jest.fn();
 const mockSubscribeToUserPermissions = jest.fn();
 const mockUnsubscribeFromUser = jest.fn();
-const mockInvalidateCache = jest.fn();
-const mockHasPermission = jest.fn();
+const mockInvalidateUserPermissionCache = jest.fn();
 
-jest.mock('@modules/user-management/permissions/infrastructure/services/AtomicPermissionService', () => ({
-  atomicPermissionService: {
-    getUserPermissions: (...args: any[]) => mockGetUserPermissions(...args),
-    subscribeToUserPermissions: (...args: any[]) => mockSubscribeToUserPermissions(...args),
-    unsubscribeFromUser: (...args: any[]) => mockUnsubscribeFromUser(...args),
-    invalidateCache: (...args: any[]) => mockInvalidateCache(...args),
-    hasPermission: (...args: any[]) => mockHasPermission(...args)
+jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => ({
+  permissionService: {
+    getUserPermissionsMap: (...args: any) => mockGetUserPermissionsMap(...args),
+    subscribeToUserPermissions: (...args: any) => mockSubscribeToUserPermissions(...args),
+    unsubscribeFromUser: (...args: any) => mockUnsubscribeFromUser(...args),
+    invalidateUserPermissionCache: (...args: any) => mockInvalidateUserPermissionCache(...args)
   }
 }));
 
 // Mock AuthContext
-const mockCurrentUser: User | null = null;
 let mockUser: User | null = null;
 
 jest.mock('../../contexts/AuthContext', () => ({
@@ -80,14 +66,14 @@ describe('usePermissions Hook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUser = null;
-    mockGetUserPermissions.mockResolvedValue(new Map());
+    mockGetUserPermissionsMap.mockResolvedValue(new Map());
     mockSubscribeToUserPermissions.mockImplementation(() => {});
   });
 
   describe('Initial State', () => {
     it('should return loading true initially when user is logged in', async () => {
       mockUser = createMockUser();
-      mockGetUserPermissions.mockImplementation(() => new Promise(() => {})); // Never resolves
+      mockGetUserPermissionsMap.mockImplementation(() => new Promise(() => {})); // Never resolves
 
       const { result } = renderHook(() => usePermissions());
 
@@ -125,7 +111,7 @@ describe('usePermissions Hook', () => {
       const permissionMap = createPermissionMap([
         { module: SystemModule.Users, actions: [PermissionAction.View, PermissionAction.Create] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -142,7 +128,7 @@ describe('usePermissions Hook', () => {
       const permissionMap = createPermissionMap([
         { module: SystemModule.Events, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -159,7 +145,7 @@ describe('usePermissions Hook', () => {
       const permissionMap = createPermissionMap([
         { module: SystemModule.Blog, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -178,7 +164,7 @@ describe('usePermissions Hook', () => {
         { module: SystemModule.Members, actions: [PermissionAction.View] },
         { module: SystemModule.Events, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -200,7 +186,7 @@ describe('usePermissions Hook', () => {
       const permissionMap = createPermissionMap([
         { module: SystemModule.Blog, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -218,7 +204,7 @@ describe('usePermissions Hook', () => {
 
     it('should return false for empty checks array', async () => {
       mockUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => usePermissions());
 
@@ -237,7 +223,7 @@ describe('usePermissions Hook', () => {
         { module: SystemModule.Users, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
         { module: SystemModule.Members, actions: [PermissionAction.View, PermissionAction.Create] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -260,7 +246,7 @@ describe('usePermissions Hook', () => {
         { module: SystemModule.Users, actions: [PermissionAction.View] },
         { module: SystemModule.Members, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -278,7 +264,7 @@ describe('usePermissions Hook', () => {
 
     it('should return true for empty checks array', async () => {
       mockUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => usePermissions());
 
@@ -293,7 +279,7 @@ describe('usePermissions Hook', () => {
   describe('Role Checks', () => {
     it('should correctly identify admin role', async () => {
       mockUser = createMockUser({ role: UserRole.Admin });
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => usePermissions());
 
@@ -309,7 +295,7 @@ describe('usePermissions Hook', () => {
 
     it('should correctly identify secretary role', async () => {
       mockUser = createMockUser({ role: UserRole.Secretary });
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => usePermissions());
 
@@ -325,7 +311,7 @@ describe('usePermissions Hook', () => {
 
     it('should correctly identify leader role', async () => {
       mockUser = createMockUser({ role: 'leader' });
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => usePermissions());
 
@@ -341,7 +327,7 @@ describe('usePermissions Hook', () => {
 
     it('should correctly identify member role', async () => {
       mockUser = createMockUser({ role: UserRole.Member });
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => usePermissions());
 
@@ -357,7 +343,7 @@ describe('usePermissions Hook', () => {
 
     it('should handle custom roles', async () => {
       mockUser = createMockUser({ role: 'custom_role' });
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => usePermissions());
 
@@ -380,7 +366,7 @@ describe('usePermissions Hook', () => {
       const promise = new Promise(resolve => {
         resolvePromise = resolve;
       });
-      mockGetUserPermissions.mockReturnValue(promise);
+      mockGetUserPermissionsMap.mockReturnValue(promise);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -397,7 +383,7 @@ describe('usePermissions Hook', () => {
 
     it('should set loading to false after permissions are loaded', async () => {
       mockUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { result } = renderHook(() => usePermissions());
 
@@ -421,7 +407,7 @@ describe('usePermissions Hook', () => {
     it('should handle permission loading errors gracefully', async () => {
       mockUser = createMockUser();
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      mockGetUserPermissions.mockRejectedValue(new Error('Permission loading failed'));
+      mockGetUserPermissionsMap.mockRejectedValue(new Error('Permission loading failed'));
 
       const { result } = renderHook(() => usePermissions());
 
@@ -438,7 +424,7 @@ describe('usePermissions Hook', () => {
     it('should return false for all permissions when error occurs', async () => {
       mockUser = createMockUser();
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      mockGetUserPermissions.mockRejectedValue(new Error('Error'));
+      mockGetUserPermissionsMap.mockRejectedValue(new Error('Error'));
 
       const { result } = renderHook(() => usePermissions());
 
@@ -454,10 +440,12 @@ describe('usePermissions Hook', () => {
   });
 
   describe('checkPermission Async Function', () => {
-    it('should call atomicPermissionService.hasPermission', async () => {
+    it('should check permission via getUserPermissionsMap', async () => {
       mockUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
-      mockHasPermission.mockResolvedValue(true);
+      const permissionMap = createPermissionMap([
+        { module: SystemModule.Users, actions: [PermissionAction.View] }
+      ]);
+      mockGetUserPermissionsMap.mockResolvedValue(permissionMap);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -470,7 +458,6 @@ describe('usePermissions Hook', () => {
         PermissionAction.View
       );
 
-      expect(mockHasPermission).toHaveBeenCalledWith('user-123', SystemModule.Users, PermissionAction.View);
       expect(hasPermission).toBe(true);
     });
 
@@ -489,7 +476,6 @@ describe('usePermissions Hook', () => {
       );
 
       expect(hasPermission).toBe(false);
-      expect(mockHasPermission).not.toHaveBeenCalled();
     });
   });
 
@@ -503,7 +489,7 @@ describe('usePermissions Hook', () => {
         { module: SystemModule.Blog, actions: [PermissionAction.View, PermissionAction.Create] }
       ]);
 
-      mockGetUserPermissions
+      mockGetUserPermissionsMap
         .mockResolvedValueOnce(initialPermissions)
         .mockResolvedValueOnce(updatedPermissions);
 
@@ -519,14 +505,14 @@ describe('usePermissions Hook', () => {
         await result.current.refreshPermissions();
       });
 
-      expect(mockInvalidateCache).toHaveBeenCalledWith('user-123');
+      expect(mockInvalidateUserPermissionCache).toHaveBeenCalledWith('user-123');
       expect(result.current.hasPermission(SystemModule.Blog, PermissionAction.Create)).toBe(true);
     });
 
     it('should handle refresh errors gracefully', async () => {
       mockUser = createMockUser();
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      mockGetUserPermissions
+      mockGetUserPermissionsMap
         .mockResolvedValueOnce(new Map())
         .mockRejectedValueOnce(new Error('Refresh failed'));
 
@@ -557,15 +543,15 @@ describe('usePermissions Hook', () => {
         await result.current.refreshPermissions();
       });
 
-      expect(mockInvalidateCache).not.toHaveBeenCalled();
-      expect(mockGetUserPermissions).not.toHaveBeenCalled();
+      expect(mockInvalidateUserPermissionCache).not.toHaveBeenCalled();
+      expect(mockGetUserPermissionsMap).not.toHaveBeenCalled();
     });
   });
 
   describe('Real-time Subscription', () => {
     it('should subscribe to permission updates on mount', async () => {
       mockUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       renderHook(() => usePermissions());
 
@@ -579,7 +565,7 @@ describe('usePermissions Hook', () => {
 
     it('should unsubscribe on unmount', async () => {
       mockUser = createMockUser();
-      mockGetUserPermissions.mockResolvedValue(new Map());
+      mockGetUserPermissionsMap.mockResolvedValue(new Map());
 
       const { unmount } = renderHook(() => usePermissions());
 
@@ -602,7 +588,7 @@ describe('usePermissions Hook', () => {
       const initialPermissions = createPermissionMap([
         { module: SystemModule.Events, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(initialPermissions);
+      mockGetUserPermissionsMap.mockResolvedValue(initialPermissions);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -614,7 +600,7 @@ describe('usePermissions Hook', () => {
       const updatedPermissions = createPermissionMap([
         { module: SystemModule.Events, actions: [PermissionAction.View, PermissionAction.Manage] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(updatedPermissions);
+      mockGetUserPermissionsMap.mockResolvedValue(updatedPermissions);
 
       await act(async () => {
         subscriptionCallback!();
@@ -635,7 +621,7 @@ describe('usePermissions Hook', () => {
       const user1Permissions = createPermissionMap([
         { module: SystemModule.Blog, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(user1Permissions);
+      mockGetUserPermissionsMap.mockResolvedValue(user1Permissions);
 
       const { result, rerender } = renderHook(() => usePermissions());
 
@@ -643,248 +629,20 @@ describe('usePermissions Hook', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(mockGetUserPermissions).toHaveBeenCalledWith('user-1');
+      expect(mockGetUserPermissionsMap).toHaveBeenCalledWith('user-1');
 
       // Change user
       mockUser = user2;
       const user2Permissions = createPermissionMap([
         { module: SystemModule.Finance, actions: [PermissionAction.Manage] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(user2Permissions);
+      mockGetUserPermissionsMap.mockResolvedValue(user2Permissions);
 
       rerender();
 
       await waitFor(() => {
-        expect(mockGetUserPermissions).toHaveBeenCalledWith('user-2');
+        expect(mockGetUserPermissionsMap).toHaveBeenCalledWith('user-2');
       });
-    });
-  });
-});
-
-describe('Helper Hooks', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockUser = createMockUser({ role: UserRole.Admin });
-  });
-
-  describe('useCanManageUsers', () => {
-    it('should return correct permission flags', async () => {
-      const permissionMap = createPermissionMap([
-        { module: SystemModule.Users, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] }
-      ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
-
-      const { result } = renderHook(() => useCanManageUsers());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      expect(result.current.canView).toBe(true);
-      expect(result.current.canCreate).toBe(true);
-      expect(result.current.canUpdate).toBe(true);
-      expect(result.current.canDelete).toBe(true);
-      expect(result.current.canManage).toBe(true);
-    });
-  });
-
-  describe('useCanManageMembers', () => {
-    it('should return correct permission flags', async () => {
-      const permissionMap = createPermissionMap([
-        { module: SystemModule.Members, actions: [PermissionAction.View, PermissionAction.Create] }
-      ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
-
-      const { result } = renderHook(() => useCanManageMembers());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      expect(result.current.canView).toBe(true);
-      expect(result.current.canCreate).toBe(true);
-      expect(result.current.canUpdate).toBe(false);
-      expect(result.current.canDelete).toBe(false);
-    });
-  });
-
-  describe('useCanManageBlog', () => {
-    it('should return correct permission flags', async () => {
-      const permissionMap = createPermissionMap([
-        { module: SystemModule.Blog, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] }
-      ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
-
-      const { result } = renderHook(() => useCanManageBlog());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      expect(result.current.canView).toBe(true);
-      expect(result.current.canCreate).toBe(true);
-      expect(result.current.canUpdate).toBe(true);
-      expect(result.current.canDelete).toBe(false);
-    });
-  });
-
-  describe('useCanManageEvents', () => {
-    it('should return correct permission flags', async () => {
-      const permissionMap = createPermissionMap([
-        { module: SystemModule.Events, actions: [PermissionAction.View, PermissionAction.Manage] }
-      ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
-
-      const { result } = renderHook(() => useCanManageEvents());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      expect(result.current.canView).toBe(true);
-      expect(result.current.canCreate).toBe(false);
-      expect(result.current.canUpdate).toBe(false);
-      expect(result.current.canDelete).toBe(false);
-      expect(result.current.canManage).toBe(true);
-    });
-  });
-
-  describe('useCanManageProjects', () => {
-    it('should return correct permission flags', async () => {
-      const permissionMap = createPermissionMap([
-        { module: SystemModule.Projects, actions: [PermissionAction.View] }
-      ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
-
-      const { result } = renderHook(() => useCanManageProjects());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      expect(result.current.canView).toBe(true);
-      expect(result.current.canCreate).toBe(false);
-      expect(result.current.canUpdate).toBe(false);
-      expect(result.current.canDelete).toBe(false);
-    });
-  });
-
-  describe('useCanManageFinance', () => {
-    it('should return correct permission flags', async () => {
-      const permissionMap = createPermissionMap([
-        { module: SystemModule.Finance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] }
-      ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
-
-      const { result } = renderHook(() => useCanManageFinance());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      expect(result.current.canView).toBe(true);
-      expect(result.current.canCreate).toBe(true);
-      expect(result.current.canUpdate).toBe(true);
-      expect(result.current.canDelete).toBe(true);
-      expect(result.current.canManage).toBe(true);
-    });
-  });
-
-  describe('useCanManagePermissions', () => {
-    it('should return correct permission flags', async () => {
-      const permissionMap = createPermissionMap([
-        { module: SystemModule.Permissions, actions: [PermissionAction.View, PermissionAction.Update, PermissionAction.Manage] }
-      ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
-
-      const { result } = renderHook(() => useCanManagePermissions());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      expect(result.current.canView).toBe(true);
-      expect(result.current.canUpdate).toBe(true);
-      expect(result.current.canManage).toBe(true);
-    });
-  });
-
-  describe('useCanAccessDashboard', () => {
-    it('should return correct permission flags', async () => {
-      const permissionMap = createPermissionMap([
-        { module: SystemModule.Dashboard, actions: [PermissionAction.View, PermissionAction.Manage] }
-      ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
-
-      const { result } = renderHook(() => useCanAccessDashboard());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      expect(result.current.canView).toBe(true);
-      expect(result.current.canManage).toBe(true);
-    });
-  });
-
-  describe('useCanManageAssistance', () => {
-    it('should return correct permission flags', async () => {
-      const permissionMap = createPermissionMap([
-        { module: SystemModule.Assistance, actions: [PermissionAction.View, PermissionAction.Create] }
-      ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
-
-      const { result } = renderHook(() => useCanManageAssistance());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      expect(result.current.canView).toBe(true);
-      expect(result.current.canCreate).toBe(true);
-      expect(result.current.canUpdate).toBe(false);
-      expect(result.current.canDelete).toBe(false);
-    });
-  });
-
-  describe('useCanManageONG', () => {
-    it('should return correct permission flags', async () => {
-      const permissionMap = createPermissionMap([
-        { module: SystemModule.ONG, actions: [PermissionAction.View, PermissionAction.Manage] }
-      ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
-
-      const { result } = renderHook(() => useCanManageONG());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      expect(result.current.canView).toBe(true);
-      expect(result.current.canCreate).toBe(false);
-      expect(result.current.canUpdate).toBe(false);
-      expect(result.current.canDelete).toBe(false);
-      expect(result.current.canManage).toBe(true);
-    });
-  });
-
-  describe('useCanManageLeadership', () => {
-    it('should return correct permission flags', async () => {
-      const permissionMap = createPermissionMap([
-        { module: SystemModule.Leadership, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete] }
-      ]);
-      mockGetUserPermissions.mockResolvedValue(permissionMap);
-
-      const { result } = renderHook(() => useCanManageLeadership());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      expect(result.current.canView).toBe(true);
-      expect(result.current.canCreate).toBe(true);
-      expect(result.current.canUpdate).toBe(true);
-      expect(result.current.canDelete).toBe(true);
     });
   });
 });
@@ -904,7 +662,7 @@ describe('Integration Scenarios', () => {
         { module: SystemModule.Finance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
         { module: SystemModule.Permissions, actions: [PermissionAction.View, PermissionAction.Update, PermissionAction.Manage] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(fullPermissions);
+      mockGetUserPermissionsMap.mockResolvedValue(fullPermissions);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -927,7 +685,7 @@ describe('Integration Scenarios', () => {
         { module: SystemModule.Events, actions: [PermissionAction.View] },
         { module: SystemModule.Blog, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(memberPermissions);
+      mockGetUserPermissionsMap.mockResolvedValue(memberPermissions);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -952,7 +710,7 @@ describe('Integration Scenarios', () => {
         { module: SystemModule.Blog, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
         { module: SystemModule.Events, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(secretaryPermissions);
+      mockGetUserPermissionsMap.mockResolvedValue(secretaryPermissions);
 
       const { result } = renderHook(() => usePermissions());
 
@@ -975,7 +733,7 @@ describe('Integration Scenarios', () => {
         { module: SystemModule.Assistance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
         { module: SystemModule.Members, actions: [PermissionAction.View] }
       ]);
-      mockGetUserPermissions.mockResolvedValue(professionalPermissions);
+      mockGetUserPermissionsMap.mockResolvedValue(professionalPermissions);
 
       const { result } = renderHook(() => usePermissions());
 

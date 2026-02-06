@@ -101,11 +101,12 @@ jest.mock('@modules/user-management/users/infrastructure/repositories/FirebaseUs
 const mockGetRoleDisplayNameSync = jest.fn();
 
 jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => {
-  function PermissionServiceMock(this: any) {
-    this.getRoleDisplayNameSync = mockGetRoleDisplayNameSync;
-  }
+  const mockInstance = {
+    getRoleDisplayNameSync: mockGetRoleDisplayNameSync
+  };
   return {
-    PermissionService: PermissionServiceMock
+    PermissionService: function() { return mockInstance; },
+    permissionService: mockInstance
   };
 });
 

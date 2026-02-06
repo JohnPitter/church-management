@@ -1,13 +1,10 @@
 // Presentation Hook - Atomic Permissions Hook
-// React hook for atomic permission checking with real-time updates
-//
-// @deprecated Use `usePermissions` from './usePermissions' instead.
-// This hook is re-exported as usePermissions for backwards compatibility.
-// All new code should import from usePermissions directly.
+// React hook for permission checking with real-time updates
+// Uses the unified PermissionService singleton
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { atomicPermissionService } from '@modules/user-management/permissions/infrastructure/services/AtomicPermissionService';
+import { permissionService } from '@modules/user-management/permissions/application/services/PermissionService';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 
 interface UseAtomicPermissionsReturn {
@@ -40,7 +37,7 @@ export const useAtomicPermissions = (): UseAtomicPermissionsReturn => {
     const loadPermissions = async () => {
       setLoading(true);
       try {
-        const userPerms = await atomicPermissionService.getUserPermissions(currentUser.id);
+        const userPerms = await permissionService.getUserPermissionsMap(currentUser.id);
         setPermissions(userPerms);
       } catch (error) {
         console.error('Error loading permissions:', error);
@@ -53,12 +50,12 @@ export const useAtomicPermissions = (): UseAtomicPermissionsReturn => {
     loadPermissions();
 
     // Subscribe to real-time updates
-    atomicPermissionService.subscribeToUserPermissions(currentUser.id, loadPermissions);
+    permissionService.subscribeToUserPermissions(currentUser.id, loadPermissions);
 
     // Cleanup subscription on unmount
     return () => {
       if (currentUser?.id) {
-        atomicPermissionService.unsubscribeFromUser(currentUser.id);
+        permissionService.unsubscribeFromUser(currentUser.id);
       }
     };
   }, [currentUser?.id]);
@@ -82,7 +79,9 @@ export const useAtomicPermissions = (): UseAtomicPermissionsReturn => {
   // Asynchronous permission check (validates with Firebase)
   const checkPermission = useCallback(async (module: SystemModule, action: PermissionAction): Promise<boolean> => {
     if (!currentUser?.id) return false;
-    return await atomicPermissionService.hasPermission(currentUser.id, module, action);
+    const perms = await permissionService.getUserPermissionsMap(currentUser.id);
+    const modulePerms = perms.get(module);
+    return modulePerms?.has(action) ?? false;
   }, [currentUser?.id]);
 
   // Refresh permissions manually
@@ -91,8 +90,8 @@ export const useAtomicPermissions = (): UseAtomicPermissionsReturn => {
 
     setLoading(true);
     try {
-      atomicPermissionService.invalidateCache(currentUser.id);
-      const userPerms = await atomicPermissionService.getUserPermissions(currentUser.id);
+      permissionService.invalidateUserPermissionCache(currentUser.id);
+      const userPerms = await permissionService.getUserPermissionsMap(currentUser.id);
       setPermissions(userPerms);
     } catch (error) {
       console.error('Error refreshing permissions:', error);

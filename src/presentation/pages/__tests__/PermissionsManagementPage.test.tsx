@@ -34,31 +34,33 @@ const mockResetRolePermissionsToDefault = jest.fn();
 const mockUpdateUserPermissionOverrides = jest.fn();
 
 jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => {
+  const mockInstance = {
+    getAllRoles: (...args: any[]) => mockGetAllRoles(...args),
+    getAllRolesSync: (...args: any[]) => mockGetAllRolesSync(...args),
+    getRoleDisplayNameSync: (...args: any[]) => mockGetRoleDisplayNameSync(...args),
+    getUserPermissions: (...args: any[]) => mockGetUserPermissions(...args),
+    hasPermission: (...args: any[]) => mockHasPermission(...args),
+    getRolePermissions: (...args: any[]) => mockGetRolePermissions(...args),
+    saveRolePermissions: (...args: any[]) => mockSaveRolePermissions(...args),
+    getUserPermissionOverrides: (...args: any[]) => mockGetUserPermissionOverrides(...args),
+    saveUserPermissionOverrides: (...args: any[]) => mockSaveUserPermissionOverrides(...args),
+    clearAllCaches: (...args: any[]) => mockClearAllCaches(...args),
+    clearAllCache: (...args: any[]) => mockClearAllCaches(...args),
+    getAllCustomRoles: (...args: any[]) => mockGetAllCustomRoles(...args),
+    createCustomRole: (...args: any[]) => mockCreateCustomRole(...args),
+    updateCustomRole: (...args: any[]) => mockUpdateCustomRole(...args),
+    deleteCustomRole: (...args: any[]) => mockDeleteCustomRole(...args),
+    getPermissionMatrix: (...args: any[]) => mockGetPermissionMatrix(...args),
+    getAllUserOverrides: (...args: any[]) => mockGetAllUserOverrides(...args),
+    updateRolePermissions: (...args: any[]) => mockUpdateRolePermissions(...args),
+    resetRolePermissionsToDefault: (...args: any[]) => mockResetRolePermissionsToDefault(...args),
+    updateUserPermissionOverrides: (...args: any[]) => mockUpdateUserPermissionOverrides(...args)
+  };
   return {
-    PermissionService: function() {
-      return {
-        getAllRoles: (...args: any[]) => mockGetAllRoles(...args),
-        getAllRolesSync: (...args: any[]) => mockGetAllRolesSync(...args),
-        getRoleDisplayNameSync: (...args: any[]) => mockGetRoleDisplayNameSync(...args),
-        getUserPermissions: (...args: any[]) => mockGetUserPermissions(...args),
-        hasPermission: (...args: any[]) => mockHasPermission(...args),
-        getRolePermissions: (...args: any[]) => mockGetRolePermissions(...args),
-        saveRolePermissions: (...args: any[]) => mockSaveRolePermissions(...args),
-        getUserPermissionOverrides: (...args: any[]) => mockGetUserPermissionOverrides(...args),
-        saveUserPermissionOverrides: (...args: any[]) => mockSaveUserPermissionOverrides(...args),
-        clearAllCaches: (...args: any[]) => mockClearAllCaches(...args),
-        clearAllCache: (...args: any[]) => mockClearAllCaches(...args),
-        getAllCustomRoles: (...args: any[]) => mockGetAllCustomRoles(...args),
-        createCustomRole: (...args: any[]) => mockCreateCustomRole(...args),
-        updateCustomRole: (...args: any[]) => mockUpdateCustomRole(...args),
-        deleteCustomRole: (...args: any[]) => mockDeleteCustomRole(...args),
-        getPermissionMatrix: (...args: any[]) => mockGetPermissionMatrix(...args),
-        getAllUserOverrides: (...args: any[]) => mockGetAllUserOverrides(...args),
-        updateRolePermissions: (...args: any[]) => mockUpdateRolePermissions(...args),
-        resetRolePermissionsToDefault: (...args: any[]) => mockResetRolePermissionsToDefault(...args),
-        updateUserPermissionOverrides: (...args: any[]) => mockUpdateUserPermissionOverrides(...args)
-      };
-    }
+    PermissionService: function() { return mockInstance; },
+    permissionService: mockInstance,
+    UserPermissionConfig: {},
+    CustomRoleConfig: {}
   };
 });
 

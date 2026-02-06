@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { User as DomainUser, UserRole, UserRegistration } from '@/domain/entities/User';
 import { CreateUserModal } from '../components/CreateUserModal';
-import { PermissionService } from '@modules/user-management/permissions/application/services/PermissionService';
+import { permissionService } from '@modules/user-management/permissions/application/services/PermissionService';
 import { PermissionGuard } from '../components/PermissionGuard';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 
@@ -83,7 +83,7 @@ export const UserManagementPage: React.FC = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const userRepository = useMemo(() => new FirebaseUserRepository(), []);
-  const permissionService = useMemo(() => new PermissionService(), []);
+  // permissionService is now a singleton import
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('all');
 
@@ -134,7 +134,8 @@ export const UserManagementPage: React.FC = () => {
     };
 
     loadRoles();
-  }, [permissionService]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load users from Firebase
   const loadUsers = async () => {

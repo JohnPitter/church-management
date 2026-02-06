@@ -47,21 +47,22 @@ const mockSaveUserPermissionOverrides = jest.fn();
 const mockClearAllCaches = jest.fn();
 
 jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => {
+  const mockInstance = {
+    getAllRoles: (...args: any[]) => mockGetAllRoles(...args),
+    getAllRolesSync: (...args: any[]) => mockGetAllRolesSync(...args),
+    getRoleDisplayNameSync: (...args: any[]) => mockGetRoleDisplayNameSync(...args),
+    getUserPermissions: (...args: any[]) => mockGetUserPermissions(...args),
+    hasPermission: (...args: any[]) => mockHasPermission(...args),
+    getRolePermissions: (...args: any[]) => mockGetRolePermissions(...args),
+    saveRolePermissions: (...args: any[]) => mockSaveRolePermissions(...args),
+    getUserPermissionOverrides: (...args: any[]) => mockGetUserPermissionOverrides(...args),
+    saveUserPermissionOverrides: (...args: any[]) => mockSaveUserPermissionOverrides(...args),
+    clearAllCaches: (...args: any[]) => mockClearAllCaches(...args),
+    clearAllCache: (...args: any[]) => mockClearAllCaches(...args)
+  };
   return {
-    PermissionService: function() {
-      return {
-        getAllRoles: (...args: any[]) => mockGetAllRoles(...args),
-        getAllRolesSync: (...args: any[]) => mockGetAllRolesSync(...args),
-        getRoleDisplayNameSync: (...args: any[]) => mockGetRoleDisplayNameSync(...args),
-        getUserPermissions: (...args: any[]) => mockGetUserPermissions(...args),
-        hasPermission: (...args: any[]) => mockHasPermission(...args),
-        getRolePermissions: (...args: any[]) => mockGetRolePermissions(...args),
-        saveRolePermissions: (...args: any[]) => mockSaveRolePermissions(...args),
-        getUserPermissionOverrides: (...args: any[]) => mockGetUserPermissionOverrides(...args),
-        saveUserPermissionOverrides: (...args: any[]) => mockSaveUserPermissionOverrides(...args),
-        clearAllCaches: (...args: any[]) => mockClearAllCaches(...args)
-      };
-    }
+    PermissionService: function() { return mockInstance; },
+    permissionService: mockInstance
   };
 });
 

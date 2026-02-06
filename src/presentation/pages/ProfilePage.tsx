@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { format } from 'date-fns';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { UserRole, UserStatus } from '@/domain/entities/User';
-import { PermissionService } from '@modules/user-management/permissions/application/services/PermissionService';
+import { permissionService } from '@modules/user-management/permissions/application/services/PermissionService';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { auth, storage } from '@/config/firebase';
 import { deleteField } from 'firebase/firestore';
@@ -58,7 +58,7 @@ export const ProfilePage: React.FC = () => {
   const [isGoogleUser, setIsGoogleUser] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const userRepository = new FirebaseUserRepository();
-  const permissionService = new PermissionService();
+  // permissionService is now a singleton import
 
   useEffect(() => {
     loadUserProfile();
