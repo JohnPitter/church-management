@@ -1104,12 +1104,7 @@ describe('AnamnesesPsicologicaService', () => {
       (getDoc as jest.Mock).mockRejectedValue(genericError);
       (doc as jest.Mock).mockReturnValue({});
 
-      try {
-        await service.getAnamneseById('test-id');
-        fail('Should have thrown an error');
-      } catch (error) {
-        expect((error as Error).message).toBe('Erro ao buscar anamnese psicológica');
-      }
+      await expect(service.getAnamneseById('test-id')).rejects.toThrow('Erro ao buscar anamnese psicológica');
     });
   });
 });

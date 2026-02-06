@@ -76,7 +76,24 @@
         }
       ],
       "react-hooks/exhaustive-deps": "warn"
-    }
+    },
+    "overrides": [
+      {
+        "files": ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)"],
+        "rules": {
+          "testing-library/no-node-access": "warn",
+          "testing-library/no-wait-for-multiple-assertions": "warn",
+          "testing-library/no-container": "warn",
+          "testing-library/no-wait-for-side-effects": "warn",
+          "testing-library/no-unnecessary-act": "warn",
+          "testing-library/render-result-naming-convention": "warn",
+          "testing-library/no-render-in-setup": "warn",
+          "testing-library/await-async-utils": "warn",
+          "jest/no-conditional-expect": "warn",
+          "jest/no-jasmine-globals": "error"
+        }
+      }
+    ]
   },
   "browserslist": {
     "production": [
