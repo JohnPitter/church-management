@@ -51,3 +51,16 @@ logs
 # Functions
 functions/node_modules/
 functions/lib/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*_summary.txt
+*_report.md
+*_output.txt
+lint_output.txt
+test_summary.txt
+nul
