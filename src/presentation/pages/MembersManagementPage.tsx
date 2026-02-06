@@ -3,7 +3,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { MemberService } from '@modules/church-management/members/application/services/MemberService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { usePermissions } from '../hooks/usePermissions';
+import { useAuth } from '../contexts/AuthContext';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import {
   Member,
@@ -17,6 +19,7 @@ import { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } from
 interface MembersManagementPageProps {}
 
 const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
+  const { currentUser } = useAuth();
   const { hasPermission, loading: permissionsLoading } = usePermissions();
 
   // Permission checks
@@ -85,9 +88,11 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       await memberService.updateMemberStatus(member.id, newStatus);
       await loadMembers();
       await loadStatistics();
+      await loggingService.logDatabase('info', 'Member status changed', `Member: ${member.name}, Status: ${newStatus}`, currentUser as any);
       alert(`Status de ${member.name} atualizado com sucesso!`);
     } catch (error) {
       console.error('Error updating member status:', error);
+      await loggingService.logDatabase('error', 'Error changing member status', `Member: ${member.name}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       alert('Erro ao atualizar status: ' + errorMessage);
     }
@@ -105,9 +110,11 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       await memberService.deleteMember(member.id);
       await loadMembers();
       await loadStatistics();
+      await loggingService.logDatabase('warning', 'Member deleted', `Member: ${member.name}, ID: ${member.id}`, currentUser as any);
       alert(`Membro ${member.name} excluído com sucesso!`);
     } catch (error) {
       console.error('Error deleting member:', error);
+      await loggingService.logDatabase('error', 'Error deleting member', `Member: ${member.name}, ID: ${member.id}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       alert('Erro ao excluir membro: ' + errorMessage);
     }
@@ -179,7 +186,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
   };
 
   // Export functions
-  const exportToCSV = () => {
+  const exportToCSV = async () => {
     try {
       // Prepare CSV headers
       const headers = [
@@ -248,14 +255,16 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       link.click();
       document.body.removeChild(link);
 
+      await loggingService.logUserAction('Members exported', `Format: CSV, Count: ${members.length}`, currentUser as any);
       alert('Dados exportados com sucesso!');
     } catch (error) {
       console.error('Error exporting to CSV:', error);
+      await loggingService.logDatabase('error', 'Error exporting members to CSV', `Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       alert('Erro ao exportar dados para CSV');
     }
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     try {
       // Prepare Excel data with headers
       const headers = [
@@ -340,14 +349,16 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       link.click();
       document.body.removeChild(link);
 
+      await loggingService.logUserAction('Members exported', `Format: Excel, Count: ${members.length}`, currentUser as any);
       alert('Dados exportados com sucesso!');
     } catch (error) {
       console.error('Error exporting to Excel:', error);
+      await loggingService.logDatabase('error', 'Error exporting members to Excel', `Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       alert('Erro ao exportar dados para Excel');
     }
   };
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     try {
       // Create a printable HTML for PDF
       const printWindow = window.open('', '', 'height=600,width=800');
@@ -457,8 +468,11 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
         printWindow.focus();
         printWindow.print();
       };
+
+      await loggingService.logUserAction('Members exported', `Format: PDF, Count: ${members.length}`, currentUser as any);
     } catch (error) {
       console.error('Error exporting to PDF:', error);
+      await loggingService.logDatabase('error', 'Error exporting members to PDF', `Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       alert('Erro ao exportar dados para PDF');
     }
   };

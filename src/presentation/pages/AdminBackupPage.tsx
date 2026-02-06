@@ -7,6 +7,7 @@ import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { format } from 'date-fns';
 import { BackupInfo, DatabaseStats, backupService } from '@modules/analytics/backup/application/services/BackupService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 export const AdminBackupPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -53,23 +54,28 @@ export const AdminBackupPage: React.FC = () => {
 
   const handleCreateBackup = async () => {
     if (!currentUser) return;
-    
+
     setCreating(true);
     try {
       const backupType = selectedBackupType as 'full' | 'incremental' | 'database' | 'files';
       const description = backupTypes.find(t => t.value === backupType)?.description || '';
-      
+
       await backupService.createBackup(backupType, description, currentUser.email);
       setShowCreateModal(false);
-      
+
+      await loggingService.logSystem('info', 'Backup created',
+        `Type: ${backupType}, Description: ${description}`, currentUser as any);
+
       // Refresh the data to show the new backup
       setTimeout(() => {
         loadData();
       }, 1000);
-      
+
       alert('Backup iniciado com sucesso!');
     } catch (error) {
       console.error('Error creating backup:', error);
+      await loggingService.logSystem('error', 'Failed to create backup',
+        `Type: ${selectedBackupType}, Error: ${error}`, currentUser as any);
       alert('Erro ao criar backup');
     } finally {
       setCreating(false);
@@ -80,7 +86,7 @@ export const AdminBackupPage: React.FC = () => {
     try {
       setLoading(true);
       const blob = await backupService.downloadBackup(backupId);
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -90,8 +96,13 @@ export const AdminBackupPage: React.FC = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+
+      await loggingService.logSystem('info', 'Backup downloaded',
+        `ID: ${backupId}, Name: ${backupName}`, currentUser as any);
     } catch (error) {
       console.error('Error downloading backup:', error);
+      await loggingService.logSystem('error', 'Failed to download backup',
+        `ID: ${backupId}, Name: ${backupName}, Error: ${error}`, currentUser as any);
       alert('Erro ao baixar backup');
     } finally {
       setLoading(false);
@@ -106,9 +117,15 @@ export const AdminBackupPage: React.FC = () => {
     try {
       await backupService.deleteBackup(backupId);
       loadData(); // Refresh the list
+
+      await loggingService.logSystem('warning', 'Backup deleted',
+        `ID: ${backupId}, Name: ${backupName}`, currentUser as any);
+
       alert('Backup excluído com sucesso');
     } catch (error) {
       console.error('Error deleting backup:', error);
+      await loggingService.logSystem('error', 'Failed to delete backup',
+        `ID: ${backupId}, Name: ${backupName}, Error: ${error}`, currentUser as any);
       alert('Erro ao excluir backup');
     }
   };
@@ -222,9 +239,14 @@ export const AdminBackupPage: React.FC = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
+      await loggingService.logSystem('info', 'Data exported',
+        `Format: ${format.toUpperCase()}`, currentUser as any);
+
       alert(`Dados exportados em ${format.toUpperCase()} com sucesso!`);
     } catch (error) {
       console.error('Error exporting data:', error);
+      await loggingService.logSystem('error', 'Failed to export data',
+        `Format: ${format.toUpperCase()}, Error: ${error}`, currentUser as any);
       alert('Erro ao exportar dados.');
     } finally {
       setLoading(false);

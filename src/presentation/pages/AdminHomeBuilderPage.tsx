@@ -6,6 +6,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../hooks/useTheme';
 import { useSettings } from '../contexts/SettingsContext';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { HomeBuilderService } from '@modules/content-management/home-builder/application/services/HomeBuilderService';
 import {
   HomeLayout,
@@ -236,9 +237,11 @@ export const AdminHomeBuilderPage: React.FC = () => {
         template.type
       );
       setCurrentLayout(updatedLayout);
+      await loggingService.logDatabase('info', 'Home component added', `Type: ${template.type}`, currentUser as any);
       // Don't reload all data, just update current layout
     } catch (error) {
       console.error('Error adding component:', error);
+      await loggingService.logDatabase('error', 'Error adding home component', `Type: ${template.type}, Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
       alert('❌ Erro ao adicionar componente');
     }
   };
@@ -259,9 +262,11 @@ export const AdminHomeBuilderPage: React.FC = () => {
         componentId
       );
       setCurrentLayout(updatedLayout);
+      await loggingService.logDatabase('warning', 'Home component deleted', `ID: ${componentId}`, currentUser as any);
       // Don't reload all data, just update current layout to avoid scroll reset
     } catch (error) {
       console.error('Error deleting component:', error);
+      await loggingService.logDatabase('error', 'Error deleting home component', `ID: ${componentId}, Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
       alert('❌ Erro ao excluir componente');
     }
   };
@@ -291,11 +296,13 @@ export const AdminHomeBuilderPage: React.FC = () => {
         { settings }
       );
       setCurrentLayout(updatedLayout);
+      await loggingService.logDatabase('info', 'Home component settings updated', `ID: ${editingComponent.id}`, currentUser as any);
       setShowComponentSettings(false);
       setEditingComponent(null);
       // Don't reload all data, just update current layout
     } catch (error) {
       console.error('Error saving settings:', error);
+      await loggingService.logDatabase('error', 'Error saving home component settings', `ID: ${editingComponent.id}, Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
       alert('❌ Erro ao salvar configurações');
     }
   };
@@ -351,9 +358,11 @@ export const AdminHomeBuilderPage: React.FC = () => {
 
       const createdLayout = await homeBuilderService.createLayout(newLayout);
       setCurrentLayout(createdLayout);
+      await loggingService.logDatabase('info', 'Home layout created', `Name: ${name}`, currentUser as any);
       await loadData();
     } catch (error) {
       console.error('Error creating layout:', error);
+      await loggingService.logDatabase('error', 'Error creating home layout', `Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
       alert('❌ Erro ao criar layout');
     }
   };
@@ -426,6 +435,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
 
     try {
       await homeBuilderService.deleteLayout(layoutId);
+      await loggingService.logDatabase('warning', 'Home layout deleted', `Name: ${layoutName}, ID: ${layoutId}`, currentUser as any);
 
       // Update local state
       const updatedLayouts = layouts.filter(l => l.id !== layoutId);
@@ -440,6 +450,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
       await loadData();
     } catch (error: any) {
       console.error('Error deleting layout:', error);
+      await loggingService.logDatabase('error', 'Error deleting home layout', `Name: ${layoutName}, ID: ${layoutId}, Error: ${error.message || 'Erro desconhecido'}`, currentUser as any);
       alert(`❌ Erro ao excluir layout: ${error.message || 'Erro desconhecido'}`);
     }
   };

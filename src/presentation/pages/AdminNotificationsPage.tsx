@@ -3,10 +3,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNotifications } from '../contexts/NotificationContext';
+import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { NotificationPriority } from '@modules/shared-kernel/notifications/domain/entities/Notification';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 interface CustomNotificationForm {
   title: string;
@@ -30,6 +32,7 @@ interface UserOption {
 
 export const AdminNotificationsPage: React.FC = () => {
   const { createCustomNotification } = useNotifications();
+  const { currentUser } = useAuth();
   const { hasPermission, loading: permissionsLoading } = usePermissions();
 
   // Permission checks
@@ -144,7 +147,10 @@ export const AdminNotificationsPage: React.FC = () => {
       );
 
       alert(`Notificação enviada para ${notificationCount} usuários com sucesso!`);
-      
+
+      await loggingService.logApi('info', 'Custom notification sent',
+        `Title: ${form.title}, Target: ${form.targetUsers}`, currentUser as any);
+
       // Reset form
       setForm({
         title: '',
@@ -162,6 +168,8 @@ export const AdminNotificationsPage: React.FC = () => {
       setShowCreateForm(false);
     } catch (error) {
       console.error('Error creating notification:', error);
+      await loggingService.logApi('error', 'Failed to send notification',
+        `Title: ${form.title}, Target: ${form.targetUsers}, Error: ${error}`, currentUser as any);
       alert(`Erro ao criar notificação: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       setLoading(false);

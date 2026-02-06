@@ -9,6 +9,7 @@ import { CreateUserModal } from '../components/CreateUserModal';
 import { permissionService } from '@modules/user-management/permissions/application/services/PermissionService';
 import { PermissionGuard } from '../components/PermissionGuard';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 // Presentation interface that maps to domain entities
 interface PresentationUser {
@@ -174,6 +175,9 @@ export const UserManagementPage: React.FC = () => {
       // Pass the role directly without conversion to support custom roles
       await userRepository.updateRole(userId, newRole, currentUser?.email || 'Admin');
 
+      const targetUser = users.find(u => u.id === userId);
+      const oldRole = targetUser?.role || 'unknown';
+
       // Update local state
       setUsers(prevUsers =>
         prevUsers.map(user =>
@@ -181,12 +185,17 @@ export const UserManagementPage: React.FC = () => {
         )
       );
 
+      await loggingService.logSecurity('info', 'User role changed',
+        `User: "${targetUser?.email}", Old role: ${oldRole}, New role: ${newRole}`, currentUser as any);
+
       alert('Função do usuário atualizada com sucesso!');
 
       // Reload users to get fresh data from the database
       await loadUsers();
     } catch (error) {
       console.error('Error updating user role:', error);
+      await loggingService.logSecurity('error', 'Failed to change user role',
+        `User ID: ${userId}, New role: ${newRole}, Error: ${error}`, currentUser as any);
       alert('Erro ao atualizar função do usuário.');
     } finally {
       setLoading(false);
@@ -208,16 +217,23 @@ export const UserManagementPage: React.FC = () => {
         await userRepository.suspendUser(userId, currentUser?.email || 'Admin', 'Suspenso pelo administrador');
       }
       
+      const targetUser = users.find(u => u.id === userId);
+
       // Update local state
       setUsers(prevUsers =>
         prevUsers.map(user =>
           user.id === userId ? { ...user, isActive } : user
         )
       );
-      
+
+      await loggingService.logSecurity('info', 'User status changed',
+        `User: "${targetUser?.email}", Status: ${isActive ? 'approved' : 'suspended'}`, currentUser as any);
+
       alert(`Usuário ${action}do com sucesso!`);
     } catch (error) {
       console.error('Error updating user status:', error);
+      await loggingService.logSecurity('error', 'Failed to change user status',
+        `User ID: ${userId}, Action: ${action}, Error: ${error}`, currentUser as any);
       alert(`Erro ao ${action} usuário.`);
     } finally {
       setLoading(false);
@@ -265,10 +281,15 @@ export const UserManagementPage: React.FC = () => {
       
       // Remove user from local state
       setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-      
+
+      await loggingService.logSecurity('warning', 'User deleted permanently',
+        `User: "${userName}", ID: ${userId}`, currentUser as any);
+
       alert(`Usuário "${userName}" deletado permanentemente com sucesso!`);
     } catch (error) {
       console.error('Error deleting user:', error);
+      await loggingService.logSecurity('error', 'Failed to delete user',
+        `User: "${userName}", ID: ${userId}, Error: ${error}`, currentUser as any);
       const errorMessage = error instanceof Error ? error.message : 'Erro ao deletar usuário';
       alert(`Erro ao deletar usuário: ${errorMessage}`);
     } finally {
@@ -285,10 +306,15 @@ export const UserManagementPage: React.FC = () => {
       const presentationUser = mapDomainUserToPresentation(newUser);
       setUsers(prevUsers => [presentationUser, ...prevUsers]);
       
+      await loggingService.logSecurity('info', 'User account created',
+        `User: "${userData.email}", Role: ${userData.role}`, currentUser as any);
+
       alert('Usuário criado com sucesso!');
       setCreateModalOpen(false);
     } catch (error) {
       console.error('Error creating user:', error);
+      await loggingService.logSecurity('error', 'Failed to create user',
+        `Email: "${userData.email}", Error: ${error}`, currentUser as any);
       const errorMessage = error instanceof Error ? error.message : 'Erro ao criar usuário';
       alert(errorMessage);
       throw error; // Re-throw to let the modal handle it

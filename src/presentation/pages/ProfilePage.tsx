@@ -11,6 +11,7 @@ import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthP
 import { auth, storage } from '@/config/firebase';
 import { deleteField } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 interface UserProfile {
   id: string;
@@ -149,6 +150,10 @@ export const ProfilePage: React.FC = () => {
       
       setProfile({ ...editedProfile });
       setIsEditing(false);
+
+      await loggingService.logUserAction('Profile updated',
+        `User: "${currentUser.email}", Fields: displayName, phone`, currentUser as any);
+
       alert('Perfil atualizado com sucesso!');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -272,6 +277,9 @@ export const ProfilePage: React.FC = () => {
         // Refresh the user context to update the menu
         await refreshUser();
 
+        await loggingService.logUserAction('Profile photo updated',
+          `User: "${currentUser.email}"`, currentUser as any);
+
         alert('Foto atualizada com sucesso!');
       }
     } catch (error: any) {
@@ -388,9 +396,14 @@ export const ProfilePage: React.FC = () => {
         confirmPassword: ''
       });
       
+      await loggingService.logSecurity('info', 'Password changed',
+        `User: "${auth.currentUser.email}"`, currentUser as any);
+
       alert('✅ Senha alterada com sucesso!');
     } catch (error: any) {
       console.error('Error changing password:', error);
+      await loggingService.logSecurity('warning', 'Failed password change attempt',
+        `User: "${auth.currentUser?.email}", Error code: ${error.code}`, currentUser as any);
       
       let errorMessage = 'Erro ao alterar senha. Tente novamente.';
       

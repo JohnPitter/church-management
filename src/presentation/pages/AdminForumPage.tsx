@@ -19,6 +19,7 @@ import {
 } from '@modules/content-management/forum/infrastructure/services/ForumService';
 import { CreateTopicModal } from '../components/CreateTopicModal';
 import { CreateForumCategoryModal } from '@modules/content-management/forum/presentation/components/CreateForumCategoryModal';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 export const AdminForumPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -76,11 +77,16 @@ export const AdminForumPage: React.FC = () => {
   };
 
   const handleUpdateTopicStatus = async (topicId: string, status: TopicStatus) => {
+    const topic = topics.find(t => t.id === topicId);
     try {
       await forumService.updateTopic(topicId, { status });
+      await loggingService.logDatabase('info', 'Forum topic status changed',
+        `Topic: ${topic?.title}, Status: ${status}`, currentUser as any);
       await loadData();
     } catch (error) {
       console.error('Error updating topic status:', error);
+      await loggingService.logDatabase('error', 'Failed to update forum topic status',
+        `Topic: ${topic?.title}, ID: ${topicId}, Error: ${error}`, currentUser as any);
       alert('Erro ao atualizar status do tópico');
     }
   };
@@ -88,9 +94,13 @@ export const AdminForumPage: React.FC = () => {
   const handleTogglePin = async (topic: ForumTopic) => {
     try {
       await forumService.updateTopic(topic.id, { isPinned: !topic.isPinned });
+      await loggingService.logDatabase('info', 'Forum topic pin toggled',
+        `Topic: ${topic.title}`, currentUser as any);
       await loadData();
     } catch (error) {
       console.error('Error toggling pin:', error);
+      await loggingService.logDatabase('error', 'Failed to toggle forum topic pin',
+        `Topic: ${topic.title}, ID: ${topic.id}, Error: ${error}`, currentUser as any);
       alert('Erro ao fixar/desfixar tópico');
     }
   };
@@ -98,9 +108,13 @@ export const AdminForumPage: React.FC = () => {
   const handleToggleLock = async (topic: ForumTopic) => {
     try {
       await forumService.updateTopic(topic.id, { isLocked: !topic.isLocked });
+      await loggingService.logDatabase('info', 'Forum topic lock toggled',
+        `Topic: ${topic.title}`, currentUser as any);
       await loadData();
     } catch (error) {
       console.error('Error toggling lock:', error);
+      await loggingService.logDatabase('error', 'Failed to toggle forum topic lock',
+        `Topic: ${topic.title}, ID: ${topic.id}, Error: ${error}`, currentUser as any);
       alert('Erro ao bloquear/desbloquear tópico');
     }
   };
@@ -108,11 +122,16 @@ export const AdminForumPage: React.FC = () => {
   const handleDeleteTopic = async (topicId: string) => {
     if (!window.confirm('Tem certeza que deseja excluir este tópico?')) return;
 
+    const topic = topics.find(t => t.id === topicId);
     try {
       await forumService.deleteTopic(topicId);
+      await loggingService.logDatabase('warning', 'Forum topic deleted',
+        `Topic: ${topic?.title}, ID: ${topicId}`, currentUser as any);
       await loadData();
     } catch (error) {
       console.error('Error deleting topic:', error);
+      await loggingService.logDatabase('error', 'Failed to delete forum topic',
+        `Topic: ${topic?.title}, ID: ${topicId}, Error: ${error}`, currentUser as any);
       alert('Erro ao excluir tópico');
     }
   };

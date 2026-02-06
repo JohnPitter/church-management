@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
 import jsPDF from 'jspdf';
@@ -62,9 +63,11 @@ const FichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, ficha, onSave,
       
       onSave(fichaAtualizada);
       setNovoComentario('');
+      await loggingService.logDatabase('info', 'Comment added to ficha', `Ficha ID: ${ficha.id}, Patient: ${ficha.pacienteNome}`, currentUser as any);
       alert('✅ Registro adicionado ao prontuário com sucesso!');
     } catch (error) {
       console.error('Error adding to prontuário:', error);
+      await loggingService.logDatabase('error', 'Error adding comment to ficha', `Ficha ID: ${ficha.id}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       alert('❌ Erro ao adicionar registro ao prontuário');
     } finally {
       setIsLoading(false);
@@ -98,9 +101,11 @@ const FichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, ficha, onSave,
         evolucao: ''
       });
       loadSessoes();
+      await loggingService.logDatabase('info', 'Session added to ficha', `Ficha ID: ${ficha.id}, Patient: ${ficha.pacienteNome}, Session #${proximoNumero}`, currentUser as any);
       alert('✅ Sessão adicionada com sucesso!');
     } catch (error) {
       console.error('Error adding sessao:', error);
+      await loggingService.logDatabase('error', 'Error adding session to ficha', `Ficha ID: ${ficha.id}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       alert('❌ Erro ao adicionar sessão');
     } finally {
       setIsLoading(false);
@@ -116,9 +121,11 @@ const FichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, ficha, onSave,
         status: novoStatus as any
       });
       onSave(fichaAtualizada);
+      await loggingService.logDatabase('info', 'Ficha status changed', `ID: ${ficha.id}, Patient: ${ficha.pacienteNome}, Status: ${novoStatus}`, currentUser as any);
       alert(`✅ Status alterado para ${novoStatus}`);
     } catch (error) {
       console.error('Error updating status:', error);
+      await loggingService.logDatabase('error', 'Error changing ficha status', `Ficha ID: ${ficha.id}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       alert('❌ Erro ao alterar status');
     } finally {
       setIsLoading(false);
@@ -1137,17 +1144,19 @@ const FichasManagementPage: React.FC = () => {
         setFichas(prev => prev.filter(f => f.id !== fichaId));
         setIsModalOpen(false);
         setSelectedFicha(null);
+        await loggingService.logDatabase('warning', 'Ficha deleted', `ID: ${fichaId}`, currentUser as any);
         alert('Ficha excluída com sucesso!');
       } catch (error: any) {
         console.error('Error deleting ficha:', error);
-        
+        await loggingService.logDatabase('error', 'Error deleting ficha', `ID: ${fichaId}, Error: ${error?.message || 'Unknown'}`, currentUser as any);
+
         let errorMessage = 'Erro ao excluir ficha. Por favor, tente novamente.';
         if (error?.code === 'permission-denied') {
           errorMessage = 'Erro de permissão: Você não tem autorização para excluir fichas. Verifique se está logado como administrador.';
         } else if (error?.message) {
           errorMessage = `Erro: ${error.message}`;
         }
-        
+
         alert(errorMessage);
       }
     }

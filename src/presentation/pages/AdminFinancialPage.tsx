@@ -33,6 +33,7 @@ import { CreateDepartmentModal } from '../components/CreateDepartmentModal';
 import { DepartmentTransactionModal } from '../components/DepartmentTransactionModal';
 import { DepartmentReportModal } from '../components/DepartmentReportModal';
 import { DepartmentActionsMenu } from '../components/DepartmentActionsMenu';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { IncomeExpenseChart } from '../components/charts/IncomeExpenseChart';
 import { CategoryPieChart } from '../components/charts/CategoryPieChart';
 import { MonthlyComparisonChart } from '../components/charts/MonthlyComparisonChart';
@@ -185,10 +186,14 @@ export const AdminFinancialPage: React.FC = () => {
 
   const handleTransactionCreated = () => {
     loadData(); // Reload data after transaction is created
+    loggingService.logDatabase('info', 'Financial transaction created',
+      'New transaction created via financial page', currentUser as any);
   };
 
   const handleDonationCreated = () => {
     loadData(); // Reload data after donation is created
+    loggingService.logDatabase('info', 'Donation created',
+      'New donation created via financial page', currentUser as any);
   };
 
   const loadChartData = async (startDate: Date, endDate: Date) => {
@@ -268,8 +273,12 @@ export const AdminFinancialPage: React.FC = () => {
         updatedAt: new Date()
       });
       loadDepartmentData();
+      await loggingService.logDatabase('info', 'Department status changed',
+        `Department: "${department.name}", ID: ${department.id}, New status: ${!department.isActive ? 'Active' : 'Inactive'}`, currentUser as any);
     } catch (error) {
       console.error('Error toggling department status:', error);
+      await loggingService.logDatabase('error', 'Failed to change department status',
+        `Department: "${department.name}", ID: ${department.id}, Error: ${error}`, currentUser as any);
       alert('Erro ao atualizar status do departamento');
     }
   };
@@ -284,10 +293,10 @@ export const AdminFinancialPage: React.FC = () => {
       setLoading(true);
       const { startDate, endDate } = getPeriodDates(selectedPeriod);
       const blob = await financialService.exportTransactions(
-        { ...filters, startDate, endDate }, 
+        { ...filters, startDate, endDate },
         format
       );
-      
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -297,10 +306,15 @@ export const AdminFinancialPage: React.FC = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
+      await loggingService.logUserAction('Financial data exported',
+        `Format: ${format.toUpperCase()}, Period: ${selectedPeriod}`, currentUser as any);
+
       alert(`Dados exportados em ${format.toUpperCase()} com sucesso!`);
     } catch (error) {
       console.error('Error exporting data:', error);
+      await loggingService.logDatabase('error', 'Failed to export financial data',
+        `Format: ${format.toUpperCase()}, Period: ${selectedPeriod}, Error: ${error}`, currentUser as any);
       alert('Erro ao exportar dados');
     } finally {
       setLoading(false);

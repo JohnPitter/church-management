@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import AssistidoModal from '@modules/assistance/assistidos/presentation/components/AssistidoModal';
@@ -34,7 +35,7 @@ import {
 interface AssistidosManagementPageProps {}
 
 const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => {
-  const { currentUser: _currentUser } = useAuth();
+  const { currentUser } = useAuth();
   const { settings } = useSettings();
   const [activeTab, setActiveTab] = useState<'assistidos' | 'atendimentos' | 'relatorios'>('assistidos');
   const [assistidos, setAssistidos] = useState<Assistido[]>([]);
@@ -124,9 +125,11 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
       await assistidoService.updateAssistidoStatus(assistido.id, newStatus);
       await loadAssistidos();
       await loadStatistics();
+      await loggingService.logDatabase('info', 'Assistido status changed', `Name: ${assistido.nome}, Status: ${newStatus}`, currentUser as any);
       alert('Status atualizado com sucesso!');
     } catch (error) {
       console.error('Error updating status:', error);
+      await loggingService.logDatabase('error', 'Error changing assistido status', `Name: ${assistido.nome}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       alert('Erro ao atualizar status');
     }
   };
@@ -168,9 +171,11 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
       await assistidoService.deleteAssistido(assistido.id);
       await loadAssistidos();
       await loadStatistics();
+      await loggingService.logDatabase('warning', 'Assistido deleted', `Name: ${assistido.nome}, ID: ${assistido.id}`, currentUser as any);
       alert(`✅ ${assistido.nome} foi excluído permanentemente do sistema.`);
     } catch (error) {
       console.error('Error deleting assistido:', error);
+      await loggingService.logDatabase('error', 'Error deleting assistido', `Name: ${assistido.nome}, ID: ${assistido.id}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       alert('Erro ao excluir assistido: ' + errorMessage);
     }

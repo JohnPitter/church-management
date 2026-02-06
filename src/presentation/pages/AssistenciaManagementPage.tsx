@@ -8,6 +8,7 @@ import {
   AgendamentoAssistencia
 } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import { ProfissionalAssistenciaService, AgendamentoAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { AnamnesesPsicologicaService } from '@modules/assistance/fichas/application/services/AnamnesesPsicologicaService';
 import { ProfessionalHelpRequestService } from '@modules/assistance/professional/application/services/ProfessionalHelpRequestService';
 import { ProfessionalHelpRequest, HelpRequestStatus, HelpRequestPriority } from '@modules/assistance/professional/domain/entities/ProfessionalHelpRequest';
@@ -288,11 +289,13 @@ const AssistenciaManagementPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleModalSave = (agendamento: AgendamentoAssistencia) => {
+  const handleModalSave = async (agendamento: AgendamentoAssistencia) => {
     if (modalMode === 'create') {
       setAgendamentos(prev => [agendamento, ...prev]);
+      await loggingService.logDatabase('info', 'Agendamento created', `Patient: ${agendamento.pacienteNome}, Professional: ${agendamento.profissionalNome}, ID: ${agendamento.id}`, currentUser as any);
     } else if (modalMode === 'edit') {
       setAgendamentos(prev => prev.map(a => a.id === agendamento.id ? agendamento : a));
+      await loggingService.logDatabase('info', 'Agendamento updated', `Patient: ${agendamento.pacienteNome}, Professional: ${agendamento.profissionalNome}, ID: ${agendamento.id}`, currentUser as any);
     }
     loadStatistics(); // Refresh statistics
   };
@@ -306,13 +309,15 @@ const AssistenciaManagementPage: React.FC = () => {
       } else {
         await agendamentoService.updateAgendamento(agendamentoId, { status: newStatus });
       }
-      
-      setAgendamentos(prev => prev.map(a => 
+
+      setAgendamentos(prev => prev.map(a =>
         a.id === agendamentoId ? { ...a, status: newStatus } : a
       ));
       loadStatistics();
+      await loggingService.logDatabase('info', 'Agendamento status changed', `ID: ${agendamentoId}, Status: ${newStatus}`, currentUser as any);
     } catch (error) {
       console.error('Error updating status:', error);
+      await loggingService.logDatabase('error', 'Error changing agendamento status', `ID: ${agendamentoId}, Status: ${newStatus}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       alert('❌ Erro ao atualizar status do agendamento: ' + error);
     }
   };
@@ -326,9 +331,11 @@ const AssistenciaManagementPage: React.FC = () => {
       await agendamentoService.deleteAgendamento(agendamento.id);
       setAgendamentos(prev => prev.filter(a => a.id !== agendamento.id));
       loadStatistics();
+      await loggingService.logDatabase('warning', 'Agendamento deleted', `Patient: ${agendamento.pacienteNome}, ID: ${agendamento.id}`, currentUser as any);
       alert('✅ Agendamento excluído com sucesso!');
     } catch (error) {
       console.error('Error deleting agendamento:', error);
+      await loggingService.logDatabase('error', 'Error deleting agendamento', `Patient: ${agendamento.pacienteNome}, ID: ${agendamento.id}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       alert('❌ Erro ao excluir agendamento: ' + error);
     }
   };
@@ -352,28 +359,32 @@ const AssistenciaManagementPage: React.FC = () => {
     setIsProfissionalModalOpen(true);
   };
 
-  const handleSaveProfissional = (profissional: ProfissionalAssistencia) => {
+  const handleSaveProfissional = async (profissional: ProfissionalAssistencia) => {
     if (profissionalModalMode === 'create') {
       setProfissionais(prev => [profissional, ...prev]);
+      await loggingService.logDatabase('info', 'Professional created', `Name: ${profissional.nome}, ID: ${profissional.id}`, currentUser as any);
     } else if (profissionalModalMode === 'edit') {
       setProfissionais(prev => prev.map(p => p.id === profissional.id ? profissional : p));
+      await loggingService.logDatabase('info', 'Professional updated', `Name: ${profissional.nome}, ID: ${profissional.id}`, currentUser as any);
     }
     loadStatistics(); // Refresh statistics
   };
 
-  const handleDeleteProfissional = (profissionalId: string) => {
+  const handleDeleteProfissional = async (profissionalId: string) => {
     // Remove the professional from the list
     setProfissionais(prev => prev.filter(p => p.id !== profissionalId));
-    
+
     // Refresh statistics
     loadStatistics();
-    
+
+    await loggingService.logDatabase('warning', 'Professional deleted', `ID: ${profissionalId}`, currentUser as any);
+
     // Close modal
     setIsProfissionalModalOpen(false);
     setSelectedProfissional(null);
   };
 
-  const handleInactivateProfissional = (profissionalId: string, motivo?: string) => {
+  const handleInactivateProfissional = async (profissionalId: string, motivo?: string) => {
     // Update the professional status in the list
     setProfissionais(prev => prev.map(p =>
       p.id === profissionalId
@@ -389,6 +400,8 @@ const AssistenciaManagementPage: React.FC = () => {
 
     // Refresh statistics
     loadStatistics();
+
+    await loggingService.logDatabase('info', 'Professional inactivated', `ID: ${profissionalId}, Reason: ${motivo || 'Manual inactivation'}`, currentUser as any);
 
     // Close modal
     setIsProfissionalModalOpen(false);
@@ -419,15 +432,18 @@ const AssistenciaManagementPage: React.FC = () => {
 
       if (anamneseModalMode === 'create') {
         await anamneseService.createAnamnese(anamneseCompleta);
+        await loggingService.logDatabase('info', 'Anamnese created', `Patient: ${anamneseAssistidoNome || anamnese.nome}, Assistido ID: ${anamneseAssistidoId}`, currentUser as any);
         alert('✅ Anamnese psicológica criada com sucesso!');
       } else if (anamneseModalMode === 'edit' && anamnese.id) {
         await anamneseService.updateAnamnese(anamnese.id, anamneseCompleta);
+        await loggingService.logDatabase('info', 'Anamnese updated', `Patient: ${anamneseAssistidoNome || anamnese.nome}, ID: ${anamnese.id}`, currentUser as any);
         alert('✅ Anamnese psicológica atualizada com sucesso!');
       }
 
       setIsAnamneseModalOpen(false);
     } catch (error) {
       console.error('Erro ao salvar anamnese:', error);
+      await loggingService.logDatabase('error', 'Error saving anamnese', `Patient: ${anamneseAssistidoNome || anamnese.nome}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       alert('❌ Erro ao salvar anamnese: ' + error);
     }
   };

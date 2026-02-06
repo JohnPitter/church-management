@@ -18,6 +18,7 @@ import {
   DevotionalFilters,
   DevotionalStats 
 } from '@modules/church-management/devotionals/application/services/DevotionalService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { CreateDevotionalModal } from '@modules/church-management/devotionals/presentation/components/CreateDevotionalModal';
 import { EditDevotionalModal } from '@modules/church-management/devotionals/presentation/components/EditDevotionalModal';
 import { DevotionalDetailModal } from '@modules/church-management/devotionals/presentation/components/DevotionalDetailModal';
@@ -106,11 +107,14 @@ export const AdminDevotionalPage: React.FC = () => {
   const handleDeleteDevotional = async (id: string) => {
     if (!window.confirm('Tem certeza que deseja excluir este devocional?')) return;
 
+    const devotional = devotionals.find(d => d.id === id);
     try {
       await devotionalService.deleteDevotional(id, currentUser?.email || 'unknown');
+      await loggingService.logDatabase('info', 'Devotional deleted', `Title: ${devotional?.title || 'Unknown'}, ID: ${id}`, currentUser as any);
       await loadData();
     } catch (error) {
       console.error('Error deleting devotional:', error);
+      await loggingService.logDatabase('error', 'Error deleting devotional', `ID: ${id}, Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
       alert('Erro ao excluir devocional');
     }
   };
@@ -121,9 +125,11 @@ export const AdminDevotionalPage: React.FC = () => {
         isPublished: !devotional.isPublished,
         createdBy: currentUser?.email || 'unknown'
       });
+      await loggingService.logDatabase('info', 'Devotional publish status changed', `Title: ${devotional.title}, Published: ${!devotional.isPublished}`, currentUser as any);
       await loadData();
     } catch (error) {
       console.error('Error toggling publish:', error);
+      await loggingService.logDatabase('error', 'Error toggling devotional publish status', `Title: ${devotional.title}, ID: ${devotional.id}, Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
       alert('Erro ao alterar status de publicação');
     }
   };

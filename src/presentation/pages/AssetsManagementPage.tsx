@@ -11,6 +11,7 @@ import {
   AssetEntity
 } from '@modules/church-management/assets/domain/entities/Asset';
 import { useAuth } from '../contexts/AuthContext';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 const AssetsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -148,9 +149,11 @@ const AssetsManagementPage: React.FC = () => {
 
       if (editingAsset) {
         await assetService.updateAsset(editingAsset.id, dataToSave);
+        await loggingService.logDatabase('info', 'Asset updated', `Name: ${formData.name}, ID: ${editingAsset.id}`, currentUser as any);
         alert('Patrimônio atualizado com sucesso!');
       } else {
         await assetService.createAsset(dataToSave);
+        await loggingService.logDatabase('info', 'Asset created', `Name: ${formData.name}`, currentUser as any);
         alert('Patrimônio criado com sucesso!');
       }
 
@@ -159,6 +162,7 @@ const AssetsManagementPage: React.FC = () => {
       loadStatistics();
     } catch (error: any) {
       console.error('Error saving asset:', error);
+      await loggingService.logDatabase('error', 'Error saving asset', `Name: ${formData.name}, Error: ${error.message || String(error)}`, currentUser as any);
       alert(error.message || 'Erro ao salvar patrimônio');
     }
   };
@@ -197,11 +201,13 @@ const AssetsManagementPage: React.FC = () => {
 
     try {
       await assetService.deleteAsset(asset.id);
+      await loggingService.logDatabase('warning', 'Asset deleted', `Name: ${asset.name}, ID: ${asset.id}`, currentUser as any);
       alert('Patrimônio excluído com sucesso!');
       loadAssets();
       loadStatistics();
     } catch (error: any) {
       console.error('Error deleting asset:', error);
+      await loggingService.logDatabase('error', 'Error deleting asset', `Name: ${asset.name}, ID: ${asset.id}, Error: ${error.message || String(error)}`, currentUser as any);
       alert(error.message || 'Erro ao excluir patrimônio');
     }
   };

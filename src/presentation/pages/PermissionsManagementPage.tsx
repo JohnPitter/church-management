@@ -19,6 +19,7 @@ import {
 } from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
 import { User } from '@/domain/entities/User';
 import { CreateRoleModal } from '../components/CreateRoleModal';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 export const PermissionsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -127,10 +128,15 @@ export const PermissionsManagementPage: React.FC = () => {
       await refreshPermissions();
       await loadData();
 
+      await loggingService.logSecurity('info', 'Role permissions updated',
+        `Role: ${role}, Modules: ${modules.length}`, currentUser as any);
+
       alert('Permissões da função atualizadas com sucesso!');
     } catch (error: any) {
       console.error('Error saving role permissions:', error);
-      
+      await loggingService.logSecurity('error', 'Failed to update role permissions',
+        `Role: ${role}, Error: ${error}`, currentUser as any);
+
       // Check if it's a Firestore permission error
       if (error?.message?.includes('permissions') || error?.message?.includes('Firestore')) {
         setShowFirestoreWarning(true);
@@ -157,9 +163,14 @@ export const PermissionsManagementPage: React.FC = () => {
       await refreshPermissions();
       await loadData();
 
+      await loggingService.logSecurity('warning', 'Role permissions reset to defaults',
+        `Role: ${role}`, currentUser as any);
+
       alert('Permissões resetadas com sucesso!');
     } catch (error) {
       console.error('Error resetting permissions:', error);
+      await loggingService.logSecurity('error', 'Failed to reset role permissions',
+        `Role: ${role}, Error: ${error}`, currentUser as any);
       alert('Erro ao resetar permissões');
     } finally {
       setSaving(false);
@@ -291,9 +302,14 @@ export const PermissionsManagementPage: React.FC = () => {
       await refreshPermissions();
       await loadData();
 
+      await loggingService.logSecurity('info', 'User permission overrides updated',
+        `User: "${user.email}", Granted: ${override?.grantedModules.length || 0}, Revoked: ${override?.revokedModules.length || 0}`, currentUser as any);
+
       alert('Permissões do usuário atualizadas com sucesso!');
     } catch (error) {
       console.error('Error saving user overrides:', error);
+      await loggingService.logSecurity('error', 'Failed to update user permission overrides',
+        `User: "${user.email}", Error: ${error}`, currentUser as any);
       alert('Erro ao salvar permissões do usuário');
     } finally {
       setSaving(false);
@@ -316,11 +332,16 @@ export const PermissionsManagementPage: React.FC = () => {
         currentUser?.email || 'Admin'
       );
 
+      await loggingService.logSecurity('info', 'Custom role created',
+        `Role: "${roleData.displayName}" (${roleData.roleName}), Modules: ${roleData.modules.length}`, currentUser as any);
+
       alert('Função personalizada criada com sucesso!');
       await loadData(); // Reload data to show new role
       setShowCreateRoleModal(false);
     } catch (error: any) {
       console.error('Error creating custom role:', error);
+      await loggingService.logSecurity('error', 'Failed to create custom role',
+        `Role: "${roleData.roleName}", Error: ${error}`, currentUser as any);
       const errorMessage = error.message || 'Erro ao criar função personalizada';
       alert(errorMessage);
       throw error; // Re-throw to prevent modal from closing on error
@@ -346,6 +367,9 @@ export const PermissionsManagementPage: React.FC = () => {
         currentUser?.email || 'Admin'
       );
 
+      await loggingService.logSecurity('info', 'Custom role updated',
+        `Role: "${roleData.displayName}" (${roleId}), Modules: ${roleData.modules.length}`, currentUser as any);
+
       alert('✓ Função personalizada atualizada com sucesso!');
       await loadData(); // Reload data to show updated role
       await refreshPermissions(); // Refresh user permissions
@@ -353,6 +377,8 @@ export const PermissionsManagementPage: React.FC = () => {
       setEditingRole(null);
     } catch (error: any) {
       console.error('Error updating custom role:', error);
+      await loggingService.logSecurity('error', 'Failed to update custom role',
+        `Role ID: ${roleId}, Error: ${error}`, currentUser as any);
       const errorMessage = error.message || 'Erro ao atualizar função personalizada';
       alert(errorMessage);
       throw error; // Re-throw to prevent modal from closing on error
@@ -390,12 +416,17 @@ export const PermissionsManagementPage: React.FC = () => {
       await publicPageService.updatePageVisibility(page, isPublic);
       
       // Update local state
-      const updatedConfigs = publicPageConfigs.map(config => 
+      const updatedConfigs = publicPageConfigs.map(config =>
         config.page === page ? { ...config, isPublic } : config
       );
       setPublicPageConfigs(updatedConfigs);
+
+      await loggingService.logSecurity('info', 'Public page visibility changed',
+        `Page: ${page}, Public: ${isPublic}`, currentUser as any);
     } catch (error) {
       console.error('Error updating public page visibility:', error);
+      await loggingService.logSecurity('error', 'Failed to update public page visibility',
+        `Page: ${page}, Error: ${error}`, currentUser as any);
       alert('Erro ao atualizar visibilidade da página');
     } finally {
       setSaving(false);
@@ -408,12 +439,17 @@ export const PermissionsManagementPage: React.FC = () => {
       await publicPageService.updatePageRegistrationSetting(page, allowRegistration);
       
       // Update local state
-      const updatedConfigs = publicPageConfigs.map(config => 
+      const updatedConfigs = publicPageConfigs.map(config =>
         config.page === page ? { ...config, allowRegistration } : config
       );
       setPublicPageConfigs(updatedConfigs);
+
+      await loggingService.logSecurity('info', 'Page registration setting changed',
+        `Page: ${page}, Allow registration: ${allowRegistration}`, currentUser as any);
     } catch (error) {
       console.error('Error updating registration setting:', error);
+      await loggingService.logSecurity('error', 'Failed to update page registration setting',
+        `Page: ${page}, Error: ${error}`, currentUser as any);
       alert('Erro ao atualizar configuração de registro');
     } finally {
       setSaving(false);
@@ -965,6 +1001,8 @@ export const PermissionsManagementPage: React.FC = () => {
                                   try {
                                     setSaving(true);
                                     await permissionService.deleteCustomRole(role.roleId);
+                                    await loggingService.logSecurity('warning', 'Custom role deleted',
+                                      `Role: "${role.displayName}" (${role.roleId})`, currentUser as any);
                                     await loadData();
                                     await refreshPermissions();
                                     alert('✓ Função desativada com sucesso!');

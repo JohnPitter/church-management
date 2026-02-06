@@ -13,6 +13,7 @@ import {
   VisitorStats
 } from '@modules/church-management/visitors/domain/entities/Visitor';
 import { format } from 'date-fns';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { CreateVisitorModal } from '@modules/church-management/visitors/presentation/components/visitors/CreateVisitorModal';
 import { VisitorDetailsModal } from '@modules/church-management/visitors/presentation/components/visitors/VisitorDetailsModal';
 import { ContactVisitorModal } from '@modules/church-management/visitors/presentation/components/visitors/ContactVisitorModal';
@@ -115,11 +116,13 @@ export const AdminVisitorsPage: React.FC = () => {
     if (window.confirm(`Tem certeza que deseja excluir o visitante "${visitor.name}"? Esta ação não pode ser desfeita.`)) {
       try {
         await visitorService.deleteVisitor(visitor.id);
+        await loggingService.logDatabase('info', 'Visitor deleted', `Name: ${visitor.name}, ID: ${visitor.id}`, currentUser as any);
         await loadVisitors();
         await loadStats();
         alert('Visitante excluído com sucesso!');
       } catch (error) {
         console.error('Error deleting visitor:', error);
+        await loggingService.logDatabase('error', 'Error deleting visitor', `Name: ${visitor.name}, ID: ${visitor.id}, Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
         alert('Erro ao excluir visitante. Tente novamente.');
       }
     }
@@ -711,6 +714,7 @@ export const AdminVisitorsPage: React.FC = () => {
             onClose={() => setShowCreateModal(false)}
             onVisitorCreated={() => {
               setShowCreateModal(false);
+              loggingService.logDatabase('info', 'Visitor created', 'New visitor created via modal', currentUser as any);
               loadVisitors();
               loadStats();
             }}
@@ -724,6 +728,7 @@ export const AdminVisitorsPage: React.FC = () => {
             onClose={() => setShowDetailsModal(false)}
             visitor={selectedVisitor}
             onVisitorUpdated={() => {
+              loggingService.logDatabase('info', 'Visitor updated', `Name: ${selectedVisitor.name}, ID: ${selectedVisitor.id}`, currentUser as any);
               loadVisitors();
               loadStats();
             }}
