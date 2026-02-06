@@ -11,14 +11,15 @@ jest.mock('@/config/firebase', () => ({
 }));
 
 // Create mock functions for Firestore
+const mockDocRef = { id: 'church', path: 'settings/church' };
 const mockDoc = jest.fn();
 const mockGetDoc = jest.fn();
 const mockSetDoc = jest.fn();
 
 jest.mock('firebase/firestore', () => ({
-  doc: (...args: unknown[]) => mockDoc(...args),
-  getDoc: (...args: unknown[]) => mockGetDoc(...args),
-  setDoc: (...args: unknown[]) => mockSetDoc(...args)
+  doc: function() { return mockDoc.apply(null, arguments); },
+  getDoc: function() { return mockGetDoc.apply(null, arguments); },
+  setDoc: function() { return mockSetDoc.apply(null, arguments); }
 }));
 
 // Default settings expected in the context
@@ -160,6 +161,8 @@ const TestConsumerWithUpdate: React.FC = () => {
 describe('SettingsContext', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Re-establish mockDoc return value (cleared by resetMocks: true)
+    mockDoc.mockReturnValue(mockDocRef);
     // Reset document style
     document.documentElement.style.cssText = '';
   });

@@ -21,6 +21,12 @@ import {
 import { FirebaseAssistidoRepository } from '../../../infrastructure/repositories/FirebaseAssistidoRepository';
 import { NotificationService } from '@modules/shared-kernel/infrastructure/services/NotificationService';
 
+// Mock Firebase to prevent auth/invalid-api-key error in CI
+jest.mock('firebase/firestore');
+jest.mock('@/config/firebase', () => ({
+  db: {}
+}));
+
 // Mock the dependencies
 jest.mock('../../../infrastructure/repositories/FirebaseAssistidoRepository');
 jest.mock('@modules/shared-kernel/infrastructure/services/NotificationService');

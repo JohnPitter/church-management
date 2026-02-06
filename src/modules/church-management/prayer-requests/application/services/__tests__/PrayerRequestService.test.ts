@@ -10,6 +10,12 @@ import {
   PrayerRequestEntity
 } from '../../../domain/entities/PrayerRequest';
 
+// Mock Firebase to prevent auth/invalid-api-key error in CI
+jest.mock('firebase/firestore');
+jest.mock('@/config/firebase', () => ({
+  db: {}
+}));
+
 // Mock the repository
 jest.mock('../../../infrastructure/repositories/FirebasePrayerRequestRepository');
 

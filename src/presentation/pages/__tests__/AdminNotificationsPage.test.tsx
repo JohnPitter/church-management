@@ -83,9 +83,11 @@ jest.mock('../../hooks/usePermissions', () => ({
 const mockFindAll = jest.fn().mockResolvedValue(mockUsers);
 
 jest.mock('@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository', () => ({
-  FirebaseUserRepository: jest.fn().mockImplementation(function(this: any) {
-    this.findAll = (...args: any[]) => mockFindAll(...args);
-  })
+  FirebaseUserRepository: function() {
+    return {
+      findAll: (...args: any[]) => mockFindAll(...args)
+    };
+  }
 }));
 
 // Mock window methods

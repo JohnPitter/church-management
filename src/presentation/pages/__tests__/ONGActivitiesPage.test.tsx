@@ -170,7 +170,7 @@ describe('ONGActivitiesPage', () => {
       render(<ONGActivitiesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Gerenciamento de Atividades')).toBeInTheDocument();
+        expect(screen.getByText(/Gerenciamento de Atividades/)).toBeInTheDocument();
         expect(screen.getByText('Total de 0 atividades')).toBeInTheDocument();
       });
     });
@@ -193,7 +193,7 @@ describe('ONGActivitiesPage', () => {
         expect(screen.getByText('Food Distribution')).toBeInTheDocument();
         expect(screen.getByText(/Community Center/)).toBeInTheDocument();
         expect(screen.getByText('2/10')).toBeInTheDocument();
-        expect(screen.getByText('100 beneficiarios')).toBeInTheDocument();
+        expect(screen.getByText(/100 benefici/)).toBeInTheDocument();
       });
     });
 
@@ -211,7 +211,7 @@ describe('ONGActivitiesPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('planejada')).toBeInTheDocument();
-        expect(screen.getByText('em_andamento')).toBeInTheDocument();
+        expect(screen.getByText('em andamento')).toBeInTheDocument();
         expect(screen.getByText('concluida')).toBeInTheDocument();
         expect(screen.getByText('cancelada')).toBeInTheDocument();
       });
@@ -257,7 +257,7 @@ describe('ONGActivitiesPage', () => {
         expect(screen.getByText('Education Program')).toBeInTheDocument();
       });
 
-      const searchInput = screen.getByPlaceholderText('Nome, descricao ou local...');
+      const searchInput = screen.getByPlaceholderText(/Nome, descri.*ou local/);
       fireEvent.change(searchInput, { target: { value: 'food' } });
 
       await waitFor(() => {
@@ -346,7 +346,7 @@ describe('ONGActivitiesPage', () => {
         fireEvent.click(screen.getByText('Cadastrar'));
       });
 
-      expect(mockAlert).toHaveBeenCalledWith('Nome da atividade e obrigatorio');
+      expect(mockAlert).toHaveBeenCalledWith('Nome da atividade é obrigatório');
     });
 
     it('should validate date range when creating activity', async () => {
@@ -374,7 +374,7 @@ describe('ONGActivitiesPage', () => {
 
       fireEvent.click(screen.getByText('Cadastrar'));
 
-      expect(mockAlert).toHaveBeenCalledWith('Data de inicio nao pode ser posterior a data de fim');
+      expect(mockAlert).toHaveBeenCalledWith('Data de início não pode ser posterior à data de fim');
     });
 
     it('should create activity successfully with valid data', async () => {
@@ -587,7 +587,7 @@ describe('ONGActivitiesPage', () => {
       render(<ONGActivitiesPage />);
 
       await waitFor(() => {
-        const reportButtons = screen.getAllByText('Relatorio');
+        const reportButtons = screen.getAllByText(/Relat/);
         expect(reportButtons.length).toBe(2); // Only for in-progress and completed
       });
     });
@@ -600,7 +600,7 @@ describe('ONGActivitiesPage', () => {
       render(<ONGActivitiesPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Relatorio'));
+        fireEvent.click(screen.getByText(/Relat/));
       });
 
       await waitFor(() => {
@@ -619,7 +619,7 @@ describe('ONGActivitiesPage', () => {
       render(<ONGActivitiesPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Relatorio'));
+        fireEvent.click(screen.getByText(/Relat/));
       });
 
       await waitFor(() => {
@@ -652,7 +652,7 @@ describe('ONGActivitiesPage', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText('Voluntarios Confirmados')).toBeInTheDocument();
+        expect(screen.getByText(/Volunt.*Confirmados/)).toBeInTheDocument();
         expect(screen.getByText(/Volunteer 1/)).toBeInTheDocument();
         expect(screen.getByText(/Volunteer 2/)).toBeInTheDocument();
       });

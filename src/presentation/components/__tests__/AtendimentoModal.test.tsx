@@ -43,10 +43,10 @@ jest.mock('../../contexts/AuthContext', () => ({
 const mockAddAtendimento = jest.fn();
 
 jest.mock('@modules/assistance/assistidos/application/services/AssistidoService', () => ({
-  AssistidoService: jest.fn().mockImplementation(() => ({
-    addAtendimento: mockAddAtendimento
-  }))
+  AssistidoService: jest.fn()
 }));
+
+import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
 
 // Mock window.alert
 const mockAlert = jest.fn();
@@ -56,7 +56,7 @@ describe('AtendimentoModal', () => {
   const mockOnClose = jest.fn();
   const mockOnSave = jest.fn();
 
-  const createMockAssistido = (overrides: Partial<Assistido> = {}): Assistido => ({
+  const createMockAssistido = (overrides = {}) => ({
     id: 'assistido-123',
     nome: 'Maria Silva',
     cpf: '123.456.789-00',
@@ -98,12 +98,16 @@ describe('AtendimentoModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockAddAtendimento.mockResolvedValue(undefined);
+    (AssistidoService as jest.Mock).mockImplementation(() => ({
+      addAtendimento: mockAddAtendimento
+    }));
+    window.alert = mockAlert;
   });
 
   describe('Modal visibility', () => {
     it('should render modal when isOpen is true and assistido is provided', () => {
       render(<AtendimentoModal {...defaultProps} />);
-      expect(screen.getByText('Registrar Atendimento')).toBeInTheDocument();
+      expect(screen.getAllByText('Registrar Atendimento').length).toBeGreaterThanOrEqual(1);
     });
 
     it('should not render modal when isOpen is false', () => {
@@ -280,9 +284,8 @@ describe('AtendimentoModal', () => {
       render(<AtendimentoModal {...defaultProps} />);
 
       const saveButton = screen.getByRole('button', { name: /Registrar Atendimento/i });
-      fireEvent.click(saveButton);
-
-      expect(mockAlert).toHaveBeenCalledWith('Por favor, preencha a descrição do atendimento.');
+      // Button is disabled when descricao is empty, so alert is not triggered
+      expect(saveButton).toBeDisabled();
       expect(mockAddAtendimento).not.toHaveBeenCalled();
     });
 
@@ -533,8 +536,8 @@ describe('AtendimentoModal', () => {
     it('should call onClose when clicking close (X) button', () => {
       render(<AtendimentoModal {...defaultProps} />);
 
-      // Find the close button (X button in header)
-      const closeButton = screen.getByRole('button', { name: '' });
+      // Find the close button (X button in header) - it has "✕" text
+      const closeButton = screen.getByRole('button', { name: '✕' });
       fireEvent.click(closeButton);
 
       expect(mockOnClose).toHaveBeenCalled();

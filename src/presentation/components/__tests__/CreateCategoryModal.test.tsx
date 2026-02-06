@@ -46,7 +46,7 @@ describe('CreateCategoryModal', () => {
     it('should display all form fields', () => {
       render(<CreateCategoryModal {...defaultProps} />);
       expect(screen.getByText(/Tipo de Categoria/i)).toBeInTheDocument();
-      expect(screen.getByText(/Nome da Categoria/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Nome da Categoria/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/Descrição \(Opcional\)/i)).toBeInTheDocument();
       expect(screen.getByText(/Ícone/i)).toBeInTheDocument();
       expect(screen.getByText(/Cor/i)).toBeInTheDocument();
@@ -58,8 +58,12 @@ describe('CreateCategoryModal', () => {
     it('should have EXPENSE as default type', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
-      // The expense type card should have the selected styling
-      const expenseCard = screen.getByText('Despesa').closest('div');
+      // "Despesa" appears in both the type selector card and the preview section
+      // The type selector card div has border-red-500 class when selected
+      // Find the "Despesa" text in the type selector (has "font-medium" class)
+      const expenseCards = screen.getAllByText('Despesa');
+      // Navigate up to the card div (parent of text div > card div with border classes)
+      const expenseCard = expenseCards[0].closest('.cursor-pointer') || expenseCards[0].parentElement;
       expect(expenseCard).toHaveClass('border-red-500');
     });
 
@@ -71,7 +75,10 @@ describe('CreateCategoryModal', () => {
       fireEvent.click(incomeRadio);
 
       await waitFor(() => {
-        const incomeCard = screen.getByText('Receita').closest('div');
+        // "Receita" may appear in both the type selector and the preview section
+        const incomeCards = screen.getAllByText('Receita');
+        // Navigate up to the card div (cursor-pointer class)
+        const incomeCard = incomeCards[0].closest('.cursor-pointer') || incomeCards[0].parentElement;
         expect(incomeCard).toHaveClass('border-green-500');
       });
     });
@@ -79,9 +86,11 @@ describe('CreateCategoryModal', () => {
     it('should display correct labels for transaction types', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
-      expect(screen.getByText('Receita')).toBeInTheDocument();
+      // "Receita" may appear in multiple places (type selector + preview when switched)
+      expect(screen.getAllByText('Receita').length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText('Entrada de dinheiro')).toBeInTheDocument();
-      expect(screen.getByText('Despesa')).toBeInTheDocument();
+      // "Despesa" appears in both the type selector and the preview section
+      expect(screen.getAllByText('Despesa').length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText('Saída de dinheiro')).toBeInTheDocument();
     });
   });
@@ -200,7 +209,8 @@ describe('CreateCategoryModal', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
       expect(screen.getByText('Nome da categoria')).toBeInTheDocument();
-      expect(screen.getByText('Despesa')).toBeInTheDocument();
+      // "Despesa" appears in both the type selector and the preview section
+      expect(screen.getAllByText('Despesa').length).toBeGreaterThanOrEqual(1);
     });
 
     it('should update preview when name changes', async () => {

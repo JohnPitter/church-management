@@ -69,18 +69,18 @@ const mockFindRegistrations = jest.fn();
 const mockUpdateRegistrationStatus = jest.fn();
 
 jest.mock('@modules/content-management/projects/infrastructure/repositories/FirebaseProjectRepository', () => {
-  function FirebaseProjectRepositoryMock(this: any) {
-    this.findAll = mockFindAll;
-    this.create = mockCreate;
-    this.update = mockUpdate;
-    this.delete = mockDelete;
-    this.updateStatus = mockUpdateStatus;
-    this.findRegistrations = mockFindRegistrations;
-    this.updateRegistrationStatus = mockUpdateRegistrationStatus;
-  }
-
   return {
-    FirebaseProjectRepository: FirebaseProjectRepositoryMock
+    FirebaseProjectRepository: function() {
+      return {
+        findAll: mockFindAll,
+        create: mockCreate,
+        update: mockUpdate,
+        delete: mockDelete,
+        updateStatus: mockUpdateStatus,
+        findRegistrations: mockFindRegistrations,
+        updateRegistrationStatus: mockUpdateRegistrationStatus
+      };
+    }
   };
 });
 
@@ -157,7 +157,7 @@ describe('AdminProjectsManagementPage', () => {
 
       render(<AdminProjectsManagementPage />);
 
-      expect(screen.getByText('Verificando permissoes...')).toBeInTheDocument();
+      expect(screen.getByText('Verificando permissões...')).toBeInTheDocument();
 
       // Reset mock
       usePermissions.mockReturnValue({

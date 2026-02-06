@@ -131,7 +131,7 @@ jest.mock('@modules/analytics/backup/application/services/BackupService', () => 
 
 // Mock date-fns format
 jest.mock('date-fns', () => ({
-  format: (date: Date, formatStr: string) => {
+  format: (date: any, formatStr: any) => {
     if (formatStr === 'dd/MM/yyyy HH:mm') {
       return date.toLocaleString('pt-BR', {
         day: '2-digit',

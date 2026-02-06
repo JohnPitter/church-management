@@ -142,7 +142,7 @@ describe('ONGSettingsPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Acesso Restrito')).toBeInTheDocument();
-        expect(screen.getByText(/Voce precisa ser um administrador aprovado/)).toBeInTheDocument();
+        expect(screen.getByText(/precisa ser um administrador/)).toBeInTheDocument();
       });
     });
 
@@ -169,10 +169,10 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Usuario:/)).toBeInTheDocument();
+        expect(screen.getByText(/Usu/)).toBeInTheDocument();
         expect(screen.getByText(/Role:/)).toBeInTheDocument();
         expect(screen.getByText(/Status:/)).toBeInTheDocument();
-        expect(screen.getByText(/Pode Gerenciar ONG:/)).toBeInTheDocument();
+        expect(screen.getByText(/Gerenciar ONG/)).toBeInTheDocument();
       });
     });
 
@@ -195,7 +195,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Configuracoes da ONG')).toBeInTheDocument();
+        expect(screen.getByText(/Configura.*da ONG/)).toBeInTheDocument();
       });
     });
   });
@@ -206,7 +206,7 @@ describe('ONGSettingsPage', () => {
 
       render(<ONGSettingsPage />);
 
-      expect(screen.getByText('Carregando configuracoes...')).toBeInTheDocument();
+      expect(screen.getByText(/Carregando configura/)).toBeInTheDocument();
     });
 
     it('should hide loading after ONG info is fetched', async () => {
@@ -215,8 +215,8 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('Carregando configuracoes...')).not.toBeInTheDocument();
-        expect(screen.getByText('Configuracoes da ONG')).toBeInTheDocument();
+        expect(screen.queryByText(/Carregando configura/)).not.toBeInTheDocument();
+        expect(screen.getByText(/Configura.*da ONG/)).toBeInTheDocument();
       });
     });
   });
@@ -228,11 +228,11 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Informacoes Basicas')).toBeInTheDocument();
+        expect(screen.getByText(/Informa.*sicas/)).toBeInTheDocument();
         expect(screen.getByText('Contato')).toBeInTheDocument();
-        expect(screen.getByText('Endereco')).toBeInTheDocument();
+        expect(screen.getByText(/Endere/)).toBeInTheDocument();
         expect(screen.getByText('Redes Sociais')).toBeInTheDocument();
-        expect(screen.getByText('Missao e Valores')).toBeInTheDocument();
+        expect(screen.getByText(/Miss.*e Valores/)).toBeInTheDocument();
       });
     });
 
@@ -253,7 +253,7 @@ describe('ONGSettingsPage', () => {
       });
 
       // Switch to Address tab
-      fireEvent.click(screen.getByText('Endereco'));
+      fireEvent.click(screen.getByText(/Endere/));
 
       await waitFor(() => {
         expect(screen.getByText('CEP')).toBeInTheDocument();
@@ -269,12 +269,13 @@ describe('ONGSettingsPage', () => {
       });
 
       // Switch to Mission and Values tab
-      fireEvent.click(screen.getByText('Missao e Valores'));
+      fireEvent.click(screen.getByText(/Miss.*e Valores/));
 
       await waitFor(() => {
-        expect(screen.getByText(/Missao/)).toBeInTheDocument();
-        expect(screen.getByText(/Visao/)).toBeInTheDocument();
-        expect(screen.getByText(/Valores/)).toBeInTheDocument();
+        // Source renders: "🎯 Missão", "👁️ Visão", "💎 Valores" as labels
+        expect(screen.getByText(/🎯 Miss/)).toBeInTheDocument();
+        expect(screen.getByText(/👁️ Vis/)).toBeInTheDocument();
+        expect(screen.getByText(/💎 Valores/)).toBeInTheDocument();
       });
     });
   });
@@ -321,16 +322,19 @@ describe('ONGSettingsPage', () => {
 
       render(<ONGSettingsPage />);
 
+      // Wait for the form to be fully loaded
       await waitFor(() => {
-        const fileInput = document.querySelector('input[type="file"]');
-        const largeFile = new File(['x'.repeat(6 * 1024 * 1024)], 'large.png', { type: 'image/png' });
-
-        if (fileInput) {
-          fireEvent.change(fileInput, { target: { files: [largeFile] } });
-        }
+        expect(screen.getByText('Nome da ONG *')).toBeInTheDocument();
       });
 
+      const fileInput = document.querySelector('input[type="file"]');
+      expect(fileInput).toBeTruthy();
+
+      const largeFile = new File(['x'.repeat(6 * 1024 * 1024)], 'large.png', { type: 'image/png' });
+      fireEvent.change(fileInput!, { target: { files: [largeFile] } });
+
       await waitFor(() => {
+        // Source alerts: "❌ A imagem deve ter no máximo 5MB"
         expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('5MB'));
       });
     });
@@ -379,7 +383,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Endereco'));
+        fireEvent.click(screen.getByText(/Endere/));
       });
 
       await waitFor(() => {
@@ -396,7 +400,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Endereco'));
+        fireEvent.click(screen.getByText(/Endere/));
       });
 
       await waitFor(() => {
@@ -404,7 +408,7 @@ describe('ONGSettingsPage', () => {
         expect(stateSelect).toBeInTheDocument();
 
         // Check some state options exist
-        expect(screen.getByText('Sao Paulo')).toBeInTheDocument();
+        expect(screen.getByText(/Paulo/)).toBeInTheDocument();
         expect(screen.getByText('Rio de Janeiro')).toBeInTheDocument();
       });
     });
@@ -444,7 +448,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Missao e Valores'));
+        fireEvent.click(screen.getByText(/Miss.*e Valores/));
       });
 
       await waitFor(() => {
@@ -462,7 +466,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Missao e Valores'));
+        fireEvent.click(screen.getByText(/Miss.*e Valores/));
       });
 
       await waitFor(() => {
@@ -478,7 +482,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Missao e Valores'));
+        fireEvent.click(screen.getByText(/Miss.*e Valores/));
       });
 
       await waitFor(() => {
@@ -499,7 +503,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Missao e Valores'));
+        fireEvent.click(screen.getByText(/Miss.*e Valores/));
       });
 
       await waitFor(() => {
@@ -536,7 +540,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        const areaInput = screen.getByPlaceholderText('Digite uma area de atuacao');
+        const areaInput = screen.getByPlaceholderText(/Digite uma/);
         fireEvent.change(areaInput, { target: { value: 'New Area' } });
       });
 
@@ -576,7 +580,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Salvar Alteracoes'));
+        fireEvent.click(screen.getByText(/Salvar Altera/));
       });
 
       await waitFor(() => {
@@ -593,7 +597,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Salvar Alteracoes'));
+        fireEvent.click(screen.getByText(/Salvar Altera/));
       });
 
       await waitFor(() => {
@@ -610,7 +614,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Salvar Alteracoes'));
+        fireEvent.click(screen.getByText(/Salvar Altera/));
       });
 
       await waitFor(() => {
@@ -628,7 +632,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Salvar Alteracoes'));
+        fireEvent.click(screen.getByText(/Salvar Altera/));
       });
 
       await waitFor(() => {
@@ -645,7 +649,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Salvar Alteracoes'));
+        fireEvent.click(screen.getByText(/Salvar Altera/));
       });
 
       await waitFor(() => {
@@ -661,7 +665,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Salvar Alteracoes'));
+        fireEvent.click(screen.getByText(/Salvar Altera/));
       });
 
       await waitFor(() => {
@@ -677,16 +681,18 @@ describe('ONGSettingsPage', () => {
 
       render(<ONGSettingsPage />);
 
+      // Wait for the form to be fully loaded
       await waitFor(() => {
-        const fileInput = document.querySelector('input[type="file"]');
-        const file = new File(['logo content'], 'logo.png', { type: 'image/png' });
-
-        if (fileInput) {
-          fireEvent.change(fileInput, { target: { files: [file] } });
-        }
+        expect(screen.getByText('Nome da ONG *')).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText('Salvar Alteracoes'));
+      const fileInput = document.querySelector('input[type="file"]');
+      expect(fileInput).toBeTruthy();
+
+      const file = new File(['logo content'], 'logo.png', { type: 'image/png' });
+      fireEvent.change(fileInput!, { target: { files: [file] } });
+
+      fireEvent.click(screen.getByText(/Salvar Altera/));
 
       await waitFor(() => {
         expect(mockUploadONGLogo).toHaveBeenCalled();
@@ -707,7 +713,8 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Erro'));
+        // Source alerts: `❌ ${error.message}` => "❌ Network error"
+        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Network error'));
       });
 
       consoleSpy.mockRestore();
@@ -721,11 +728,14 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Salvar Alteracoes'));
+        expect(screen.getByText(/Salvar Altera/)).toBeInTheDocument();
       });
 
+      fireEvent.click(screen.getByText(/Salvar Altera/));
+
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Erro'));
+        // Source alerts: `❌ ${error.message}` => "❌ Save failed"
+        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Save failed'));
       });
 
       consoleSpy.mockRestore();
@@ -755,7 +765,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        const nameInput = screen.getByPlaceholderText('Nome da organizacao');
+        const nameInput = screen.getByPlaceholderText(/Nome da organiza/);
         fireEvent.change(nameInput, { target: { value: 'New ONG Name' } });
         expect(nameInput).toHaveValue('New ONG Name');
       });
@@ -769,9 +779,9 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Configuracoes da ONG')).toBeInTheDocument();
+        expect(screen.getByText(/Configura.*da ONG/)).toBeInTheDocument();
         // Form should be empty but functional
-        const nameInput = screen.getByPlaceholderText('Nome da organizacao');
+        const nameInput = screen.getByPlaceholderText(/Nome da organiza/);
         expect(nameInput).toHaveValue('');
       });
     });

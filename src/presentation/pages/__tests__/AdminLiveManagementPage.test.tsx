@@ -52,16 +52,16 @@ const mockDelete = jest.fn();
 const mockUpdateStatus = jest.fn();
 
 jest.mock('@modules/content-management/live-streaming/infrastructure/repositories/FirebaseLiveStreamRepository', () => {
-  function FirebaseLiveStreamRepositoryMock(this: any) {
-    this.findAll = mockFindAll;
-    this.create = mockCreate;
-    this.update = mockUpdate;
-    this.delete = mockDelete;
-    this.updateStatus = mockUpdateStatus;
-  }
-
   return {
-    FirebaseLiveStreamRepository: FirebaseLiveStreamRepositoryMock
+    FirebaseLiveStreamRepository: function() {
+      return {
+        findAll: mockFindAll,
+        create: mockCreate,
+        update: mockUpdate,
+        delete: mockDelete,
+        updateStatus: mockUpdateStatus
+      };
+    }
   };
 });
 
@@ -170,15 +170,15 @@ describe('AdminLiveManagementPage', () => {
     it('should render the page header correctly', async () => {
       render(<AdminLiveManagementPage />);
 
-      expect(screen.getByText('Gerenciar Transmissoes')).toBeInTheDocument();
+      expect(screen.getByText('Gerenciar Transmissões')).toBeInTheDocument();
       expect(screen.getByText('Administre transmissoes ao vivo e gravacoes')).toBeInTheDocument();
     });
 
-    it('should render the "Nova Transmissao" button', async () => {
+    it('should render the "Nova Transmissão" button', async () => {
       render(<AdminLiveManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Nova Transmissao/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Nova Transmissão/i })).toBeInTheDocument();
       });
     });
 
@@ -206,8 +206,8 @@ describe('AdminLiveManagementPage', () => {
       render(<AdminLiveManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Nenhuma transmissao cadastrada')).toBeInTheDocument();
-        expect(screen.getByText('Comece criando sua primeira transmissao ao vivo')).toBeInTheDocument();
+        expect(screen.getByText('Nenhuma transmissão cadastrada')).toBeInTheDocument();
+        expect(screen.getByText('Comece criando sua primeira transmissão ao vivo')).toBeInTheDocument();
       });
     });
   });
@@ -293,7 +293,7 @@ describe('AdminLiveManagementPage', () => {
       fireEvent.change(searchInput, { target: { value: 'nonexistent search term' } });
 
       await waitFor(() => {
-        expect(screen.getByText('Nenhuma transmissao encontrada')).toBeInTheDocument();
+        expect(screen.getByText('Nenhuma transmissão encontrada')).toBeInTheDocument();
         expect(screen.getByText('Tente ajustar os filtros ou fazer uma nova busca.')).toBeInTheDocument();
       });
     });
@@ -311,7 +311,7 @@ describe('AdminLiveManagementPage', () => {
       fireEvent.click(editButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByText('Editar Transmissao')).toBeInTheDocument();
+        expect(screen.getByText('Editar Transmissão')).toBeInTheDocument();
       });
     });
 
@@ -325,7 +325,7 @@ describe('AdminLiveManagementPage', () => {
       const deleteButtons = screen.getAllByText('Excluir');
       fireEvent.click(deleteButtons[0]);
 
-      expect(window.confirm).toHaveBeenCalledWith('Tem certeza que deseja excluir esta transmissao?');
+      expect(window.confirm).toHaveBeenCalledWith('Tem certeza que deseja excluir esta transmissão?');
 
       await waitFor(() => {
         expect(mockDelete).toHaveBeenCalledWith('stream-1');
@@ -367,17 +367,17 @@ describe('AdminLiveManagementPage', () => {
   });
 
   describe('Create Stream Modal', () => {
-    it('should open create modal when clicking Nova Transmissao', async () => {
+    it('should open create modal when clicking Nova Transmissão', async () => {
       render(<AdminLiveManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Nova Transmissao/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Nova Transmissão/i })).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByRole('button', { name: /Nova Transmissao/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Nova Transmissão/i }));
 
       await waitFor(() => {
-        expect(screen.getByText('Nova Transmissao')).toBeInTheDocument();
+        expect(screen.getByText('Nova Transmissão')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('Ex: Culto Dominical - Domingo Abencoado')).toBeInTheDocument();
       });
     });
@@ -386,19 +386,19 @@ describe('AdminLiveManagementPage', () => {
       render(<AdminLiveManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Nova Transmissao/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Nova Transmissão/i })).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByRole('button', { name: /Nova Transmissao/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Nova Transmissão/i }));
 
       await waitFor(() => {
-        expect(screen.getByText('Nova Transmissao')).toBeInTheDocument();
+        expect(screen.getByText('Nova Transmissão')).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByText('Cancelar'));
 
       await waitFor(() => {
-        expect(screen.queryByText('Nova Transmissao')).not.toBeInTheDocument();
+        expect(screen.queryByText('Nova Transmissão')).not.toBeInTheDocument();
       });
     });
 
@@ -406,17 +406,17 @@ describe('AdminLiveManagementPage', () => {
       render(<AdminLiveManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Nova Transmissao/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Nova Transmissão/i })).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByRole('button', { name: /Nova Transmissao/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Nova Transmissão/i }));
 
       await waitFor(() => {
-        expect(screen.getByText('Nova Transmissao')).toBeInTheDocument();
+        expect(screen.getByText('Nova Transmissão')).toBeInTheDocument();
       });
 
       // Try to submit without filling required fields
-      fireEvent.click(screen.getByText('Criar Transmissao'));
+      fireEvent.click(screen.getByText('Criar Transmissão'));
 
       // Form should have required validation on HTML level
       const titleInput = screen.getByPlaceholderText('Ex: Culto Dominical - Domingo Abencoado');
@@ -427,7 +427,7 @@ describe('AdminLiveManagementPage', () => {
       const newStream = {
         id: 'new-stream-1',
         title: 'Novo Culto',
-        description: 'Descricao do culto',
+        description: 'Descrição do culto',
         streamUrl: 'https://youtube.com/watch?v=new123',
         category: 'culto',
         status: 'scheduled',
@@ -442,27 +442,27 @@ describe('AdminLiveManagementPage', () => {
       render(<AdminLiveManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Nova Transmissao/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Nova Transmissão/i })).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByRole('button', { name: /Nova Transmissao/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Nova Transmissão/i }));
 
       await waitFor(() => {
-        expect(screen.getByText('Nova Transmissao')).toBeInTheDocument();
+        expect(screen.getByText('Nova Transmissão')).toBeInTheDocument();
       });
 
       // Fill in the form
       fireEvent.change(screen.getByPlaceholderText('Ex: Culto Dominical - Domingo Abencoado'), {
         target: { value: 'Novo Culto' }
       });
-      fireEvent.change(screen.getByPlaceholderText('Descricao da transmissao...'), {
-        target: { value: 'Descricao do culto' }
+      fireEvent.change(screen.getByPlaceholderText('Descrição da transmissão...'), {
+        target: { value: 'Descrição do culto' }
       });
       fireEvent.change(screen.getByPlaceholderText('https://youtube.com/watch?v=...'), {
         target: { value: 'https://youtube.com/watch?v=new123' }
       });
 
-      fireEvent.click(screen.getByText('Criar Transmissao'));
+      fireEvent.click(screen.getByText('Criar Transmissão'));
 
       await waitFor(() => {
         expect(mockCreate).toHaveBeenCalled();
@@ -482,7 +482,7 @@ describe('AdminLiveManagementPage', () => {
       fireEvent.click(editButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByText('Editar Transmissao')).toBeInTheDocument();
+        expect(screen.getByText('Editar Transmissão')).toBeInTheDocument();
         // Check if form is populated with the stream data
         const titleInput = screen.getByDisplayValue('Culto Dominical');
         expect(titleInput).toBeInTheDocument();
@@ -502,7 +502,7 @@ describe('AdminLiveManagementPage', () => {
       fireEvent.click(editButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByText('Editar Transmissao')).toBeInTheDocument();
+        expect(screen.getByText('Editar Transmissão')).toBeInTheDocument();
       });
 
       // Change the title
@@ -530,7 +530,7 @@ describe('AdminLiveManagementPage', () => {
 
       // Should show empty state on error
       await waitFor(() => {
-        expect(screen.getByText('Nenhuma transmissao cadastrada')).toBeInTheDocument();
+        expect(screen.getByText('Nenhuma transmissão cadastrada')).toBeInTheDocument();
       });
 
       consoleError.mockRestore();
@@ -549,7 +549,7 @@ describe('AdminLiveManagementPage', () => {
       fireEvent.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(window.alert).toHaveBeenCalledWith('Erro ao excluir transmissao.');
+        expect(window.alert).toHaveBeenCalledWith('Erro ao excluir transmissão.');
       });
     });
 

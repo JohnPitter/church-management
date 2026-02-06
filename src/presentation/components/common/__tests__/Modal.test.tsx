@@ -47,8 +47,8 @@ describe('Modal', () => {
     });
 
     it('should render close button', () => {
-      const { container } = render(<Modal {...defaultProps} />);
-      const closeButton = container.querySelector('button');
+      render(<Modal {...defaultProps} />);
+      const closeButton = document.querySelector('button');
       expect(closeButton).toBeInTheDocument();
     });
   });

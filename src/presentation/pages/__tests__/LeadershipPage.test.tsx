@@ -7,6 +7,13 @@ import { LeadershipPage } from '../LeadershipPage';
 import { LeadershipService } from '@modules/content-management/leadership/application/services/LeadershipService';
 import { Leader, LeaderRole, LeaderStatus } from '@modules/content-management/leadership/domain/entities/Leader';
 
+// Mock Firebase config
+jest.mock('@/config/firebase', () => ({
+  db: {},
+  auth: {},
+  storage: {}
+}));
+
 // Mock the LeadershipService
 jest.mock('@modules/content-management/leadership/application/services/LeadershipService');
 
@@ -77,7 +84,7 @@ describe('LeadershipPage', () => {
 
       render(<LeadershipPage />);
 
-      expect(screen.getByText('Carregando lideranca...')).toBeInTheDocument();
+      expect(screen.getByText('Carregando liderança...')).toBeInTheDocument();
     });
 
     it('should show loading animation', () => {
@@ -97,7 +104,7 @@ describe('LeadershipPage', () => {
       render(<LeadershipPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Nossa Lideranca', { exact: false })).toBeInTheDocument();
+        expect(screen.getByText('Nossa Liderança', { exact: false })).toBeInTheDocument();
       });
     });
 
@@ -107,7 +114,7 @@ describe('LeadershipPage', () => {
       render(<LeadershipPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Conheca os lideres e pastores/)).toBeInTheDocument();
+        expect(screen.getByText(/Conheça os líderes e pastores/)).toBeInTheDocument();
       });
     });
 
@@ -131,7 +138,7 @@ describe('LeadershipPage', () => {
       await waitFor(() => {
         expect(screen.getByText('Pastor')).toBeInTheDocument();
         expect(screen.getByText('Lider de Louvor')).toBeInTheDocument(); // Custom role
-        expect(screen.getByText('Diacono')).toBeInTheDocument();
+        expect(screen.getByText('Diácono')).toBeInTheDocument();
       });
     });
 
@@ -209,8 +216,8 @@ describe('LeadershipPage', () => {
       render(<LeadershipPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Nenhum lider cadastrado')).toBeInTheDocument();
-        expect(screen.getByText('Em breve voce conhecera nossa equipe pastoral.')).toBeInTheDocument();
+        expect(screen.getByText('Nenhum líder cadastrado')).toBeInTheDocument();
+        expect(screen.getByText('Em breve você conhecerá nossa equipe pastoral.')).toBeInTheDocument();
       });
     });
   });
@@ -223,7 +230,7 @@ describe('LeadershipPage', () => {
       render(<LeadershipPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Nenhum lider cadastrado')).toBeInTheDocument();
+        expect(screen.getByText('Nenhum líder cadastrado')).toBeInTheDocument();
       });
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('Error loading leaders:', expect.any(Error));

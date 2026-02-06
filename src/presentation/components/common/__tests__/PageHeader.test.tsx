@@ -374,7 +374,7 @@ describe('PageHeader', () => {
       expect(screen.getByText('Manage church members')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Add Member' })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
-      expect(screen.getByText('Members')).toBeInTheDocument();
+      expect(screen.getAllByText('Members').length).toBeGreaterThanOrEqual(1);
     });
 
     it('should layout correctly with all props', () => {

@@ -64,3 +64,92 @@ const mockSettingsContext = {
 jest.mock('../../contexts/SettingsContext', () => ({
   useSettings: () => mockSettingsContext
 }));
+
+// Mock AssistidoService
+const mockGetAllAssistidos = jest.fn().mockResolvedValue([]);
+const mockGetStatistics = jest.fn().mockResolvedValue({
+  totalAssistidos: 0,
+  porStatus: {},
+  porNecessidade: {},
+  porTipoAtendimento: {},
+  atendimentosPorMes: []
+});
+const mockCreateAssistido = jest.fn().mockResolvedValue({ id: 'new-1' });
+const mockUpdateAssistido = jest.fn().mockResolvedValue({});
+const mockDeleteAssistido = jest.fn().mockResolvedValue(undefined);
+const mockAddAtendimento = jest.fn().mockResolvedValue(undefined);
+const mockGetAssistidoById = jest.fn().mockResolvedValue(null);
+const mockUpdateAssistidoStatus = jest.fn().mockResolvedValue(undefined);
+
+jest.mock('@modules/assistance/assistidos/application/services/AssistidoService', () => {
+  function AssistidoServiceMock(this: any) {
+    this.getAllAssistidos = mockGetAllAssistidos;
+    this.getStatistics = mockGetStatistics;
+    this.createAssistido = mockCreateAssistido;
+    this.updateAssistido = mockUpdateAssistido;
+    this.deleteAssistido = mockDeleteAssistido;
+    this.addAtendimento = mockAddAtendimento;
+    this.getAssistidoById = mockGetAssistidoById;
+    this.updateAssistidoStatus = mockUpdateAssistidoStatus;
+  }
+  return { AssistidoService: AssistidoServiceMock };
+});
+
+// Mock modal components
+jest.mock('@modules/assistance/assistidos/presentation/components/AssistidoModal', () => ({
+  __esModule: true,
+  default: ({ isOpen, onClose }: any) => {
+    if (!isOpen) return null;
+    return <div data-testid="assistido-modal"><button onClick={onClose}>Close</button></div>;
+  }
+}));
+
+jest.mock('../../components/AtendimentoModal', () => ({
+  __esModule: true,
+  default: ({ isOpen, onClose }: any) => {
+    if (!isOpen) return null;
+    return <div data-testid="atendimento-modal"><button onClick={onClose}>Close</button></div>;
+  }
+}));
+
+// ============================================================================
+// Tests
+// ============================================================================
+
+describe('AssistidosManagementPage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetAllAssistidos.mockResolvedValue([]);
+    mockGetStatistics.mockResolvedValue({
+      totalAssistidos: 0,
+      porStatus: {},
+      porNecessidade: {},
+      porTipoAtendimento: {},
+      atendimentosPorMes: []
+    });
+  });
+
+  it('should render the page title', async () => {
+    render(<AssistidosManagementPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Gerenciar Assistidos')).toBeInTheDocument();
+    });
+  });
+
+  it('should load assistidos on mount', async () => {
+    render(<AssistidosManagementPage />);
+
+    await waitFor(() => {
+      expect(mockGetAllAssistidos).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('should load statistics on mount', async () => {
+    render(<AssistidosManagementPage />);
+
+    await waitFor(() => {
+      expect(mockGetStatistics).toHaveBeenCalled();
+    });
+  });
+});

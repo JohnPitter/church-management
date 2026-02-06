@@ -129,26 +129,26 @@ describe('AdminSettingsPage', () => {
     it('should render the page header', () => {
       renderComponent();
 
-      expect(screen.getByText('Configuracoes do Sistema')).toBeInTheDocument();
-      expect(screen.getByText('Configure as preferencias gerais do sistema')).toBeInTheDocument();
+      expect(screen.getByText('Configurações do Sistema')).toBeInTheDocument();
+      expect(screen.getByText('Configure as preferências gerais do sistema')).toBeInTheDocument();
     });
 
     it('should render save and reset buttons', () => {
       renderComponent();
 
-      expect(screen.getByText('Salvar Alteracoes')).toBeInTheDocument();
-      expect(screen.getByText('Restaurar Padroes')).toBeInTheDocument();
+      expect(screen.getByText('Salvar Alterações')).toBeInTheDocument();
+      expect(screen.getByText('Restaurar Padrões')).toBeInTheDocument();
     });
 
     it('should render all navigation tabs', () => {
       renderComponent();
 
       expect(screen.getByText('Geral')).toBeInTheDocument();
-      expect(screen.getByText('Aparencia')).toBeInTheDocument();
-      expect(screen.getByText('Sobre Nos')).toBeInTheDocument();
-      expect(screen.getByText('Notificacoes')).toBeInTheDocument();
+      expect(screen.getByText('Aparência')).toBeInTheDocument();
+      expect(screen.getByText('Sobre Nós')).toBeInTheDocument();
+      expect(screen.getByText('Notificações')).toBeInTheDocument();
       expect(screen.getByText('Eventos')).toBeInTheDocument();
-      expect(screen.getByText('Seguranca')).toBeInTheDocument();
+      expect(screen.getByText('Segurança')).toBeInTheDocument();
     });
   });
 
@@ -171,8 +171,8 @@ describe('AdminSettingsPage', () => {
       mockContextLoading = true;
       renderComponent();
 
-      expect(screen.getByText('Salvar Alteracoes')).toBeDisabled();
-      expect(screen.getByText('Restaurar Padroes')).toBeDisabled();
+      expect(screen.getByText('Salvar Alterações')).toBeDisabled();
+      expect(screen.getByText('Restaurar Padrões')).toBeDisabled();
     });
   });
 
@@ -248,7 +248,7 @@ describe('AdminSettingsPage', () => {
     it('should switch to Appearance tab when clicked', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparencia'));
+      await userEvent.click(screen.getByText('Aparência'));
 
       expect(screen.getByText('Logo da Igreja')).toBeInTheDocument();
       expect(screen.getByText('Cor Primaria')).toBeInTheDocument();
@@ -258,7 +258,7 @@ describe('AdminSettingsPage', () => {
     it('should switch to About tab when clicked', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Sobre Nos'));
+      await userEvent.click(screen.getByText('Sobre Nós'));
 
       expect(screen.getByText('Missao da Igreja')).toBeInTheDocument();
       expect(screen.getByText('Visao da Igreja')).toBeInTheDocument();
@@ -267,10 +267,10 @@ describe('AdminSettingsPage', () => {
     it('should switch to Notifications tab when clicked', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Notificacoes'));
+      await userEvent.click(screen.getByText('Notificações'));
 
-      expect(screen.getByText('Notificacoes por E-mail')).toBeInTheDocument();
-      expect(screen.getByText('Notificacoes por SMS')).toBeInTheDocument();
+      expect(screen.getByText('Notificações por E-mail')).toBeInTheDocument();
+      expect(screen.getByText('Notificações por SMS')).toBeInTheDocument();
       expect(screen.getByText('Lembretes de Eventos')).toBeInTheDocument();
     });
 
@@ -286,7 +286,7 @@ describe('AdminSettingsPage', () => {
     it('should switch to Security tab when clicked', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Seguranca'));
+      await userEvent.click(screen.getByText('Segurança'));
 
       expect(screen.getByText('Aprovar Membros Automaticamente')).toBeInTheDocument();
       expect(screen.getByText('Permitir Registro Publico')).toBeInTheDocument();
@@ -298,7 +298,7 @@ describe('AdminSettingsPage', () => {
     it('should display primary color picker', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparencia'));
+      await userEvent.click(screen.getByText('Aparência'));
 
       const colorInputs = screen.getAllByDisplayValue('#3B82F6');
       expect(colorInputs.length).toBeGreaterThan(0);
@@ -307,7 +307,7 @@ describe('AdminSettingsPage', () => {
     it('should display secondary color picker', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparencia'));
+      await userEvent.click(screen.getByText('Aparência'));
 
       const colorInputs = screen.getAllByDisplayValue('#8B5CF6');
       expect(colorInputs.length).toBeGreaterThan(0);
@@ -316,7 +316,7 @@ describe('AdminSettingsPage', () => {
     it('should show logo upload button', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparencia'));
+      await userEvent.click(screen.getByText('Aparência'));
 
       expect(screen.getByText('Alterar Logo')).toBeInTheDocument();
     });
@@ -325,7 +325,7 @@ describe('AdminSettingsPage', () => {
       mockContextSettings = { ...mockSettings, logoURL: 'https://example.com/logo.png' };
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparencia'));
+      await userEvent.click(screen.getByText('Aparência'));
 
       expect(screen.getByText('Remover')).toBeInTheDocument();
     });
@@ -335,9 +335,9 @@ describe('AdminSettingsPage', () => {
     it('should toggle email notifications', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Notificacoes'));
+      await userEvent.click(screen.getByText('Notificações'));
 
-      const emailCheckbox = screen.getByRole('checkbox', { name: /Notificacoes por E-mail/i });
+      const emailCheckbox = screen.getByRole('checkbox', { name: /Notificações por E-mail/i });
       await userEvent.click(emailCheckbox);
 
       // The checkbox should be toggled
@@ -347,9 +347,9 @@ describe('AdminSettingsPage', () => {
     it('should toggle SMS notifications', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Notificacoes'));
+      await userEvent.click(screen.getByText('Notificações'));
 
-      const smsCheckbox = screen.getByRole('checkbox', { name: /Notificacoes por SMS/i });
+      const smsCheckbox = screen.getByRole('checkbox', { name: /Notificações por SMS/i });
       await userEvent.click(smsCheckbox);
 
       expect(smsCheckbox).toBeChecked();
@@ -358,7 +358,7 @@ describe('AdminSettingsPage', () => {
     it('should toggle event reminders', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Notificacoes'));
+      await userEvent.click(screen.getByText('Notificações'));
 
       const remindersCheckbox = screen.getByRole('checkbox', { name: /Lembretes de Eventos/i });
       await userEvent.click(remindersCheckbox);
@@ -396,7 +396,7 @@ describe('AdminSettingsPage', () => {
     it('should toggle auto approve members', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Seguranca'));
+      await userEvent.click(screen.getByText('Segurança'));
 
       const autoApproveCheckbox = screen.getByRole('checkbox', { name: /Aprovar Membros Automaticamente/i });
       await userEvent.click(autoApproveCheckbox);
@@ -407,7 +407,7 @@ describe('AdminSettingsPage', () => {
     it('should toggle allow public registration', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Seguranca'));
+      await userEvent.click(screen.getByText('Segurança'));
 
       const publicRegCheckbox = screen.getByRole('checkbox', { name: /Permitir Registro Publico/i });
       await userEvent.click(publicRegCheckbox);
@@ -418,7 +418,7 @@ describe('AdminSettingsPage', () => {
     it('should toggle maintenance mode', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Seguranca'));
+      await userEvent.click(screen.getByText('Segurança'));
 
       const maintenanceCheckbox = screen.getByRole('checkbox', { name: /Modo de Manutencao/i });
       await userEvent.click(maintenanceCheckbox);
@@ -430,7 +430,7 @@ describe('AdminSettingsPage', () => {
       mockContextSettings = { ...mockSettings, maintenanceMode: true };
       renderComponent();
 
-      await userEvent.click(screen.getByText('Seguranca'));
+      await userEvent.click(screen.getByText('Segurança'));
 
       expect(screen.getByText('Modo de Manutencao Ativo')).toBeInTheDocument();
       expect(screen.getByText(/O sistema esta em modo de manutencao/i)).toBeInTheDocument();
@@ -441,7 +441,7 @@ describe('AdminSettingsPage', () => {
     it('should display mission textarea', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Sobre Nos'));
+      await userEvent.click(screen.getByText('Sobre Nós'));
 
       const missionTextarea = screen.getByPlaceholderText('Descreva a missao da sua igreja...');
       expect(missionTextarea).toHaveValue('Test mission');
@@ -450,7 +450,7 @@ describe('AdminSettingsPage', () => {
     it('should display vision textarea', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Sobre Nos'));
+      await userEvent.click(screen.getByText('Sobre Nós'));
 
       const visionTextarea = screen.getByPlaceholderText('Descreva a visao da sua igreja...');
       expect(visionTextarea).toHaveValue('Test vision');
@@ -459,7 +459,7 @@ describe('AdminSettingsPage', () => {
     it('should display statistics fields', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Sobre Nos'));
+      await userEvent.click(screen.getByText('Sobre Nós'));
 
       expect(screen.getByText('Estatisticas (exibidas na pagina Sobre Nos)')).toBeInTheDocument();
     });
@@ -467,7 +467,7 @@ describe('AdminSettingsPage', () => {
     it('should update mission text', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Sobre Nos'));
+      await userEvent.click(screen.getByText('Sobre Nós'));
 
       const missionTextarea = screen.getByPlaceholderText('Descreva a missao da sua igreja...') as HTMLTextAreaElement;
       await userEvent.clear(missionTextarea);
@@ -481,7 +481,7 @@ describe('AdminSettingsPage', () => {
     it('should call updateSettings when save is clicked', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Salvar Alteracoes'));
+      await userEvent.click(screen.getByText('Salvar Alterações'));
 
       await waitFor(() => {
         expect(mockUpdateSettings).toHaveBeenCalled();
@@ -491,10 +491,10 @@ describe('AdminSettingsPage', () => {
     it('should show success alert on successful save', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Salvar Alteracoes'));
+      await userEvent.click(screen.getByText('Salvar Alterações'));
 
       await waitFor(() => {
-        expect(window.alert).toHaveBeenCalledWith('Configuracoes salvas com sucesso!');
+        expect(window.alert).toHaveBeenCalledWith('Configurações salvas com sucesso!');
       });
     });
 
@@ -502,7 +502,7 @@ describe('AdminSettingsPage', () => {
       mockUpdateSettings.mockRejectedValueOnce(new Error('Save failed'));
       renderComponent();
 
-      await userEvent.click(screen.getByText('Salvar Alteracoes'));
+      await userEvent.click(screen.getByText('Salvar Alterações'));
 
       await waitFor(() => {
         expect(window.alert).toHaveBeenCalledWith('Erro ao salvar configuracoes.');
@@ -517,7 +517,7 @@ describe('AdminSettingsPage', () => {
 
       renderComponent();
 
-      await userEvent.click(screen.getByText('Salvar Alteracoes'));
+      await userEvent.click(screen.getByText('Salvar Alterações'));
 
       expect(screen.getByText('Salvando...')).toBeInTheDocument();
 
@@ -531,7 +531,7 @@ describe('AdminSettingsPage', () => {
     it('should show confirmation dialog when reset is clicked', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Restaurar Padroes'));
+      await userEvent.click(screen.getByText('Restaurar Padrões'));
 
       expect(window.confirm).toHaveBeenCalledWith('Tem certeza que deseja restaurar as configuracoes padrao?');
     });
@@ -544,7 +544,7 @@ describe('AdminSettingsPage', () => {
       await userEvent.clear(churchNameInput);
       await userEvent.type(churchNameInput, 'Changed Name');
 
-      await userEvent.click(screen.getByText('Restaurar Padroes'));
+      await userEvent.click(screen.getByText('Restaurar Padrões'));
 
       expect(churchNameInput.value).toBe('Changed Name');
     });
@@ -554,7 +554,7 @@ describe('AdminSettingsPage', () => {
     it('should validate file type on upload', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparencia'));
+      await userEvent.click(screen.getByText('Aparência'));
 
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
       const invalidFile = new File([''], 'test.txt', { type: 'text/plain' });
@@ -569,7 +569,7 @@ describe('AdminSettingsPage', () => {
     it('should validate file size on upload', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparencia'));
+      await userEvent.click(screen.getByText('Aparência'));
 
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
       // Create a large file (> 5MB)
@@ -598,8 +598,8 @@ describe('AdminSettingsPage', () => {
     it('should have proper button roles', () => {
       renderComponent();
 
-      expect(screen.getByRole('button', { name: /Salvar Alteracoes/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Restaurar Padroes/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Salvar Alterações/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Restaurar Padrões/i })).toBeInTheDocument();
     });
   });
 

@@ -46,7 +46,7 @@ describe('PrayerPage', () => {
       loading: false
     });
     mockAddDoc.mockResolvedValue({ id: 'prayer-123' });
-    mockCollection.mockReturnValue('prayerRequests' as any);
+    mockCollection.mockReturnValue({ _collectionPath: 'prayerRequests' } as any);
     mockServerTimestamp.mockReturnValue({ type: 'serverTimestamp' });
   });
 

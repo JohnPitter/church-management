@@ -2,7 +2,7 @@
 // Comprehensive tests for the ONG financial management dashboard
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ONGFinancialPage } from '../ONGFinancialPage';
 import { TransactionType, TransactionStatus, FinancialEntity } from '@modules/financial/church-finance/domain/entities/Financial';
@@ -333,8 +333,9 @@ describe('ONGFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Receitas')).toBeInTheDocument();
-        expect(screen.getByText('Despesas')).toBeInTheDocument();
+        // "Receitas" and "Despesas" may appear in both summary cards and visual summary
+        expect(screen.getAllByText('Receitas').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Despesas').length).toBeGreaterThan(0);
         expect(screen.getByText('Saldo Líquido')).toBeInTheDocument();
         expect(screen.getByText('Pendentes')).toBeInTheDocument();
       });
@@ -468,6 +469,9 @@ describe('ONGFinancialPage', () => {
     });
 
     it('should display transactions in table', async () => {
+      // Clean up the render from beforeEach so we can re-render with custom mock data
+      cleanup();
+
       const transactions = [
         createTestTransaction({
           id: 'trans-1',
@@ -646,6 +650,9 @@ describe('ONGFinancialPage', () => {
 
   describe('Reports Tab', () => {
     it('should display report header with export buttons', async () => {
+      // Clean up the render from any parent beforeEach
+      cleanup();
+
       renderComponent();
       await waitFor(() => {
         expect(screen.getByText('Relatórios')).toBeInTheDocument();
@@ -654,8 +661,9 @@ describe('ONGFinancialPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Relatório Financeiro Detalhado')).toBeInTheDocument();
-        expect(screen.getByText('CSV')).toBeInTheDocument();
-        expect(screen.getByText('JSON')).toBeInTheDocument();
+        // Buttons have emoji prefixes: "📊 CSV" and "📋 JSON"
+        expect(screen.getByText(/📊 CSV/)).toBeInTheDocument();
+        expect(screen.getByText(/📋 JSON/)).toBeInTheDocument();
       });
     });
 
@@ -736,10 +744,12 @@ describe('ONGFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Nova Transação')).toBeInTheDocument();
+        // "Nova Transação" appears in both header and quick actions
+        expect(screen.getAllByText('Nova Transação').length).toBeGreaterThan(0);
       });
 
-      fireEvent.click(screen.getByText('Nova Transação'));
+      // Click the first "Nova Transação" button
+      fireEvent.click(screen.getAllByText('Nova Transação')[0]);
 
       await waitFor(() => {
         expect(screen.getByTestId('create-transaction-modal')).toBeInTheDocument();
@@ -787,7 +797,8 @@ describe('ONGFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('R$ 0,00')).toBeInTheDocument();
+        // Multiple cards may show R$ 0,00 when summary fails
+        expect(screen.getAllByText('R$ 0,00').length).toBeGreaterThan(0);
       });
 
       consoleSpy.mockRestore();
@@ -851,10 +862,11 @@ describe('ONGFinancialPage', () => {
       fireEvent.click(screen.getByText('Relatórios'));
 
       await waitFor(() => {
-        expect(screen.getByText('JSON')).toBeInTheDocument();
+        // Button text is "📋 JSON"
+        expect(screen.getByText(/📋 JSON/)).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText('JSON'));
+      fireEvent.click(screen.getByText(/📋 JSON/));
 
       await waitFor(() => {
         expect(mockOngFinancialService.exportTransactions).toHaveBeenCalledWith(
@@ -920,9 +932,9 @@ describe('ONGFinancialPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Resumo Visual')).toBeInTheDocument();
-        // Should show percentage breakdown
-        expect(screen.getByText('Receitas')).toBeInTheDocument();
-        expect(screen.getByText('Despesas')).toBeInTheDocument();
+        // "Receitas" and "Despesas" may appear multiple times across summary cards and visual breakdown
+        expect(screen.getAllByText('Receitas').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Despesas').length).toBeGreaterThan(0);
       });
     });
   });

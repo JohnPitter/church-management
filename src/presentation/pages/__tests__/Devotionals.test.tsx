@@ -271,7 +271,7 @@ describe('Devotionals Page', () => {
       });
       const titles = screen.getAllByText(mockTodaysDevotional.title);
       expect(titles.length).toBeGreaterThan(0);
-      expect(screen.getByText(mockTodaysDevotional.bibleReference)).toBeInTheDocument();
+      expect(screen.getByText(mockTodaysDevotional.bibleReference, { exact: false })).toBeInTheDocument();
     });
 
     it('should render category filter buttons', async () => {
@@ -279,11 +279,10 @@ describe('Devotionals Page', () => {
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /Todos/i })).toBeInTheDocument();
+        // Categories appear in multiple places (filter buttons and devotional cards)
+        const oracaoElements = screen.getAllByText(/Oracao/);
+        expect(oracaoElements.length).toBeGreaterThan(0);
       });
-
-      // Categories appear in multiple places (filter buttons and devotional cards)
-      const oracaoElements = screen.getAllByText('Oracao');
-      expect(oracaoElements.length).toBeGreaterThan(0);
     });
 
     it('should call service methods on mount', async () => {
@@ -342,7 +341,7 @@ describe('Devotionals Page', () => {
       expect(titles.length).toBeGreaterThan(0);
       const authors = screen.getAllByText(`Por ${mockTodaysDevotional.author}`);
       expect(authors.length).toBeGreaterThan(0);
-      const readingTimes = screen.getAllByText(`${mockTodaysDevotional.readingTime} min de leitura`);
+      const readingTimes = screen.getAllByText(new RegExp(`${mockTodaysDevotional.readingTime} min de leitura`));
       expect(readingTimes.length).toBeGreaterThan(0);
     });
 
@@ -350,9 +349,9 @@ describe('Devotionals Page', () => {
       renderComponent();
 
       await waitFor(() => {
-        const references = screen.getAllByText(mockTodaysDevotional.bibleReference);
+        const references = screen.getAllByText(new RegExp(mockTodaysDevotional.bibleReference));
         expect(references.length).toBeGreaterThan(0);
-        const verses = screen.getAllByText(`"${mockTodaysDevotional.bibleVerse}"`);
+        const verses = screen.getAllByText(new RegExp(mockTodaysDevotional.bibleVerse));
         expect(verses.length).toBeGreaterThan(0);
       });
     });
@@ -493,12 +492,11 @@ describe('Devotionals Page', () => {
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /Todos/i })).toBeInTheDocument();
-      });
-
-      // Categories appear in multiple places (filter and cards)
-      mockCategories.forEach(category => {
-        const elements = screen.getAllByText(category.name);
-        expect(elements.length).toBeGreaterThan(0);
+        // Categories appear in multiple places (filter and cards)
+        mockCategories.forEach(category => {
+          const elements = screen.getAllByText(new RegExp(category.name));
+          expect(elements.length).toBeGreaterThan(0);
+        });
       });
     });
 

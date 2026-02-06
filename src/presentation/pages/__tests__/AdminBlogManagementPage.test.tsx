@@ -54,7 +54,7 @@ jest.mock('../../hooks/useNotificationActions', () => ({
 
 // Mock PermissionGuard to render children based on permissions
 jest.mock('../../components/PermissionGuard', () => ({
-  PermissionGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>
+  PermissionGuard: ({ children }: any) => <>{children}</>
 }));
 
 // Mock logging service
@@ -135,24 +135,23 @@ const mockUpdate = jest.fn().mockResolvedValue(undefined);
 const mockDelete = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('@modules/content-management/blog/infrastructure/repositories/FirebaseBlogRepository', () => {
-  // Define the mock constructor function
-  function FirebaseBlogRepositoryMock(this: any) {
-    this.findAll = mockFindAll;
-    this.findById = mockFindById;
-    this.create = mockCreate;
-    this.update = mockUpdate;
-    this.delete = mockDelete;
-  }
-
   return {
-    FirebaseBlogRepository: FirebaseBlogRepositoryMock
+    FirebaseBlogRepository: function() {
+      return {
+        findAll: mockFindAll,
+        findById: mockFindById,
+        create: mockCreate,
+        update: mockUpdate,
+        delete: mockDelete
+      };
+    }
   };
 });
 
 // Mock date-fns format to return consistent dates
 jest.mock('date-fns', () => ({
   ...jest.requireActual('date-fns'),
-  format: jest.fn((date: Date, formatStr: string) => {
+  format: jest.fn((date, formatStr) => {
     if (formatStr === 'dd/MM/yyyy') return '15/01/2024';
     if (formatStr === 'dd/MM') return '15/01';
     return '2024-01-15';

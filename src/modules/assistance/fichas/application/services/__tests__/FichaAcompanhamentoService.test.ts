@@ -5,6 +5,12 @@ import { FichaAcompanhamentoService } from '../FichaAcompanhamentoService';
 import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { FichaAcompanhamento, SessaoAcompanhamento, FichaAcompanhamentoEntity } from '../../../domain/entities/FichaAcompanhamento';
 
+// Mock Firebase to prevent auth/invalid-api-key error in CI
+jest.mock('firebase/firestore');
+jest.mock('@/config/firebase', () => ({
+  db: {}
+}));
+
 // Mock the repository
 jest.mock('@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository');
 

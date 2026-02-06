@@ -66,33 +66,27 @@ const mockFindAllEvents = jest.fn().mockResolvedValue([]);
 const mockFindPublishedBlog = jest.fn().mockResolvedValue([]);
 
 jest.mock('@modules/content-management/projects/infrastructure/repositories/FirebaseProjectRepository', () => {
-  return {
-    FirebaseProjectRepository: jest.fn().mockImplementation(() => {
-      return {
-        findAll: mockFindAllProjects
-      };
-    })
+  const FirebaseProjectRepositoryMock = function(this: any) {
+    this.findAll = (...args: any[]) => mockFindAllProjects(...args);
+    return this;
   };
+  return { FirebaseProjectRepository: FirebaseProjectRepositoryMock };
 });
 
 jest.mock('@modules/content-management/blog/infrastructure/repositories/FirebaseBlogRepository', () => {
-  return {
-    FirebaseBlogRepository: jest.fn().mockImplementation(() => {
-      return {
-        findPublished: mockFindPublishedBlog
-      };
-    })
+  const FirebaseBlogRepositoryMock = function(this: any) {
+    this.findPublished = (...args: any[]) => mockFindPublishedBlog(...args);
+    return this;
   };
+  return { FirebaseBlogRepository: FirebaseBlogRepositoryMock };
 });
 
 jest.mock('@modules/church-management/events/infrastructure/repositories/FirebaseEventRepository', () => {
-  return {
-    FirebaseEventRepository: jest.fn().mockImplementation(() => {
-      return {
-        findAll: mockFindAllEvents
-      };
-    })
+  const FirebaseEventRepositoryMock = function(this: any) {
+    this.findAll = (...args: any[]) => mockFindAllEvents(...args);
+    return this;
   };
+  return { FirebaseEventRepository: FirebaseEventRepositoryMock };
 });
 
 // Mock VerseOfTheDay component
@@ -558,21 +552,19 @@ describe('PainelPage', () => {
       });
     });
 
-    it('should log errors to console', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      const testError = new Error('Test error');
-
-      mockFindAllProjects.mockRejectedValue(testError);
-      mockFindAllEvents.mockResolvedValue([]);
-      mockFindPublishedBlog.mockResolvedValue([]);
+    it('should handle errors gracefully when all repositories fail', async () => {
+      // Individual promise errors are caught by .catch(() => []) in the component,
+      // so the component gracefully degrades to empty data without logging to console.error
+      mockFindAllProjects.mockRejectedValue(new Error('Project error'));
+      mockFindAllEvents.mockRejectedValue(new Error('Event error'));
+      mockFindPublishedBlog.mockRejectedValue(new Error('Blog error'));
 
       renderComponent();
 
+      // Component should still render and show empty state
       await waitFor(() => {
-        expect(consoleErrorSpy).toHaveBeenCalled();
-      }, { timeout: 3000 });
-
-      consoleErrorSpy.mockRestore();
+        expect(screen.getByText('Nenhuma atividade recente encontrada.')).toBeInTheDocument();
+      });
     });
   });
 

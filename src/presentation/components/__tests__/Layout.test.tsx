@@ -30,18 +30,18 @@ jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockNavigate,
   useLocation: () => mockLocation,
-  Link: ({ children, to, className, onClick }: any) => (
+  Link: function({ children, to, className, onClick }: any) { return (
     <a href={to} className={className} onClick={onClick} data-testid={`link-${to}`}>
       {children}
     </a>
-  )
+  ); }
 }));
 
 // Mock PublicLayout
 jest.mock('../PublicLayout', () => ({
-  PublicLayout: ({ children }: { children: React.ReactNode }) => (
+  PublicLayout: function({ children }: any) { return (
     <div data-testid="public-layout">{children}</div>
-  )
+  ); }
 }));
 
 // Mock NotificationBell
@@ -92,21 +92,21 @@ describe('Layout Component', () => {
     loading: false
   };
 
-  const defaultPermissionsValue = {
+  const createDefaultPermissionsValue = () => ({
     hasPermission: jest.fn().mockReturnValue(true),
     hasAnyPermission: jest.fn().mockReturnValue(true),
     hasAllPermissions: jest.fn().mockReturnValue(true),
     loading: false
-  };
+  });
 
   const setupMocks = (overrides: {
     auth?: any;
-    settings?: Partial<typeof defaultSettingsValue>;
-    permissions?: Partial<typeof defaultPermissionsValue>;
+    settings?: any;
+    permissions?: any;
   } = {}) => {
     mockUseAuth.mockReturnValue({ ...defaultAuthValue, ...overrides.auth });
     mockUseSettings.mockReturnValue({ ...defaultSettingsValue, ...overrides.settings });
-    mockUsePermissions.mockReturnValue({ ...defaultPermissionsValue, ...overrides.permissions });
+    mockUsePermissions.mockReturnValue({ ...createDefaultPermissionsValue(), ...overrides.permissions });
   };
 
   beforeEach(() => {
@@ -169,7 +169,7 @@ describe('Layout Component', () => {
         </MemoryRouter>
       );
 
-      expect(screen.getByText('Connected by Faith')).toBeInTheDocument();
+      expect(screen.getAllByText('Connected by Faith').length).toBeGreaterThan(0);
     });
 
     it('should display default tagline when not set', () => {
@@ -193,9 +193,7 @@ describe('Layout Component', () => {
         </MemoryRouter>
       );
 
-      expect(screen.getAllByText('Conectados pela fe').length > 0 ||
-             screen.getAllByText((content) => content.includes('Conectados')).length > 0 ||
-             true).toBeTruthy(); // Default tagline may be truncated on mobile
+      expect(screen.getAllByText((content) => content.includes('Conectados pela fé')).length > 0).toBeTruthy();
     });
 
     it('should display user display name', () => {
@@ -307,7 +305,7 @@ describe('Layout Component', () => {
       );
 
       expect(screen.getByText('Comunidade')).toBeInTheDocument();
-      expect(screen.getByText('Conteudo')).toBeInTheDocument();
+      expect(screen.getByText('Conteúdo')).toBeInTheDocument();
     });
 
     it('should toggle dropdown menu on click', () => {
@@ -324,8 +322,8 @@ describe('Layout Component', () => {
 
       // Should show dropdown items
       expect(screen.getByText('Eventos')).toBeInTheDocument();
-      expect(screen.getByText('Forum')).toBeInTheDocument();
-      expect(screen.getByText('Lideranca')).toBeInTheDocument();
+      expect(screen.getByText('Fórum')).toBeInTheDocument();
+      expect(screen.getByText('Liderança')).toBeInTheDocument();
     });
 
     it('should close dropdown when clicking another category', () => {
@@ -342,7 +340,7 @@ describe('Layout Component', () => {
       expect(screen.getByText('Eventos')).toBeInTheDocument();
 
       // Click Conteudo
-      fireEvent.click(screen.getByText('Conteudo'));
+      fireEvent.click(screen.getByText('Conteúdo'));
 
       // Conteudo items should show
       expect(screen.getByText('Blog')).toBeInTheDocument();
@@ -358,7 +356,7 @@ describe('Layout Component', () => {
         </MemoryRouter>
       );
 
-      expect(screen.getByText('Painel Admin')).toBeInTheDocument();
+      expect(screen.getByText(/Painel Admin/)).toBeInTheDocument();
     });
 
     it('should hide Admin Panel link when user lacks manage permission', () => {
@@ -430,15 +428,17 @@ describe('Layout Component', () => {
 
       const hamburger = screen.getByRole('button', { name: 'Abrir menu principal' });
 
-      // Initially menu should be closed
-      expect(screen.queryByText('Perfil')).not.toBeInTheDocument();
+      // Initially menu should be closed (mobile profile link not rendered)
+      const profileLinks = screen.queryAllByText(/Perfil/);
+      const initialMobileProfile = profileLinks.filter(el => el.closest('[class*="lg:hidden"]'));
+      expect(initialMobileProfile.length).toBe(0);
 
       // Open menu
       fireEvent.click(hamburger);
 
       // Menu items should be visible
-      expect(screen.getByText('Perfil')).toBeInTheDocument();
-      expect(screen.getByText('Sair')).toBeInTheDocument();
+      expect(screen.getAllByText(/Perfil/).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Sair/).length).toBeGreaterThanOrEqual(2);
     });
 
     it('should expand mobile category on click', () => {
@@ -774,8 +774,8 @@ describe('Layout Component', () => {
         </MemoryRouter>
       );
 
-      // Should show 'Usuario' as fallback or 'U' initial
-      expect(screen.getAllByText('Usuario').length > 0 ||
+      // Should show 'Usuário' as fallback or 'U' initial
+      expect(screen.getAllByText('Usuário').length > 0 ||
              screen.getAllByText('U').length > 0).toBeTruthy();
     });
   });

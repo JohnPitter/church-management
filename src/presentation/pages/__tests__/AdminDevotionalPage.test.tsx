@@ -157,7 +157,7 @@ jest.mock('@modules/church-management/devotionals/application/services/Devotiona
 
 // Mock devotional modals
 jest.mock('@modules/church-management/devotionals/presentation/components/CreateDevotionalModal', () => ({
-  CreateDevotionalModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
+  CreateDevotionalModal: ({ isOpen, onClose }: any) =>
     isOpen ? (
       <div data-testid="create-devotional-modal">
         <h2>Criar Devocional</h2>
@@ -167,7 +167,7 @@ jest.mock('@modules/church-management/devotionals/presentation/components/Create
 }));
 
 jest.mock('@modules/church-management/devotionals/presentation/components/EditDevotionalModal', () => ({
-  EditDevotionalModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
+  EditDevotionalModal: ({ isOpen, onClose }: any) =>
     isOpen ? (
       <div data-testid="edit-devotional-modal">
         <h2>Editar Devocional</h2>
@@ -177,7 +177,7 @@ jest.mock('@modules/church-management/devotionals/presentation/components/EditDe
 }));
 
 jest.mock('@modules/church-management/devotionals/presentation/components/DevotionalDetailModal', () => ({
-  DevotionalDetailModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
+  DevotionalDetailModal: ({ isOpen, onClose }: any) =>
     isOpen ? (
       <div data-testid="detail-devotional-modal">
         <h2>Detalhes do Devocional</h2>
@@ -188,7 +188,7 @@ jest.mock('@modules/church-management/devotionals/presentation/components/Devoti
 
 // Mock date-fns
 jest.mock('date-fns', () => ({
-  format: jest.fn((date: Date, formatStr: string) => '15 de janeiro de 2024')
+  format: jest.fn((date: any, formatStr: any) => '15 de janeiro de 2024')
 }));
 
 jest.mock('date-fns/locale', () => ({
@@ -286,7 +286,7 @@ describe('AdminDevotionalPage', () => {
     });
 
     it('should hide create button when user cannot create', async () => {
-      mockHasPermission.mockImplementation((module, action) => {
+      mockHasPermission.mockImplementation((module: any, action: any) => {
         if (action === 'create') return false;
         return true;
       });

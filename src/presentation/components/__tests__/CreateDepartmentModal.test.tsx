@@ -30,7 +30,7 @@ describe('CreateDepartmentModal', () => {
     editDepartment: null
   };
 
-  const mockDepartment: Department = {
+  const mockDepartment = {
     id: 'dept-123',
     name: 'Escola Bíblica',
     description: 'Departamento de educação cristã',
@@ -63,12 +63,12 @@ describe('CreateDepartmentModal', () => {
 
     it('should display all form fields for create mode', () => {
       render(<CreateDepartmentModal {...defaultProps} />);
-      expect(screen.getByLabelText(/Nome do Departamento/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Descrição/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Descrição do departamento e suas atividades...')).toBeInTheDocument();
       expect(screen.getByText('Ícone')).toBeInTheDocument();
       expect(screen.getByText('Cor')).toBeInTheDocument();
       expect(screen.getByText('Saldo Inicial')).toBeInTheDocument();
-      expect(screen.getByLabelText(/Responsável/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Nome do responsável pelo departamento')).toBeInTheDocument();
     });
 
     it('should show "Editar Departamento" title when editing', () => {
@@ -90,13 +90,9 @@ describe('CreateDepartmentModal', () => {
     });
 
     it('should validate department name length', async () => {
-      (departmentFinancialService.createDepartment as jest.Mock).mockRejectedValue(
-        new Error('Validation errors: Nome do departamento deve ter no máximo 100 caracteres')
-      );
-
       render(<CreateDepartmentModal {...defaultProps} />);
 
-      const nameInput = screen.getByLabelText(/Nome do Departamento/i);
+      const nameInput = screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...');
       const longName = 'A'.repeat(101);
       await userEvent.type(nameInput, longName);
 
@@ -104,9 +100,12 @@ describe('CreateDepartmentModal', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        // The validation happens in DepartmentEntity.validateDepartment
-        expect(departmentFinancialService.createDepartment).toHaveBeenCalled();
+        // The validation happens in DepartmentEntity.validateDepartment (client-side)
+        // It prevents createDepartment from being called
+        expect(screen.getByText('Nome do departamento deve ter no máximo 100 caracteres')).toBeInTheDocument();
       });
+
+      expect(departmentFinancialService.createDepartment).not.toHaveBeenCalled();
     });
   });
 
@@ -191,13 +190,13 @@ describe('CreateDepartmentModal', () => {
 
       render(<CreateDepartmentModal {...defaultProps} />);
 
-      const nameInput = screen.getByLabelText(/Nome do Departamento/i);
+      const nameInput = screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...');
       await userEvent.type(nameInput, 'Escola Bíblica');
 
-      const descriptionInput = screen.getByLabelText(/Descrição/i);
+      const descriptionInput = screen.getByPlaceholderText('Descrição do departamento e suas atividades...');
       await userEvent.type(descriptionInput, 'Departamento de educação');
 
-      const responsibleInput = screen.getByLabelText(/Responsável/i);
+      const responsibleInput = screen.getByPlaceholderText('Nome do responsável pelo departamento');
       await userEvent.type(responsibleInput, 'João Silva');
 
       const submitButton = screen.getByRole('button', { name: /Criar Departamento/i });
@@ -225,7 +224,7 @@ describe('CreateDepartmentModal', () => {
 
       render(<CreateDepartmentModal {...defaultProps} />);
 
-      const nameInput = screen.getByLabelText(/Nome do Departamento/i);
+      const nameInput = screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...');
       await userEvent.type(nameInput, 'Escola Bíblica');
 
       const submitButton = screen.getByRole('button', { name: /Criar Departamento/i });
@@ -241,7 +240,7 @@ describe('CreateDepartmentModal', () => {
 
       render(<CreateDepartmentModal {...defaultProps} />);
 
-      const nameInput = screen.getByLabelText(/Nome do Departamento/i);
+      const nameInput = screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...');
       await userEvent.type(nameInput, 'Escola Bíblica');
 
       const submitButton = screen.getByRole('button', { name: /Criar Departamento/i });
@@ -260,7 +259,7 @@ describe('CreateDepartmentModal', () => {
 
       render(<CreateDepartmentModal {...defaultProps} />);
 
-      const nameInput = screen.getByLabelText(/Nome do Departamento/i);
+      const nameInput = screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...');
       await userEvent.type(nameInput, 'Escola Bíblica');
 
       const submitButton = screen.getByRole('button', { name: /Criar Departamento/i });
@@ -278,9 +277,9 @@ describe('CreateDepartmentModal', () => {
     it('should populate form with existing department data', () => {
       render(<CreateDepartmentModal {...defaultProps} editDepartment={mockDepartment} />);
 
-      expect(screen.getByLabelText(/Nome do Departamento/i)).toHaveValue('Escola Bíblica');
-      expect(screen.getByLabelText(/Descrição/i)).toHaveValue('Departamento de educação cristã');
-      expect(screen.getByLabelText(/Responsável/i)).toHaveValue('Maria Silva');
+      expect(screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...')).toHaveValue('Escola Bíblica');
+      expect(screen.getByPlaceholderText('Descrição do departamento e suas atividades...')).toHaveValue('Departamento de educação cristã');
+      expect(screen.getByPlaceholderText('Nome do responsável pelo departamento')).toHaveValue('Maria Silva');
     });
 
     it('should call departmentFinancialService.updateDepartment on valid edit submission', async () => {
@@ -288,7 +287,7 @@ describe('CreateDepartmentModal', () => {
 
       render(<CreateDepartmentModal {...defaultProps} editDepartment={mockDepartment} />);
 
-      const nameInput = screen.getByLabelText(/Nome do Departamento/i);
+      const nameInput = screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...');
       await userEvent.clear(nameInput);
       await userEvent.type(nameInput, 'Escola Bíblica Atualizada');
 
@@ -344,7 +343,7 @@ describe('CreateDepartmentModal', () => {
 
       render(<CreateDepartmentModal {...defaultProps} />);
 
-      const nameInput = screen.getByLabelText(/Nome do Departamento/i);
+      const nameInput = screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...');
       await userEvent.type(nameInput, 'Escola Bíblica');
 
       const submitButton = screen.getByRole('button', { name: /Criar Departamento/i });
@@ -362,7 +361,7 @@ describe('CreateDepartmentModal', () => {
 
       render(<CreateDepartmentModal {...defaultProps} />);
 
-      const nameInput = screen.getByLabelText(/Nome do Departamento/i);
+      const nameInput = screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...');
       await userEvent.type(nameInput, 'Escola Bíblica');
 
       const submitButton = screen.getByRole('button', { name: /Criar Departamento/i });
@@ -381,13 +380,13 @@ describe('CreateDepartmentModal', () => {
       );
 
       // Form should have edit values
-      expect(screen.getByLabelText(/Nome do Departamento/i)).toHaveValue('Escola Bíblica');
+      expect(screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...')).toHaveValue('Escola Bíblica');
 
       // Rerender in create mode
       rerender(<CreateDepartmentModal {...defaultProps} editDepartment={null} />);
 
       await waitFor(() => {
-        expect(screen.getByLabelText(/Nome do Departamento/i)).toHaveValue('');
+        expect(screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...')).toHaveValue('');
       });
     });
 
@@ -403,12 +402,12 @@ describe('CreateDepartmentModal', () => {
         <CreateDepartmentModal {...defaultProps} editDepartment={mockDepartment} />
       );
 
-      expect(screen.getByLabelText(/Nome do Departamento/i)).toHaveValue('Escola Bíblica');
+      expect(screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...')).toHaveValue('Escola Bíblica');
 
       rerender(<CreateDepartmentModal {...defaultProps} editDepartment={anotherDepartment} />);
 
       await waitFor(() => {
-        expect(screen.getByLabelText(/Nome do Departamento/i)).toHaveValue('Louvor');
+        expect(screen.getByPlaceholderText('Ex: Escola Bíblica, Louvor, Missões...')).toHaveValue('Louvor');
       });
     });
   });

@@ -28,7 +28,7 @@ jest.mock('../../contexts/SettingsContext', () => ({
 // Mock Navigate component
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  Navigate: ({ to }: { to: string }) => <div data-testid="navigate">{to}</div>
+  Navigate: function({ to }: any) { return <div data-testid="navigate">{to}</div>; }
 }));
 
 // Mock window.history.back and window.location.href
@@ -246,8 +246,8 @@ describe('ProtectedRoute', () => {
         </MemoryRouter>
       );
 
-      expect(screen.getByText('Sistema em Manutencao')).toBeInTheDocument();
-      expect(screen.getByText(/O sistema esta temporariamente em manutencao/)).toBeInTheDocument();
+      expect(screen.getByText('Sistema em Manutenção')).toBeInTheDocument();
+      expect(screen.getByText(/O sistema está temporariamente em manutenção/)).toBeInTheDocument();
       expect(screen.queryByTestId('protected-content')).not.toBeInTheDocument();
     });
 
@@ -267,7 +267,7 @@ describe('ProtectedRoute', () => {
       );
 
       // Check for the wrench emoji in the maintenance message
-      expect(screen.getByText(/Apenas administradores podem acessar durante este periodo/)).toBeInTheDocument();
+      expect(screen.getByText(/Apenas administradores podem acessar durante este período/)).toBeInTheDocument();
     });
 
     it('should allow admin access during maintenance mode', () => {
@@ -286,7 +286,7 @@ describe('ProtectedRoute', () => {
       );
 
       expect(screen.getByTestId('protected-content')).toBeInTheDocument();
-      expect(screen.queryByText('Sistema em Manutencao')).not.toBeInTheDocument();
+      expect(screen.queryByText('Sistema em Manutenção')).not.toBeInTheDocument();
     });
 
     it('should allow access when maintenance mode is disabled', () => {
@@ -386,9 +386,9 @@ describe('ProtectedRoute', () => {
         </MemoryRouter>
       );
 
-      expect(screen.getByText('Permissao Necessaria:')).toBeInTheDocument();
-      expect(screen.getByText('Modulo:')).toBeInTheDocument();
-      expect(screen.getByText('Acao:')).toBeInTheDocument();
+      expect(screen.getByText('Permissão Necessária:')).toBeInTheDocument();
+      expect(screen.getByText('Módulo:')).toBeInTheDocument();
+      expect(screen.getByText('Ação:')).toBeInTheDocument();
     });
 
     it('should allow access when user has required permission', () => {
@@ -592,7 +592,7 @@ describe('ProtectedRoute', () => {
         </MemoryRouter>
       );
 
-      expect(screen.getByText('Permissoes Necessarias:')).toBeInTheDocument();
+      expect(screen.getByText('Permissões Necessárias:')).toBeInTheDocument();
     });
 
     it('should handle empty requirePermissions array', () => {
@@ -648,7 +648,7 @@ describe('ProtectedRoute', () => {
         </MemoryRouter>
       );
 
-      expect(screen.getByText(/Voce nao tem permissoes de gerenciamento necessarias/)).toBeInTheDocument();
+      expect(screen.getByText(/não tem permissões de gerenciamento necessárias/)).toBeInTheDocument();
       expect(screen.getByText(/Requisito de Acesso:/)).toBeInTheDocument();
     });
 

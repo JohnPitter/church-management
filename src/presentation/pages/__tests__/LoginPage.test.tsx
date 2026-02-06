@@ -65,7 +65,7 @@ describe('LoginPage', () => {
     it('should render the login page with correct title', () => {
       renderLoginPage();
 
-      expect(screen.getByText('Conectados pela fe')).toBeInTheDocument();
+      expect(screen.getByText('Conectados pela fé')).toBeInTheDocument();
       expect(screen.getByText('Entre em sua conta')).toBeInTheDocument();
     });
 

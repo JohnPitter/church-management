@@ -16,7 +16,7 @@ jest.mock('@/config/firebase', () => ({
 
 // Mock date-fns format
 jest.mock('date-fns', () => ({
-  format: jest.fn((date: Date, formatStr: string) => {
+  format: jest.fn((date, formatStr) => {
     if (formatStr === 'yyyy-MM-dd') {
       return '2024-01-15';
     }
@@ -126,13 +126,13 @@ const mockFindAll = jest.fn();
 const mockClearAll = jest.fn();
 
 jest.mock('@modules/shared-kernel/logging/infrastructure/repositories/FirebaseLogRepository', () => {
-  function FirebaseLogRepositoryMock(this: any) {
-    this.findAll = mockFindAll;
-    this.clearAll = mockClearAll;
-  }
-
   return {
-    FirebaseLogRepository: FirebaseLogRepositoryMock
+    FirebaseLogRepository: function() {
+      return {
+        findAll: mockFindAll,
+        clearAll: mockClearAll
+      };
+    }
   };
 });
 
@@ -193,7 +193,7 @@ describe('AdminLogsPage', () => {
 
       renderComponent();
 
-      expect(screen.getByText('Verificando permissoes...')).toBeInTheDocument();
+      expect(screen.getByText('Verificando permissões...')).toBeInTheDocument();
     });
 
     it('should show access denied when user cannot view logs', () => {
@@ -550,7 +550,7 @@ describe('AdminLogsPage', () => {
       });
 
       // Go to page 2
-      const nextButton = screen.getByText('Proxima →');
+      const nextButton = screen.getByText('Próxima →');
       await userEvent.click(nextButton);
 
       // Change filter
@@ -584,7 +584,7 @@ describe('AdminLogsPage', () => {
       await waitFor(() => {
         expect(screen.getByText('Primeira')).toBeInTheDocument();
         expect(screen.getByText('← Anterior')).toBeInTheDocument();
-        expect(screen.getByText('Proxima →')).toBeInTheDocument();
+        expect(screen.getByText('Próxima →')).toBeInTheDocument();
         expect(screen.getByText('Ultima')).toBeInTheDocument();
       });
     });
@@ -636,7 +636,7 @@ describe('AdminLogsPage', () => {
         expect(screen.getByText('Log message 0')).toBeInTheDocument();
       });
 
-      await userEvent.click(screen.getByText('Proxima →'));
+      await userEvent.click(screen.getByText('Próxima →'));
 
       await waitFor(() => {
         expect(screen.getByText('Log message 10')).toBeInTheDocument();
@@ -664,7 +664,7 @@ describe('AdminLogsPage', () => {
       });
 
       // Go to page 2
-      await userEvent.click(screen.getByText('Proxima →'));
+      await userEvent.click(screen.getByText('Próxima →'));
 
       await waitFor(() => {
         expect(screen.getByText('Log message 10')).toBeInTheDocument();
@@ -1265,8 +1265,8 @@ describe('AdminLogsPage', () => {
       });
 
       // Go to page 3
-      await userEvent.click(screen.getByText('Proxima →'));
-      await userEvent.click(screen.getByText('Proxima →'));
+      await userEvent.click(screen.getByText('Próxima →'));
+      await userEvent.click(screen.getByText('Próxima →'));
 
       await waitFor(() => {
         expect(screen.queryByText('Log message 0')).not.toBeInTheDocument();
@@ -1331,7 +1331,7 @@ describe('AdminLogsPage', () => {
       await userEvent.click(screen.getByText('Ultima'));
 
       await waitFor(() => {
-        expect(screen.getByText('Proxima →')).toBeDisabled();
+        expect(screen.getByText('Próxima →')).toBeDisabled();
         expect(screen.getByText('Ultima')).toBeDisabled();
       });
     });

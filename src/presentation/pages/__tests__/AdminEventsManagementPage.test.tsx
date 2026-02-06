@@ -188,20 +188,22 @@ const mockDelete = jest.fn().mockResolvedValue(undefined);
 const mockFindConfirmations = jest.fn().mockResolvedValue(mockConfirmations);
 
 jest.mock('@modules/church-management/events/infrastructure/repositories/FirebaseEventRepository', () => ({
-  FirebaseEventRepository: jest.fn().mockImplementation(function(this: any) {
-    this.findAll = (...args: any[]) => mockFindAll(...args);
-    this.findById = jest.fn();
-    this.create = (...args: any[]) => mockCreate(...args);
-    this.update = (...args: any[]) => mockUpdate(...args);
-    this.delete = (...args: any[]) => mockDelete(...args);
-    this.findConfirmations = (...args: any[]) => mockFindConfirmations(...args);
-  })
+  FirebaseEventRepository: function() {
+    return {
+      findAll: (...args: any[]) => mockFindAll(...args),
+      findById: jest.fn(),
+      create: (...args: any[]) => mockCreate(...args),
+      update: (...args: any[]) => mockUpdate(...args),
+      delete: (...args: any[]) => mockDelete(...args),
+      findConfirmations: (...args: any[]) => mockFindConfirmations(...args)
+    };
+  }
 }));
 
 // Mock date-fns format
 jest.mock('date-fns', () => ({
   ...jest.requireActual('date-fns'),
-  format: jest.fn((date: Date, formatStr: string) => {
+  format: jest.fn((date, formatStr) => {
     if (formatStr === 'HH:mm') return '10:00';
     if (formatStr === 'dd/MM/yy') return '15/02/24';
     if (formatStr === 'dd/MM/yyyy') return '15/02/2024';

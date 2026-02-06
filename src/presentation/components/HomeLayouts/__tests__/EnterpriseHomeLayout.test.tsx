@@ -21,14 +21,22 @@ jest.mock('../../../contexts/SettingsContext', () => ({
   useSettings: () => mockUseSettings()
 }));
 
+jest.mock('date-fns/locale', () => ({
+  ptBR: {}
+}));
+
+jest.mock('date-fns', () => ({
+  format: () => 'sábado, 15 de junho de 2024'
+}));
+
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockNavigate,
-  Link: ({ children, to, className }: any) => (
+  Link: function({ children, to, className }: any) { return (
     <a href={to} className={className} data-testid={`link-${to}`}>
       {children}
     </a>
-  )
+  ); }
 }));
 
 describe('EnterpriseHomeLayout Component', () => {
@@ -147,7 +155,7 @@ describe('EnterpriseHomeLayout Component', () => {
     it('should navigate to events on button click', () => {
       renderComponent();
 
-      fireEvent.click(screen.getByText('Conheca nossos eventos'));
+      fireEvent.click(screen.getByText('Conheça nossos eventos'));
 
       expect(mockNavigate).toHaveBeenCalledWith('/events');
     });
@@ -155,7 +163,7 @@ describe('EnterpriseHomeLayout Component', () => {
     it('should navigate to about on button click', () => {
       renderComponent();
 
-      fireEvent.click(screen.getByText('Sobre nos'));
+      fireEvent.click(screen.getByText('Sobre nós'));
 
       expect(mockNavigate).toHaveBeenCalledWith('/about');
     });
@@ -183,8 +191,8 @@ describe('EnterpriseHomeLayout Component', () => {
     it('should render statistics section when enabled', () => {
       renderComponent();
 
-      expect(screen.getByText('Nossa Comunidade em Numeros')).toBeInTheDocument();
-      expect(screen.getByText('Impacto real atraves da fe')).toBeInTheDocument();
+      expect(screen.getByText('Nossa Comunidade em Números')).toBeInTheDocument();
+      expect(screen.getByText('Impacto real através da fé')).toBeInTheDocument();
     });
 
     it('should display statistics cards', () => {
@@ -193,9 +201,9 @@ describe('EnterpriseHomeLayout Component', () => {
       expect(screen.getByText('2.500+')).toBeInTheDocument();
       expect(screen.getByText('Membros Ativos')).toBeInTheDocument();
       expect(screen.getByText('15')).toBeInTheDocument();
-      expect(screen.getByText('Projetos Sociais')).toBeInTheDocument();
+      expect(screen.getAllByText('Projetos Sociais').length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText('38+')).toBeInTheDocument();
-      expect(screen.getByText('Anos de Historia')).toBeInTheDocument();
+      expect(screen.getByText('Anos de História')).toBeInTheDocument();
       expect(screen.getByText('10k+')).toBeInTheDocument();
       expect(screen.getByText('Vidas Transformadas')).toBeInTheDocument();
     });
@@ -205,7 +213,7 @@ describe('EnterpriseHomeLayout Component', () => {
         sections: { ...defaultSections, statistics: false }
       });
 
-      expect(screen.queryByText('Nossa Comunidade em Numeros')).not.toBeInTheDocument();
+      expect(screen.queryByText('Nossa Comunidade em Números')).not.toBeInTheDocument();
     });
   });
 
@@ -248,10 +256,10 @@ describe('EnterpriseHomeLayout Component', () => {
       renderComponent();
 
       expect(screen.getByText((content) =>
-        content.includes('Ola, Test User')
+        content.includes('Olá, Test User')
       )).toBeInTheDocument();
       expect(screen.getByText((content) =>
-        content.includes('E otimo ter voce de volta')
+        content.includes('É ótimo ter você de volta')
       )).toBeInTheDocument();
     });
 
@@ -261,7 +269,7 @@ describe('EnterpriseHomeLayout Component', () => {
       renderComponent();
 
       expect(screen.queryByText((content) =>
-        content.includes('Ola, Test User')
+        content.includes('Olá, Test User')
       )).not.toBeInTheDocument();
     });
 
@@ -271,7 +279,7 @@ describe('EnterpriseHomeLayout Component', () => {
       });
 
       expect(screen.queryByText((content) =>
-        content.includes('E otimo ter voce de volta')
+        content.includes('É ótimo ter você de volta')
       )).not.toBeInTheDocument();
     });
 
@@ -287,7 +295,7 @@ describe('EnterpriseHomeLayout Component', () => {
       renderComponent();
 
       expect(screen.getByText((content) =>
-        content.includes('Ola, test@example.com')
+        content.includes('Olá, test@example.com')
       )).toBeInTheDocument();
     });
 
@@ -304,8 +312,8 @@ describe('EnterpriseHomeLayout Component', () => {
     it('should render features section when enabled', () => {
       renderComponent();
 
-      expect(screen.getByText('Servicos e Recursos')).toBeInTheDocument();
-      expect(screen.getByText('Tudo o que voce precisa para crescer espiritualmente e se conectar com a comunidade')).toBeInTheDocument();
+      expect(screen.getByText('Serviços e Recursos')).toBeInTheDocument();
+      expect(screen.getByText('Tudo o que você precisa para crescer espiritualmente e se conectar com a comunidade')).toBeInTheDocument();
     });
 
     it('should display all service cards', () => {
@@ -313,11 +321,11 @@ describe('EnterpriseHomeLayout Component', () => {
 
       expect(screen.getByText('Agenda de Eventos')).toBeInTheDocument();
       expect(screen.getByText('Mensagens e Blog')).toBeInTheDocument();
-      expect(screen.getByText('Transmissoes Online')).toBeInTheDocument();
-      expect(screen.getByText('Projetos Sociais')).toBeInTheDocument();
-      expect(screen.getByText('Devocionais Diarios')).toBeInTheDocument();
+      expect(screen.getByText('Transmissões Online')).toBeInTheDocument();
+      expect(screen.getAllByText('Projetos Sociais').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText('Devocionais Diários')).toBeInTheDocument();
       expect(screen.getByText('Aniversariantes')).toBeInTheDocument();
-      expect(screen.getByText('Nossa Lideranca')).toBeInTheDocument();
+      expect(screen.getByText('Nossa Liderança')).toBeInTheDocument();
       expect(screen.getByText('Membros')).toBeInTheDocument();
     });
 
@@ -334,7 +342,7 @@ describe('EnterpriseHomeLayout Component', () => {
         sections: { ...defaultSections, features: false }
       });
 
-      expect(screen.queryByText('Servicos e Recursos')).not.toBeInTheDocument();
+      expect(screen.queryByText('Serviços e Recursos')).not.toBeInTheDocument();
     });
   });
 
@@ -342,21 +350,21 @@ describe('EnterpriseHomeLayout Component', () => {
     it('should render quick actions section when enabled', () => {
       renderComponent();
 
-      expect(screen.getByText('Acoes Rapidas')).toBeInTheDocument();
+      expect(screen.getByText('Ações Rápidas')).toBeInTheDocument();
     });
 
     it('should display action buttons', () => {
       renderComponent();
 
-      expect(screen.getByText('Fazer Doacao')).toBeInTheDocument();
-      expect(screen.getByText('Oracao')).toBeInTheDocument();
+      expect(screen.getByText('Fazer Doação')).toBeInTheDocument();
+      expect(screen.getByText('Oração')).toBeInTheDocument();
       expect(screen.getByText('Fale Conosco')).toBeInTheDocument();
     });
 
     it('should navigate on action button click', () => {
       renderComponent();
 
-      fireEvent.click(screen.getByText('Fazer Doacao'));
+      fireEvent.click(screen.getByText('Fazer Doação'));
 
       expect(mockNavigate).toHaveBeenCalledWith('/donate');
     });
@@ -366,7 +374,7 @@ describe('EnterpriseHomeLayout Component', () => {
         sections: { ...defaultSections, quickActions: false }
       });
 
-      expect(screen.queryByText('Acoes Rapidas')).not.toBeInTheDocument();
+      expect(screen.queryByText('Ações Rápidas')).not.toBeInTheDocument();
     });
   });
 
@@ -374,14 +382,14 @@ describe('EnterpriseHomeLayout Component', () => {
     it('should render events section when enabled', () => {
       renderComponent();
 
-      expect(screen.getByText('Proximos Eventos')).toBeInTheDocument();
-      expect(screen.getByText('Nao perca os momentos especiais da nossa comunidade')).toBeInTheDocument();
+      expect(screen.getByText('Próximos Eventos')).toBeInTheDocument();
+      expect(screen.getByText('Não perca os momentos especiais da nossa comunidade')).toBeInTheDocument();
     });
 
     it('should navigate to events on button click', () => {
       renderComponent();
 
-      fireEvent.click(screen.getByText('Ver Calendario Completo'));
+      fireEvent.click(screen.getByText('Ver Calendário Completo'));
 
       expect(mockNavigate).toHaveBeenCalledWith('/events');
     });
@@ -391,7 +399,7 @@ describe('EnterpriseHomeLayout Component', () => {
         sections: { ...defaultSections, events: false }
       });
 
-      expect(screen.queryByText('Proximos Eventos')).not.toBeInTheDocument();
+      expect(screen.queryByText('Próximos Eventos')).not.toBeInTheDocument();
     });
   });
 
@@ -399,7 +407,7 @@ describe('EnterpriseHomeLayout Component', () => {
     it('should render testimonials section when enabled', () => {
       renderComponent();
 
-      expect(screen.getByText('Historias que Inspiram')).toBeInTheDocument();
+      expect(screen.getByText('Histórias que Inspiram')).toBeInTheDocument();
     });
 
     it('should display testimonial cards', () => {
@@ -410,9 +418,9 @@ describe('EnterpriseHomeLayout Component', () => {
       )).toBeInTheDocument();
       expect(screen.getByText('— Maria Silva')).toBeInTheDocument();
       expect(screen.getByText((content) =>
-        content.includes('Os projetos sociais me deram proposito')
+        content.includes('Os projetos sociais me deram propósito')
       )).toBeInTheDocument();
-      expect(screen.getByText('— Joao Santos')).toBeInTheDocument();
+      expect(screen.getByText('— João Santos')).toBeInTheDocument();
     });
 
     it('should not render testimonials when disabled', () => {
@@ -420,7 +428,7 @@ describe('EnterpriseHomeLayout Component', () => {
         sections: { ...defaultSections, testimonials: false }
       });
 
-      expect(screen.queryByText('Historias que Inspiram')).not.toBeInTheDocument();
+      expect(screen.queryByText('Histórias que Inspiram')).not.toBeInTheDocument();
     });
   });
 
@@ -429,7 +437,7 @@ describe('EnterpriseHomeLayout Component', () => {
       renderComponent();
 
       expect(screen.getByText('Vamos Conversar')).toBeInTheDocument();
-      expect(screen.getByText('Tire suas duvidas, conheca mais sobre nos ou simplesmente diga ola')).toBeInTheDocument();
+      expect(screen.getByText('Tire suas dúvidas, conheça mais sobre nós ou simplesmente diga olá')).toBeInTheDocument();
     });
 
     it('should navigate to contact on message button click', () => {
@@ -443,7 +451,7 @@ describe('EnterpriseHomeLayout Component', () => {
     it('should open Google Maps when address is available', () => {
       renderComponent();
 
-      fireEvent.click(screen.getByText('Nossa Localizacao'));
+      fireEvent.click(screen.getByText('Nossa Localização'));
 
       expect(window.open).toHaveBeenCalledWith(
         expect.stringContaining('google.com/maps'),
@@ -459,7 +467,7 @@ describe('EnterpriseHomeLayout Component', () => {
 
       renderComponent();
 
-      fireEvent.click(screen.getByText('Nossa Localizacao'));
+      fireEvent.click(screen.getByText('Nossa Localização'));
 
       expect(mockNavigate).toHaveBeenCalledWith('/contact');
     });

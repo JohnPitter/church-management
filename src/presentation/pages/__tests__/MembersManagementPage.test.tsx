@@ -19,24 +19,26 @@ const mockGetStatistics = jest.fn();
 const mockUpdateMemberStatus = jest.fn();
 const mockDeleteMember = jest.fn();
 
-jest.mock('@modules/church-management/members/application/services/MemberService', () => ({
-  MemberService: jest.fn(function(this: any) {
-    this.getAllMembers = (...args: any[]) => mockGetAllMembers(...args);
-    this.getStatistics = (...args: any[]) => mockGetStatistics(...args);
-    this.updateMemberStatus = (...args: any[]) => mockUpdateMemberStatus(...args);
-    this.deleteMember = (...args: any[]) => mockDeleteMember(...args);
-    // Add other methods that might be called
-    this.getMemberById = jest.fn().mockResolvedValue(null);
-    this.getMembersByStatus = jest.fn().mockResolvedValue([]);
-    this.searchMembers = jest.fn().mockResolvedValue([]);
-    this.createMember = jest.fn().mockResolvedValue({});
-    this.updateMember = jest.fn().mockResolvedValue({});
-    this.transferMember = jest.fn().mockResolvedValue(undefined);
-    this.disciplineMember = jest.fn().mockResolvedValue(undefined);
-    this.restoreMember = jest.fn().mockResolvedValue(undefined);
-    return this;
-  })
-}));
+jest.mock('@modules/church-management/members/application/services/MemberService', () => {
+  return {
+    MemberService: function() {
+      return {
+        getAllMembers: (...args: any[]) => mockGetAllMembers(...args),
+        getStatistics: (...args: any[]) => mockGetStatistics(...args),
+        updateMemberStatus: (...args: any[]) => mockUpdateMemberStatus(...args),
+        deleteMember: (...args: any[]) => mockDeleteMember(...args),
+        getMemberById: jest.fn().mockResolvedValue(null),
+        getMembersByStatus: jest.fn().mockResolvedValue([]),
+        searchMembers: jest.fn().mockResolvedValue([]),
+        createMember: jest.fn().mockResolvedValue({}),
+        updateMember: jest.fn().mockResolvedValue({}),
+        transferMember: jest.fn().mockResolvedValue(undefined),
+        disciplineMember: jest.fn().mockResolvedValue(undefined),
+        restoreMember: jest.fn().mockResolvedValue(undefined)
+      };
+    }
+  };
+});
 
 // Mock usePermissions hook
 const mockHasPermission = jest.fn();
@@ -134,7 +136,7 @@ describe('MembersManagementPage', () => {
 
       render(<MembersManagementPage />);
 
-      expect(screen.getByText('Verificando permissoes...')).toBeInTheDocument();
+      expect(screen.getByText('Verificando permissões...')).toBeInTheDocument();
     });
 
     it('should show access denied when user cannot view members', async () => {

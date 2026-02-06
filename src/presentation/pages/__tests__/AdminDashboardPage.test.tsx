@@ -73,7 +73,7 @@ jest.mock('../../hooks/usePermissions', () => ({
 // Mock PermissionService
 jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => ({
   PermissionService: class MockPermissionService {
-    getRoleDisplayNameSync(role: string): string {
+    getRoleDisplayNameSync(role: string) {
       const displayNames: Record<string, string> = {
         admin: 'Administrador',
         secretary: 'Secretario(a)',

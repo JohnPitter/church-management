@@ -27,28 +27,38 @@ const mockGetAllCustomRoles = jest.fn();
 const mockCreateCustomRole = jest.fn();
 const mockUpdateCustomRole = jest.fn();
 const mockDeleteCustomRole = jest.fn();
+const mockGetPermissionMatrix = jest.fn();
+const mockGetAllUserOverrides = jest.fn();
+const mockUpdateRolePermissions = jest.fn();
+const mockResetRolePermissionsToDefault = jest.fn();
+const mockUpdateUserPermissionOverrides = jest.fn();
 
 jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => {
-  const PermissionServiceMock = function(this: any) {
-    this.getAllRoles = (...args: any[]) => mockGetAllRoles(...args);
-    this.getAllRolesSync = (...args: any[]) => mockGetAllRolesSync(...args);
-    this.getRoleDisplayNameSync = (...args: any[]) => mockGetRoleDisplayNameSync(...args);
-    this.getUserPermissions = (...args: any[]) => mockGetUserPermissions(...args);
-    this.hasPermission = (...args: any[]) => mockHasPermission(...args);
-    this.getRolePermissions = (...args: any[]) => mockGetRolePermissions(...args);
-    this.saveRolePermissions = (...args: any[]) => mockSaveRolePermissions(...args);
-    this.getUserPermissionOverrides = (...args: any[]) => mockGetUserPermissionOverrides(...args);
-    this.saveUserPermissionOverrides = (...args: any[]) => mockSaveUserPermissionOverrides(...args);
-    this.clearAllCaches = (...args: any[]) => mockClearAllCaches(...args);
-    this.getAllCustomRoles = (...args: any[]) => mockGetAllCustomRoles(...args);
-    this.createCustomRole = (...args: any[]) => mockCreateCustomRole(...args);
-    this.updateCustomRole = (...args: any[]) => mockUpdateCustomRole(...args);
-    this.deleteCustomRole = (...args: any[]) => mockDeleteCustomRole(...args);
-    return this;
-  };
-
   return {
-    PermissionService: PermissionServiceMock
+    PermissionService: function() {
+      return {
+        getAllRoles: (...args: any[]) => mockGetAllRoles(...args),
+        getAllRolesSync: (...args: any[]) => mockGetAllRolesSync(...args),
+        getRoleDisplayNameSync: (...args: any[]) => mockGetRoleDisplayNameSync(...args),
+        getUserPermissions: (...args: any[]) => mockGetUserPermissions(...args),
+        hasPermission: (...args: any[]) => mockHasPermission(...args),
+        getRolePermissions: (...args: any[]) => mockGetRolePermissions(...args),
+        saveRolePermissions: (...args: any[]) => mockSaveRolePermissions(...args),
+        getUserPermissionOverrides: (...args: any[]) => mockGetUserPermissionOverrides(...args),
+        saveUserPermissionOverrides: (...args: any[]) => mockSaveUserPermissionOverrides(...args),
+        clearAllCaches: (...args: any[]) => mockClearAllCaches(...args),
+        clearAllCache: (...args: any[]) => mockClearAllCaches(...args),
+        getAllCustomRoles: (...args: any[]) => mockGetAllCustomRoles(...args),
+        createCustomRole: (...args: any[]) => mockCreateCustomRole(...args),
+        updateCustomRole: (...args: any[]) => mockUpdateCustomRole(...args),
+        deleteCustomRole: (...args: any[]) => mockDeleteCustomRole(...args),
+        getPermissionMatrix: (...args: any[]) => mockGetPermissionMatrix(...args),
+        getAllUserOverrides: (...args: any[]) => mockGetAllUserOverrides(...args),
+        updateRolePermissions: (...args: any[]) => mockUpdateRolePermissions(...args),
+        resetRolePermissionsToDefault: (...args: any[]) => mockResetRolePermissionsToDefault(...args),
+        updateUserPermissionOverrides: (...args: any[]) => mockUpdateUserPermissionOverrides(...args)
+      };
+    }
   };
 });
 
@@ -62,35 +72,39 @@ const mockCreate = jest.fn();
 const mockUpdate = jest.fn();
 
 jest.mock('@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository', () => {
-  const FirebaseUserRepositoryMock = function(this: any) {
-    this.findAll = (...args: any[]) => mockFindAll(...args);
-    this.updateRole = (...args: any[]) => mockUpdateRole(...args);
-    this.approveUser = (...args: any[]) => mockApproveUser(...args);
-    this.suspendUser = (...args: any[]) => mockSuspendUser(...args);
-    this.delete = (...args: any[]) => mockDelete(...args);
-    this.create = (...args: any[]) => mockCreate(...args);
-    this.update = (...args: any[]) => mockUpdate(...args);
-    return this;
-  };
-
   return {
-    FirebaseUserRepository: FirebaseUserRepositoryMock
+    FirebaseUserRepository: function() {
+      return {
+        findAll: (...args: any[]) => mockFindAll(...args),
+        updateRole: (...args: any[]) => mockUpdateRole(...args),
+        approveUser: (...args: any[]) => mockApproveUser(...args),
+        suspendUser: (...args: any[]) => mockSuspendUser(...args),
+        delete: (...args: any[]) => mockDelete(...args),
+        create: (...args: any[]) => mockCreate(...args),
+        update: (...args: any[]) => mockUpdate(...args)
+      };
+    }
   };
 });
 
 // Mock PublicPageService
 const mockGetPublicPageConfig = jest.fn();
+const mockGetPublicPageConfigs = jest.fn();
 const mockUpdatePublicPageConfig = jest.fn();
+const mockUpdatePageVisibility = jest.fn();
+const mockUpdatePageRegistrationSetting = jest.fn();
 
 jest.mock('@modules/content-management/public-pages/application/services/PublicPageService', () => {
-  const PublicPageServiceMock = function(this: any) {
-    this.getPublicPageConfig = (...args: any[]) => mockGetPublicPageConfig(...args);
-    this.updatePublicPageConfig = (...args: any[]) => mockUpdatePublicPageConfig(...args);
-    return this;
-  };
-
   return {
-    PublicPageService: PublicPageServiceMock
+    PublicPageService: function() {
+      return {
+        getPublicPageConfig: (...args: any[]) => mockGetPublicPageConfig(...args),
+        getPublicPageConfigs: (...args: any[]) => mockGetPublicPageConfigs(...args),
+        updatePublicPageConfig: (...args: any[]) => mockUpdatePublicPageConfig(...args),
+        updatePageVisibility: (...args: any[]) => mockUpdatePageVisibility(...args),
+        updatePageRegistrationSetting: (...args: any[]) => mockUpdatePageRegistrationSetting(...args)
+      };
+    }
   };
 });
 
@@ -199,6 +213,14 @@ describe('PermissionsManagementPage', () => {
     mockCreateCustomRole.mockResolvedValue(undefined);
     mockUpdateCustomRole.mockResolvedValue(undefined);
     mockDeleteCustomRole.mockResolvedValue(undefined);
+    mockGetPermissionMatrix.mockResolvedValue(new Map());
+    mockGetPublicPageConfigs.mockResolvedValue({});
+    mockUpdatePageVisibility.mockResolvedValue(undefined);
+    mockUpdatePageRegistrationSetting.mockResolvedValue(undefined);
+    mockGetAllUserOverrides.mockResolvedValue([]);
+    mockUpdateRolePermissions.mockResolvedValue(undefined);
+    mockResetRolePermissionsToDefault.mockResolvedValue(undefined);
+    mockUpdateUserPermissionOverrides.mockResolvedValue(undefined);
 
     // Default repository responses
     mockFindAll.mockResolvedValue([]);

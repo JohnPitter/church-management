@@ -9,6 +9,13 @@ import { BlogPage } from '../BlogPage';
 import { FirebaseBlogRepository } from '@modules/content-management/blog/infrastructure/repositories/FirebaseBlogRepository';
 import { BlogPost, PostStatus, PostVisibility } from '@modules/content-management/blog/domain/entities/BlogPost';
 
+// Mock Firebase config
+jest.mock('@/config/firebase', () => ({
+  db: {},
+  auth: {},
+  storage: {}
+}));
+
 // Mock the auth context
 const mockCurrentUser = {
   id: 'user-1',

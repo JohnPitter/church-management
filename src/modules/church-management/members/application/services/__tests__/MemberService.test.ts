@@ -5,6 +5,12 @@ import { MemberService, MemberStatistics } from '../MemberService';
 import { Member, MemberStatus, MaritalStatus, MemberType, Address } from '@modules/church-management/members/domain/entities/Member';
 import { FirebaseMemberRepository } from '@modules/church-management/members/infrastructure/repositories/FirebaseMemberRepository';
 
+// Mock Firebase to prevent auth/invalid-api-key error in CI
+jest.mock('firebase/firestore');
+jest.mock('@/config/firebase', () => ({
+  db: {}
+}));
+
 // Mock the FirebaseMemberRepository
 jest.mock('@modules/church-management/members/infrastructure/repositories/FirebaseMemberRepository');
 

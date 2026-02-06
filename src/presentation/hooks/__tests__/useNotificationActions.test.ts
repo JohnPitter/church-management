@@ -10,12 +10,12 @@ jest.mock('@/config/firebase', () => ({
 }));
 
 // Mock functions need to be in module scope for Jest hoisting
-let mockNotifyNewEvent: jest.Mock;
-let mockNotifyNewBlogPost: jest.Mock;
-let mockNotifyNewProject: jest.Mock;
-let mockNotifyNewLiveStream: jest.Mock;
-let mockCleanupExpiredNotifications: jest.Mock;
-let mockRefreshNotifications: jest.Mock;
+let mockNotifyNewEvent: any;
+let mockNotifyNewBlogPost: any;
+let mockNotifyNewProject: any;
+let mockNotifyNewLiveStream: any;
+let mockCleanupExpiredNotifications: any;
+let mockRefreshNotifications: any;
 
 // Mock NotificationService
 jest.mock('@modules/shared-kernel/notifications/infrastructure/services/NotificationService');
@@ -434,18 +434,26 @@ describe('useNotificationActions Hook', () => {
       mockNotifyNewBlogPost.mockResolvedValue(10);
       mockRefreshNotifications.mockResolvedValue(undefined);
 
-      const { result } = renderHook(() => useNotificationActions());
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-      await expect(
-        act(async () => {
-          await result.current.notifyNewEvent('event-1', 'Event 1', new Date());
-        })
-      ).rejects.toThrow();
+      // First call - expect it to fail
+      const { result: result1 } = renderHook(() => useNotificationActions());
 
-      // Second operation should still work
+      let eventError: Error | null = null;
       await act(async () => {
-        await result.current.notifyNewBlogPost('post-1', 'Post 1');
+        try {
+          await result1.current.notifyNewEvent('event-1', 'Event 1', new Date());
+        } catch (e) {
+          eventError = e as Error;
+        }
+      });
+      expect(eventError).toBeTruthy();
+
+      // Second operation should still work (fresh renderHook)
+      const { result: result2 } = renderHook(() => useNotificationActions());
+
+      await act(async () => {
+        await result2.current.notifyNewBlogPost('post-1', 'Post 1');
       });
 
       expect(mockNotifyNewBlogPost).toHaveBeenCalledTimes(1);
@@ -460,19 +468,23 @@ describe('useNotificationActions Hook', () => {
       mockNotifyNewEvent.mockResolvedValue(10);
       mockRefreshNotifications.mockRejectedValue(new Error('Refresh failed'));
 
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       const { result } = renderHook(() => useNotificationActions());
 
-      try {
-        await act(async () => {
+      let caughtError: any = null;
+      await act(async () => {
+        try {
           await result.current.notifyNewEvent('event-1', 'Event 1', new Date());
-        });
-        // If no error is thrown, fail the test
-        expect(true).toBe(false);
-      } catch (error: any) {
-        expect(error.message).toBe('Refresh failed');
-        expect(mockNotifyNewEvent).toHaveBeenCalledTimes(1);
-        expect(mockRefreshNotifications).toHaveBeenCalledTimes(1);
-      }
+        } catch (e) {
+          caughtError = e as Error;
+        }
+      });
+
+      expect(caughtError?.message).toBe('Refresh failed');
+      expect(mockNotifyNewEvent).toHaveBeenCalledTimes(1);
+      expect(mockRefreshNotifications).toHaveBeenCalledTimes(1);
+
+      consoleSpy.mockRestore();
     });
 
     it('should handle empty string IDs', async () => {
@@ -498,7 +510,7 @@ describe('useNotificationActions Hook', () => {
         await result.current.notifyNewBlogPost('post-1', '');
       });
 
-      expect(mockNotifyNewBlogPost).toHaveBeenCalledWith('post-1', '');
+      expect(mockNotifyNewBlogPost).toHaveBeenCalledWith('post-1', '', undefined);
     });
 
     it('should handle past dates for events', async () => {

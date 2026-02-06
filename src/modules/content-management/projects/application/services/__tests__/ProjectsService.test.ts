@@ -10,6 +10,13 @@ import {
   RegistrationStatus
 } from '@modules/content-management/projects/domain/entities/Project';
 
+// Mock Firebase to prevent auth/invalid-api-key error in CI
+jest.mock('firebase/firestore');
+jest.mock('@/config/firebase', () => ({
+  db: {}
+}));
+jest.mock('@modules/content-management/projects/infrastructure/repositories/FirebaseProjectRepository');
+
 // Mock repository
 class MockProjectRepository implements IProjectRepository {
   private projects: Map<string, Project> = new Map();

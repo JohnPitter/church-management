@@ -59,22 +59,22 @@ describe('WelcomePage', () => {
 
       expect(screen.getByText('Primeiro administrador criado')).toBeInTheDocument();
       expect(screen.getByText('Sistema inicializado')).toBeInTheDocument();
-      expect(screen.getByText('Permissoes configuradas')).toBeInTheDocument();
+      expect(screen.getByText('Permissões configuradas')).toBeInTheDocument();
       expect(screen.getByText('Firebase integrado')).toBeInTheDocument();
     });
 
     it('should render "Proximos passos" section', () => {
       renderWelcomePage();
 
-      expect(screen.getByText(/proximos passos/i)).toBeInTheDocument();
+      expect(screen.getByText(/próximos passos/i)).toBeInTheDocument();
     });
 
     it('should list all next steps', () => {
       renderWelcomePage();
 
       expect(screen.getByText(/acesse o painel administrativo/i)).toBeInTheDocument();
-      expect(screen.getByText(/configure informacoes basicas/i)).toBeInTheDocument();
-      expect(screen.getByText(/crie eventos, posts do blog e transmissoes/i)).toBeInTheDocument();
+      expect(screen.getByText(/configure informações básicas/i)).toBeInTheDocument();
+      expect(screen.getByText(/crie eventos, posts do blog e transmissões/i)).toBeInTheDocument();
       expect(screen.getByText(/configure o google auth/i)).toBeInTheDocument();
     });
 
@@ -93,7 +93,7 @@ describe('WelcomePage', () => {
     it('should render footer message', () => {
       renderWelcomePage();
 
-      expect(screen.getByText(/sistema de gerenciamento de igreja.*configuracao concluida/i)).toBeInTheDocument();
+      expect(screen.getByText(/sistema de gerenciamento de igreja.*configuração concluída/i)).toBeInTheDocument();
     });
   });
 

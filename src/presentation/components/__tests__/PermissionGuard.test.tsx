@@ -590,6 +590,12 @@ describe('Edge Cases', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUsePermissions.mockReturnValue({
+      hasPermission: jest.fn().mockReturnValue(true),
+      hasAnyPermission: jest.fn().mockReturnValue(true),
+      hasAllPermissions: jest.fn().mockReturnValue(true),
+      loading: false
+    });
   });
 
   it('should handle rapid permission changes', () => {

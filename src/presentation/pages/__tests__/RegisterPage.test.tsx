@@ -44,11 +44,14 @@ jest.mock('../../contexts/SettingsContext', () => ({
 
 // Mock FirebaseUserRepository
 const mockUpdate = jest.fn();
-jest.mock('@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository', () => ({
-  FirebaseUserRepository: jest.fn().mockImplementation(() => ({
-    update: mockUpdate
-  }))
-}));
+jest.mock('@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository', () => {
+  function FirebaseUserRepositoryMock(this: any) {
+    this.update = (...args: any[]) => mockUpdate(...args);
+  }
+  return {
+    FirebaseUserRepository: FirebaseUserRepositoryMock
+  };
+});
 
 // Helper to create mock user
 const createMockUser = (overrides: Partial<User> = {}): User => ({
@@ -108,7 +111,7 @@ describe('RegisterPage', () => {
       renderRegisterPage();
 
       expect(screen.getByText('Registro Desabilitado')).toBeInTheDocument();
-      expect(screen.getByText(/registro publico esta temporariamente desabilitado/i)).toBeInTheDocument();
+      expect(screen.getByText(/registro público está temporariamente desabilitado/i)).toBeInTheDocument();
     });
 
     it('should show link to login when registration is disabled', () => {
@@ -129,7 +132,7 @@ describe('RegisterPage', () => {
     it('should render the register page with correct title', () => {
       renderRegisterPage();
 
-      expect(screen.getByText('Conectados pela fe')).toBeInTheDocument();
+      expect(screen.getByText('Conectados pela fé')).toBeInTheDocument();
       expect(screen.getByText('Crie sua conta')).toBeInTheDocument();
     });
 
@@ -192,8 +195,8 @@ describe('RegisterPage', () => {
     it('should render approval notice', () => {
       renderRegisterPage();
 
-      expect(screen.getByText('Processo de Aprovacao')).toBeInTheDocument();
-      expect(screen.getByText(/apos criar sua conta, ela ficara aguardando aprovacao/i)).toBeInTheDocument();
+      expect(screen.getByText('Processo de Aprovação')).toBeInTheDocument();
+      expect(screen.getByText(/após criar sua conta, ela ficará aguardando aprovação/i)).toBeInTheDocument();
     });
   });
 
@@ -246,7 +249,7 @@ describe('RegisterPage', () => {
       await userEvent.click(screen.getByRole('button', { name: /criar conta/i }));
 
       await waitFor(() => {
-        expect(screen.getByText('As senhas nao coincidem')).toBeInTheDocument();
+        expect(screen.getByText('As senhas não coincidem')).toBeInTheDocument();
       });
       expect(mockRegister).not.toHaveBeenCalled();
     });
@@ -335,7 +338,7 @@ describe('RegisterPage', () => {
       await userEvent.click(screen.getByRole('button', { name: /criar conta/i }));
 
       await waitFor(() => {
-        expect(screen.getByText(/sua conta foi criada e esta aguardando aprovacao/i)).toBeInTheDocument();
+        expect(screen.getByText(/sua conta foi criada e está aguardando aprovação/i)).toBeInTheDocument();
       });
     });
 

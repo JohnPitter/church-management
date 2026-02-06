@@ -14,16 +14,16 @@ jest.mock('../../hooks/usePermissions', () => ({
 }));
 
 describe('PermissionButton Component', () => {
-  const defaultPermissionsValue = {
+  const createDefaultPermissionsValue = () => ({
     hasPermission: jest.fn().mockReturnValue(true),
     hasAnyPermission: jest.fn().mockReturnValue(true),
     hasAllPermissions: jest.fn().mockReturnValue(true),
     loading: false
-  };
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUsePermissions.mockReturnValue(defaultPermissionsValue);
+    mockUsePermissions.mockReturnValue(createDefaultPermissionsValue());
   });
 
   describe('Authorized User', () => {
@@ -96,7 +96,7 @@ describe('PermissionButton Component', () => {
   describe('Unauthorized User - Modal Behavior', () => {
     beforeEach(() => {
       mockUsePermissions.mockReturnValue({
-        ...defaultPermissionsValue,
+        ...createDefaultPermissionsValue(),
         hasPermission: jest.fn().mockReturnValue(false)
       });
     });
@@ -230,7 +230,7 @@ describe('PermissionButton Component', () => {
   describe('Custom Unauthorized Handler', () => {
     beforeEach(() => {
       mockUsePermissions.mockReturnValue({
-        ...defaultPermissionsValue,
+        ...createDefaultPermissionsValue(),
         hasPermission: jest.fn().mockReturnValue(false)
       });
     });
@@ -277,7 +277,7 @@ describe('PermissionButton Component', () => {
     it('should call hasPermission with correct module and action', () => {
       const mockHasPermission = jest.fn().mockReturnValue(true);
       mockUsePermissions.mockReturnValue({
-        ...defaultPermissionsValue,
+        ...createDefaultPermissionsValue(),
         hasPermission: mockHasPermission
       });
 
@@ -299,7 +299,7 @@ describe('PermissionButton Component', () => {
     it('should re-check permission on each render', () => {
       const mockHasPermission = jest.fn().mockReturnValue(true);
       mockUsePermissions.mockReturnValue({
-        ...defaultPermissionsValue,
+        ...createDefaultPermissionsValue(),
         hasPermission: mockHasPermission
       });
 
@@ -321,7 +321,7 @@ describe('PermissionButton Component', () => {
         </PermissionButton>
       );
 
-      expect(mockHasPermission).toHaveBeenCalledTimes(4); // Initial render + re-render (x2 for each)
+      expect(mockHasPermission).toHaveBeenCalledTimes(2); // Initial render + re-render
     });
   });
 
@@ -341,7 +341,7 @@ describe('PermissionButton Component', () => {
       it(`should work with ${module}:${action} permission`, () => {
         const mockHasPermission = jest.fn().mockReturnValue(true);
         mockUsePermissions.mockReturnValue({
-          ...defaultPermissionsValue,
+          ...createDefaultPermissionsValue(),
           hasPermission: mockHasPermission
         });
 
@@ -368,7 +368,7 @@ describe('PermissionButton Component', () => {
   describe('Modal UI Elements', () => {
     beforeEach(() => {
       mockUsePermissions.mockReturnValue({
-        ...defaultPermissionsValue,
+        ...createDefaultPermissionsValue(),
         hasPermission: jest.fn().mockReturnValue(false)
       });
     });
@@ -446,7 +446,7 @@ describe('PermissionButton Component', () => {
 
     it('should combine className with opacity class for unauthorized', () => {
       mockUsePermissions.mockReturnValue({
-        ...defaultPermissionsValue,
+        ...createDefaultPermissionsValue(),
         hasPermission: jest.fn().mockReturnValue(false)
       });
 
@@ -523,7 +523,7 @@ describe('PermissionButton Component', () => {
 
     it('should open modal multiple times for unauthorized user', () => {
       mockUsePermissions.mockReturnValue({
-        ...defaultPermissionsValue,
+        ...createDefaultPermissionsValue(),
         hasPermission: jest.fn().mockReturnValue(false)
       });
 

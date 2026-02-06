@@ -8,8 +8,8 @@ import { LoadingSpinner } from '../LoadingSpinner';
 describe('LoadingSpinner', () => {
   describe('Rendering', () => {
     it('should render without crashing', () => {
-      render(<LoadingSpinner />);
-      const spinner = screen.getByRole('img', { hidden: true });
+      const { container } = render(<LoadingSpinner />);
+      const spinner = container.querySelector('svg');
       expect(spinner).toBeInTheDocument();
     });
 

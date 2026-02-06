@@ -5,6 +5,12 @@ import { HelpRequestService } from '../HelpRequestService';
 import { HelpRequest, HelpRequestStatus, HelpRequestPriority } from '../../../domain/entities/HelpRequest';
 import { FirebaseHelpRequestRepository } from '../../../infrastructure/repositories/FirebaseHelpRequestRepository';
 
+// Mock Firebase to prevent auth/invalid-api-key error in CI
+jest.mock('firebase/firestore');
+jest.mock('@/config/firebase', () => ({
+  db: {}
+}));
+
 // Mock the FirebaseHelpRequestRepository
 jest.mock('../../../infrastructure/repositories/FirebaseHelpRequestRepository');
 

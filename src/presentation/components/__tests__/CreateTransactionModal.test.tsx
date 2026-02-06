@@ -34,7 +34,7 @@ describe('CreateTransactionModal', () => {
     currentUser: mockCurrentUser
   };
 
-  const mockExpenseCategories: FinancialCategory[] = [
+  const mockExpenseCategories = [
     {
       id: 'cat-1',
       name: 'Salários',
@@ -57,7 +57,7 @@ describe('CreateTransactionModal', () => {
     }
   ];
 
-  const mockIncomeCategories: FinancialCategory[] = [
+  const mockIncomeCategories = [
     {
       id: 'cat-3',
       name: 'Dízimos',
@@ -99,7 +99,7 @@ describe('CreateTransactionModal', () => {
         expect(screen.getByText(/Tipo de Transação/i)).toBeInTheDocument();
       });
 
-      expect(screen.getByText(/Categoria/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Categoria/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/Valor \(R\$\)/i)).toBeInTheDocument();
       expect(screen.getByText(/Data/i)).toBeInTheDocument();
       expect(screen.getByText(/Descrição/i)).toBeInTheDocument();
@@ -138,7 +138,9 @@ describe('CreateTransactionModal', () => {
       render(<CreateTransactionModal {...defaultProps} />);
 
       await waitFor(() => {
-        const categorySelect = screen.getByRole('combobox');
+        // There are multiple combobox elements (category + payment method)
+        const selects = screen.getAllByRole('combobox');
+        const categorySelect = selects[0]; // First select is category
         expect(categorySelect).toHaveValue('cat-1');
       });
     });
@@ -151,7 +153,8 @@ describe('CreateTransactionModal', () => {
 
       await waitFor(() => {
         // Categories should be empty, but modal should still work
-        const categorySelect = screen.getByRole('combobox');
+        const selects = screen.getAllByRole('combobox');
+        const categorySelect = selects[0];
         expect(categorySelect).toBeInTheDocument();
       });
 
@@ -163,7 +166,10 @@ describe('CreateTransactionModal', () => {
     it('should have EXPENSE as default type', () => {
       render(<CreateTransactionModal {...defaultProps} />);
 
-      const expenseCard = screen.getByText('Despesa').closest('div');
+      // "Despesa" may appear in multiple places
+      const expenseCards = screen.getAllByText('Despesa');
+      // Navigate up to the card div with cursor-pointer class
+      const expenseCard = expenseCards[0].closest('.cursor-pointer') || expenseCards[0].parentElement;
       expect(expenseCard).toHaveClass('border-red-500');
     });
 
@@ -174,7 +180,10 @@ describe('CreateTransactionModal', () => {
       fireEvent.click(incomeRadio);
 
       await waitFor(() => {
-        const incomeCard = screen.getByText('Receita').closest('div');
+        // "Receita" may appear in multiple places
+        const incomeCards = screen.getAllByText('Receita');
+        // Navigate up to the card div with cursor-pointer class
+        const incomeCard = incomeCards[0].closest('.cursor-pointer') || incomeCards[0].parentElement;
         expect(incomeCard).toHaveClass('border-green-500');
       });
     });
@@ -421,32 +430,27 @@ describe('CreateTransactionModal', () => {
     });
 
     it('should show error when category not found', async () => {
-      (financialService.getCategories as jest.Mock)
-        .mockResolvedValueOnce(mockExpenseCategories) // Initial load
-        .mockResolvedValueOnce([]); // After type change
+      (financialService.getCategories as jest.Mock).mockResolvedValue(mockExpenseCategories);
 
       render(<CreateTransactionModal {...defaultProps} />);
 
+      // Wait for categories to load
       await waitFor(() => {
-        expect(financialService.getCategories).toHaveBeenCalled();
+        const selects = screen.getAllByRole('combobox');
+        expect(selects[0]).toHaveValue('cat-1');
       });
 
-      // Select a category that will later be removed
-      const categorySelect = screen.getByRole('combobox');
-      await userEvent.selectOptions(categorySelect, 'cat-1');
+      // Clear category to simulate empty selection
+      const selects = screen.getAllByRole('combobox');
+      const categorySelect = selects[0];
+      fireEvent.change(categorySelect, { target: { value: '' } });
 
-      // Mock categories to return empty (simulating category being deleted)
-      (financialService.getCategories as jest.Mock).mockResolvedValue([]);
-
-      // Try to submit with a category that no longer exists
+      // Fill required fields
       const descriptionInput = screen.getByPlaceholderText('Descreva a transação...');
       await userEvent.type(descriptionInput, 'Test');
 
       const amountInput = screen.getByPlaceholderText('0,00');
       await userEvent.type(amountInput, '100');
-
-      // Clear category manually to simulate not found scenario
-      await userEvent.selectOptions(categorySelect, '');
 
       const submitButton = screen.getByRole('button', { name: /Criar Transação/i });
       fireEvent.click(submitButton);

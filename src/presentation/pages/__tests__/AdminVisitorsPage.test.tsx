@@ -65,7 +65,7 @@ jest.mock('../../hooks/usePermissions', () => ({
 
 // Mock date-fns format
 jest.mock('date-fns', () => ({
-  format: jest.fn((date: Date, formatStr: string) => {
+  format: jest.fn((date: any, formatStr: any) => {
     if (formatStr === 'dd/MM/yyyy') {
       return date.toLocaleDateString('pt-BR');
     }
@@ -200,7 +200,7 @@ describe('AdminVisitorsPage', () => {
 
       render(<AdminVisitorsPage />);
 
-      expect(screen.getByText('Verificando permissoes...')).toBeInTheDocument();
+      expect(screen.getByText('Verificando permissões...')).toBeInTheDocument();
     });
 
     it('should show access denied when user cannot view visitors', async () => {

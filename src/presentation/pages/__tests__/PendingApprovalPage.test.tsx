@@ -65,7 +65,7 @@ describe('PendingApprovalPage', () => {
 
       renderPendingApprovalPage();
 
-      expect(screen.getByText('Aguardando Aprovacao')).toBeInTheDocument();
+      expect(screen.getAllByText('Aguardando Aprovação').length).toBeGreaterThan(0);
     });
 
     it('should render success message about account creation', () => {
@@ -81,7 +81,7 @@ describe('PendingApprovalPage', () => {
 
       renderPendingApprovalPage();
 
-      expect(screen.getByText('Ola, Test User!')).toBeInTheDocument();
+      expect(screen.getByText('Olá, Test User!')).toBeInTheDocument();
     });
 
     it('should display user email', () => {
@@ -97,7 +97,7 @@ describe('PendingApprovalPage', () => {
 
       renderPendingApprovalPage();
 
-      expect(screen.getByText('Aguardando Aprovacao', { selector: 'span.inline-flex' })).toBeInTheDocument();
+      expect(screen.getByText('Aguardando Aprovação', { selector: 'span.inline-flex' })).toBeInTheDocument();
     });
 
     it('should render information about approval process', () => {
@@ -106,9 +106,9 @@ describe('PendingApprovalPage', () => {
       renderPendingApprovalPage();
 
       expect(screen.getByText('O que acontece agora?')).toBeInTheDocument();
-      expect(screen.getByText('Um administrador revisara sua solicitacao')).toBeInTheDocument();
-      expect(screen.getByText('Voce sera notificado quando sua conta for aprovada')).toBeInTheDocument();
-      expect(screen.getByText('Apos a aprovacao, voce tera acesso completo ao sistema')).toBeInTheDocument();
+      expect(screen.getByText('Um administrador revisará sua solicitação')).toBeInTheDocument();
+      expect(screen.getByText('Você será notificado quando sua conta for aprovada')).toBeInTheDocument();
+      expect(screen.getByText('Após a aprovação, você terá acesso completo ao sistema')).toBeInTheDocument();
     });
 
     it('should render logout button', () => {
@@ -136,7 +136,7 @@ describe('PendingApprovalPage', () => {
 
       renderPendingApprovalPage();
 
-      expect(screen.getByText('Ola, !')).toBeInTheDocument();
+      expect(screen.getByText('Olá, !')).toBeInTheDocument();
     });
 
     it('should handle null user gracefully', () => {
@@ -147,7 +147,7 @@ describe('PendingApprovalPage', () => {
       renderPendingApprovalPage();
 
       // Should still render the page structure
-      expect(screen.getByText('Aguardando Aprovacao')).toBeInTheDocument();
+      expect(screen.getAllByText('Aguardando Aprovação').length).toBeGreaterThan(0);
     });
   });
 
@@ -207,7 +207,7 @@ describe('PendingApprovalPage', () => {
       renderPendingApprovalPage();
 
       const h2 = screen.getByRole('heading', { level: 2 });
-      expect(h2).toHaveTextContent('Aguardando Aprovacao');
+      expect(h2).toHaveTextContent('Aguardando Aprovação');
 
       const h3Elements = screen.getAllByRole('heading', { level: 3 });
       expect(h3Elements.length).toBeGreaterThan(0);

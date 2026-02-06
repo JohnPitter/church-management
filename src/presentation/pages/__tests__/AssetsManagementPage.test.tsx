@@ -29,21 +29,23 @@ const mockCreateAsset = jest.fn();
 const mockUpdateAsset = jest.fn();
 const mockDeleteAsset = jest.fn();
 
-jest.mock('@modules/church-management/assets/application/services/AssetService', () => ({
-  AssetService: jest.fn(function(this: any) {
-    this.getAllAssets = (...args: any[]) => mockGetAllAssets(...args);
-    this.getStatistics = (...args: any[]) => mockGetStatistics(...args);
-    this.createAsset = (...args: any[]) => mockCreateAsset(...args);
-    this.updateAsset = (...args: any[]) => mockUpdateAsset(...args);
-    this.deleteAsset = (...args: any[]) => mockDeleteAsset(...args);
-    // Additional methods
-    this.getAssetById = jest.fn().mockResolvedValue(null);
-    this.getAssetsByCategory = jest.fn().mockResolvedValue([]);
-    this.getAssetsByStatus = jest.fn().mockResolvedValue([]);
-    this.searchAssets = jest.fn().mockResolvedValue([]);
-    return this;
-  })
-}));
+jest.mock('@modules/church-management/assets/application/services/AssetService', () => {
+  return {
+    AssetService: function() {
+      return {
+        getAllAssets: (...args: any[]) => mockGetAllAssets(...args),
+        getStatistics: (...args: any[]) => mockGetStatistics(...args),
+        createAsset: (...args: any[]) => mockCreateAsset(...args),
+        updateAsset: (...args: any[]) => mockUpdateAsset(...args),
+        deleteAsset: (...args: any[]) => mockDeleteAsset(...args),
+        getAssetById: jest.fn().mockResolvedValue(null),
+        getAssetsByCategory: jest.fn().mockResolvedValue([]),
+        getAssetsByStatus: jest.fn().mockResolvedValue([]),
+        searchAssets: jest.fn().mockResolvedValue([])
+      };
+    }
+  };
+});
 
 // Mock useAuth hook
 const mockCurrentUser = {
