@@ -8,6 +8,9 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { User, UserRole, UserStatus } from '@/domain/entities/User';
 
+// Import after mocks are set up
+import { useAtomicPermissions } from '../useAtomicPermissions';
+
 // Mock Firebase config
 jest.mock('@/config/firebase', () => ({
   db: {}
@@ -38,9 +41,6 @@ jest.mock('../../contexts/AuthContext', () => ({
     currentUser: mockCurrentUser
   })
 }));
-
-// Import after mocks are set up
-import { useAtomicPermissions } from '../useAtomicPermissions';
 
 // Helper to create mock user
 const createMockUser = (overrides: Partial<User> = {}): User => ({

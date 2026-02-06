@@ -7,14 +7,14 @@ import userEvent from '@testing-library/user-event';
 import { CreateCategoryModal } from '../CreateCategoryModal';
 import { TransactionType } from '@modules/financial/church-finance/domain/entities/Financial';
 
+import { financialService } from '@modules/financial/church-finance/application/services/FinancialService';
+
 // Mock the financial service
 jest.mock('@modules/financial/church-finance/application/services/FinancialService', () => ({
   financialService: {
     createCategory: jest.fn()
   }
 }));
-
-import { financialService } from '@modules/financial/church-finance/application/services/FinancialService';
 
 describe('CreateCategoryModal', () => {
   const mockOnClose = jest.fn();

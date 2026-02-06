@@ -3,9 +3,7 @@
 // transaction management, transfers between departments, budget tracking, and financial reporting
 
 import {
-  DepartmentFinancialService,
-  DepartmentFilters,
-  DepartmentTransactionFilters
+  DepartmentFinancialService
 } from '../DepartmentFinancialService';
 import {
   Department,
@@ -13,8 +11,6 @@ import {
   DepartmentTransactionType,
   DepartmentTransactionStatus,
   DepartmentTransfer,
-  DepartmentMonthlyBalance,
-  DepartmentSummary,
   DepartmentEntity
 } from '../../../domain/entities/Department';
 

@@ -3,7 +3,6 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import MembersManagementPage from '../MembersManagementPage';
 import { Member, MemberStatus, MemberType, MaritalStatus, Address } from '@/domain/entities/Member';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';

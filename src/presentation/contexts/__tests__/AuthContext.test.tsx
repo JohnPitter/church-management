@@ -1,7 +1,6 @@
 // Unit Tests - AuthContext
 // Comprehensive tests for authentication context and provider
 
-import React from 'react';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../AuthContext';
 import { User, UserRole, UserStatus } from '@/domain/entities/User';

@@ -7,7 +7,6 @@ import {
   PostStatus,
   PostVisibility,
   Comment,
-  CommentAuthor,
   CommentStatus,
   Like,
   BlogPostEntity

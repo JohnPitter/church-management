@@ -2,7 +2,7 @@
 // Comprehensive tests for visitors management UI functionality
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { VisitorsPage } from '../VisitorsPage';
 import {
   Visitor,

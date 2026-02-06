@@ -15,8 +15,7 @@ import {
   TipoAtendimento,
   EnderecoAssistido,
   FamiliarAssistido,
-  AtendimentoAssistido,
-  ItemDoacao
+  AtendimentoAssistido
 } from '../../../domain/entities/Assistido';
 import { FirebaseAssistidoRepository } from '../../../infrastructure/repositories/FirebaseAssistidoRepository';
 import { NotificationService } from '@modules/shared-kernel/infrastructure/services/NotificationService';

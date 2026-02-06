@@ -20,14 +20,6 @@ import {
   updateDoc,
   deleteDoc,
   query,
-  where,
-  orderBy,
-  limit,
-  startAfter,
-  serverTimestamp,
-  increment,
-  arrayUnion,
-  arrayRemove,
   Timestamp
 } from 'firebase/firestore';
 

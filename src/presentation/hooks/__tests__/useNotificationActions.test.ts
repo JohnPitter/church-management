@@ -2,7 +2,11 @@
 // Comprehensive tests for notification actions functionality
 
 import { renderHook, act } from '@testing-library/react';
-import React from 'react';
+
+// Import after mocks
+import { useNotificationActions } from '../useNotificationActions';
+import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
+import { useNotifications } from '../../contexts/NotificationContext';
 
 // Mock Firebase config
 jest.mock('@/config/firebase', () => ({
@@ -30,11 +34,6 @@ jest.mock('../../contexts/AuthContext', () => ({
     loading: false
   })
 }));
-
-// Import after mocks
-import { useNotificationActions } from '../useNotificationActions';
-import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
-import { useNotifications } from '../../contexts/NotificationContext';
 
 describe('useNotificationActions Hook', () => {
   beforeEach(() => {

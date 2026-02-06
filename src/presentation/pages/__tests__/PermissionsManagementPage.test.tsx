@@ -2,7 +2,7 @@
 // Comprehensive tests for permissions and role management UI functionality
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PermissionsManagementPage } from '../PermissionsManagementPage';
 import { User, UserRole, UserStatus } from '@/domain/entities/User';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';

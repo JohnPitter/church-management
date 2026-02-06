@@ -1,7 +1,7 @@
 // Unit Tests - MemberService
 // Tests for Member service layer operations
 
-import { MemberService, MemberStatistics } from '../MemberService';
+import { MemberService } from '../MemberService';
 import { Member, MemberStatus, MaritalStatus, MemberType, Address } from '@modules/church-management/members/domain/entities/Member';
 import { FirebaseMemberRepository } from '@modules/church-management/members/infrastructure/repositories/FirebaseMemberRepository';
 

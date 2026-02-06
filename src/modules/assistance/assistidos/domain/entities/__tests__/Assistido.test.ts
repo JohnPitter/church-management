@@ -6,7 +6,6 @@ import {
   EnderecoAssistido,
   FamiliarAssistido,
   AtendimentoAssistido,
-  ItemDoacao,
   StatusAssistido,
   SituacaoFamiliar,
   Escolaridade,

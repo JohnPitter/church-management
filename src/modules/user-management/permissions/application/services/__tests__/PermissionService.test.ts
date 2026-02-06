@@ -2,6 +2,25 @@
 // Comprehensive tests for permission management service
 
 // Mock Firebase Firestore - must be defined before imports due to jest hoisting
+import {
+  SystemModule,
+  PermissionAction,
+  DEFAULT_ROLE_PERMISSIONS
+} from '@modules/user-management/permissions/domain/entities/Permission';
+import {
+  PermissionService
+} from '../PermissionService';
+import {
+  getDoc,
+  setDoc,
+  updateDoc,
+  getDocs,
+  doc,
+  collection,
+  query,
+  where
+} from 'firebase/firestore';
+
 jest.mock('firebase/firestore', () => ({
   getDoc: jest.fn(),
   setDoc: jest.fn(),
@@ -19,29 +38,6 @@ jest.mock('firebase/firestore', () => ({
 jest.mock('@/config/firebase', () => ({
   db: {}
 }));
-
-import {
-  SystemModule,
-  PermissionAction,
-  DEFAULT_ROLE_PERMISSIONS
-} from '@modules/user-management/permissions/domain/entities/Permission';
-import {
-  PermissionService,
-  RolePermissionConfig,
-  UserPermissionConfig,
-  CustomRoleConfig
-} from '../PermissionService';
-import {
-  getDoc,
-  setDoc,
-  updateDoc,
-  getDocs,
-  doc,
-  collection,
-  query,
-  where,
-  Timestamp
-} from 'firebase/firestore';
 
 // Get mock functions from the mocked module
 const mockGetDoc = getDoc as jest.Mock;

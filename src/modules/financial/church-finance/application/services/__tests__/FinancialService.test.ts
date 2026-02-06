@@ -4,9 +4,7 @@
 
 import {
   FinancialService,
-  TransactionFilters,
-  FinancialSummary,
-  DonationSummary
+  TransactionFilters
 } from '../FinancialService';
 import {
   Transaction,

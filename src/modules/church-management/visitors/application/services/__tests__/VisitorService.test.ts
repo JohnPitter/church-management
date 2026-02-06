@@ -28,20 +28,18 @@ import {
   ContactAttempt,
   ContactType,
   ContactMethod,
-  VisitRecord,
-  ServiceType,
-  VisitorStats
+  ServiceType
 } from '../../../domain/entities/Visitor';
 import { VisitorFilters } from '../../../infrastructure/persistence/FirebaseVisitorRepository';
+
+// Import service after mocking
+import { visitorService } from '../../../infrastructure/persistence/FirebaseVisitorRepository';
 
 // Mock Firebase
 jest.mock('firebase/firestore');
 jest.mock('config/firebase', () => ({
   db: {}
 }));
-
-// Import service after mocking
-import { visitorService } from '../../../infrastructure/persistence/FirebaseVisitorRepository';
 
 // Mock implementations
 const mockAddDoc = addDoc as jest.MockedFunction<typeof addDoc>;

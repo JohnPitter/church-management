@@ -5,7 +5,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ONGFinancialPage } from '../ONGFinancialPage';
-import { TransactionType, TransactionStatus, FinancialEntity } from '@modules/financial/church-finance/domain/entities/Financial';
+import { TransactionType, TransactionStatus } from '@modules/financial/church-finance/domain/entities/Financial';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 
 // Mock Firebase config

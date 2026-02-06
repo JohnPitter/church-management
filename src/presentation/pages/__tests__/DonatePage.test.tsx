@@ -243,7 +243,7 @@ describe('DonatePage', () => {
       await act(async () => {
         jest.advanceTimersByTime(2000);
       });
-      await waitFor(() => expect(screen.getByText('Copiar')).toBeInTheDocument());
+      await screen.findByText('Copiar');
 
       // Second copy
       fireEvent.click(screen.getByRole('button', { name: /Copiar/i }));

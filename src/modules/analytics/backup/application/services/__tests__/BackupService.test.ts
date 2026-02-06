@@ -1,7 +1,7 @@
 // BackupService.test.ts
 // Comprehensive unit tests for BackupService
 
-import { BackupService, BackupInfo, DatabaseStats } from '../BackupService';
+import { BackupService } from '../BackupService';
 import {
   collection,
   getDocs,
@@ -13,7 +13,6 @@ import {
   where,
   Timestamp
 } from 'firebase/firestore';
-import { db } from '@/config/firebase';
 
 // Mock Firebase modules
 jest.mock('firebase/firestore', () => ({

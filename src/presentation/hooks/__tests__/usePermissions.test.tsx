@@ -2,9 +2,24 @@
 // Comprehensive tests for permission checking functionality
 
 import { renderHook, act, waitFor } from '@testing-library/react';
-import React from 'react';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { User, UserRole, UserStatus } from '@/domain/entities/User';
+
+// Import after mocks are set up
+import {
+  usePermissions,
+  useCanManageUsers,
+  useCanManageMembers,
+  useCanManageBlog,
+  useCanManageEvents,
+  useCanManageProjects,
+  useCanManageFinance,
+  useCanManagePermissions,
+  useCanAccessDashboard,
+  useCanManageAssistance,
+  useCanManageONG,
+  useCanManageLeadership
+} from '../usePermissions';
 
 // Mock Firebase config
 jest.mock('@/config/firebase', () => ({
@@ -37,22 +52,6 @@ jest.mock('../../contexts/AuthContext', () => ({
     currentUser: mockUser
   })
 }));
-
-// Import after mocks are set up
-import {
-  usePermissions,
-  useCanManageUsers,
-  useCanManageMembers,
-  useCanManageBlog,
-  useCanManageEvents,
-  useCanManageProjects,
-  useCanManageFinance,
-  useCanManagePermissions,
-  useCanAccessDashboard,
-  useCanManageAssistance,
-  useCanManageONG,
-  useCanManageLeadership
-} from '../usePermissions';
 
 // Helper to create mock user
 const createMockUser = (overrides: Partial<User> = {}): User => ({

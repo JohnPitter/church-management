@@ -5,7 +5,6 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { UserManagementPage } from '../UserManagementPage';
 import { User, UserRole, UserStatus } from '@/domain/entities/User';
-import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 
 // Mock Firebase config
 jest.mock('@/config/firebase', () => ({

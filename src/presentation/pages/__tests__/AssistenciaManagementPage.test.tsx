@@ -2,20 +2,16 @@
 // Comprehensive tests for assistance management page component
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AssistenciaManagementPage from '../AssistenciaManagementPage';
 import {
   TipoAssistencia,
   StatusAgendamento,
-  StatusProfissional,
-  AgendamentoAssistencia,
-  ProfissionalAssistencia
+  StatusProfissional
 } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import {
   HelpRequestStatus,
-  HelpRequestPriority,
-  ProfessionalHelpRequest
+  HelpRequestPriority
 } from '@modules/assistance/professional/domain/entities/ProfessionalHelpRequest';
 
 // ============================================================================

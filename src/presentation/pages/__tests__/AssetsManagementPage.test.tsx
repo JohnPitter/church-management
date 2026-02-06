@@ -56,7 +56,19 @@ const mockCurrentUser = {
 
 jest.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({
-    currentUser: mockCurrentUser
+    currentUser: mockCurrentUser,
+    user: mockCurrentUser,
+    loading: false,
+    login: jest.fn(),
+    register: jest.fn(),
+    signInWithGoogle: jest.fn(),
+    logout: jest.fn(),
+    refreshUser: jest.fn(),
+    canCreateContent: jest.fn().mockReturnValue(true),
+    isProfessional: jest.fn().mockReturnValue(false),
+    canAccessSystem: jest.fn().mockReturnValue(true),
+    linkEmailPassword: jest.fn(),
+    getSignInMethods: jest.fn()
   })
 }));
 

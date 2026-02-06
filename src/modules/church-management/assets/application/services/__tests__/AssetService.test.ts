@@ -22,8 +22,6 @@ import {
   where,
   orderBy,
   Timestamp,
-  DocumentSnapshot,
-  QuerySnapshot,
   DocumentReference
 } from 'firebase/firestore';
 

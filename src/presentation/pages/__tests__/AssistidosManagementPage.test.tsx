@@ -2,15 +2,10 @@
 // Comprehensive tests for assistidos (assisted persons) management page component
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, waitFor } from '@testing-library/react';
 import AssistidosManagementPage from '../AssistidosManagementPage';
-import {
-  Assistido,
-  StatusAssistido,
-  NecessidadeAssistido,
-  TipoAtendimento
-} from '@modules/assistance/assistidos/domain/entities/Assistido';
+
+
 
 // ============================================================================
 // Mock Setup

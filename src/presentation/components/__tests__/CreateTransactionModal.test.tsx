@@ -8,9 +8,10 @@ import { CreateTransactionModal } from '../CreateTransactionModal';
 import {
   TransactionType,
   PaymentMethod,
-  TransactionStatus,
-  FinancialCategory
+  TransactionStatus
 } from '@modules/financial/church-finance/domain/entities/Financial';
+
+import { financialService } from '@modules/financial/church-finance/application/services/FinancialService';
 
 // Mock the financial service
 jest.mock('@modules/financial/church-finance/application/services/FinancialService', () => ({
@@ -19,8 +20,6 @@ jest.mock('@modules/financial/church-finance/application/services/FinancialServi
     getCategories: jest.fn()
   }
 }));
-
-import { financialService } from '@modules/financial/church-finance/application/services/FinancialService';
 
 describe('CreateTransactionModal', () => {
   const mockOnClose = jest.fn();

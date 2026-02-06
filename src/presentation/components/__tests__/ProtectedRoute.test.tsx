@@ -6,7 +6,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ProtectedRoute } from '../ProtectedRoute';
 import { SystemModule, PermissionAction } from '../../../domain/entities/Permission';
-import { UserRole, UserStatus } from '../../../domain/entities/User';
+import { UserStatus } from '../../../domain/entities/User';
 
 // Mock contexts
 const mockUseAuth = jest.fn();

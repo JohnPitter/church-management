@@ -7,6 +7,8 @@ import userEvent from '@testing-library/user-event';
 import { CreateDepartmentModal } from '../CreateDepartmentModal';
 import { Department } from '@modules/church-management/departments/domain/entities/Department';
 
+import { departmentFinancialService } from '@modules/financial/department-finance/application/services/DepartmentFinancialService';
+
 // Mock the department financial service
 jest.mock('@modules/financial/department-finance/application/services/DepartmentFinancialService', () => ({
   departmentFinancialService: {
@@ -14,8 +16,6 @@ jest.mock('@modules/financial/department-finance/application/services/Department
     updateDepartment: jest.fn()
   }
 }));
-
-import { departmentFinancialService } from '@modules/financial/department-finance/application/services/DepartmentFinancialService';
 
 describe('CreateDepartmentModal', () => {
   const mockOnClose = jest.fn();

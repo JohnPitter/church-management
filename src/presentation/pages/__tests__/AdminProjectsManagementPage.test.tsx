@@ -2,8 +2,7 @@
 // Comprehensive tests for projects CRUD operations and registrations management
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AdminProjectsManagementPage } from '../AdminProjectsManagementPage';
 import { Project, ProjectStatus, ProjectRegistration, RegistrationStatus } from '@modules/content-management/projects/domain/entities/Project';
 
@@ -20,6 +19,9 @@ const mockCurrentUser = {
   displayName: 'Test Admin',
   role: 'admin',
   status: 'approved'
+  ,
+  createdAt: new Date(),
+  updatedAt: new Date()
 };
 
 jest.mock('../../contexts/AuthContext', () => ({
@@ -27,16 +29,16 @@ jest.mock('../../contexts/AuthContext', () => ({
     currentUser: mockCurrentUser,
     user: mockCurrentUser,
     loading: false,
-    login: jest.fn(),
-    register: jest.fn(),
-    signInWithGoogle: jest.fn(),
-    logout: jest.fn(),
-    refreshUser: jest.fn(),
+    login: jest.fn().mockResolvedValue(mockCurrentUser),
+    register: jest.fn().mockResolvedValue(mockCurrentUser),
+    signInWithGoogle: jest.fn().mockResolvedValue(mockCurrentUser),
+    logout: jest.fn().mockResolvedValue(undefined),
+    refreshUser: jest.fn().mockResolvedValue(undefined),
     canCreateContent: jest.fn().mockReturnValue(true),
     isProfessional: jest.fn().mockReturnValue(false),
     canAccessSystem: jest.fn().mockReturnValue(true),
-    linkEmailPassword: jest.fn(),
-    getSignInMethods: jest.fn()
+    linkEmailPassword: jest.fn().mockResolvedValue(undefined),
+    getSignInMethods: jest.fn().mockResolvedValue(['password']).mockResolvedValue(['password'])
   })
 }));
 

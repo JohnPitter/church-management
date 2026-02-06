@@ -9,8 +9,7 @@ import {
   PrioridadeAtendimento,
   AssistenciaEntity,
   ProfissionalAssistencia,
-  AgendamentoAssistencia,
-  HorarioFuncionamento
+  AgendamentoAssistencia
 } from '../Assistencia';
 
 describe('AssistenciaEntity', () => {

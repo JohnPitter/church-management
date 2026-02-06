@@ -2,7 +2,7 @@
 // Comprehensive tests for permission-gated button with access denied modal
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { PermissionButton } from '../PermissionButton';
 import { SystemModule, PermissionAction, PermissionManager } from '../../../domain/entities/Permission';
 

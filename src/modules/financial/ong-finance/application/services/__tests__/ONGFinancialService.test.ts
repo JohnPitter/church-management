@@ -1,7 +1,7 @@
 // Unit Tests - ONGFinancialService
 // Tests for ONG Financial service layer operations
 
-import { ONGFinancialService, ONGTransactionFilters, ONGFinancialSummary } from '../ONGFinancialService';
+import { ONGFinancialService, ONGTransactionFilters } from '../ONGFinancialService';
 import {
   Transaction,
   FinancialCategory,
@@ -9,7 +9,6 @@ import {
   TransactionStatus,
   PaymentMethod
 } from '../../../../church-finance/domain/entities/Financial';
-import { FinancialEntity } from '../../../../church-finance/domain/entities/Financial';
 import * as firestore from 'firebase/firestore';
 
 // Mock Firebase Firestore

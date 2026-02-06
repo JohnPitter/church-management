@@ -2,7 +2,7 @@
 // Comprehensive tests for the modal component
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { Modal } from '../Modal';
 
 describe('Modal', () => {

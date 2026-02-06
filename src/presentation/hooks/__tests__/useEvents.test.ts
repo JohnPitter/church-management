@@ -6,6 +6,9 @@ import { Event, EventCategory, EventStatus, EventConfirmation, ConfirmationStatu
 import { User, UserRole, UserStatus } from '@/domain/entities/User';
 import toast from 'react-hot-toast';
 
+// Import after mocks are set up
+import { useEvents } from '../useEvents';
+
 // Mock Firebase config
 jest.mock('@/config/firebase', () => ({
   db: {}
@@ -69,9 +72,6 @@ jest.mock('@modules/church-management/events/application/usecases/ConfirmEventAt
     execute = mockExecuteConfirmAttendance;
   }
 }));
-
-// Import after mocks are set up
-import { useEvents } from '../useEvents';
 
 // Helper to create mock user
 const createMockUser = (overrides: Partial<User> = {}): User => ({

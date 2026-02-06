@@ -6,13 +6,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AtendimentoModal from '../AtendimentoModal';
 import {
-  Assistido,
   StatusAssistido,
   SituacaoFamiliar,
   Escolaridade,
   TipoMoradia,
   TipoAtendimento
 } from '@modules/assistance/assistidos/domain/entities/Assistido';
+
+import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
 
 // Mock the AuthContext
 const mockCurrentUser = {
@@ -45,8 +46,6 @@ const mockAddAtendimento = jest.fn();
 jest.mock('@modules/assistance/assistidos/application/services/AssistidoService', () => ({
   AssistidoService: jest.fn()
 }));
-
-import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
 
 // Mock window.alert
 const mockAlert = jest.fn();

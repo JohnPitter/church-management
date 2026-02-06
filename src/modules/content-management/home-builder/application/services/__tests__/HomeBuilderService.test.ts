@@ -5,9 +5,7 @@ import { HomeBuilderService } from '../HomeBuilderService';
 import { FirebaseHomeBuilderRepository } from '../../../infrastructure/repositories/FirebaseHomeBuilderRepository';
 import {
   HomeLayout,
-  HomeComponent,
   ComponentType,
-  HomeBuilderEntity,
   COMPONENT_TEMPLATES
 } from '../../../domain/entities/HomeBuilder';
 

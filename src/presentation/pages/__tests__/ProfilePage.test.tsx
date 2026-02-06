@@ -3,11 +3,9 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { ProfilePage } from '../ProfilePage';
 import { UserRole, UserStatus } from '@/domain/entities/User';
-import { format } from 'date-fns';
 
 // Mock Firebase config and storage
 jest.mock('@/config/firebase', () => ({

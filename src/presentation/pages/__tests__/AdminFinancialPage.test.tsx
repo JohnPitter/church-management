@@ -5,7 +5,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AdminFinancialPage } from '../AdminFinancialPage';
-import { TransactionType, TransactionStatus, FinancialEntity } from '@modules/financial/church-finance/domain/entities/Financial';
+import { TransactionType, TransactionStatus } from '@modules/financial/church-finance/domain/entities/Financial';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 
 // Mock Firebase config
@@ -26,16 +26,16 @@ jest.mock('../../contexts/AuthContext', () => ({
     currentUser: mockCurrentUser,
     user: mockCurrentUser,
     loading: false,
-    login: jest.fn(),
-    register: jest.fn(),
-    signInWithGoogle: jest.fn(),
-    logout: jest.fn(),
-    refreshUser: jest.fn(),
+    login: jest.fn().mockResolvedValue(mockCurrentUser),
+    register: jest.fn().mockResolvedValue(mockCurrentUser),
+    signInWithGoogle: jest.fn().mockResolvedValue(mockCurrentUser),
+    logout: jest.fn().mockResolvedValue(undefined),
+    refreshUser: jest.fn().mockResolvedValue(undefined),
     canCreateContent: jest.fn().mockReturnValue(true),
     isProfessional: jest.fn().mockReturnValue(false),
     canAccessSystem: jest.fn().mockReturnValue(true),
-    linkEmailPassword: jest.fn(),
-    getSignInMethods: jest.fn()
+    linkEmailPassword: jest.fn().mockResolvedValue(undefined),
+    getSignInMethods: jest.fn().mockResolvedValue(["password"])
   })
 }));
 

@@ -4,7 +4,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ONGSettingsPage from '../ONGSettingsPage';
-import { ONGInfo, ONGEntity } from '@modules/ong-management/settings/domain/entities/ONG';
+import { ONGInfo } from '@modules/ong-management/settings/domain/entities/ONG';
 
 // Mock Firebase config
 jest.mock('@/config/firebase', () => ({

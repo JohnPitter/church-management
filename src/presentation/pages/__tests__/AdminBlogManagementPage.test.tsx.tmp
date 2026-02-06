@@ -1,0 +1,43 @@
+// Unit Tests - AdminBlogManagementPage
+// Comprehensive tests for blog management page component
+
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { AdminBlogManagementPage } from '../AdminBlogManagementPage';
+
+// ============================================================================
+// Mock Setup
+// ============================================================================
+
+// Mock AuthContext - Complete AuthContextType with all 13 properties
+const mockCurrentUser = {
+  id: 'user-1',
+  email: 'admin@church.com',
+  displayName: 'Admin User',
+  photoURL: 'https://example.com/photo.jpg',
+  role: 'admin',
+  status: 'approved',
+  createdAt: new Date(),
+  updatedAt: new Date()
+};
+
+const mockAuthContext = {
+  currentUser: mockCurrentUser,
+  user: mockCurrentUser,
+  loading: false,
+  login: jest.fn().mockResolvedValue(mockCurrentUser),
+  register: jest.fn().mockResolvedValue(mockCurrentUser),
+  signInWithGoogle: jest.fn().mockResolvedValue(mockCurrentUser),
+  logout: jest.fn().mockResolvedValue(undefined),
+  refreshUser: jest.fn().mockResolvedValue(undefined),
+  canCreateContent: jest.fn().mockReturnValue(true),
+  isProfessional: jest.fn().mockReturnValue(false),
+  canAccessSystem: jest.fn().mockReturnValue(true),
+  linkEmailPassword: jest.fn().mockResolvedValue(undefined),
+  getSignInMethods: jest.fn().mockResolvedValue(['password'])
+};
+
+jest.mock('../../contexts/AuthContext', () => ({
+  useAuth: () => mockAuthContext
+}));

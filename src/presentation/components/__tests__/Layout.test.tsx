@@ -2,7 +2,7 @@
 // Comprehensive tests for main layout wrapper with navigation
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { Layout } from '../Layout';
 import { SystemModule, PermissionAction } from '../../../domain/entities/Permission';

@@ -4,7 +4,6 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import type * as UserEvent from '@testing-library/user-event';
 import { BlogPage } from '../BlogPage';
 import { FirebaseBlogRepository } from '@modules/content-management/blog/infrastructure/repositories/FirebaseBlogRepository';
 import { BlogPost, PostStatus, PostVisibility } from '@modules/content-management/blog/domain/entities/BlogPost';
