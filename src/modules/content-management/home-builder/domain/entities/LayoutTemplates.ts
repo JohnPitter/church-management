@@ -121,7 +121,7 @@ export class LayoutTemplateFactory {
         settings: {
           showClock: true,
           showDate: true,
-          title: `Seja Bem-Vindo à ${churchName}! ✨`,
+          title: `Seja Bem-Vindo! ${churchName} ✨`,
           subtitle: 'Juntos construímos uma comunidade de amor, fé e transformação',
           backgroundType: 'gradient',
           gradientDirection: 'to bottom right',

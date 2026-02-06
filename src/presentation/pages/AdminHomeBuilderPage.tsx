@@ -67,7 +67,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
       category: 'layout',
       configurable: true,
       defaultSettings: {
-        title: 'Bem-vindo à Nossa Igreja',
+        title: 'Seja Bem-Vindo',
         subtitle: 'Um lugar de fé, esperança e amor',
         showClock: true,
         showDate: true

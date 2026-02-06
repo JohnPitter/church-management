@@ -182,7 +182,7 @@ export const COMPONENT_TEMPLATES: ComponentTemplate[] = [
     category: 'media',
     configurable: true,
     defaultSettings: {
-      title: 'Bem-vindo à Nossa Igreja',
+      title: 'Seja Bem-Vindo',
       subtitle: 'Um lugar de fé, esperança e comunhão',
       backgroundImage: '',
       height: '500px',
@@ -495,7 +495,7 @@ export class HomeBuilderEntity {
           settings: {
             showClock: true,
             showDate: true,
-            title: 'Bem-vindo à {{churchName}}',
+            title: 'Seja bem-vindo! {{churchName}}',
             subtitle: 'Um lugar de fé, esperança e amor. Conecte-se com nossa comunidade e cresça espiritualmente.',
             backgroundGradient: 'from-blue-600/5 to-purple-600/5',
             titleGradient: 'from-blue-600 to-purple-600',

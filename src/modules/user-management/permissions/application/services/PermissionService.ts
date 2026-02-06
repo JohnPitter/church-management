@@ -462,6 +462,10 @@ export class PermissionService {
         updatedAt: Timestamp.now()
       });
 
+      // Sync updated permissions to all user documents with this role
+      // This ensures Firestore security rules can read the permissions
+      await this.syncRolePermissionsForRole(role);
+
       // Clear all caches so users get updated permissions
       this.clearAdminCache(`role_${role}`);
       this.invalidateUserPermissionCache();
@@ -867,27 +871,33 @@ export class PermissionService {
   async updateUserRolePermissions(userId: string, roleId: string): Promise<void> {
     try {
       const userRef = doc(db, this.usersCollection, userId);
+      let roleModules: { module: SystemModule; actions: PermissionAction[] }[] | null = null;
 
       if (this.getDefaultRoles().includes(roleId)) {
-        await updateDoc(userRef, {
-          rolePermissions: null,
-          rolePermissionsUpdatedAt: Timestamp.now()
-        });
+        // Default role: read from rolePermissions collection
+        const roleDoc = await getDoc(doc(db, this.rolePermissionsCollection, roleId));
+        if (roleDoc.exists()) {
+          roleModules = roleDoc.data().modules || null;
+        }
+        // Fallback to hardcoded defaults
+        if (!roleModules) {
+          const defaultPerms = DEFAULT_ROLE_PERMISSIONS[roleId];
+          if (defaultPerms) {
+            roleModules = defaultPerms.map(p => ({ module: p.module, actions: [...p.actions] }));
+          }
+        }
       } else {
+        // Custom role: read from customRoles collection
         const customRole = await this.getCustomRole(roleId);
-
         if (customRole && customRole.isActive) {
-          await updateDoc(userRef, {
-            rolePermissions: customRole.modules,
-            rolePermissionsUpdatedAt: Timestamp.now()
-          });
-        } else {
-          await updateDoc(userRef, {
-            rolePermissions: null,
-            rolePermissionsUpdatedAt: Timestamp.now()
-          });
+          roleModules = customRole.modules;
         }
       }
+
+      await updateDoc(userRef, {
+        rolePermissions: roleModules,
+        rolePermissionsUpdatedAt: Timestamp.now()
+      });
 
       this.clearAdminCache(`user_overrides_${userId}`);
       this.invalidateUserPermissionCache(userId);
@@ -899,11 +909,31 @@ export class PermissionService {
 
   async syncRolePermissionsForRole(roleId: string): Promise<number> {
     try {
-      const customRole = await this.getCustomRole(roleId);
-      if (!customRole) {
-        return 0;
+      let modules: { module: SystemModule; actions: PermissionAction[] }[] | null = null;
+
+      if (this.getDefaultRoles().includes(roleId)) {
+        // Default role: read from rolePermissions collection
+        const roleDoc = await getDoc(doc(db, this.rolePermissionsCollection, roleId));
+        if (roleDoc.exists()) {
+          modules = roleDoc.data().modules || null;
+        }
+        // Fallback to hardcoded defaults
+        if (!modules) {
+          const defaultPerms = DEFAULT_ROLE_PERMISSIONS[roleId];
+          if (defaultPerms) {
+            modules = defaultPerms.map(p => ({ module: p.module, actions: [...p.actions] }));
+          }
+        }
+      } else {
+        // Custom role: read from customRoles collection
+        const customRole = await this.getCustomRole(roleId);
+        if (!customRole) {
+          return 0;
+        }
+        modules = customRole.isActive ? customRole.modules : null;
       }
 
+      // Find all users with this role and sync permissions
       const usersQuery = query(
         collection(db, this.usersCollection),
         where('role', '==', roleId)
@@ -914,7 +944,7 @@ export class PermissionService {
 
       for (const userDoc of usersSnapshot.docs) {
         await updateDoc(userDoc.ref, {
-          rolePermissions: customRole.isActive ? customRole.modules : null,
+          rolePermissions: modules,
           rolePermissionsUpdatedAt: Timestamp.now()
         });
         updatedCount++;

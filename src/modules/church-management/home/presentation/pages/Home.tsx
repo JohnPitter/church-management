@@ -366,7 +366,7 @@ const Home: React.FC = () => {
             ) : (
               <>
                 <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Bem-vindo à {settings?.churchName || 'Igreja'}
+                  Seja bem-vindo! {settings?.churchName || 'Igreja'}
                 </h1>
                 <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
                   Um lugar de fé, esperança e amor. Conecte-se com nossa comunidade e cresça espiritualmente.

@@ -45,7 +45,7 @@ export const CanvaHomeLayout: React.FC<CanvaHomeLayoutProps> = ({
 
             {/* Title */}
             <h1 className="text-6xl md:text-7xl font-bold mb-6 text-white drop-shadow-lg">
-              Bem-vindo à {settings?.churchName || 'Nossa Igreja'}! ✨
+              Seja bem-vindo! {settings?.churchName || 'Nossa Igreja'} ✨
             </h1>
             <p className="text-xl md:text-2xl text-white/95 max-w-3xl mx-auto leading-relaxed mb-8">
               Juntos construímos uma comunidade de amor, fé e transformação

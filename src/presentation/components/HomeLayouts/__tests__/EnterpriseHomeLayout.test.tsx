@@ -120,7 +120,7 @@ describe('EnterpriseHomeLayout Component', () => {
     it('should render hero section when enabled', () => {
       renderComponent();
 
-      expect(screen.getByText('BEM-VINDO AO')).toBeInTheDocument();
+      expect(screen.getByText('SEJA BEM-VINDO')).toBeInTheDocument();
       expect(screen.getByText('Test Church')).toBeInTheDocument();
     });
 
@@ -149,7 +149,7 @@ describe('EnterpriseHomeLayout Component', () => {
         sections: { ...defaultSections, hero: false }
       });
 
-      expect(screen.queryByText('BEM-VINDO AO')).not.toBeInTheDocument();
+      expect(screen.queryByText('SEJA BEM-VINDO')).not.toBeInTheDocument();
     });
 
     it('should navigate to events on button click', () => {

@@ -59,7 +59,7 @@ service cloud.firestore {
              findPermissionInArray(userData.customPermissions.revoked, module, action);
     }
 
-    // CORRIGIDO: Busca permissão em todo o array (até 20 elementos)
+    // Busca permissão em todo o array (até 30 elementos - cobre todos os 26 SystemModules)
     // Firestore Rules não suporta loops, então verificamos explicitamente
     function findPermissionInArray(arr, module, action) {
       return (arr.size() > 0 && arr[0].module == module && action in arr[0].actions) ||
@@ -81,17 +81,27 @@ service cloud.firestore {
              (arr.size() > 16 && arr[16].module == module && action in arr[16].actions) ||
              (arr.size() > 17 && arr[17].module == module && action in arr[17].actions) ||
              (arr.size() > 18 && arr[18].module == module && action in arr[18].actions) ||
-             (arr.size() > 19 && arr[19].module == module && action in arr[19].actions);
+             (arr.size() > 19 && arr[19].module == module && action in arr[19].actions) ||
+             (arr.size() > 20 && arr[20].module == module && action in arr[20].actions) ||
+             (arr.size() > 21 && arr[21].module == module && action in arr[21].actions) ||
+             (arr.size() > 22 && arr[22].module == module && action in arr[22].actions) ||
+             (arr.size() > 23 && arr[23].module == module && action in arr[23].actions) ||
+             (arr.size() > 24 && arr[24].module == module && action in arr[24].actions) ||
+             (arr.size() > 25 && arr[25].module == module && action in arr[25].actions) ||
+             (arr.size() > 26 && arr[26].module == module && action in arr[26].actions) ||
+             (arr.size() > 27 && arr[27].module == module && action in arr[27].actions) ||
+             (arr.size() > 28 && arr[28].module == module && action in arr[28].actions) ||
+             (arr.size() > 29 && arr[29].module == module && action in arr[29].actions);
     }
 
     // ========================================
     // ROLE PERMISSIONS (Suporta custom roles)
     // ========================================
 
-    // Check role permissions - suporta roles padrão e custom roles
+    // Check role permissions - usa rolePermissions sincronizado no documento do usuário
     function hasRolePermission(userData, module, action) {
       return userData.role == 'admin' ||
-             // Custom role: verifica rolePermissions snapshot no documento do usuário
+             // Permissões dinâmicas: rolePermissions sincronizado no user doc pelo PermissionService
              ('rolePermissions' in userData &&
               userData.rolePermissions != null &&
               userData.rolePermissions.size() > 0 &&

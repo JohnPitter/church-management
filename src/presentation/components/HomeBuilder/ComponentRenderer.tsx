@@ -642,7 +642,7 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
                   letterSpacing: '-0.02em',
                   textShadow: '0 4px 8px rgba(0, 0, 0, 0.3)'
                 }}>
-                  {settings.title || 'Bem-vindo à Nossa Igreja'}
+                  {settings.title || 'Seja Bem-Vindo'}
                 </h1>
                 
                 {/* Subtítulo */}

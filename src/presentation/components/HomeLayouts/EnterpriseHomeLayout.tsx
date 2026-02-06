@@ -34,7 +34,7 @@ export const EnterpriseHomeLayout: React.FC<EnterpriseHomeLayoutProps> = ({ sect
                 {format(currentTime, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </p>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight leading-tight">
-                BEM-VINDO AO<br/>
+                SEJA BEM-VINDO<br/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">
                   {settings?.churchName || 'NOSSA IGREJA'}
                 </span>
@@ -205,8 +205,8 @@ export const EnterpriseHomeLayout: React.FC<EnterpriseHomeLayoutProps> = ({ sect
                     onClick={() => navigate(service.link)}
                     className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100"
                   >
-                    <div className={`bg-gradient-to-br ${service.gradient} p-6 text-white`}>
-                      <div className="text-5xl mb-3">{service.icon}</div>
+                    <div className={`bg-gradient-to-br ${service.gradient} px-6 py-8 text-white flex flex-col items-center justify-center min-h-[140px]`}>
+                      <div className="text-5xl mb-3 leading-none">{service.icon}</div>
                       <h3 className="text-lg font-bold mb-1">{service.title}</h3>
                     </div>
                     <div className="p-5 bg-white">
