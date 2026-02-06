@@ -61,13 +61,14 @@ jest.mock('../../contexts/AuthContext', () => ({
 
 // Mock usePermissions hook
 const mockHasPermission = jest.fn().mockReturnValue(true);
+const mockUsePermissions = jest.fn(() => ({
+  hasPermission: mockHasPermission,
+  loading: false,
+  permissions: []
+}));
 
 jest.mock('../../hooks/usePermissions', () => ({
-  usePermissions: () => ({
-    hasPermission: jest.fn().mockReturnValue(true),
-    loading: false,
-    permissions: []
-  })
+  usePermissions: mockUsePermissions
 }));
 
 // Mock log data
@@ -158,7 +159,8 @@ describe('AdminLogsPage', () => {
 
     mockUsePermissions.mockReturnValue({
       hasPermission: mockHasPermission,
-      loading: false
+      loading: false,
+      permissions: []
     });
 
     // Mock repository methods
@@ -191,7 +193,8 @@ describe('AdminLogsPage', () => {
     it('should show loading spinner while checking permissions', () => {
       mockUsePermissions.mockReturnValue({
         hasPermission: mockHasPermission,
-        loading: true
+        loading: true,
+        permissions: []
       });
 
       renderComponent();
@@ -203,7 +206,8 @@ describe('AdminLogsPage', () => {
       mockHasPermission.mockReturnValue(false);
       mockUsePermissions.mockReturnValue({
         hasPermission: mockHasPermission,
-        loading: false
+        loading: false,
+        permissions: []
       });
 
       renderComponent();
@@ -218,7 +222,8 @@ describe('AdminLogsPage', () => {
       });
       mockUsePermissions.mockReturnValue({
         hasPermission: mockHasPermission,
-        loading: false
+        loading: false,
+        permissions: []
       });
 
       renderComponent();
@@ -822,7 +827,8 @@ describe('AdminLogsPage', () => {
       });
       mockUsePermissions.mockReturnValue({
         hasPermission: mockHasPermission,
-        loading: false
+        loading: false,
+        permissions: []
       });
 
       renderComponent();
@@ -920,7 +926,8 @@ describe('AdminLogsPage', () => {
       });
       mockUsePermissions.mockReturnValue({
         hasPermission: mockHasPermission,
-        loading: false
+        loading: false,
+        permissions: []
       });
 
       renderComponent();

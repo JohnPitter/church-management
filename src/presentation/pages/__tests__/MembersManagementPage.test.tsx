@@ -41,11 +41,12 @@ jest.mock('@modules/church-management/members/application/services/MemberService
 
 // Mock usePermissions hook
 const mockHasPermission = jest.fn().mockReturnValue(true);
+let mockPermissionsLoading = false;
 
 jest.mock('../../hooks/usePermissions', () => ({
   usePermissions: () => ({
     hasPermission: jest.fn().mockReturnValue(true),
-    loading: false,
+    loading: mockPermissionsLoading,
     permissions: []
   })
 }));
