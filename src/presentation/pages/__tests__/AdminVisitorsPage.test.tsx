@@ -213,7 +213,7 @@ describe('AdminVisitorsPage', () => {
       await waitFor(() => {
         expect(screen.getByText('Acesso Negado')).toBeInTheDocument();
       });
-      expect(screen.getByText('Voce nao tem permissao para visualizar visitantes.')).toBeInTheDocument();
+      expect(screen.getByText(/não tem permissão para visualizar visitantes/i)).toBeInTheDocument();
     });
 
     it('should not show create button when user lacks create permission', async () => {

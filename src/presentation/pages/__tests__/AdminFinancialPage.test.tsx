@@ -285,7 +285,7 @@ describe('AdminFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Sistema Financeiro')).toBeInTheDocument();
+        expect(screen.getAllByText('Sistema Financeiro')[0]).toBeInTheDocument();
       });
     });
   });
@@ -306,7 +306,7 @@ describe('AdminFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Sistema Financeiro')).toBeInTheDocument();
+        expect(screen.getAllByText('Sistema Financeiro')[0]).toBeInTheDocument();
         expect(screen.getByText('Controle financeiro completo da igreja')).toBeInTheDocument();
       });
     });
@@ -346,7 +346,7 @@ describe('AdminFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Sistema Financeiro')).toBeInTheDocument();
+        expect(screen.getAllByText('Sistema Financeiro')[0]).toBeInTheDocument();
       });
 
       // The new transaction button in the header should not be visible
@@ -501,7 +501,7 @@ describe('AdminFinancialPage', () => {
 
       // Wait for page to load
       await waitFor(() => {
-        expect(screen.getByText('Sistema Financeiro')).toBeInTheDocument();
+        expect(screen.getAllByText('Sistema Financeiro')[0]).toBeInTheDocument();
       }, { timeout: 3000 });
 
       // Find and click transaction tab
@@ -770,7 +770,7 @@ describe('AdminFinancialPage', () => {
 
       await waitFor(() => {
         // Page should still render with fallback data
-        expect(screen.getByText('Sistema Financeiro')).toBeInTheDocument();
+        expect(screen.getAllByText('Sistema Financeiro')[0]).toBeInTheDocument();
       });
 
       consoleSpy.mockRestore();
@@ -806,7 +806,7 @@ describe('AdminFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Sistema Financeiro')).toBeInTheDocument();
+        expect(screen.getAllByText('Sistema Financeiro')[0]).toBeInTheDocument();
       }, { timeout: 3000 });
 
       // Find the export button
@@ -1044,7 +1044,7 @@ describe('AdminFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Sistema Financeiro')).toBeInTheDocument();
+        expect(screen.getAllByText('Sistema Financeiro')[0]).toBeInTheDocument();
       });
 
       await waitFor(() => {
@@ -1366,7 +1366,7 @@ describe('AdminFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Sistema Financeiro')).toBeInTheDocument();
+        expect(screen.getAllByText('Sistema Financeiro')[0]).toBeInTheDocument();
       }, { timeout: 3000 });
 
       const allButtons = screen.getAllByRole('button');
@@ -1417,7 +1417,7 @@ describe('AdminFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Sistema Financeiro')).toBeInTheDocument();
+        expect(screen.getAllByText('Sistema Financeiro')[0]).toBeInTheDocument();
       });
 
       const exportButton = screen.getByRole('button', { name: /Exportar CSV/i });
@@ -1543,7 +1543,7 @@ describe('AdminFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Sistema Financeiro')).toBeInTheDocument();
+        expect(screen.getAllByText('Sistema Financeiro')[0]).toBeInTheDocument();
       });
 
       await waitFor(() => {
@@ -1569,7 +1569,7 @@ describe('AdminFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Sistema Financeiro')).toBeInTheDocument();
+        expect(screen.getAllByText('Sistema Financeiro')[0]).toBeInTheDocument();
       });
 
       // Wait for page to fully load

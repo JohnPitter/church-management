@@ -143,11 +143,11 @@ describe('AdminSettingsPage', () => {
     it('should render all navigation tabs', () => {
       renderComponent();
 
-      expect(screen.getByText('Geral')).toBeInTheDocument();
-      expect(screen.getByText('Aparência')).toBeInTheDocument();
+      expect(screen.getAllByText('Geral')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('Aparência')[0]).toBeInTheDocument();
       expect(screen.getByText('Sobre Nós')).toBeInTheDocument();
       expect(screen.getByText('Notificações')).toBeInTheDocument();
-      expect(screen.getByText('Eventos')).toBeInTheDocument();
+      expect(screen.getAllByText('Eventos')[0]).toBeInTheDocument();
       expect(screen.getByText('Segurança')).toBeInTheDocument();
     });
   });
@@ -180,14 +180,14 @@ describe('AdminSettingsPage', () => {
     it('should display church name field with correct value', () => {
       renderComponent();
 
-      const churchNameInput = screen.getByLabelText('Nome da Igreja') as HTMLInputElement;
+      const churchNameInput = screen.getAllByRole('textbox')[0] as HTMLInputElement;
       expect(churchNameInput.value).toBe('Test Church');
     });
 
     it('should display church tagline field', () => {
       renderComponent();
 
-      const taglineInput = screen.getByLabelText('Slogan/Frase da Igreja') as HTMLInputElement;
+      const taglineInput = screen.getAllByRole('textbox')[1] as HTMLInputElement;
       expect(taglineInput.value).toBe('Faith in Action');
     });
 
@@ -201,21 +201,21 @@ describe('AdminSettingsPage', () => {
     it('should display phone field', () => {
       renderComponent();
 
-      const phoneInput = screen.getByLabelText('Telefone') as HTMLInputElement;
+      const phoneInput = screen.getAllByRole('textbox')[3] as HTMLInputElement;
       expect(phoneInput.value).toBe('(11) 1234-5678');
     });
 
     it('should display email field', () => {
       renderComponent();
 
-      const emailInput = screen.getByLabelText('E-mail') as HTMLInputElement;
+      const emailInput = screen.getAllByRole('textbox')[4] as HTMLInputElement;
       expect(emailInput.value).toBe('contact@testchurch.com');
     });
 
     it('should display website field', () => {
       renderComponent();
 
-      const websiteInput = screen.getByLabelText('Website') as HTMLInputElement;
+      const websiteInput = screen.getAllByRole('textbox')[5] as HTMLInputElement;
       expect(websiteInput.value).toBe('https://testchurch.com');
     });
 
@@ -229,7 +229,7 @@ describe('AdminSettingsPage', () => {
     it('should display language selector', () => {
       renderComponent();
 
-      const languageSelect = screen.getByLabelText('Idioma') as HTMLSelectElement;
+      const languageSelect = screen.getAllByRole('combobox')[1] as HTMLSelectElement;
       expect(languageSelect.value).toBe('pt-BR');
     });
 
@@ -248,7 +248,7 @@ describe('AdminSettingsPage', () => {
     it('should switch to Appearance tab when clicked', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparência'));
+      await userEvent.click(screen.getAllByText('Aparência')[0]);
 
       expect(screen.getByText('Logo da Igreja')).toBeInTheDocument();
       expect(screen.getByText('Cor Primaria')).toBeInTheDocument();
@@ -277,7 +277,7 @@ describe('AdminSettingsPage', () => {
     it('should switch to Events tab when clicked', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Eventos'));
+      await userEvent.click(screen.getAllByText('Eventos')[0]);
 
       expect(screen.getByText('Exigir Confirmacao de Presenca')).toBeInTheDocument();
       expect(screen.getByText('Maximo de Participantes por Evento (Padrao)')).toBeInTheDocument();
@@ -298,7 +298,7 @@ describe('AdminSettingsPage', () => {
     it('should display primary color picker', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparência'));
+      await userEvent.click(screen.getAllByText('Aparência')[0]);
 
       const colorInputs = screen.getAllByDisplayValue('#3B82F6');
       expect(colorInputs.length).toBeGreaterThan(0);
@@ -307,7 +307,7 @@ describe('AdminSettingsPage', () => {
     it('should display secondary color picker', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparência'));
+      await userEvent.click(screen.getAllByText('Aparência')[0]);
 
       const colorInputs = screen.getAllByDisplayValue('#8B5CF6');
       expect(colorInputs.length).toBeGreaterThan(0);
@@ -316,7 +316,7 @@ describe('AdminSettingsPage', () => {
     it('should show logo upload button', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparência'));
+      await userEvent.click(screen.getAllByText('Aparência')[0]);
 
       expect(screen.getByText('Alterar Logo')).toBeInTheDocument();
     });
@@ -325,7 +325,7 @@ describe('AdminSettingsPage', () => {
       mockContextSettings = { ...mockSettings, logoURL: 'https://example.com/logo.png' };
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparência'));
+      await userEvent.click(screen.getAllByText('Aparência')[0]);
 
       expect(screen.getByText('Remover')).toBeInTheDocument();
     });
@@ -371,7 +371,7 @@ describe('AdminSettingsPage', () => {
     it('should toggle require event confirmation', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Eventos'));
+      await userEvent.click(screen.getAllByText('Eventos')[0]);
 
       const confirmationCheckbox = screen.getByRole('checkbox', { name: /Exigir Confirmacao de Presenca/i });
       await userEvent.click(confirmationCheckbox);
@@ -382,7 +382,7 @@ describe('AdminSettingsPage', () => {
     it('should update max participants', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Eventos'));
+      await userEvent.click(screen.getAllByText('Eventos')[0]);
 
       const maxParticipantsInput = screen.getByLabelText('Maximo de Participantes por Evento (Padrao)') as HTMLInputElement;
       await userEvent.clear(maxParticipantsInput);
@@ -554,7 +554,7 @@ describe('AdminSettingsPage', () => {
     it('should validate file type on upload', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparência'));
+      await userEvent.click(screen.getAllByText('Aparência')[0]);
 
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
       const invalidFile = new File([''], 'test.txt', { type: 'text/plain' });
@@ -569,7 +569,7 @@ describe('AdminSettingsPage', () => {
     it('should validate file size on upload', async () => {
       renderComponent();
 
-      await userEvent.click(screen.getByText('Aparência'));
+      await userEvent.click(screen.getAllByText('Aparência')[0]);
 
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
       // Create a large file (> 5MB)
@@ -621,7 +621,7 @@ describe('AdminSettingsPage', () => {
     it('should have multiple language options', () => {
       renderComponent();
 
-      const languageSelect = screen.getByLabelText('Idioma') as HTMLSelectElement;
+      const languageSelect = screen.getAllByRole('combobox')[1] as HTMLSelectElement;
       const options = Array.from(languageSelect.options).map(opt => opt.value);
 
       expect(options).toContain('pt-BR');

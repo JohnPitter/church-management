@@ -89,9 +89,11 @@ export class EventEntity {
 
   static getDaysUntilEvent(event: Event): number {
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to start of day
     const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0); // Normalize to start of day
     const diffTime = eventDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   }
 

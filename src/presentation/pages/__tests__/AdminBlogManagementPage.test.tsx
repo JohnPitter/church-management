@@ -196,7 +196,7 @@ describe('AdminBlogManagementPage', () => {
       await waitFor(() => {
         expect(screen.getByText('Gerenciar Blog')).toBeInTheDocument();
       });
-      expect(screen.getByText('Administre postagens, categorias e conteudo do blog')).toBeInTheDocument();
+      expect(screen.getByText('Administre postagens, categorias e conteúdo do blog')).toBeInTheDocument();
     });
 
     it('should render the create post button', async () => {
@@ -263,7 +263,7 @@ describe('AdminBlogManagementPage', () => {
       await waitFor(() => {
         expect(screen.getByText('Nenhuma postagem encontrada')).toBeInTheDocument();
       });
-      expect(screen.getByText('Crie sua primeira postagem para comecar.')).toBeInTheDocument();
+      expect(screen.getByText('Crie sua primeira postagem para começar.')).toBeInTheDocument();
     });
 
     it('should show empty state when filter returns no results', async () => {
@@ -318,7 +318,7 @@ describe('AdminBlogManagementPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        const viewsCard = screen.getByText('Total de Visualizacoes').closest('div');
+        const viewsCard = screen.getByText('Total de Visualizações').closest('div');
         expect(viewsCard).toBeInTheDocument();
       });
     });
@@ -499,7 +499,7 @@ describe('AdminBlogManagementPage', () => {
 
         // Fill in form
         const titleInput = screen.getByPlaceholderText('Ex: Reflexao sobre o Amor de Deus');
-        const contentInput = screen.getByPlaceholderText('Escreva o conteudo da postagem aqui...');
+        const contentInput = screen.getByPlaceholderText('Escreva o conteúdo da postagem aqui...');
 
         await userEvent.type(titleInput, 'New Test Post');
         await userEvent.type(contentInput, 'This is the content of the new test post which should be at least 50 characters long.');
@@ -681,7 +681,7 @@ describe('AdminBlogManagementPage', () => {
       await userEvent.type(titleInput, 'Test');
 
       await waitFor(() => {
-        expect(screen.getByText('Titulo deve ter pelo menos 5 caracteres')).toBeInTheDocument();
+        expect(screen.getByText('Título deve ter pelo menos 5 caracteres')).toBeInTheDocument();
       });
     });
 
@@ -698,11 +698,11 @@ describe('AdminBlogManagementPage', () => {
         expect(screen.getByText('Nova Postagem do Blog')).toBeInTheDocument();
       });
 
-      const contentInput = screen.getByPlaceholderText('Escreva o conteudo da postagem aqui...');
+      const contentInput = screen.getByPlaceholderText('Escreva o conteúdo da postagem aqui...');
       await userEvent.type(contentInput, 'Short content');
 
       await waitFor(() => {
-        expect(screen.getByText('Conteudo deve ter pelo menos 50 caracteres')).toBeInTheDocument();
+        expect(screen.getByText('Conteúdo deve ter pelo menos 50 caracteres')).toBeInTheDocument();
       });
     });
 
@@ -719,13 +719,13 @@ describe('AdminBlogManagementPage', () => {
         expect(screen.getByText('Nova Postagem do Blog')).toBeInTheDocument();
       });
 
-      expect(screen.getByText(/0 caracteres \(minimo 50\)/)).toBeInTheDocument();
+      expect(screen.getByText(/0 caracteres \(mínimo 50\)/)).toBeInTheDocument();
 
-      const contentInput = screen.getByPlaceholderText('Escreva o conteudo da postagem aqui...');
+      const contentInput = screen.getByPlaceholderText('Escreva o conteúdo da postagem aqui...');
       await userEvent.type(contentInput, 'Hello World');
 
       await waitFor(() => {
-        expect(screen.getByText(/11 caracteres \(minimo 50\)/)).toBeInTheDocument();
+        expect(screen.getByText(/11 caracteres \(mínimo 50\)/)).toBeInTheDocument();
       });
     });
   });

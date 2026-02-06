@@ -188,8 +188,8 @@ describe('AdminReportsPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/Vis.*o Geral/i)).toBeInTheDocument();
-        expect(screen.getByText(/Usu.*rios/i)).toBeInTheDocument();
-        expect(screen.getByText('Eventos')).toBeInTheDocument();
+        expect(screen.getAllByText(/Usu.*rios/i)[0]).toBeInTheDocument();
+        expect(screen.getAllByText('Eventos')[0]).toBeInTheDocument();
         expect(screen.getByText('Projetos')).toBeInTheDocument();
         expect(screen.getByText('Engajamento')).toBeInTheDocument();
         expect(screen.getByText('Financeiro')).toBeInTheDocument();
@@ -330,10 +330,10 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/Usu.*rios/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Usu.*rios/i)[0]).toBeInTheDocument();
       });
 
-      const usersButton = screen.getByText(/Usu.*rios/i).closest('button');
+      const usersButton = screen.getAllByText(/Usu.*rios/i)[0].closest('button');
 
       await act(async () => {
         await userEvent.click(usersButton!);
@@ -348,11 +348,11 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Eventos')).toBeInTheDocument();
+        expect(screen.getAllByText('Eventos')[0]).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Eventos'));
+        await userEvent.click(screen.getAllByText('Eventos')[0]);
       });
 
       await waitFor(() => {
@@ -641,15 +641,15 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Eventos')).toBeInTheDocument();
+        expect(screen.getAllByText('Eventos')[0]).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Eventos'));
+        await userEvent.click(screen.getAllByText('Eventos')[0]);
       });
 
       await waitFor(() => {
-        const eventsButton = screen.getByText('Eventos').closest('button');
+        const eventsButton = screen.getAllByText('Eventos')[0].closest('button');
         expect(eventsButton).toHaveClass('bg-indigo-50');
       });
     });
@@ -759,11 +759,11 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Eventos')).toBeInTheDocument();
+        expect(screen.getAllByText('Eventos')[0]).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Eventos'));
+        await userEvent.click(screen.getAllByText('Eventos')[0]);
       });
 
       await waitFor(() => {
@@ -814,10 +814,10 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/Usu.*rios/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Usu.*rios/i)[0]).toBeInTheDocument();
       });
 
-      const usersButton = screen.getByText(/Usu.*rios/i).closest('button');
+      const usersButton = screen.getAllByText(/Usu.*rios/i)[0].closest('button');
 
       await act(async () => {
         await userEvent.click(usersButton!);

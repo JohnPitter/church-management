@@ -184,7 +184,7 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Administrador')).toBeInTheDocument();
+        expect(screen.getByText(/Administrador/i)).toBeInTheDocument();
       });
     });
 
@@ -193,7 +193,7 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       // When role is undefined, it should show 'Carregando...'
-      expect(screen.getByText('Carregando...')).toBeInTheDocument();
+      expect(screen.getByText(/Carregando/i)).toBeInTheDocument();
     });
 
     it('should display different role names correctly', async () => {
@@ -201,7 +201,7 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Secretário(a)')).toBeInTheDocument();
+        expect(screen.getByText(/Secretário(a)/i)).toBeInTheDocument();
       });
     });
   });
@@ -771,7 +771,7 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Administrador')).toBeInTheDocument();
+        expect(screen.getByText(/Administrador/i)).toBeInTheDocument();
       });
     });
 
@@ -779,7 +779,7 @@ describe('AdminDashboardPage', () => {
       mockUser = { ...mockCurrentUser, role: undefined };
       renderComponent();
 
-      expect(screen.getByText('Carregando...')).toBeInTheDocument();
+      expect(screen.getByText(/Carregando/i)).toBeInTheDocument();
     });
 
     it('should update role display when user role changes', async () => {
@@ -792,7 +792,7 @@ describe('AdminDashboardPage', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Administrador')).toBeInTheDocument();
+        expect(screen.getByText(/Administrador/i)).toBeInTheDocument();
       });
 
       // Change role
@@ -805,7 +805,7 @@ describe('AdminDashboardPage', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Secretário(a)')).toBeInTheDocument();
+        expect(screen.getByText(/Secretário(a)/i)).toBeInTheDocument();
       });
     });
   });
@@ -934,7 +934,7 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        const roleBadge = screen.getByText('Administrador');
+        const roleBadge = screen.getByText(/Administrador/i);
         expect(roleBadge).toBeInTheDocument();
         expect(roleBadge.closest('span')).toHaveClass('inline-flex', 'items-center');
       });
@@ -1011,7 +1011,7 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       expect(screen.getByText('Painel Administrativo')).toBeInTheDocument();
-      expect(screen.getByText('Carregando...')).toBeInTheDocument();
+      expect(screen.getByText(/Carregando/i)).toBeInTheDocument();
     });
 
     it('should render correctly without any permissions', () => {

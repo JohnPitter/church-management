@@ -53,11 +53,12 @@ jest.mock('../../hooks/useNotificationActions', () => ({
 
 // Mock usePermissions
 const mockHasPermission = jest.fn();
+const mockPermissionsLoading = jest.fn();
 
 jest.mock('../../hooks/usePermissions', () => ({
   usePermissions: () => ({
     hasPermission: mockHasPermission,
-    loading: false
+    loading: mockPermissionsLoading()
   })
 }));
 
@@ -145,27 +146,18 @@ describe('AdminProjectsManagementPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockHasPermission.mockReturnValue(true);
+    mockPermissionsLoading.mockReturnValue(false);
     mockFindAll.mockResolvedValue([]);
     mockConfirm.mockReturnValue(true);
   });
 
   describe('Permission Checks', () => {
     it('should show loading state when permissions are loading', async () => {
-      const { usePermissions } = require('../../hooks/usePermissions');
-      usePermissions.mockReturnValue({
-        hasPermission: () => true,
-        loading: true
-      });
+      mockPermissionsLoading.mockReturnValueOnce(true);
 
       render(<AdminProjectsManagementPage />);
 
       expect(screen.getByText('Verificando permissões...')).toBeInTheDocument();
-
-      // Reset mock
-      usePermissions.mockReturnValue({
-        hasPermission: mockHasPermission,
-        loading: false
-      });
     });
 
     it('should show access denied when user lacks view permission', async () => {
@@ -177,7 +169,7 @@ describe('AdminProjectsManagementPage', () => {
         expect(screen.getByText('Acesso Negado')).toBeInTheDocument();
       });
 
-      expect(screen.getByText('Voce nao tem permissao para visualizar projetos.')).toBeInTheDocument();
+      expect(screen.getByText(/não tem permissão para visualizar projetos/i)).toBeInTheDocument();
     });
 
     it('should render page when user has view permission', async () => {
@@ -278,9 +270,9 @@ describe('AdminProjectsManagementPage', () => {
       render(<AdminProjectsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Ativos')).toBeInTheDocument();
-        expect(screen.getByText('Planejamento')).toBeInTheDocument();
-        expect(screen.getByText('Concluidos')).toBeInTheDocument();
+        expect(screen.getAllByText('Ativos').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Planejamento').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Concluidos').length).toBeGreaterThan(0);
       });
     });
   });

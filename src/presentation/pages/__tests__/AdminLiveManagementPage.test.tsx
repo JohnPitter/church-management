@@ -13,12 +13,20 @@ jest.mock('@/config/firebase', () => ({
 
 // Mock Firebase Firestore
 jest.mock('firebase/firestore', () => ({
-  collection: jest.fn(),
-  onSnapshot: jest.fn((ref, callback) => {
-    callback({ docs: [] });
-    return jest.fn(); // Unsubscribe function
+  collection: jest.fn((db, ...path) => ({ id: path.join('/') })),
+  onSnapshot: jest.fn((ref, onNext, onError) => {
+    // Call onNext with empty snapshot
+    if (typeof onNext === 'function') {
+      onNext({ docs: [], empty: true });
+    }
+    // Always return a function
+    return jest.fn();
   }),
-  doc: jest.fn()
+  doc: jest.fn((db, collection, id) => ({ id, path: collection + '/' + id })),
+  query: jest.fn((...args) => args[0]),
+  where: jest.fn(() => ({})),
+  orderBy: jest.fn(() => ({})),
+  limit: jest.fn(() => ({}))
 }));
 
 // Mock Firebase Storage
@@ -116,7 +124,7 @@ const mockStreams = [
   {
     id: 'stream-1',
     title: 'Culto Dominical',
-    description: 'Transmissao ao vivo do culto',
+    description: 'Transmissão ao vivo do culto',
     streamUrl: 'https://youtube.com/watch?v=abc123',
     thumbnailUrl: 'https://example.com/thumb1.jpg',
     isLive: true,
@@ -130,7 +138,7 @@ const mockStreams = [
   },
   {
     id: 'stream-2',
-    title: 'Estudo Biblico',
+    title: 'Estudo Bíblico',
     description: 'Estudo sobre o livro de Romanos',
     streamUrl: 'https://youtube.com/watch?v=def456',
     thumbnailUrl: undefined,
@@ -145,8 +153,8 @@ const mockStreams = [
   },
   {
     id: 'stream-3',
-    title: 'Reuniao de Oracao',
-    description: 'Reuniao semanal de oracao',
+    title: 'Reunião de Oração',
+    description: 'Reunião semanal de oracao',
     streamUrl: 'https://youtube.com/watch?v=ghi789',
     thumbnailUrl: 'https://example.com/thumb3.jpg',
     isLive: false,
@@ -173,7 +181,7 @@ describe('AdminLiveManagementPage', () => {
       render(<AdminLiveManagementPage />);
 
       expect(screen.getByText('Gerenciar Transmissões')).toBeInTheDocument();
-      expect(screen.getByText('Administre transmissoes ao vivo e gravacoes')).toBeInTheDocument();
+      expect(screen.getByText('Administre transmissões ao vivo e gravações')).toBeInTheDocument();
     });
 
     it('should render the "Nova Transmissão" button', async () => {
@@ -198,8 +206,8 @@ describe('AdminLiveManagementPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Culto Dominical')).toBeInTheDocument();
-        expect(screen.getByText('Estudo Biblico')).toBeInTheDocument();
-        expect(screen.getByText('Reuniao de Oracao')).toBeInTheDocument();
+        expect(screen.getByText('Estudo Bíblico')).toBeInTheDocument();
+        expect(screen.getByText('Reunião de Oração')).toBeInTheDocument();
       });
     });
 
@@ -242,12 +250,12 @@ describe('AdminLiveManagementPage', () => {
         expect(screen.getByText('Culto Dominical')).toBeInTheDocument();
       });
 
-      const searchInput = screen.getByPlaceholderText('Buscar transmissoes...');
+      const searchInput = screen.getByPlaceholderText('Buscar transmissões...');
       fireEvent.change(searchInput, { target: { value: 'Estudo' } });
 
       await waitFor(() => {
         expect(screen.queryByText('Culto Dominical')).not.toBeInTheDocument();
-        expect(screen.getByText('Estudo Biblico')).toBeInTheDocument();
+        expect(screen.getByText('Estudo Bíblico')).toBeInTheDocument();
       });
     });
 
@@ -263,8 +271,8 @@ describe('AdminLiveManagementPage', () => {
 
       await waitFor(() => {
         expect(screen.queryByText('Culto Dominical')).not.toBeInTheDocument();
-        expect(screen.getByText('Estudo Biblico')).toBeInTheDocument();
-        expect(screen.queryByText('Reuniao de Oracao')).not.toBeInTheDocument();
+        expect(screen.getByText('Estudo Bíblico')).toBeInTheDocument();
+        expect(screen.queryByText('Reunião de Oração')).not.toBeInTheDocument();
       });
     });
 
@@ -280,7 +288,7 @@ describe('AdminLiveManagementPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Culto Dominical')).toBeInTheDocument();
-        expect(screen.queryByText('Estudo Biblico')).not.toBeInTheDocument();
+        expect(screen.queryByText('Estudo Bíblico')).not.toBeInTheDocument();
       });
     });
 
@@ -291,7 +299,7 @@ describe('AdminLiveManagementPage', () => {
         expect(screen.getByText('Culto Dominical')).toBeInTheDocument();
       });
 
-      const searchInput = screen.getByPlaceholderText('Buscar transmissoes...');
+      const searchInput = screen.getByPlaceholderText('Buscar transmissões...');
       fireEvent.change(searchInput, { target: { value: 'nonexistent search term' } });
 
       await waitFor(() => {
@@ -595,7 +603,7 @@ describe('AdminLiveManagementPage', () => {
       await waitFor(() => {
         expect(screen.getByText('Culto')).toBeInTheDocument();
         expect(screen.getByText('Estudo')).toBeInTheDocument();
-        expect(screen.getByText('Reuniao')).toBeInTheDocument();
+        expect(screen.getByText('Reunião')).toBeInTheDocument();
       });
     });
   });
@@ -609,13 +617,13 @@ describe('AdminLiveManagementPage', () => {
       });
 
       // Check for table headers
-      expect(screen.getByText('Transmissao')).toBeInTheDocument();
+      expect(screen.getByText('Transmissão')).toBeInTheDocument();
       expect(screen.getByText('Status')).toBeInTheDocument();
       expect(screen.getByText('Categoria')).toBeInTheDocument();
       expect(screen.getByText('Data/Hora')).toBeInTheDocument();
-      expect(screen.getByText('Audiencia')).toBeInTheDocument();
+      expect(screen.getByText('Audiência')).toBeInTheDocument();
       expect(screen.getByText('Criado por')).toBeInTheDocument();
-      expect(screen.getByText('Acoes')).toBeInTheDocument();
+      expect(screen.getByText('Ações')).toBeInTheDocument();
     });
   });
 });

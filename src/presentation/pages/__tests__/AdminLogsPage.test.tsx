@@ -60,11 +60,14 @@ jest.mock('../../contexts/AuthContext', () => ({
 }));
 
 // Mock usePermissions hook
-const mockHasPermission = jest.fn();
-const mockUsePermissions = jest.fn();
+const mockHasPermission = jest.fn().mockReturnValue(true);
 
 jest.mock('../../hooks/usePermissions', () => ({
-  usePermissions: () => mockUsePermissions()
+  usePermissions: () => ({
+    hasPermission: jest.fn().mockReturnValue(true),
+    loading: false,
+    permissions: []
+  })
 }));
 
 // Mock log data

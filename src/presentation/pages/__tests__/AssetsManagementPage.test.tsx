@@ -185,7 +185,7 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Gestão de Patrimônio/i)).toBeInTheDocument();
+        expect(screen.getByText(/Gerenciamento de Patrimônio/i)).toBeInTheDocument();
       });
     });
 
@@ -264,7 +264,7 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Novo Patrimônio/i)).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Patrimônio/i)).toBeInTheDocument();
       });
     });
   });
@@ -427,7 +427,7 @@ describe('AssetsManagementPage', () => {
       });
 
       const nextButton = screen.getByRole('button', { name: /Próxima/i });
-      userEvent.click(nextButton);
+      fireEvent.click(nextButton);
 
       await waitFor(() => {
         expect(screen.getByText('Asset 10')).toBeInTheDocument();
@@ -462,7 +462,7 @@ describe('AssetsManagementPage', () => {
       });
 
       const nextButton = screen.getByRole('button', { name: /Próxima/i });
-      userEvent.click(nextButton);
+      fireEvent.click(nextButton);
 
       await waitFor(() => {
         expect(nextButton).toBeDisabled();
@@ -481,14 +481,14 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Novo Patrimônio/i)).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Patrimônio/i)).toBeInTheDocument();
       });
 
-      const newButton = screen.getByText(/Novo Patrimônio/i);
-      userEvent.click(newButton);
+      const newButton = screen.getByText(/Adicionar Patrimônio/i);
+      fireEvent.click(newButton);
 
       await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
       });
     });
 
@@ -498,21 +498,21 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Novo Patrimônio/i)).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Patrimônio/i)).toBeInTheDocument();
       });
 
-      const newButton = screen.getByText(/Novo Patrimônio/i);
-      userEvent.click(newButton);
+      const newButton = screen.getByText(/Adicionar Patrimônio/i);
+      fireEvent.click(newButton);
 
       await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
       });
 
       const cancelButton = screen.getByRole('button', { name: /Cancelar/i });
-      userEvent.click(cancelButton);
+      fireEvent.click(cancelButton);
 
       await waitFor(() => {
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(screen.queryByText(/Adicionar Novo Patrimônio/i)).not.toBeInTheDocument();
       });
     });
 
@@ -522,11 +522,11 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Novo Patrimônio/i)).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Patrimônio/i)).toBeInTheDocument();
       });
 
-      const newButton = screen.getByText(/Novo Patrimônio/i);
-      userEvent.click(newButton);
+      const newButton = screen.getByText(/Adicionar Patrimônio/i);
+      fireEvent.click(newButton);
 
       await waitFor(() => {
         expect(screen.getByLabelText(/Nome/i)).toBeInTheDocument();
@@ -553,10 +553,10 @@ describe('AssetsManagementPage', () => {
       });
 
       const editButton = screen.getByRole('button', { name: /Editar/i });
-      userEvent.click(editButton);
+      fireEvent.click(editButton);
 
       await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
       });
     });
 
@@ -571,7 +571,7 @@ describe('AssetsManagementPage', () => {
       });
 
       const editButton = screen.getByRole('button', { name: /Editar/i });
-      userEvent.click(editButton);
+      fireEvent.click(editButton);
 
       await waitFor(() => {
         const nameInput = screen.getByLabelText(/Nome/i) as HTMLInputElement;
@@ -591,17 +591,17 @@ describe('AssetsManagementPage', () => {
       });
 
       const editButton = screen.getByRole('button', { name: /Editar/i });
-      userEvent.click(editButton);
+      fireEvent.click(editButton);
 
       await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
       });
 
       const nameInput = screen.getByLabelText(/Nome/i);
       fireEvent.change(nameInput, { target: { value: 'Updated Name' } });
 
       const submitButton = screen.getByRole('button', { name: /Salvar/i });
-      userEvent.click(submitButton);
+      fireEvent.click(submitButton);
 
       await waitFor(() => {
         expect(mockUpdateAsset).toHaveBeenCalledWith(
@@ -628,7 +628,7 @@ describe('AssetsManagementPage', () => {
       });
 
       const deleteButton = screen.getByRole('button', { name: /Excluir/i });
-      userEvent.click(deleteButton);
+      fireEvent.click(deleteButton);
 
       await waitFor(() => {
         expect(global.confirm).toHaveBeenCalled();
@@ -647,7 +647,7 @@ describe('AssetsManagementPage', () => {
       });
 
       const deleteButton = screen.getByRole('button', { name: /Excluir/i });
-      userEvent.click(deleteButton);
+      fireEvent.click(deleteButton);
 
       await waitFor(() => {
         expect(mockDeleteAsset).toHaveBeenCalledWith(asset.id);
@@ -666,7 +666,7 @@ describe('AssetsManagementPage', () => {
       });
 
       const deleteButton = screen.getByRole('button', { name: /Excluir/i });
-      userEvent.click(deleteButton);
+      fireEvent.click(deleteButton);
 
       await waitFor(() => {
         expect(mockDeleteAsset).not.toHaveBeenCalled();
@@ -685,7 +685,7 @@ describe('AssetsManagementPage', () => {
       });
 
       const deleteButton = screen.getByRole('button', { name: /Excluir/i });
-      userEvent.click(deleteButton);
+      fireEvent.click(deleteButton);
 
       await waitFor(() => {
         expect(mockGetAllAssets).toHaveBeenCalledTimes(2);
@@ -705,7 +705,7 @@ describe('AssetsManagementPage', () => {
       });
 
       const deleteButton = screen.getByRole('button', { name: /Excluir/i });
-      userEvent.click(deleteButton);
+      fireEvent.click(deleteButton);
 
       await waitFor(() => {
         expect(global.alert).toHaveBeenCalledWith('Delete failed');
@@ -723,18 +723,18 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Novo Patrimônio/i)).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Patrimônio/i)).toBeInTheDocument();
       });
 
-      const newButton = screen.getByText(/Novo Patrimônio/i);
-      userEvent.click(newButton);
+      const newButton = screen.getByText(/Adicionar Patrimônio/i);
+      fireEvent.click(newButton);
 
       await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
       });
 
       const submitButton = screen.getByRole('button', { name: /Salvar/i });
-      userEvent.click(submitButton);
+      fireEvent.click(submitButton);
 
       await waitFor(() => {
         expect(screen.getByText(/Nome é obrigatório/i)).toBeInTheDocument();
@@ -747,18 +747,18 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Novo Patrimônio/i)).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Patrimônio/i)).toBeInTheDocument();
       });
 
-      const newButton = screen.getByText(/Novo Patrimônio/i);
-      userEvent.click(newButton);
+      const newButton = screen.getByText(/Adicionar Patrimônio/i);
+      fireEvent.click(newButton);
 
       await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
       });
 
       const submitButton = screen.getByRole('button', { name: /Salvar/i });
-      userEvent.click(submitButton);
+      fireEvent.click(submitButton);
 
       await waitFor(() => {
         expect(screen.getByText(/Nome é obrigatório/i)).toBeInTheDocument();
@@ -771,18 +771,18 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Novo Patrimônio/i)).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Patrimônio/i)).toBeInTheDocument();
       });
 
-      const newButton = screen.getByText(/Novo Patrimônio/i);
-      userEvent.click(newButton);
+      const newButton = screen.getByText(/Adicionar Patrimônio/i);
+      fireEvent.click(newButton);
 
       await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
       });
 
       const submitButton = screen.getByRole('button', { name: /Salvar/i });
-      userEvent.click(submitButton);
+      fireEvent.click(submitButton);
 
       await waitFor(() => {
         expect(screen.getByText(/Localização é obrigatória/i)).toBeInTheDocument();
@@ -795,21 +795,21 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Novo Patrimônio/i)).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Patrimônio/i)).toBeInTheDocument();
       });
 
-      const newButton = screen.getByText(/Novo Patrimônio/i);
-      userEvent.click(newButton);
+      const newButton = screen.getByText(/Adicionar Patrimônio/i);
+      fireEvent.click(newButton);
 
       await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
       });
 
       const valueInput = screen.getByLabelText(/Valor de Aquisição/i);
       fireEvent.change(valueInput, { target: { value: '-100' } });
 
       const submitButton = screen.getByRole('button', { name: /Salvar/i });
-      userEvent.click(submitButton);
+      fireEvent.click(submitButton);
 
       await waitFor(() => {
         expect(screen.getByText(/Valor de aquisição é obrigatório e deve ser positivo/i)).toBeInTheDocument();
@@ -822,11 +822,11 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Novo Patrimônio/i)).toBeInTheDocument();
+        expect(screen.getByText(/Adicionar Patrimônio/i)).toBeInTheDocument();
       });
 
-      const newButton = screen.getByText(/Novo Patrimônio/i);
-      userEvent.click(newButton);
+      const newButton = screen.getByText(/Adicionar Patrimônio/i);
+      fireEvent.click(newButton);
 
       await waitFor(() => {
         const submitButton = screen.getByRole('button', { name: /Salvar/i });

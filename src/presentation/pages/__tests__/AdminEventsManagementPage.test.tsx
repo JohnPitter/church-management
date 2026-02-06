@@ -541,7 +541,7 @@ describe('AdminEventsManagementPage', () => {
         const newEvent = {
           id: 'new-event-id',
           title: 'Novo Evento Teste',
-          description: 'Descricao do evento',
+          description: 'Descrição do evento',
           date: new Date(),
           time: '14:00',
           location: 'Local Teste',
@@ -1141,7 +1141,7 @@ describe('AdminEventsManagementPage', () => {
       const newEvent = {
         id: 'new-event-id',
         title: 'Novo Evento Publico',
-        description: 'Descricao do evento',
+        description: 'Descrição do evento',
         date: new Date(),
         time: '14:00',
         location: 'Local Teste',
@@ -1190,7 +1190,7 @@ describe('AdminEventsManagementPage', () => {
       const newEvent = {
         id: 'new-event-id',
         title: 'Evento Privado',
-        description: 'Descricao do evento',
+        description: 'Descrição do evento',
         date: new Date(),
         time: '14:00',
         location: 'Local Teste',
@@ -1241,7 +1241,7 @@ describe('AdminEventsManagementPage', () => {
       const newEvent = {
         id: 'new-event-id',
         title: 'Novo Evento',
-        description: 'Descricao do evento',
+        description: 'Descrição do evento',
         date: new Date(),
         time: '14:00',
         location: 'Local Teste',
@@ -1437,17 +1437,17 @@ describe('AdminEventsManagementPage', () => {
       });
 
       const titleInput = screen.getByPlaceholderText('Ex: Culto Dominical');
-      const descriptionInput = screen.getByPlaceholderText('Descricao do evento...');
+      const descriptionInput = screen.getByPlaceholderText('Descrição do evento...');
       const locationInput = screen.getByPlaceholderText('Ex: Templo Principal');
       const responsibleInput = screen.getByPlaceholderText('Nome do responsavel');
 
       fireEvent.change(titleInput, { target: { value: 'Evento Completo' } });
-      fireEvent.change(descriptionInput, { target: { value: 'Descricao completa do evento' } });
+      fireEvent.change(descriptionInput, { target: { value: 'Descrição completa do evento' } });
       fireEvent.change(locationInput, { target: { value: 'Local Completo' } });
       fireEvent.change(responsibleInput, { target: { value: 'Responsavel Teste' } });
 
       expect(titleInput).toHaveValue('Evento Completo');
-      expect(descriptionInput).toHaveValue('Descricao completa do evento');
+      expect(descriptionInput).toHaveValue('Descrição completa do evento');
       expect(locationInput).toHaveValue('Local Completo');
       expect(responsibleInput).toHaveValue('Responsavel Teste');
     });
