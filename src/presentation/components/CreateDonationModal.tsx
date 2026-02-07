@@ -10,19 +10,28 @@ import {
 } from '@modules/financial/church-finance/domain/entities/Financial';
 import { financialService } from '@modules/financial/church-finance/application/services/FinancialService';
 
+interface FinancialServiceLike {
+  getCategories(type?: any): Promise<FinancialCategory[]>;
+  createDonation?(data: any): Promise<string>;
+  createTransaction?(data: any): Promise<string>;
+}
+
 interface CreateDonationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDonationCreated: () => void;
   currentUser: any;
+  service?: FinancialServiceLike;
 }
 
 export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
   isOpen,
   onClose,
   onDonationCreated,
-  currentUser
+  currentUser,
+  service
 }) => {
+  const activeService = service || financialService;
   const [formData, setFormData] = useState({
     type: DonationType.TITHE,
     categoryId: '',
@@ -67,7 +76,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
   const loadCategories = async () => {
     try {
       // Get income categories for donations
-      const categoriesData = await financialService.getCategories(TransactionType.INCOME);
+      const categoriesData = await activeService.getCategories(TransactionType.INCOME);
       setCategories(categoriesData);
       
       // Auto-select first category if none selected
@@ -146,7 +155,11 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
         donationData.notes = formData.notes.trim();
       }
       
-      await financialService.createDonation(donationData);
+      if (activeService.createDonation) {
+        await activeService.createDonation(donationData);
+      } else if (activeService.createTransaction) {
+        await activeService.createTransaction({ ...donationData, type: 'INCOME' });
+      }
       
       // Reset form
       setFormData({

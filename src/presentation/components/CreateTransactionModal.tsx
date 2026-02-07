@@ -10,28 +10,40 @@ import {
 } from '@modules/financial/church-finance/domain/entities/Financial';
 import { financialService } from '@modules/financial/church-finance/application/services/FinancialService';
 
+interface FinancialServiceLike {
+  getCategories(type?: any): Promise<FinancialCategory[]>;
+  createTransaction(data: any): Promise<string>;
+  updateTransaction?(id: string, data: any): Promise<void>;
+}
+
 interface CreateTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onTransactionCreated: () => void;
   currentUser: any;
+  service?: FinancialServiceLike;
+  editTransaction?: any;
 }
 
 export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
   isOpen,
   onClose,
   onTransactionCreated,
-  currentUser
+  currentUser,
+  service,
+  editTransaction
 }) => {
+  const activeService = service || financialService;
+  const isEditing = !!editTransaction;
   const [formData, setFormData] = useState({
-    type: TransactionType.EXPENSE,
-    categoryId: '',
-    amount: '',
-    description: '',
-    date: new Date().toISOString().split('T')[0],
-    paymentMethod: PaymentMethod.CASH,
-    reference: '',
-    notes: ''
+    type: editTransaction?.type || TransactionType.EXPENSE,
+    categoryId: editTransaction?.category?.id || '',
+    amount: editTransaction?.amount?.toString() || '',
+    description: editTransaction?.description || '',
+    date: editTransaction?.date ? new Date(editTransaction.date.seconds ? editTransaction.date.seconds * 1000 : editTransaction.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    paymentMethod: editTransaction?.paymentMethod || PaymentMethod.CASH,
+    reference: editTransaction?.reference || '',
+    notes: editTransaction?.notes || ''
   });
   
   const [categories, setCategories] = useState<FinancialCategory[]>([]);
@@ -58,7 +70,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
 
   const loadCategories = async () => {
     try {
-      const categoriesData = await financialService.getCategories(formData.type);
+      const categoriesData = await activeService.getCategories(formData.type);
       setCategories(categoriesData);
       
       // Auto-select first category if none selected
@@ -142,7 +154,11 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
         transactionData.notes = formData.notes.trim();
       }
       
-      await financialService.createTransaction(transactionData);
+      if (isEditing && activeService.updateTransaction) {
+        await activeService.updateTransaction(editTransaction.id, transactionData);
+      } else {
+        await activeService.createTransaction(transactionData);
+      }
       
       // Reset form
       setFormData({
@@ -191,7 +207,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-medium text-gray-900">
-              Nova Transação Financeira
+              {isEditing ? 'Editar Transação' : 'Nova Transação Financeira'}
             </h3>
             <button
               onClick={handleClose}
@@ -409,7 +425,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
                     Criando...
                   </div>
                 ) : (
-                  'Criar Transação'
+                  isEditing ? 'Salvar Alterações' : 'Criar Transação'
                 )}
               </button>
             </div>

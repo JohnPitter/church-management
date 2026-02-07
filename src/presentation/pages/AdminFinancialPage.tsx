@@ -35,6 +35,7 @@ import { DepartmentReportModal } from '../components/DepartmentReportModal';
 import { DepartmentActionsMenu } from '../components/DepartmentActionsMenu';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 import { IncomeExpenseChart } from '../components/charts/IncomeExpenseChart';
 import { CategoryPieChart } from '../components/charts/CategoryPieChart';
 import { MonthlyComparisonChart } from '../components/charts/MonthlyComparisonChart';
@@ -48,8 +49,8 @@ export const AdminFinancialPage: React.FC = () => {
   // Permission checks
   const canView = hasPermission(SystemModule.Finance, PermissionAction.View);
   const canCreate = hasPermission(SystemModule.Finance, PermissionAction.Create);
-  const _canUpdate = hasPermission(SystemModule.Finance, PermissionAction.Update);
-  const _canDelete = hasPermission(SystemModule.Finance, PermissionAction.Delete);
+  const canUpdate = hasPermission(SystemModule.Finance, PermissionAction.Update);
+  const canDelete = hasPermission(SystemModule.Finance, PermissionAction.Delete);
   const canManage = hasPermission(SystemModule.Finance, PermissionAction.Manage);
 
   const [loading, setLoading] = useState(true);
@@ -62,6 +63,8 @@ export const AdminFinancialPage: React.FC = () => {
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedTab, setSelectedTab] = useState('overview');
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const { confirm } = useConfirmDialog();
 
   // Department states
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -189,6 +192,32 @@ export const AdminFinancialPage: React.FC = () => {
     loadData(); // Reload data after transaction is created
     loggingService.logDatabase('info', 'Financial transaction created',
       'New transaction created via financial page', currentUser as any);
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setShowCreateModal(true);
+  };
+
+  const handleDeleteTransaction = async (transaction: Transaction) => {
+    const ok = await confirm({
+      title: 'Excluir Transação',
+      message: `Tem certeza que deseja excluir a transação "${transaction.description}" no valor de ${FinancialEntity.formatCurrency(transaction.amount)}?`,
+      variant: 'danger',
+      confirmText: 'Excluir',
+    });
+    if (!ok) return;
+    try {
+      await financialService.deleteTransaction(transaction.id);
+      toast.success('Transação excluída com sucesso');
+      loadData();
+      loggingService.logDatabase('warning', 'Financial transaction deleted',
+        `Transaction "${transaction.description}" (ID: ${transaction.id}) deleted`, currentUser as any);
+    } catch (error) {
+      toast.error('Erro ao excluir transação');
+      loggingService.logDatabase('error', 'Failed to delete transaction',
+        `Error: ${error}`, currentUser as any);
+    }
   };
 
   const handleDonationCreated = () => {
@@ -959,12 +988,22 @@ export const AdminFinancialPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button className="text-indigo-600 hover:text-indigo-900 mr-3">
-                          Editar
-                        </button>
-                        <button className="text-red-600 hover:text-red-900">
-                          Excluir
-                        </button>
+                        {(canUpdate || canManage) && (
+                          <button
+                            onClick={() => handleEditTransaction(transaction)}
+                            className="text-indigo-600 hover:text-indigo-900 mr-3"
+                          >
+                            Editar
+                          </button>
+                        )}
+                        {(canDelete || canManage) && (
+                          <button
+                            onClick={() => handleDeleteTransaction(transaction)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Excluir
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -1762,9 +1801,10 @@ export const AdminFinancialPage: React.FC = () => {
       {/* Create Transaction Modal */}
       <CreateTransactionModal
         isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onTransactionCreated={handleTransactionCreated}
+        onClose={() => { setShowCreateModal(false); setEditingTransaction(null); }}
+        onTransactionCreated={() => { handleTransactionCreated(); setEditingTransaction(null); }}
         currentUser={currentUser}
+        editTransaction={editingTransaction}
       />
       
       {/* Create Donation Modal */}

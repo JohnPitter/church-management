@@ -167,6 +167,20 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "profissionaisAssistencia",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "especialidade",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

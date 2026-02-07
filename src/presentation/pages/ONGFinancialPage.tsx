@@ -1185,6 +1185,7 @@ export const ONGFinancialPage: React.FC = () => {
         onClose={() => setShowCreateModal(false)}
         onTransactionCreated={handleTransactionCreated}
         currentUser={currentUser}
+        service={ongFinancialService}
       />
 
       {/* Create Donation Modal */}
@@ -1193,6 +1194,7 @@ export const ONGFinancialPage: React.FC = () => {
         onClose={() => setShowDonationModal(false)}
         onDonationCreated={handleDonationCreated}
         currentUser={currentUser}
+        service={ongFinancialService}
       />
 
       {/* Create Category Modal */}
@@ -1201,6 +1203,7 @@ export const ONGFinancialPage: React.FC = () => {
         onClose={() => setShowCategoryModal(false)}
         onCategoryCreated={loadData}
         currentUser={currentUser}
+        service={ongFinancialService}
       />
     </div>
   );

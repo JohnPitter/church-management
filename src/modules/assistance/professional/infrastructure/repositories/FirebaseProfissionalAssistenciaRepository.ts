@@ -143,13 +143,22 @@ export class FirebaseProfissionalAssistenciaRepository implements IProfissionalA
         orderBy('nome', 'asc')
       );
       const querySnapshot = await getDocs(q);
-      
-      return querySnapshot.docs.map(doc => 
+
+      return querySnapshot.docs.map(doc =>
         this.mapToProfissional(doc.id, doc.data())
       );
     } catch (error) {
-      console.error('Error finding profissionais by tipo:', error);
-      throw new Error('Erro ao buscar profissionais por tipo');
+      // Fallback: fetch all and filter client-side (handles missing composite index)
+      console.warn('Composite index query failed, falling back to client-side filter:', error);
+      try {
+        const allProfissionais = await this.findAll();
+        return allProfissionais
+          .filter(p => p.especialidade === tipo)
+          .sort((a, b) => a.nome.localeCompare(b.nome));
+      } catch (fallbackError) {
+        console.error('Error in fallback findByTipo:', fallbackError);
+        throw new Error('Erro ao buscar profissionais por tipo');
+      }
     }
   }
 

@@ -7,19 +7,26 @@ import {
 } from '@modules/financial/church-finance/domain/entities/Financial';
 import { financialService } from '@modules/financial/church-finance/application/services/FinancialService';
 
+interface FinancialServiceLike {
+  createCategory(data: any): Promise<string>;
+}
+
 interface CreateCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCategoryCreated: () => void;
   currentUser: any;
+  service?: FinancialServiceLike;
 }
 
 export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
   isOpen,
   onClose,
   onCategoryCreated,
-  currentUser
+  currentUser,
+  service
 }) => {
+  const activeService = service || financialService;
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -108,7 +115,7 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
         createdBy: currentUser?.email || 'unknown'
       };
       
-      await financialService.createCategory(categoryData);
+      await activeService.createCategory(categoryData);
       
       // Reset form
       setFormData({
