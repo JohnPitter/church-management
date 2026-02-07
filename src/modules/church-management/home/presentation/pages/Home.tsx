@@ -17,6 +17,18 @@ import { ptBR } from 'date-fns/locale';
 import { onSnapshot, collection, query, where, limit } from 'firebase/firestore';
 import { db } from 'config/firebase';
 
+function getChurchArticle(name?: string): string {
+  if (!name) return 'à';
+  const lower = name.trim().toLowerCase();
+  const masculineStarters = [
+    'centro', 'ministério', 'ministerio', 'templo', 'santuário', 'santuario',
+    'tabernáculo', 'tabernaculo', 'movimento', 'grupo', 'espaço', 'espaco',
+    'lugar', 'ponto', 'caminho', 'reino', 'projeto',
+  ];
+  if (masculineStarters.some(s => lower.startsWith(s))) return 'ao';
+  return 'à';
+}
+
 const Home: React.FC = () => {
   const { currentUser } = useAuth();
   const { hasPermission } = usePermissions();
@@ -366,7 +378,7 @@ const Home: React.FC = () => {
             ) : (
               <>
                 <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Seja bem-vindo! {settings?.churchName || 'Igreja'}
+                  Seja bem-vindo(a) {getChurchArticle(settings?.churchName)} {settings?.churchName || 'Igreja'}
                 </h1>
                 <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
                   Um lugar de fé, esperança e amor. Conecte-se com nossa comunidade e cresça espiritualmente.

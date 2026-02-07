@@ -10,6 +10,18 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BibleVerse } from '@/data/verses';
 
+function getChurchArticle(name?: string): string {
+  if (!name) return 'à';
+  const lower = name.trim().toLowerCase();
+  const masculineStarters = [
+    'centro', 'ministério', 'ministerio', 'templo', 'santuário', 'santuario',
+    'tabernáculo', 'tabernaculo', 'movimento', 'grupo', 'espaço', 'espaco',
+    'lugar', 'ponto', 'caminho', 'reino', 'projeto',
+  ];
+  if (masculineStarters.some(s => lower.startsWith(s))) return 'ao';
+  return 'à';
+}
+
 interface CanvaHomeLayoutProps {
   sections: HomeSectionVisibility;
   currentTime: Date;
@@ -45,7 +57,7 @@ export const CanvaHomeLayout: React.FC<CanvaHomeLayoutProps> = ({
 
             {/* Title */}
             <h1 className="text-6xl md:text-7xl font-bold mb-6 text-white drop-shadow-lg">
-              Seja bem-vindo! {settings?.churchName || 'Nossa Igreja'} ✨
+              Seja bem-vindo(a) {getChurchArticle(settings?.churchName)} {settings?.churchName || 'Nossa Igreja'}
             </h1>
             <p className="text-xl md:text-2xl text-white/95 max-w-3xl mx-auto leading-relaxed mb-8">
               Juntos construímos uma comunidade de amor, fé e transformação
