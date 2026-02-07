@@ -19,7 +19,7 @@
     "date-fns": "^4.1.0",
     "docx": "^9.5.1",
     "file-saver": "^2.0.5",
-    "firebase": "^12.0.0",
+    "firebase": "^12.9.0",
     "firebase-admin": "^13.4.0",
     "firebase-functions": "^7.0.0",
     "jspdf": "^4.1.0",
@@ -79,7 +79,10 @@
     },
     "overrides": [
       {
-        "files": ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)"],
+        "files": [
+          "**/__tests__/**/*.[jt]s?(x)",
+          "**/?(*.)+(spec|test).[jt]s?(x)"
+        ],
         "rules": {
           "testing-library/no-node-access": "warn",
           "testing-library/no-wait-for-multiple-assertions": "warn",

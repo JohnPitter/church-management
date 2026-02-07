@@ -3,856 +3,457 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ========================================
-    // HELPER FUNCTIONS - AUTHENTICATION
+    // HELPER FUNCTIONS
     // ========================================
-
-    // Check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Get user data from Firestore
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // Check if user is approved
     function isApproved() {
       return isAuthenticated() && getUserData().status == 'approved';
     }
 
-    // Check specific role
     function hasRole(role) {
       return isAuthenticated() && getUserData().role == role;
     }
 
-    // ========================================
-    // PERMISSION SYSTEM (CORRIGIDO)
-    // ========================================
-
-    // Main permission check function
-    function hasPermission(module, action) {
-      return getUserData().status == 'approved' &&
-             checkUserPermission(getUserData(), module, action);
+    function isAdmin() {
+      return hasRole('admin');
     }
 
-    // Check user permission with proper priority
-    // Priority: 1. Custom grants, 2. Custom revokes block, 3. Role permissions
-    function checkUserPermission(userData, module, action) {
-      return hasCustomGrant(userData, module, action) ||
-             (!hasCustomRevoke(userData, module, action) && hasRolePermission(userData, module, action));
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Check custom grants - CORRIGIDO: verifica todo o array
-    function hasCustomGrant(userData, module, action) {
-      return 'customPermissions' in userData &&
-             'granted' in userData.customPermissions &&
-             userData.customPermissions.granted.size() > 0 &&
-             findPermissionInArray(userData.customPermissions.granted, module, action);
-    }
-
-    // Check custom revokes - CORRIGIDO: verifica todo o array
-    function hasCustomRevoke(userData, module, action) {
-      return 'customPermissions' in userData &&
-             'revoked' in userData.customPermissions &&
-             userData.customPermissions.revoked.size() > 0 &&
-             findPermissionInArray(userData.customPermissions.revoked, module, action);
-    }
-
-    // Busca permissão em todo o array (até 30 elementos - cobre todos os 26 SystemModules)
-    // Firestore Rules não suporta loops, então verificamos explicitamente
-    function findPermissionInArray(arr, module, action) {
-      return (arr.size() > 0 && arr[0].module == module && action in arr[0].actions) ||
-             (arr.size() > 1 && arr[1].module == module && action in arr[1].actions) ||
-             (arr.size() > 2 && arr[2].module == module && action in arr[2].actions) ||
-             (arr.size() > 3 && arr[3].module == module && action in arr[3].actions) ||
-             (arr.size() > 4 && arr[4].module == module && action in arr[4].actions) ||
-             (arr.size() > 5 && arr[5].module == module && action in arr[5].actions) ||
-             (arr.size() > 6 && arr[6].module == module && action in arr[6].actions) ||
-             (arr.size() > 7 && arr[7].module == module && action in arr[7].actions) ||
-             (arr.size() > 8 && arr[8].module == module && action in arr[8].actions) ||
-             (arr.size() > 9 && arr[9].module == module && action in arr[9].actions) ||
-             (arr.size() > 10 && arr[10].module == module && action in arr[10].actions) ||
-             (arr.size() > 11 && arr[11].module == module && action in arr[11].actions) ||
-             (arr.size() > 12 && arr[12].module == module && action in arr[12].actions) ||
-             (arr.size() > 13 && arr[13].module == module && action in arr[13].actions) ||
-             (arr.size() > 14 && arr[14].module == module && action in arr[14].actions) ||
-             (arr.size() > 15 && arr[15].module == module && action in arr[15].actions) ||
-             (arr.size() > 16 && arr[16].module == module && action in arr[16].actions) ||
-             (arr.size() > 17 && arr[17].module == module && action in arr[17].actions) ||
-             (arr.size() > 18 && arr[18].module == module && action in arr[18].actions) ||
-             (arr.size() > 19 && arr[19].module == module && action in arr[19].actions) ||
-             (arr.size() > 20 && arr[20].module == module && action in arr[20].actions) ||
-             (arr.size() > 21 && arr[21].module == module && action in arr[21].actions) ||
-             (arr.size() > 22 && arr[22].module == module && action in arr[22].actions) ||
-             (arr.size() > 23 && arr[23].module == module && action in arr[23].actions) ||
-             (arr.size() > 24 && arr[24].module == module && action in arr[24].actions) ||
-             (arr.size() > 25 && arr[25].module == module && action in arr[25].actions) ||
-             (arr.size() > 26 && arr[26].module == module && action in arr[26].actions) ||
-             (arr.size() > 27 && arr[27].module == module && action in arr[27].actions) ||
-             (arr.size() > 28 && arr[28].module == module && action in arr[28].actions) ||
-             (arr.size() > 29 && arr[29].module == module && action in arr[29].actions);
+    function isDocOwner() {
+      return isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // ========================================
-    // ROLE PERMISSIONS (Suporta custom roles)
+    // USERS
     // ========================================
-
-    // Check role permissions - usa rolePermissions sincronizado no documento do usuário
-    function hasRolePermission(userData, module, action) {
-      return userData.role == 'admin' ||
-             // Permissões dinâmicas: rolePermissions sincronizado no user doc pelo PermissionService
-             ('rolePermissions' in userData &&
-              userData.rolePermissions != null &&
-              userData.rolePermissions.size() > 0 &&
-              findPermissionInArray(userData.rolePermissions, module, action)) ||
-             // Roles padrão (hardcoded para performance)
-             (userData.role == 'secretary' && hasSecretaryPermission(module, action)) ||
-             (userData.role == 'leader' && hasLeaderPermission(module, action)) ||
-             (userData.role == 'member' && hasMemberPermission(module, action)) ||
-             (userData.role == 'professional' && hasProfessionalPermission(module, action)) ||
-             (userData.role == 'finance' && hasFinancePermission(module, action));
-    }
-
-    // Secretary role permissions - CORRIGIDO: 'finance' ao invés de 'financial'
-    function hasSecretaryPermission(module, action) {
-      return (module in ['dashboard', 'users', 'members', 'events', 'blog', 'devotionals',
-                         'transmissions', 'projects', 'visitors', 'calendar', 'forum',
-                         'notifications', 'settings', 'assistance', 'ong', 'leadership',
-                         'assets'] &&
-              action in ['view', 'create', 'update', 'delete']) ||
-             (module == 'members' && action == 'export') ||
-             (module == 'visitors' && action == 'export') ||
-             (module == 'finance' && action == 'view');
-    }
-
-    // Leader role permissions
-    function hasLeaderPermission(module, action) {
-      return (module in ['dashboard', 'members', 'events', 'projects', 'calendar',
-                         'blog', 'devotionals', 'forum'] &&
-              action == 'view') ||
-             (module in ['events', 'projects'] && action in ['create', 'update']);
-    }
-
-    // Member role permissions
-    function hasMemberPermission(module, action) {
-      return module in ['dashboard', 'events', 'blog', 'devotionals', 'transmissions',
-                        'projects', 'forum', 'calendar', 'leadership'] &&
-             action == 'view';
-    }
-
-    // Professional role permissions
-    function hasProfessionalPermission(module, action) {
-      return (module in ['dashboard', 'members', 'calendar', 'reports'] &&
-              action == 'view') ||
-             (module == 'assistance' && action in ['view', 'create', 'update']);
-    }
-
-    // Finance role permissions - CORRIGIDO: 'finance' ao invés de 'financial'
-    function hasFinancePermission(module, action) {
-      return (module in ['dashboard', 'members', 'calendar'] && action == 'view') ||
-             (module == 'finance' && action in ['view', 'create', 'update', 'delete', 'export', 'manage']) ||
-             (module == 'donations' && action in ['view', 'create', 'update', 'delete', 'export']) ||
-             (module == 'reports' && action in ['view', 'export']);
-    }
-
-    // ========================================
-    // COLLECTION RULES
-    // ========================================
-
-    // Users collection
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && (request.auth.uid == userId || hasRole('admin'));
-      allow delete: if hasRole('admin');
-    }
-
-    // Members collection
-    match /members/{memberId} {
-      allow read: if isAuthenticated() && hasPermission('members', 'view');
-      allow create: if isAuthenticated() && hasPermission('members', 'create');
-      allow update: if isAuthenticated() && hasPermission('members', 'update');
-      allow delete: if isAuthenticated() && hasPermission('members', 'delete');
-    }
-
-    // Events collection
-    match /events/{eventId} {
-      allow read: if true; // Public read for events
-      allow create: if isAuthenticated() && hasPermission('events', 'create');
-      allow update: if isAuthenticated() && hasPermission('events', 'update');
-      allow delete: if isAuthenticated() && hasPermission('events', 'delete');
-    }
-
-    // Blog posts collection
-    match /blogPosts/{postId} {
-      allow read: if true; // Public read
-      allow create: if isAuthenticated() && hasPermission('blog', 'create');
-      allow update: if isAuthenticated() && hasPermission('blog', 'update');
-      allow delete: if isAuthenticated() && hasPermission('blog', 'delete');
-    }
-
-    // Projects collection - MIGRADO para hasPermission
-    match /projects/{projectId} {
-      allow read: if true; // Public read
-      allow create: if isApproved() && hasPermission('projects', 'create');
-      allow update: if isApproved() && hasPermission('projects', 'update');
-      allow delete: if isApproved() && hasPermission('projects', 'delete');
-    }
-
-    // Devotionals collection - MIGRADO para hasPermission
-    match /devotionals/{devotionalId} {
-      allow read: if true; // Public read
-      allow create: if isApproved() && hasPermission('devotionals', 'create');
-      allow update: if isApproved() && hasPermission('devotionals', 'update');
-      allow delete: if isApproved() && hasPermission('devotionals', 'delete');
-    }
-
-    // Forum categories collection - MIGRADO para hasPermission
-    match /forumCategories/{categoryId} {
-      allow read: if true; // Public read
-      allow create: if isApproved() && hasPermission('forum', 'create');
-      allow update: if isApproved() && hasPermission('forum', 'update');
-      allow delete: if isApproved() && hasPermission('forum', 'delete');
-    }
-
-    // Forum topics collection - MIGRADO para hasPermission
-    match /forumTopics/{topicId} {
-      allow read: if true; // Public read
-      allow create: if isAuthenticated(); // Qualquer usuário autenticado pode criar tópicos
-      allow update: if isAuthenticated() && (
-        resource.data.createdBy == request.auth.uid ||
-        hasPermission('forum', 'update')
-      );
-      allow delete: if isApproved() && hasPermission('forum', 'delete');
-    }
-
-    // Forum replies collection - MIGRADO para hasPermission
-    match /forumReplies/{replyId} {
-      allow read: if true; // Public read
-      allow create: if isAuthenticated(); // Qualquer usuário autenticado pode responder
-      allow update: if isAuthenticated() && (
-        resource.data.createdBy == request.auth.uid ||
-        hasPermission('forum', 'update')
-      );
-      allow delete: if isApproved() && hasPermission('forum', 'delete');
-    }
-
-    // Visitors collection
-    match /visitors/{visitorId} {
-      allow read: if isAuthenticated() && hasPermission('visitors', 'view');
-      allow create: if isAuthenticated() && hasPermission('visitors', 'create');
-      allow update: if isAuthenticated() && hasPermission('visitors', 'update');
-      allow delete: if isAuthenticated() && hasPermission('visitors', 'delete');
-    }
-
-    // Assistidos collection
-    match /assistidos/{assistidoId} {
-      allow read: if isAuthenticated() && hasPermission('assistance', 'view');
-      allow create: if isAuthenticated() && hasPermission('assistance', 'create');
-      allow update: if isAuthenticated() && hasPermission('assistance', 'update');
-      allow delete: if isAuthenticated() && hasPermission('assistance', 'delete');
-    }
-
-    // Assistencias collection
-    match /assistencias/{assistenciaId} {
-      allow read: if isAuthenticated() && hasPermission('assistance', 'view');
-      allow create: if isAuthenticated() && hasPermission('assistance', 'create');
-      allow update: if isAuthenticated() && hasPermission('assistance', 'update');
-      allow delete: if isAuthenticated() && hasPermission('assistance', 'delete');
-    }
-
-    // Agendamentos Assistencia collection
-    match /agendamentosAssistencia/{agendamentoId} {
-      allow read: if isAuthenticated() && hasPermission('assistance', 'view');
-      allow create: if isAuthenticated() && hasPermission('assistance', 'create');
-      allow update: if isAuthenticated() && hasPermission('assistance', 'update');
-      allow delete: if isAuthenticated() && hasPermission('assistance', 'delete');
-    }
-
-    // Prayer requests collection - Mantém lógica especial (qualquer usuário pode criar)
-    match /prayerRequests/{requestId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated(); // Qualquer usuário autenticado pode criar pedidos de oração
-      allow update: if isApproved() && hasPermission('notifications', 'update');
-      allow delete: if isApproved() && hasPermission('notifications', 'delete');
-    }
-
-    // Notifications collection - MIGRADO para hasPermission
-    match /notifications/{notificationId} {
-      allow read: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid ||
-        hasPermission('notifications', 'view')
-      );
-      allow create: if isApproved() && hasPermission('notifications', 'create');
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isApproved() && hasPermission('notifications', 'delete');
-    }
-
-    // Notification preferences collection
-    match /notificationPreferences/{userId} {
-      allow read: if isAuthenticated() && userId == request.auth.uid;
-      allow create: if isAuthenticated() && userId == request.auth.uid;
-      allow update: if isAuthenticated() && userId == request.auth.uid;
-      allow delete: if isAuthenticated() && userId == request.auth.uid;
-    }
-
-    // User permission overrides collection - MIGRADO para hasPermission
-    match /userPermissionOverrides/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isApproved() && hasPermission('permissions', 'create');
-      allow update: if isApproved() && hasPermission('permissions', 'update');
-      allow delete: if isApproved() && hasPermission('permissions', 'delete');
-    }
-
-    // Role permissions collection - MIGRADO para hasPermission
-    match /rolePermissions/{roleId} {
-      allow read: if isAuthenticated();
-      allow create: if isApproved() && hasPermission('permissions', 'create');
-      allow update: if isApproved() && hasPermission('permissions', 'update');
-      allow delete: if isApproved() && hasPermission('permissions', 'delete');
-    }
-
-    // Financial transactions collection - CORRIGIDO: 'finance' ao invés de 'financial'
-    match /transactions/{transactionId} {
-      allow read: if isApproved() && hasPermission('finance', 'view');
-      allow create: if isApproved() && hasPermission('finance', 'create');
-      allow update: if isApproved() && hasPermission('finance', 'update');
-      allow delete: if isApproved() && hasPermission('finance', 'delete');
-    }
-
-    // Donations collection - CORRIGIDO: usa módulo 'donations'
-    match /donations/{donationId} {
-      allow read: if isApproved() && hasPermission('donations', 'view');
-      allow create: if isApproved() && hasPermission('donations', 'create');
-      allow update: if isApproved() && hasPermission('donations', 'update');
-      allow delete: if isApproved() && hasPermission('donations', 'delete');
-    }
-
-    // Home layouts collection
-    match /homeLayouts/{layoutId} {
-      allow read: if true; // Public read
-      allow create: if hasRole('admin');
-      allow update: if hasRole('admin');
-      allow delete: if hasRole('admin');
-    }
-
-    // Settings collection
-    match /settings/{settingId} {
-      allow read: if true; // Public read for church info
-      allow update: if hasRole('admin');
-    }
-
-    // Audit logs collection
-    match /auditLogs/{logId} {
-      allow read: if hasRole('admin');
-      allow create: if isAuthenticated(); // Any authenticated user can create logs
-      allow update: if false; // Logs are immutable
-      allow delete: if false; // Logs should never be deleted
-    }
-
-    // System logs collection
-    match /systemLogs/{logId} {
-      allow read: if hasRole('admin');
-      allow create: if isAuthenticated(); // Any authenticated user can create logs
-      allow update: if false; // Logs are immutable
-      allow delete: if hasRole('admin'); // Only admin can delete logs
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
     }
 
     // ========================================
-    // ASSETS COLLECTION (Patrimônio) - MIGRADO para hasPermission
+    // PUBLIC READ - Write by approved users
     // ========================================
-    match /assets/{assetId} {
-      // Leitura: usuários com permissão assets.view
-      allow read: if isApproved() && hasPermission('assets', 'view');
-
-      // Criação: usuários com permissão assets.create + validação de dados
-      allow create: if isApproved() &&
-                       hasPermission('assets', 'create') &&
-                       // Validação de campos obrigatórios e tipos
-                       request.resource.data.name is string &&
-                       request.resource.data.name.size() >= 2 &&
-                       request.resource.data.name.size() <= 200 &&
-                       request.resource.data.category is string &&
-                       request.resource.data.acquisitionValue >= 0 &&
-                       request.resource.data.acquisitionDate is timestamp &&
-                       request.resource.data.condition is string &&
-                       request.resource.data.status is string &&
-                       request.resource.data.location is string &&
-                       request.resource.data.location.size() >= 1 &&
-                       request.resource.data.location.size() <= 300 &&
-                       request.resource.data.createdAt is timestamp &&
-                       request.resource.data.updatedAt is timestamp;
-
-      // Edição: usuários com permissão assets.update + validação de dados
-      allow update: if isApproved() &&
-                       hasPermission('assets', 'update') &&
-                       // Validação de campos obrigatórios e tipos
-                       request.resource.data.name is string &&
-                       request.resource.data.name.size() >= 2 &&
-                       request.resource.data.name.size() <= 200 &&
-                       request.resource.data.category is string &&
-                       request.resource.data.acquisitionValue >= 0 &&
-                       request.resource.data.acquisitionDate is timestamp &&
-                       request.resource.data.condition is string &&
-                       request.resource.data.status is string &&
-                       request.resource.data.location is string &&
-                       request.resource.data.location.size() >= 1 &&
-                       request.resource.data.location.size() <= 300 &&
-                       request.resource.data.updatedAt is timestamp;
-
-      // Exclusão: usuários com permissão assets.delete
-      allow delete: if isApproved() && hasPermission('assets', 'delete');
+    match /events/{docId} {
+      allow read: if true;
+      allow write: if isApproved();
     }
 
-    // ========================================
-    // ONG COLLECTIONS - MIGRADO para hasPermission
-    // ========================================
-    match /ongSettings/{settingId} {
-      allow read: if isApproved() && hasPermission('ong', 'view');
-      allow create: if isApproved() && hasPermission('ong', 'create');
-      allow update: if isApproved() && hasPermission('ong', 'update');
-      allow delete: if isApproved() && hasPermission('ong', 'delete');
+    match /blogPosts/{docId} {
+      allow read: if true;
+      allow write: if isApproved();
     }
 
-    match /ongVolunteers/{volunteerId} {
-      allow read: if isApproved() && hasPermission('ong', 'view');
-      allow create: if isApproved() && hasPermission('ong', 'create');
-      allow update: if isApproved() && hasPermission('ong', 'update');
-      allow delete: if isApproved() && hasPermission('ong', 'delete');
+    match /projects/{docId} {
+      allow read: if true;
+      allow write: if isApproved();
     }
 
-    match /voluntarios/{volunteerId} {
-      allow read: if isAuthenticated(); // Allow all authenticated users to read (for calendar birthdays)
-      allow create: if isApproved() && hasPermission('ong', 'create');
-      allow update: if isApproved() && hasPermission('ong', 'update');
-      allow delete: if isApproved() && hasPermission('ong', 'delete');
+    match /devotionals/{docId} {
+      allow read: if true;
+      allow write: if isApproved();
     }
 
-    match /ongActivities/{activityId} {
-      allow read: if isApproved() && hasPermission('ong', 'view');
-      allow create: if isApproved() && hasPermission('ong', 'create');
-      allow update: if isApproved() && hasPermission('ong', 'update');
-      allow delete: if isApproved() && hasPermission('ong', 'delete');
+    match /devotionalCategories/{docId} {
+      allow read: if true;
+      allow write: if isApproved();
     }
 
-    match /atividadesONG/{activityId} {
-      allow read: if isApproved() && hasPermission('ong', 'view');
-      allow create: if isApproved() && hasPermission('ong', 'create');
-      allow update: if isApproved() && hasPermission('ong', 'update');
-      allow delete: if isApproved() && hasPermission('ong', 'delete');
+    match /devotionalPlans/{docId} {
+      allow read: if true;
+      allow write: if isApproved();
     }
 
-    match /doacoesONG/{donationId} {
-      allow read: if isApproved() && hasPermission('ong', 'view');
-      allow create: if isApproved() && hasPermission('ong', 'create');
-      allow update: if isApproved() && hasPermission('ong', 'update');
-      allow delete: if isApproved() && hasPermission('ong', 'delete');
+    match /eventCategories/{docId} {
+      allow read: if true;
+      allow write: if isApproved();
     }
 
-    match /ongInfo/{infoId} {
-      allow read: if isApproved() && hasPermission('ong', 'view');
-      allow create: if isApproved() && hasPermission('ong', 'create');
-      allow update: if isApproved() && hasPermission('ong', 'update');
-      allow delete: if isApproved() && hasPermission('ong', 'delete');
+    match /liveStreams/{docId} {
+      allow read: if true;
+      allow write: if isApproved();
+    }
+
+    match /leaders/{docId} {
+      allow read: if true;
+      allow write: if isApproved();
+    }
+
+    match /homeLayouts/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /homeSettings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() || hasRole('secretary');
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /publicPageSettings/{docId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAdmin();
     }
 
     // ========================================
-    // PUBLIC PAGE SETTINGS
+    // PUBLIC READ - Auth users can interact
     // ========================================
-    match /publicPageSettings/{configId} {
-      allow read: if true; // Public read for public page settings
-      allow create: if true; // Allow creation if document doesn't exist
-      allow update: if hasRole('admin');
-      allow delete: if hasRole('admin');
+    match /forumCategories/{docId} {
+      allow read: if true;
+      allow write: if isApproved();
     }
 
-    // ========================================
-    // EVENT CONFIRMATIONS
-    // ========================================
-    match /eventConfirmations/{confirmationId} {
-      allow read: if isAuthenticated();
+    match /forumTopics/{docId} {
+      allow read: if true;
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.createdBy == request.auth.uid || isApproved());
+      allow delete: if isApproved();
     }
 
-    // ========================================
-    // LIKES (Blog, Comments, etc)
-    // ========================================
-    match /likes/{likeId} {
-      allow read: if true; // Anyone can read likes
+    match /forumReplies/{docId} {
+      allow read: if true;
       allow create: if isAuthenticated();
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.createdBy == request.auth.uid || isApproved());
+      allow delete: if isApproved();
     }
 
-    // ========================================
-    // PROJECT REGISTRATIONS
-    // ========================================
-    match /projectRegistrations/{registrationId} {
-      allow read: if isAuthenticated();
+    match /comments/{docId} {
+      allow read: if true;
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (isDocOwner() || isApproved());
+      allow delete: if isApproved();
+    }
+
+    match /devotionalComments/{docId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (isDocOwner() || isApproved());
+      allow delete: if isApproved();
+    }
+
+    match /likes/{docId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow delete: if isDocOwner();
     }
 
     // ========================================
-    // LIVE STREAMS - MIGRADO para hasPermission
+    // FULLY PUBLIC (Streams/Viewers)
     // ========================================
-    match /liveStreams/{streamId} {
-      allow read: if true; // Public read for live streams
-      allow create: if isApproved() && hasPermission('transmissions', 'create');
-      allow update: if isApproved() && hasPermission('transmissions', 'update');
-      allow delete: if isApproved() && hasPermission('transmissions', 'delete');
+    match /liveViewers/{docId} {
+      allow read, write: if true;
     }
 
-    // ========================================
-    // LIVE VIEWERS
-    // ========================================
-    match /liveViewers/{viewerId} {
-      allow read: if true; // Anyone can read viewer count
-      allow create: if true; // Anyone can register as viewer
-      allow update: if true; // Update viewer status
-      allow delete: if true; // Remove viewer when leaving
-    }
-
-    // ========================================
-    // STREAM VIEWERS (Real-time and Historical Counts)
-    // ========================================
     match /streamViewers/{streamId} {
-      allow read: if true; // Anyone can read viewer statistics
-
-      // Subcollection for current active viewers
+      allow read: if true;
       match /viewers/{viewerId} {
-        allow read: if true; // Anyone can read current viewer count
-        allow create: if true; // Anyone can register as an active viewer
-        allow update: if true; // Update viewer heartbeat/status
-        allow delete: if true; // Remove viewer when leaving
+        allow read, create, update: if true;
+        allow delete: if true;
       }
-
-      // Subcollection for total historical viewers
       match /totalViewers/{viewerId} {
-        allow read: if true; // Anyone can read total viewer count
-        allow create: if true; // Anyone can be counted as a viewer
-        allow update: if true; // Update viewer timestamp
-        allow delete: if false; // Don't allow deletion of historical data
+        allow read, create, update: if true;
+        allow delete: if false;
       }
     }
 
     // ========================================
-    // COMMENTS (Blog, etc) - MIGRADO para hasPermission
+    // AUTHENTICATED - CRUD by approved users
     // ========================================
-    match /comments/{commentId} {
-      allow read: if true; // Public read
-      allow create: if isAuthenticated(); // Qualquer usuário autenticado pode comentar
-      allow update: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid ||
-        hasPermission('blog', 'update')
-      );
-      allow delete: if isApproved() && hasPermission('blog', 'delete');
+    match /members/{docId} {
+      allow read, write: if isApproved();
     }
 
-    // ========================================
-    // DEVOTIONAL CATEGORIES - MIGRADO para hasPermission
-    // ========================================
-    match /devotionalCategories/{categoryId} {
-      allow read: if true; // Public read
-      allow create: if isApproved() && hasPermission('devotionals', 'create');
-      allow update: if isApproved() && hasPermission('devotionals', 'update');
-      allow delete: if isApproved() && hasPermission('devotionals', 'delete');
+    match /visitors/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /voluntarios/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isApproved();
     }
 
     // ========================================
-    // DEVOTIONAL PLANS - MIGRADO para hasPermission
+    // OWNER-BASED collections
     // ========================================
-    match /devotionalPlans/{planId} {
-      allow read: if true; // Public read
-      allow create: if isApproved() && hasPermission('devotionals', 'create');
-      allow update: if isApproved() && hasPermission('devotionals', 'update');
-      allow delete: if isApproved() && hasPermission('devotionals', 'delete');
+    match /notificationPreferences/{userId} {
+      allow read, write: if isOwner(userId);
     }
 
-    // ========================================
-    // USER DEVOTIONAL PROGRESS
-    // ========================================
-    match /userDevotionalProgress/{progressId} {
-      allow read: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid ||
-        hasPermission('devotionals', 'view')
-      );
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    match /notifications/{docId} {
+      allow read: if isAuthenticated() && (isDocOwner() || isApproved());
+      allow create: if isApproved();
+      allow update: if isDocOwner();
+      allow delete: if isApproved();
     }
 
-    // ========================================
-    // FINANCIAL COLLECTIONS - CORRIGIDO: 'finance' ao invés de 'financial'
-    // ========================================
-    match /budgets/{budgetId} {
-      allow read: if isApproved() && hasPermission('finance', 'view');
-      allow create: if isApproved() && hasPermission('finance', 'create');
-      allow update: if isApproved() && hasPermission('finance', 'update');
-      allow delete: if isApproved() && hasPermission('finance', 'delete');
-    }
-
-    match /financialCategories/{categoryId} {
-      allow read: if isApproved() && hasPermission('finance', 'view');
-      allow create: if isApproved() && hasPermission('finance', 'create');
-      allow update: if isApproved() && hasPermission('finance', 'update');
-      allow delete: if isApproved() && hasPermission('finance', 'delete');
-    }
-
-    match /church_budgets/{budgetId} {
-      allow read: if isApproved() && hasPermission('finance', 'view');
-      allow create: if isApproved() && hasPermission('finance', 'create');
-      allow update: if isApproved() && hasPermission('finance', 'update');
-      allow delete: if isApproved() && hasPermission('finance', 'delete');
-    }
-
-    match /church_categories/{categoryId} {
-      allow read: if isApproved() && hasPermission('finance', 'view');
-      allow create: if isApproved() && hasPermission('finance', 'create');
-      allow update: if isApproved() && hasPermission('finance', 'update');
-      allow delete: if isApproved() && hasPermission('finance', 'delete');
-    }
-
-    match /church_transactions/{transactionId} {
-      allow read: if isApproved() && hasPermission('finance', 'view');
-      allow create: if isApproved() && hasPermission('finance', 'create');
-      allow update: if isApproved() && hasPermission('finance', 'update');
-      allow delete: if isApproved() && hasPermission('finance', 'delete');
-    }
-
-    match /church_donations/{donationId} {
-      allow read: if isApproved() && hasPermission('donations', 'view');
-      allow create: if isApproved() && hasPermission('donations', 'create');
-      allow update: if isApproved() && hasPermission('donations', 'update');
-      allow delete: if isApproved() && hasPermission('donations', 'delete');
-    }
-
-    match /church_departments/{deptId} {
-      allow read: if isApproved() && hasPermission('finance', 'view');
-      allow create: if isApproved() && hasPermission('finance', 'create');
-      allow update: if isApproved() && hasPermission('finance', 'update');
-      allow delete: if isApproved() && hasPermission('finance', 'delete');
-    }
-
-    match /church_department_transactions/{transactionId} {
-      allow read: if isApproved() && hasPermission('finance', 'view');
-      allow create: if isApproved() && hasPermission('finance', 'create');
-      allow update: if isApproved() && hasPermission('finance', 'update');
-      allow delete: if isApproved() && hasPermission('finance', 'delete');
-    }
-
-    match /church_department_transfers/{transferId} {
-      allow read: if isApproved() && hasPermission('finance', 'view');
-      allow create: if isApproved() && hasPermission('finance', 'create');
-      allow update: if isApproved() && hasPermission('finance', 'update');
-      allow delete: if isApproved() && hasPermission('finance', 'delete');
-    }
-
-    // ONG Financial collections - MIGRADO para hasPermission
-    match /ong_budgets/{budgetId} {
-      allow read: if isApproved() && hasPermission('ong', 'view');
-      allow create: if isApproved() && hasPermission('ong', 'create');
-      allow update: if isApproved() && hasPermission('ong', 'update');
-      allow delete: if isApproved() && hasPermission('ong', 'delete');
-    }
-
-    match /ong_categories/{categoryId} {
-      allow read: if isApproved() && hasPermission('ong', 'view');
-      allow create: if isApproved() && hasPermission('ong', 'create');
-      allow update: if isApproved() && hasPermission('ong', 'update');
-      allow delete: if isApproved() && hasPermission('ong', 'delete');
-    }
-
-    match /ong_transactions/{transactionId} {
-      allow read: if isApproved() && hasPermission('ong', 'view');
-      allow create: if isApproved() && hasPermission('ong', 'create');
-      allow update: if isApproved() && hasPermission('ong', 'update');
-      allow delete: if isApproved() && hasPermission('ong', 'delete');
-    }
-
-    // ========================================
-    // ASSISTANCE COLLECTIONS (Additional)
-    // ========================================
-    match /profissionaisAssistencia/{profissionalId} {
-      allow read: if isAuthenticated() && hasPermission('assistance', 'view');
-      allow create: if isAuthenticated() && hasPermission('assistance', 'create');
-      allow update: if isAuthenticated() && hasPermission('assistance', 'update');
-      allow delete: if isAuthenticated() && hasPermission('assistance', 'delete');
-    }
-
-    match /atendimentos/{atendimentoId} {
-      allow read: if isAuthenticated() && hasPermission('assistance', 'view');
-      allow create: if isAuthenticated() && hasPermission('assistance', 'create');
-      allow update: if isAuthenticated() && hasPermission('assistance', 'update');
-      allow delete: if isAuthenticated() && hasPermission('assistance', 'delete');
-    }
-
-    // ========================================
-    // FORUM COLLECTIONS - MIGRADO para hasPermission
-    // ========================================
-    match /forumActivities/{activityId} {
+    match /prayerRequests/{docId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update: if isApproved() && hasPermission('forum', 'update');
-      allow delete: if isApproved() && hasPermission('forum', 'delete');
+      allow update, delete: if isApproved();
     }
 
-    match /forumNotifications/{notifId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    match /eventConfirmations/{docId} {
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update, delete: if isDocOwner();
+    }
+
+    match /projectRegistrations/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isDocOwner();
+    }
+
+    match /userDevotionalProgress/{docId} {
+      allow read: if isAuthenticated() && (isDocOwner() || isApproved());
+      allow create: if isAuthenticated();
+      allow update, delete: if isDocOwner();
+    }
+
+    match /userPlanProgress/{docId} {
+      allow read: if isAuthenticated() && (isDocOwner() || isApproved());
+      allow create: if isAuthenticated();
+      allow update, delete: if isDocOwner();
+    }
+
+    // ========================================
+    // FORUM - user-specific
+    // ========================================
+    match /forumActivities/{docId} {
+      allow read, create: if isAuthenticated();
+      allow update, delete: if isApproved();
+    }
+
+    match /forumNotifications/{docId} {
+      allow read, create: if isAuthenticated();
+      allow update, delete: if isDocOwner();
     }
 
     match /userForumProfiles/{userId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && userId == request.auth.uid;
-      allow update: if isAuthenticated() && userId == request.auth.uid;
-      allow delete: if isApproved() && hasPermission('forum', 'delete');
+      allow create, update: if isOwner(userId);
+      allow delete: if isApproved();
     }
 
     // ========================================
-    // EVENT COLLECTIONS - MIGRADO para hasPermission
+    // FINANCIAL - approved users only
     // ========================================
-    match /eventCategories/{categoryId} {
-      allow read: if true; // Public read
-      allow create: if isApproved() && hasPermission('events', 'create');
-      allow update: if isApproved() && hasPermission('events', 'update');
-      allow delete: if isApproved() && hasPermission('events', 'delete');
+    match /transactions/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /donations/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /budgets/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /financialCategories/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /church_budgets/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /church_categories/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /church_transactions/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /church_donations/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /church_departments/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /church_department_transactions/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /church_department_transfers/{docId} {
+      allow read, write: if isApproved();
     }
 
     // ========================================
-    // DEVOTIONAL COLLECTIONS - MIGRADO para hasPermission
+    // ONG - approved users only
     // ========================================
-    match /devotionalComments/{commentId} {
-      allow read: if true; // Public read
-      allow create: if isAuthenticated(); // Qualquer usuário autenticado pode comentar
-      allow update: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid ||
-        hasPermission('devotionals', 'update')
-      );
-      allow delete: if isApproved() && hasPermission('devotionals', 'delete');
+    match /ongSettings/{docId} {
+      allow read, write: if isApproved();
     }
 
-    match /userPlanProgress/{progressId} {
-      allow read: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid ||
-        hasPermission('devotionals', 'view')
-      );
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    match /ongVolunteers/{docId} {
+      allow read, write: if isApproved();
     }
 
-    // ========================================
-    // CUSTOM ROLES - MIGRADO para hasPermission
-    // ========================================
-    match /customRoles/{roleId} {
-      allow read: if isAuthenticated();
-      allow create: if isApproved() && hasPermission('permissions', 'create');
-      allow update: if isApproved() && hasPermission('permissions', 'update');
-      allow delete: if isApproved() && hasPermission('permissions', 'delete');
+    match /ongActivities/{docId} {
+      allow read, write: if isApproved();
     }
 
-    // ========================================
-    // PERMISSION AUDIT LOGS (Nova collection)
-    // ========================================
-    match /permissionAudit/{auditId} {
-      allow read: if isApproved() && hasPermission('audit', 'view');
-      allow create: if isAuthenticated(); // Sistema cria automaticamente
-      allow update: if false; // Logs são imutáveis
-      allow delete: if false; // Logs nunca devem ser deletados
+    match /atividadesONG/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /doacoesONG/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /ongInfo/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /ong_budgets/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /ong_categories/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /ong_transactions/{docId} {
+      allow read, write: if isApproved();
     }
 
     // ========================================
-    // PROFESSIONAL HELP REQUESTS - MIGRADO para hasPermission
+    // ASSISTANCE - approved users only
     // ========================================
-    match /professional_help_requests/{requestId} {
+    match /assistidos/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /assistencias/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /agendamentosAssistencia/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /profissionaisAssistencia/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /atendimentos/{docId} {
+      allow read, write: if isApproved();
+    }
+
+    match /professional_help_requests/{docId} {
       allow read: if isAuthenticated() && (
         resource.data.solicitanteId == request.auth.uid ||
         resource.data.destinatarioId == request.auth.uid ||
-        hasPermission('assistance', 'view')
+        isApproved()
       );
-      allow create: if isApproved() && hasPermission('assistance', 'create');
+      allow create: if isApproved();
       allow update: if isAuthenticated() && (
         resource.data.solicitanteId == request.auth.uid ||
         resource.data.destinatarioId == request.auth.uid ||
-        hasPermission('assistance', 'update')
+        isApproved()
       );
-      allow delete: if isApproved() && hasPermission('assistance', 'delete');
+      allow delete: if isApproved();
     }
 
-    match /professional_help_request_comments/{commentId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid ||
-        hasPermission('assistance', 'update')
-      );
-      allow delete: if isApproved() && hasPermission('assistance', 'delete');
+    match /professional_help_request_comments/{docId} {
+      allow read, create: if isAuthenticated();
+      allow update: if isAuthenticated() && (isDocOwner() || isApproved());
+      allow delete: if isApproved();
     }
 
-    // ========================================
-    // FICHAS DE ACOMPANHAMENTO (ASSISTANCE) - MIGRADO para hasPermission
-    // ========================================
-    match /fichasAcompanhamento/{fichaId} {
-      allow read: if isApproved() && hasPermission('assistance', 'view');
-      allow create: if isApproved() && hasPermission('assistance', 'create');
-      allow update: if isApproved() && hasPermission('assistance', 'update');
-      allow delete: if isApproved() && hasPermission('assistance', 'delete');
-
-      // Subcoleção de sessões
+    match /fichasAcompanhamento/{docId} {
+      allow read, write: if isApproved();
       match /sessoes/{sessaoId} {
-        allow read: if isApproved() && hasPermission('assistance', 'view');
-        allow write: if isApproved() && hasPermission('assistance', 'update');
+        allow read, write: if isApproved();
       }
     }
 
     // ========================================
-    // BACKUP COLLECTIONS
+    // ASSETS - approved users only
     // ========================================
-    match /system_backups/{backupId} {
-      allow read: if hasRole('admin');
-      allow create: if hasRole('admin');
-      allow update: if hasRole('admin');
-      allow delete: if hasRole('admin');
-    }
-
-    match /backups/{backupId} {
-      allow read: if hasRole('admin');
-      allow create: if hasRole('admin');
-      allow update: if hasRole('admin');
-      allow delete: if hasRole('admin');
-    }
-
-    match /backup_metadata/{metadataId} {
-      allow read: if hasRole('admin');
-      allow write: if hasRole('admin');
-    }
-
-    // Home Settings - Simple configuration
-    match /homeSettings/{document} {
-      allow read: if true; // Anyone can read
-      allow write: if hasRole('admin') || hasRole('secretary');
+    match /assets/{docId} {
+      allow read, write: if isApproved();
     }
 
     // ========================================
-    // LEADERSHIP COLLECTION
+    // PERMISSIONS - approved users only
     // ========================================
-    match /leaders/{leaderId} {
-      allow read: if true; // Public read for leadership page
-      allow create: if isAuthenticated() && hasPermission('leadership', 'create');
-      allow update: if isAuthenticated() && hasPermission('leadership', 'update');
-      allow delete: if isAuthenticated() && hasPermission('leadership', 'delete');
+    match /rolePermissions/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
 
-    // Default deny all other collections
+    match /userPermissionOverrides/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /customRoles/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ========================================
+    // AUDIT & LOGS - admin only
+    // ========================================
+    match /auditLogs/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    match /systemLogs/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    match /permissionAudit/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    // ========================================
+    // BACKUPS - admin only
+    // ========================================
+    match /system_backups/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /backups/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /backup_metadata/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Default deny
     match /{document=**} {
       allow read, write: if false;
     }
-
   }
 }
