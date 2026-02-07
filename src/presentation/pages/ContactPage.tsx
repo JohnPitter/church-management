@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ContactForm {
   name: string;
@@ -25,6 +27,7 @@ const initialForm: ContactForm = {
 
 export const ContactPage: React.FC = () => {
   const { settings } = useSettings();
+  const { currentUser } = useAuth();
   const _churchName = settings?.churchName || 'Nossa Igreja';
   const [form, setForm] = useState<ContactForm>(initialForm);
   const [submitting, setSubmitting] = useState(false);
@@ -51,6 +54,10 @@ export const ContactPage: React.FC = () => {
         status: 'unread',
         createdAt: serverTimestamp()
       });
+
+      // Log successful contact message
+      await loggingService.logUserAction('Contact message sent', `From: "${form.name}"`, currentUser as any);
+
       setSubmitted(true);
       setForm(initialForm);
     } catch (err) {

@@ -21,6 +21,7 @@ import {
 import { CreateTopicModal } from '../components/CreateTopicModal';
 import SocialShareButtons from '../components/SocialShareButtons';
 import toast from 'react-hot-toast';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 export const Forum: React.FC = () => {
   const { currentUser } = useAuth();
@@ -209,12 +210,16 @@ export const Forum: React.FC = () => {
       };
 
       await forumService.createReply(replyData);
+
+      // Log successful reply creation
+      await loggingService.logDatabase('info', 'Forum reply created', `Topic ID: ${selectedTopic.id}`, currentUser as any);
+
       setNewReply('');
-      
+
       // Reload replies
       const { replies: repliesData } = await forumService.getReplies(selectedTopic.id);
       setReplies(repliesData);
-      
+
       // Reload topic to update reply count
       const updatedTopic = await forumService.getTopic(selectedTopic.id);
       if (updatedTopic) setSelectedTopic(updatedTopic);

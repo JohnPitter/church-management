@@ -2,15 +2,12 @@
 // Comprehensive tests for assets management UI functionality
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AssetsManagementPage from '../AssetsManagementPage';
 import {
-  Asset,
   AssetCategory,
   AssetCondition,
   AssetStatus,
-  MaintenanceRecord
 } from '@modules/church-management/assets/domain/entities/Asset';
 
 // Mock window.alert and window.confirm globally

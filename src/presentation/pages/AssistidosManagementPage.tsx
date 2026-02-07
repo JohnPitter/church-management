@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import AssistidoModal from '@modules/assistance/assistidos/presentation/components/AssistidoModal';
 import AtendimentoModal from '../components/AtendimentoModal';
 import {
@@ -49,6 +50,7 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
   const [filterStatus, setFilterStatus] = useState<StatusAssistido | 'all'>('all');
   const [filterNecessidade, setFilterNecessidade] = useState<NecessidadeAssistido | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebouncedValue(searchTerm);
   const [statistics, setStatistics] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -183,10 +185,10 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
   const filteredAssistidos = assistidos.filter(assistido => {
     const matchesStatus = filterStatus === 'all' || assistido.status === filterStatus;
     const matchesNecessidade = filterNecessidade === 'all' || assistido.necessidades.includes(filterNecessidade);
-    const matchesSearch = !searchTerm ||
-      assistido.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (assistido.cpf && assistido.cpf.includes(searchTerm)) ||
-      assistido.telefone.includes(searchTerm);
+    const matchesSearch = !debouncedSearch ||
+      assistido.nome.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      (assistido.cpf && assistido.cpf.includes(debouncedSearch)) ||
+      assistido.telefone.includes(debouncedSearch);
 
     return matchesStatus && matchesNecessidade && matchesSearch;
   });
@@ -200,7 +202,7 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterStatus, filterNecessidade, searchTerm]);
+  }, [filterStatus, filterNecessidade, debouncedSearch]);
 
   const getStatusColor = (status: StatusAssistido) => {
     const colors = {
@@ -713,12 +715,13 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
 };
 
 // Componente para listar todos os atendimentos
-const AtendimentosListView: React.FC<{ 
-  assistidos: Assistido[], 
-  settings: any 
+const AtendimentosListView: React.FC<{
+  assistidos: Assistido[],
+  settings: any
 }> = ({ assistidos, settings }) => {
   const [filterTipo, setFilterTipo] = useState<TipoAtendimento | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebouncedValue(searchTerm);
   const [dateFilter, setDateFilter] = useState({
     startDate: '',
     endDate: ''
@@ -738,11 +741,11 @@ const AtendimentosListView: React.FC<{
   // Filtrar atendimentos
   const filteredAtendimentos = allAtendimentos.filter(atendimento => {
     const matchesTipo = filterTipo === 'all' || atendimento.tipo === filterTipo;
-    const matchesSearch = !searchTerm || 
-      atendimento.assistidoNome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      atendimento.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      atendimento.responsavel.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch = !debouncedSearch ||
+      atendimento.assistidoNome.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      atendimento.descricao.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      atendimento.responsavel.toLowerCase().includes(debouncedSearch.toLowerCase());
+
     let matchesDate = true;
     if (dateFilter.startDate && dateFilter.endDate) {
       const atendimentoDate = new Date(atendimento.data);

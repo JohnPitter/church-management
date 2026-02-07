@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 const AssetsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -24,6 +25,7 @@ const AssetsManagementPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebouncedValue(searchTerm);
   const [filterCategory, setFilterCategory] = useState<AssetCategory | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<AssetStatus | 'all'>('all');
   const [statistics, setStatistics] = useState<any>(null);
@@ -66,7 +68,7 @@ const AssetsManagementPage: React.FC = () => {
   useEffect(() => {
     filterAssets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assets, searchTerm, filterCategory, filterStatus]);
+  }, [assets, debouncedSearch, filterCategory, filterStatus]);
 
   const loadAssets = async () => {
     try {
@@ -94,8 +96,8 @@ const AssetsManagementPage: React.FC = () => {
     let filtered = assets;
 
     // Apply search filter
-    if (searchTerm) {
-      const lowerSearch = searchTerm.toLowerCase();
+    if (debouncedSearch) {
+      const lowerSearch = debouncedSearch.toLowerCase();
       filtered = filtered.filter(asset =>
         asset.name.toLowerCase().includes(lowerSearch) ||
         asset.description.toLowerCase().includes(lowerSearch) ||

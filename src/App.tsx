@@ -14,6 +14,7 @@ import { NotificationProvider } from './presentation/contexts/NotificationContex
 import { DynamicFavicon } from './presentation/components/DynamicFavicon';
 import { Toaster } from 'react-hot-toast';
 import { ConfirmDialogProvider } from './presentation/components/ConfirmDialog';
+import ErrorBoundary from './presentation/components/ErrorBoundary';
 
 // Pages
 import Home from './modules/church-management/home/presentation/pages/HomeSimplified';
@@ -103,11 +104,13 @@ const router = createBrowserRouter([
         <SettingsProvider>
           <NotificationProvider>
             <ConfirmDialogProvider>
-              <DynamicFavicon />
-              <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
-              <AdminSetupGuard>
-                <Outlet />
-              </AdminSetupGuard>
+              <ErrorBoundary>
+                <DynamicFavicon />
+                <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+                <AdminSetupGuard>
+                  <Outlet />
+                </AdminSetupGuard>
+              </ErrorBoundary>
             </ConfirmDialogProvider>
           </NotificationProvider>
         </SettingsProvider>

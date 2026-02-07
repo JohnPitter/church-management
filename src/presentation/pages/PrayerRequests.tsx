@@ -6,8 +6,11 @@ import { PrayerRequestService } from '@modules/church-management/prayer-requests
 import { PrayerRequest, PrayerRequestStatus } from '@modules/church-management/prayer-requests/domain/entities/PrayerRequest';
 import { CreatePrayerRequestModal } from '@modules/church-management/prayer-requests/presentation/components/CreatePrayerRequestModal';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import { useAuth } from '../contexts/AuthContext';
 
 const PrayerRequests: React.FC = () => {
+  const { currentUser } = useAuth();
   const [prayerRequests, setPrayerRequests] = useState<PrayerRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<PrayerRequestStatus | 'all'>('all');
@@ -81,6 +84,10 @@ const PrayerRequests: React.FC = () => {
     try {
       setIsProcessing(id);
       await prayerRequestService.deletePrayerRequest(id);
+
+      // Log successful prayer request deletion
+      await loggingService.logDatabase('warning', 'Prayer request deleted', `ID: ${id}`, currentUser as any);
+
       setMessage('Pedido excluído com sucesso');
       await loadPrayerRequests();
     } catch (error) {

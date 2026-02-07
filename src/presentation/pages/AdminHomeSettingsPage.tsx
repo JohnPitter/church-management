@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { HomeSettingsService } from '@modules/content-management/home-settings/application/services/HomeSettingsService';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import {
   HomeSettings,
   HomeLayoutStyle,
@@ -69,10 +70,12 @@ export const AdminHomeSettingsPage: React.FC = () => {
         },
         currentUser.email
       );
+      await loggingService.logSystem('info', 'Home settings updated', 'Settings saved', currentUser);
       toast.success('Configurações salvas com sucesso!');
       await loadSettings();
     } catch (error) {
       console.error('Error saving settings:', error);
+      await loggingService.logSystem('error', 'Failed to update home settings', `Error: ${error instanceof Error ? error.message : 'Unknown error'}`, currentUser);
       toast.error('Erro ao salvar configurações');
     } finally {
       setSaving(false);

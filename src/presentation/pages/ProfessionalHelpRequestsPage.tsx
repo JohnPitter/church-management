@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import {
   ProfessionalHelpRequest,
   HelpRequestStatus,
@@ -499,9 +500,11 @@ export const ProfessionalHelpRequestsPage: React.FC = () => {
               setShowCreateModal(false);
 
               // Show success message (you can add a toast notification here)
+              await loggingService.logDatabase('info', 'Help request created', `Subject: "${newRequest.titulo}"`, currentUser);
               toast.success('Pedido de ajuda enviado com sucesso!');
             } catch (error) {
               console.error('Error saving help request:', error);
+              await loggingService.logDatabase('error', 'Failed to create help request', `Error: ${error instanceof Error ? error.message : 'Unknown error'}`, currentUser);
               toast.error('Erro ao salvar pedido de ajuda. Por favor, tente novamente.');
             } finally {
               setLoading(false);

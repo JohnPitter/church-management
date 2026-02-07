@@ -5,6 +5,7 @@ import { SystemModule, PermissionAction } from '../../domain/entities/Permission
 import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
 import { ONGInfo, ONGEntity } from '@modules/ong-management/settings/domain/entities/ONG';
 import toast from 'react-hot-toast';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 const ONGSettingsPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -197,10 +198,12 @@ const ONGSettingsPage: React.FC = () => {
       };
       
       await ongRepository.updateONGInfo(updatedData);
+      await loggingService.logSystem('info', 'ONG settings updated', 'Settings saved', currentUser);
       toast.success('Informações da ONG atualizadas com sucesso!');
     } catch (error) {
       console.error('Error saving ONG info:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro ao salvar informações da ONG';
+      await loggingService.logSystem('error', 'Failed to update ONG settings', `Error: ${errorMessage}`, currentUser);
       toast.error(errorMessage);
     } finally {
       setSaving(false);

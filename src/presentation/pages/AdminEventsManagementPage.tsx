@@ -10,6 +10,7 @@ import { FirebaseEventRepository } from '@modules/church-management/events/infra
 import { Event as DomainEvent, EventStatus, EventConfirmation, ConfirmationStatus } from '../../domain/entities/Event';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 interface Event {
   id: string;
@@ -72,6 +73,7 @@ export const AdminEventsManagementPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebouncedValue(searchTerm);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -133,9 +135,9 @@ export const AdminEventsManagementPage: React.FC = () => {
   const filteredEvents = events.filter(event => {
     const matchesStatus = selectedStatus === 'all' || event.status === selectedStatus;
     const matchesCategory = selectedCategory === 'all' || event.category.name === selectedCategory;
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = event.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                         event.description.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                         event.location.toLowerCase().includes(debouncedSearch.toLowerCase());
     return matchesStatus && matchesCategory && matchesSearch;
   });
 

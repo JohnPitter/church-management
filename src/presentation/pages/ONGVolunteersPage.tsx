@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { 
   Voluntario, 
   StatusVoluntario, 
@@ -291,16 +292,19 @@ const ONGVolunteersPage: React.FC = () => {
       
       if (editingVolunteer) {
         await ongRepository.updateVoluntario(editingVolunteer.id, volunteerData);
+        await loggingService.logDatabase('info', 'ONG volunteer updated', `Volunteer: "${formData.nome}"`, currentUser);
         toast.success('Voluntário atualizado com sucesso!');
       } else {
         await ongRepository.createVoluntario(volunteerData);
+        await loggingService.logDatabase('info', 'ONG volunteer created', `Volunteer: "${formData.nome}"`, currentUser);
         toast.success('Voluntário cadastrado com sucesso!');
       }
-      
+
       handleCloseModal();
       loadVolunteers();
     } catch (error) {
       console.error('Error saving volunteer:', error);
+      await loggingService.logDatabase('error', 'Failed to save ONG volunteer', `Error: ${error instanceof Error ? error.message : 'Unknown error'}`, currentUser);
       toast.error('Erro ao salvar voluntário');
     }
   };
@@ -311,10 +315,12 @@ const ONGVolunteersPage: React.FC = () => {
 
     try {
       await ongRepository.deleteVoluntario(id);
+      await loggingService.logDatabase('warning', 'ONG volunteer deleted', `ID: ${id}`, currentUser);
       toast.success('Voluntário excluído com sucesso!');
       loadVolunteers();
     } catch (error) {
       console.error('Error deleting volunteer:', error);
+      await loggingService.logDatabase('error', 'Failed to delete ONG volunteer', `ID: ${id}, Error: ${error instanceof Error ? error.message : 'Unknown error'}`, currentUser);
       toast.error('Erro ao excluir voluntário');
     }
   };

@@ -5,6 +5,7 @@ import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/ficha
 import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 interface FichaModalProps {
   isOpen: boolean;
@@ -80,9 +81,11 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
       
       onSave(fichaAtualizada);
       setNovoComentario('');
+      await loggingService.logDatabase('info', 'Comment added to ficha', `Ficha ID: ${ficha.id}`, currentUser);
       toast.success('Comentário adicionado com sucesso!');
     } catch (error: any) {
       console.error('Error adding comment:', error);
+      await loggingService.logDatabase('error', 'Failed to add comment to ficha', `Ficha ID: ${ficha.id}, Error: ${error?.message || 'Unknown error'}`, currentUser);
       toast.error('Erro ao adicionar comentário: ' + (error?.message || 'Erro desconhecido'));
     } finally {
       setIsLoading(false);
@@ -116,10 +119,12 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
         evolucao: ''
       });
       await loadSessoes(); // Recarrega as sessões
+      await loggingService.logDatabase('info', 'Session added to ficha', `Ficha ID: ${ficha.id}`, currentUser);
       toast.success('Sessão adicionada com sucesso!');
     } catch (error: any) {
       console.error('Error adding sessao:', error);
       const errorMessage = error?.message || 'Erro desconhecido';
+      await loggingService.logDatabase('error', 'Failed to add session to ficha', `Ficha ID: ${ficha.id}, Error: ${errorMessage}`, currentUser);
       if (errorMessage.includes('permission') || errorMessage.includes('insufficient')) {
         toast.error('Erro de permissão. Verifique se você tem acesso a esta ficha.');
       } else {

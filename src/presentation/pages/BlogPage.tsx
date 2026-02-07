@@ -2,11 +2,13 @@
 // Blog listing and viewing page with Firebase integration
 
 import React, { useState, useEffect, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { useAuth } from '../contexts/AuthContext';
 import { BlogPost, PostVisibility } from '@modules/content-management/blog/domain/entities/BlogPost';
 import { FirebaseBlogRepository } from '@modules/content-management/blog/infrastructure/repositories/FirebaseBlogRepository';
 import { format } from 'date-fns';
 import SocialShareButtons from '../components/SocialShareButtons';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 // Presentation interface for BlogPost
 interface PresentationBlogPost {
@@ -60,6 +62,7 @@ export const BlogPage: React.FC = () => {
   const [posts, setPosts] = useState<PresentationBlogPost[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebouncedValue(searchTerm);
   const [loading, setLoading] = useState(true);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
@@ -137,17 +140,17 @@ export const BlogPage: React.FC = () => {
         const presentationPosts = visiblePosts.map(mapDomainToPresentation);
         setPosts(presentationPosts);
 
-        // Load user's likes if authenticated
+        // Load user's likes if authenticated (parallel for O(1) wall time vs O(n))
         if (currentUser) {
+          const likeResults = await Promise.allSettled(
+            presentationPosts.map(post =>
+              blogRepository.hasUserLiked(post.id, currentUser.id).then(hasLiked => ({ id: post.id, hasLiked }))
+            )
+          );
           const userLikedPosts = new Set<string>();
-          for (const post of presentationPosts) {
-            try {
-              const hasLiked = await blogRepository.hasUserLiked(post.id, currentUser.id);
-              if (hasLiked) {
-                userLikedPosts.add(post.id);
-              }
-            } catch (error) {
-              console.error(`Error checking like status for post ${post.id}:`, error);
+          for (const result of likeResults) {
+            if (result.status === 'fulfilled' && result.value.hasLiked) {
+              userLikedPosts.add(result.value.id);
             }
           }
           setUserLikes(userLikedPosts);
@@ -174,9 +177,9 @@ export const BlogPage: React.FC = () => {
 
   const filteredPosts = posts.filter(post => {
     const matchesCategory = selectedCategory === 'all' || post.categories.includes(selectedCategory);
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = post.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                         post.excerpt.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                         post.tags.some(tag => tag.toLowerCase().includes(debouncedSearch.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
@@ -320,7 +323,7 @@ export const BlogPage: React.FC = () => {
                       {expandedPostId === highlightedPost.id ? (
                         <div 
                           className="prose max-w-none"
-                          dangerouslySetInnerHTML={{ __html: highlightedPost.content }}
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(highlightedPost.content) }}
                         />
                       ) : (
                         <p>{highlightedPost.excerpt}</p>
@@ -404,7 +407,7 @@ export const BlogPage: React.FC = () => {
                       {expandedPostId === post.id ? (
                         <div 
                           className="prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{ __html: post.content }}
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
                         />
                       ) : (
                         <p className="line-clamp-2">{post.excerpt}</p>

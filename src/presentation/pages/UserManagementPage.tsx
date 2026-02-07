@@ -12,6 +12,7 @@ import { SystemModule, PermissionAction } from '../../domain/entities/Permission
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 // Presentation interface that maps to domain entities
 interface PresentationUser {
@@ -89,6 +90,7 @@ export const UserManagementPage: React.FC = () => {
   const userRepository = useMemo(() => new FirebaseUserRepository(), []);
   // permissionService is now a singleton import
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebouncedValue(searchTerm);
   const [selectedRole, setSelectedRole] = useState<string>('all');
 
   // Helper function to get role colors
@@ -107,8 +109,8 @@ export const UserManagementPage: React.FC = () => {
   const [roles, setRoles] = useState<Array<{ value: string; label: string; color: string }>>([]);
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = user.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                         user.email.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchesRole = selectedRole === 'all' || user.role === selectedRole;
     return matchesSearch && matchesRole;
   });

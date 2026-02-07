@@ -17,6 +17,7 @@ import { CreateMemberModal } from '@modules/church-management/members/presentati
 import { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } from 'docx';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 interface MembersManagementPageProps {}
 
@@ -38,6 +39,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
   const [filterStatus, setFilterStatus] = useState<MemberStatus | 'all'>('all');
   const [filterMemberType, setFilterMemberType] = useState<MemberType | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebouncedValue(searchTerm);
   const [statistics, setStatistics] = useState<any>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -127,10 +129,10 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
   const filteredMembers = members.filter(member => {
     const matchesStatus = filterStatus === 'all' || member.status === filterStatus;
     const matchesMemberType = filterMemberType === 'all' || member.memberType === filterMemberType;
-    const matchesSearch = !searchTerm ||
-      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (member.email && member.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (member.phone && member.phone.includes(searchTerm));
+    const matchesSearch = !debouncedSearch ||
+      member.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      (member.email && member.email.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+      (member.phone && member.phone.includes(debouncedSearch));
 
     return matchesStatus && matchesMemberType && matchesSearch;
   });
@@ -144,7 +146,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterStatus, filterMemberType]);
+  }, [debouncedSearch, filterStatus, filterMemberType]);
 
   const getStatusColor = (status: MemberStatus) => {
     const colors = {

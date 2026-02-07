@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { UserStatus } from '@/domain/entities/User';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 export const RegisterPage: React.FC = () => {
   const { settings, loading: settingsLoading } = useSettings();
@@ -60,11 +61,18 @@ export const RegisterPage: React.FC = () => {
       }
 
       setSuccess(true);
+
+      // Log successful registration
+      await loggingService.logAuth('info', 'New user registered', `Email: "${formData.email}"`, null);
+
       setTimeout(() => {
         navigate(wasAutoApproved ? '/painel' : '/login');
       }, 3000);
     } catch (err: any) {
       setError(err.message || 'Erro ao criar conta');
+
+      // Log registration failure
+      await loggingService.logAuth('error', 'Registration failed', `Error: ${err.message}`, null);
     } finally {
       setLoading(false);
     }
@@ -76,9 +84,16 @@ export const RegisterPage: React.FC = () => {
 
     try {
       await signInWithGoogle();
+
+      // Log successful Google sign-in
+      await loggingService.logAuth('info', 'User registered via Google', '', null);
+
       navigate('/painel');
     } catch (err: any) {
       setError(err.message || 'Erro ao fazer login com Google');
+
+      // Log Google sign-in failure
+      await loggingService.logAuth('error', 'Registration failed', `Error: ${err.message}`, null);
     } finally {
       setGoogleLoading(false);
     }

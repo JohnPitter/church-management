@@ -2,6 +2,7 @@
 // Renders different types of home page components
 
 import React, { useState } from 'react';
+import DOMPurify from 'dompurify';
 import { HomeComponent, ComponentType } from '../../../modules/content-management/home-builder/domain/entities/HomeBuilder';
 import { PrayerRequestService } from '@modules/church-management/prayer-requests/application/services/PrayerRequestService';
 import { OpenStreetMap } from '../OpenStreetMap';
@@ -1354,7 +1355,7 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
         return (
           <div
             dangerouslySetInnerHTML={{
-              __html: settings.customHTML || '<p>HTML personalizado aqui</p>'
+              __html: DOMPurify.sanitize(settings.customHTML || '<p>HTML personalizado aqui</p>')
             }}
           />
         );

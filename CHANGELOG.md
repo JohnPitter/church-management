@@ -8,17 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Comprehensive Unit Tests for AuthContext**: Complete test coverage for authentication context
-  - 44 unit tests covering all authentication functionality
-  - 100% code coverage (statements, branches, functions, lines)
-  - Tests for AuthProvider component initialization and lifecycle
-  - Tests for login, register, signInWithGoogle, logout operations
-  - Tests for user state management and auth state changes
-  - Tests for permission checking (canCreateContent, isProfessional, canAccessSystem)
-  - Tests for refreshUser and linkEmailPassword operations
-  - Tests for error handling and logging integration
-  - Integration tests for complete authentication flows
-  - Tests for role-based permissions and backward compatibility
+- **ErrorBoundary component** for graceful error handling across the app
+- **`useDebouncedValue` hook** for optimized search inputs (300ms debounce)
+- **Audit logging** in 11 pages previously without logging (ONG, Forum, Register, Contact, Prayer, Fichas, HomeSettings)
+- **Comprehensive Unit Tests for AuthContext**: 44 tests, 100% coverage
+
+### Changed
+- **Blog page**: Parallelized like-status checks with `Promise.allSettled` (O(n) sequential to parallel)
+- **Search inputs**: Added debounce to 8 management pages (Members, Users, Assistidos, Blog, Events, Assets, Logs, BlogPage)
+- **README.md**: Simplified to essentials, links to `docs/` for detailed documentation
+
+### Fixed
+- **XSS vulnerability**: Added DOMPurify sanitization to all HTML rendering (BlogPage, ComponentRenderer)
+- **ESLint errors**: Removed 4 unused imports in AssetsManagementPage.test.tsx
+
+### Security
+- Installed `dompurify` library for HTML sanitization against XSS attacks
+- All user-generated HTML content now sanitized before rendering
+
+### Documentation
+- Created comprehensive `docs/` folder with 7 documentation files (architecture, modules, CI/CD, Firebase, permissions, development)
+- Removed 25 legacy ad-hoc documentation files
+- Updated CLAUDE.md with concise project-specific guidance
+
+### Removed
+- `scripts/` folder from git tracking (added to .gitignore)
 
 ## [1.2.0] - 2026-01-07
 

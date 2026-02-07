@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { 
   AtividadeONG, 
   StatusAtividade, 
@@ -221,16 +222,19 @@ const ONGActivitiesPage: React.FC = () => {
       
       if (editingActivity) {
         await ongRepository.updateAtividade(editingActivity.id, activityData);
+        await loggingService.logDatabase('info', 'ONG activity updated', `Activity: "${formData.nome}"`, currentUser);
         toast.success('Atividade atualizada com sucesso!');
       } else {
         await ongRepository.createAtividade(activityData);
+        await loggingService.logDatabase('info', 'ONG activity created', `Activity: "${formData.nome}"`, currentUser);
         toast.success('Atividade cadastrada com sucesso!');
       }
-      
+
       handleCloseModal();
       loadData();
     } catch (error) {
       console.error('Error saving activity:', error);
+      await loggingService.logDatabase('error', 'Failed to save ONG activity', `Error: ${error instanceof Error ? error.message : 'Unknown error'}`, currentUser);
       toast.error('Erro ao salvar atividade');
     }
   };
@@ -241,10 +245,12 @@ const ONGActivitiesPage: React.FC = () => {
 
     try {
       await ongRepository.deleteAtividade(id);
+      await loggingService.logDatabase('warning', 'ONG activity deleted', `ID: ${id}`, currentUser);
       toast.success('Atividade excluída com sucesso!');
       loadData();
     } catch (error) {
       console.error('Error deleting activity:', error);
+      await loggingService.logDatabase('error', 'Failed to delete ONG activity', `ID: ${id}, Error: ${error instanceof Error ? error.message : 'Unknown error'}`, currentUser);
       toast.error('Erro ao excluir atividade');
     }
   };

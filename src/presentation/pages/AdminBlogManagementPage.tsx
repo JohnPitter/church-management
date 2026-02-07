@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { PermissionGuard } from '../components/PermissionGuard';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 
 // Presentation interface that maps to domain entities
@@ -63,6 +64,7 @@ export const AdminBlogManagementPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebouncedValue(searchTerm);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingPost, setEditingPost] = useState<PresentationBlogPost | null>(null);
 
@@ -97,9 +99,9 @@ export const AdminBlogManagementPage: React.FC = () => {
   const filteredPosts = posts.filter(post => {
     const matchesStatus = selectedStatus === 'all' || post.status === selectedStatus;
     const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = post.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                         post.content.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                         post.tags.some(tag => tag.toLowerCase().includes(debouncedSearch.toLowerCase()));
     return matchesStatus && matchesCategory && matchesSearch;
   });
 

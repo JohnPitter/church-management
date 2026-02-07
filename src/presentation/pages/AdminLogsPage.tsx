@@ -10,6 +10,7 @@ import { FirebaseLogRepository, SystemLog } from '@modules/shared-kernel/logging
 import { LogSeederService } from '@modules/shared-kernel/logging/infrastructure/services/LogSeederService';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 export const AdminLogsPage: React.FC = () => {
   const { currentUser: _currentUser } = useAuth();
@@ -24,6 +25,7 @@ export const AdminLogsPage: React.FC = () => {
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebouncedValue(searchTerm);
   const [selectedDate, setSelectedDate] = useState('');
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -57,9 +59,9 @@ export const AdminLogsPage: React.FC = () => {
   const filteredLogs = logs.filter(log => {
     const matchesLevel = selectedLevel === 'all' || log.level === selectedLevel;
     const matchesCategory = selectedCategory === 'all' || log.category === selectedCategory;
-    const matchesSearch = log.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (log.details && log.details.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                         (log.userEmail && log.userEmail.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = log.message.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                         (log.details && log.details.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+                         (log.userEmail && log.userEmail.toLowerCase().includes(debouncedSearch.toLowerCase()));
     const matchesDate = !selectedDate || formatDate(log.timestamp, 'yyyy-MM-dd') === selectedDate;
 
     return matchesLevel && matchesCategory && matchesSearch && matchesDate;
@@ -74,7 +76,7 @@ export const AdminLogsPage: React.FC = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedLevel, selectedCategory, searchTerm, selectedDate]);
+  }, [selectedLevel, selectedCategory, debouncedSearch, selectedDate]);
 
   const getLevelColor = (level: string) => {
     switch (level) {

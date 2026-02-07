@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import { useAuth } from '../contexts/AuthContext';
 
 interface PrayerRequest {
   name: string;
@@ -37,6 +39,7 @@ const categories = [
 
 export const PrayerPage: React.FC = () => {
   const { settings } = useSettings();
+  const { currentUser } = useAuth();
   const _churchName = settings?.churchName || 'Nossa Igreja';
   const [form, setForm] = useState<PrayerRequest>(initialForm);
   const [submitting, setSubmitting] = useState(false);
@@ -64,6 +67,10 @@ export const PrayerPage: React.FC = () => {
         createdAt: serverTimestamp(),
         source: 'public-form'
       });
+
+      // Log successful prayer request submission
+      await loggingService.logUserAction('Prayer request submitted', 'Public prayer request created', currentUser as any);
+
       setSubmitted(true);
       setForm(initialForm);
     } catch (err) {
