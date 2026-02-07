@@ -7,32 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-02-07
+
 ### Added
 - **ErrorBoundary component** for graceful error handling across the app
 - **`useDebouncedValue` hook** for optimized search inputs (300ms debounce)
 - **Audit logging** in 11 pages previously without logging (ONG, Forum, Register, Contact, Prayer, Fichas, HomeSettings)
+- **Toast & confirmation modals** replacing all `alert()`/`confirm()`/`prompt()` calls across 48 files
+- **Welcome message with article detection** (`getChurchArticle`) in all 4 home layouts
 - **Comprehensive Unit Tests for AuthContext**: 44 tests, 100% coverage
+- **Comprehensive `docs/` folder** with 7 documentation files (architecture, modules, CI/CD, Firebase, permissions, development)
 
 ### Changed
 - **Blog page**: Parallelized like-status checks with `Promise.allSettled` (O(n) sequential to parallel)
 - **Search inputs**: Added debounce to 8 management pages (Members, Users, Assistidos, Blog, Events, Assets, Logs, BlogPage)
 - **README.md**: Simplified to essentials, links to `docs/` for detailed documentation
+- **Cloud Functions**: Migrated imports to `firebase-functions/v1` for 1st Gen compatibility
+- **Firestore rules**: Simplified and compacted to ~460 lines
 
 ### Fixed
 - **XSS vulnerability**: Added DOMPurify sanitization to all HTML rendering (BlogPage, ComponentRenderer)
 - **ESLint errors**: Removed 4 unused imports in AssetsManagementPage.test.tsx
+- **Calendar**: Restored on main panel, removed from admin dashboard
+- **Welcome text**: Proper Portuguese article (a/ao) based on church name gender
 
 ### Security
 - Installed `dompurify` library for HTML sanitization against XSS attacks
 - All user-generated HTML content now sanitized before rendering
 
 ### Documentation
-- Created comprehensive `docs/` folder with 7 documentation files (architecture, modules, CI/CD, Firebase, permissions, development)
+- Created comprehensive `docs/` folder with 7 documentation files
 - Removed 25 legacy ad-hoc documentation files
 - Updated CLAUDE.md with concise project-specific guidance
 
 ### Removed
 - `scripts/` folder from git tracking (added to .gitignore)
+- Browser native dialogs (`alert`, `confirm`, `prompt`) - replaced with toast/modals
 
 ## [1.2.0] - 2026-01-07
 
@@ -208,5 +218,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ESLint and TypeScript configuration
 - Testing setup with React Testing Library
 
-[Unreleased]: https://github.com/yourusername/church-management/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/yourusername/church-management/releases/tag/v1.0.0
+[Unreleased]: https://github.com/JohnPitter/church-management/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/JohnPitter/church-management/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/JohnPitter/church-management/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/JohnPitter/church-management/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/JohnPitter/church-management/releases/tag/v1.0.0
