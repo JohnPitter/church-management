@@ -10,6 +10,7 @@ import { FirebaseEventRepository } from '@modules/church-management/events/infra
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { VerseOfTheDay } from '../components/VerseOfTheDay';
+import { EventsCalendar } from '@modules/church-management/events/presentation/components/EventsCalendar';
 
 interface RecentActivity {
   id: string;
@@ -231,6 +232,11 @@ export const PainelPage: React.FC = () => {
               </span>
             </Link>
           ))}
+        </div>
+
+        {/* Events and Birthdays Calendar */}
+        <div className="mt-8">
+          <EventsCalendar />
         </div>
 
         {/* Recent Activity */}

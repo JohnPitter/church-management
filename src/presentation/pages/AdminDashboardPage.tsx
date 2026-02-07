@@ -130,15 +130,6 @@ export const AdminDashboardPage: React.FC = () => {
       show: hasPermission(SystemModule.Visitors, PermissionAction.Manage)
     },
     {
-      title: 'Calendário',
-      description: 'Visualizar e gerenciar calendário da igreja',
-      href: '/painel',
-      icon: '📆',
-      color: 'bg-blue-400 hover:bg-blue-500',
-      category: 'church',
-      show: hasPermission(SystemModule.Calendar, PermissionAction.Manage)
-    },
-    {
       title: 'Gerenciamento de Assistências',
       description: 'Gerenciar assistência psicológica, social, jurídica e médica',
       href: '/admin/assistencias',
