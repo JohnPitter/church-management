@@ -40,6 +40,9 @@ serviceAccountKey.json
 .claude/
 CLAUDE.md
 
+# Scripts
+/scripts/
+
 # OS
 Thumbs.db
 .DS_Store
