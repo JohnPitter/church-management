@@ -12,6 +12,8 @@ import {
 } from '@modules/content-management/leadership/domain/entities/Leader';
 import { LeadershipService } from '@modules/content-management/leadership/application/services/LeadershipService';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 interface LeaderModalProps {
   isOpen: boolean;
@@ -72,7 +74,7 @@ const LeaderModal: React.FC<LeaderModalProps> = ({ isOpen, onClose, onSave, lead
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.nome.trim()) {
-      alert('O nome é obrigatório');
+      toast.error('O nome é obrigatório');
       return;
     }
 
@@ -85,18 +87,18 @@ const LeaderModal: React.FC<LeaderModalProps> = ({ isOpen, onClose, onSave, lead
         });
         onSave(newLeader);
         await loggingService.logDatabase('info', 'Leader created', `Name: ${formData.nome}`, currentUser as any);
-        alert('✅ Líder cadastrado com sucesso!');
+        toast.success('Líder cadastrado com sucesso!');
       } else if (leader) {
         const updated = await leadershipService.updateLeader(leader.id, formData);
         onSave(updated);
         await loggingService.logDatabase('info', 'Leader updated', `Name: ${formData.nome}, ID: ${leader.id}`, currentUser as any);
-        alert('✅ Líder atualizado com sucesso!');
+        toast.success('Líder atualizado com sucesso!');
       }
       onClose();
     } catch (error: any) {
       console.error('Error saving leader:', error);
       await loggingService.logDatabase('error', 'Error saving leader', `Name: ${formData.nome}, Mode: ${mode}, Error: ${error.message}`, currentUser as any);
-      alert(`❌ Erro ao salvar líder: ${error.message}`);
+      toast.error('Erro ao salvar líder: ' + error.message);
     } finally {
       setIsLoading(false);
     }
@@ -256,6 +258,7 @@ const LeaderModal: React.FC<LeaderModalProps> = ({ isOpen, onClose, onSave, lead
 
 export const AdminLeadershipPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { confirm } = useConfirmDialog();
   const [leaders, setLeaders] = useState<Leader[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -294,17 +297,18 @@ export const AdminLeadershipPage: React.FC = () => {
   };
 
   const handleDelete = async (leader: Leader) => {
-    if (!window.confirm(`Tem certeza que deseja excluir "${leader.nome}"?`)) return;
+    const confirmed = await confirm({ title: 'Confirmação', message: `Tem certeza que deseja excluir "${leader.nome}"?`, variant: 'danger' });
+    if (!confirmed) return;
 
     try {
       await leadershipService.deleteLeader(leader.id);
       await loggingService.logDatabase('warning', 'Leader deleted', `Name: ${leader.nome}, ID: ${leader.id}`, currentUser as any);
       setLeaders(prev => prev.filter(l => l.id !== leader.id));
-      alert('✅ Líder excluído com sucesso!');
+      toast.success('Líder excluído com sucesso!');
     } catch (error: any) {
       console.error('Error deleting leader:', error);
       await loggingService.logDatabase('error', 'Error deleting leader', `Name: ${leader.nome}, ID: ${leader.id}, Error: ${error.message}`, currentUser as any);
-      alert(`❌ Erro ao excluir líder: ${error.message}`);
+      toast.error('Erro ao excluir líder: ' + error.message);
     }
   };
 

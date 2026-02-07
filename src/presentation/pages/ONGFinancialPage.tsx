@@ -27,6 +27,7 @@ import { CategoryPieChart } from '../components/charts/CategoryPieChart';
 import { MonthlyComparisonChart } from '../components/charts/MonthlyComparisonChart';
 import { DonationDonutChart } from '../components/charts/DonationDonutChart';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import toast from 'react-hot-toast';
 
 export const ONGFinancialPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -211,12 +212,12 @@ export const ONGFinancialPage: React.FC = () => {
 
       await loggingService.logONG('info', 'ONG financial data exported',
         `Format: ${format.toUpperCase()}`, currentUser as any);
-      alert(`Dados exportados em ${format.toUpperCase()} com sucesso!`);
+      toast.success(`Dados exportados em ${format.toUpperCase()} com sucesso!`);
     } catch (error) {
       console.error('Error exporting data:', error);
       await loggingService.logONG('error', 'Failed to export ONG financial data',
         `Format: ${format.toUpperCase()}, Error: ${error}`, currentUser as any);
-      alert('Erro ao exportar dados');
+      toast.error('Erro ao exportar dados');
     } finally {
       setLoading(false);
     }

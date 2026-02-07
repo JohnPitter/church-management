@@ -12,6 +12,7 @@ import { auth, storage } from '@/config/firebase';
 import { deleteField } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import toast from 'react-hot-toast';
 
 interface UserProfile {
   id: string;
@@ -154,10 +155,10 @@ export const ProfilePage: React.FC = () => {
       await loggingService.logUserAction('Profile updated',
         `User: "${currentUser.email}", Fields: displayName, phone`, currentUser as any);
 
-      alert('Perfil atualizado com sucesso!');
+      toast.success('Perfil atualizado com sucesso!');
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Erro ao atualizar perfil.');
+      toast.error('Erro ao atualizar perfil.');
     } finally {
       setSaving(false);
     }
@@ -200,13 +201,13 @@ export const ProfilePage: React.FC = () => {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Por favor, selecione apenas arquivos de imagem.');
+      toast.error('Por favor, selecione apenas arquivos de imagem.');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('A imagem deve ter no máximo 5MB.');
+      toast.error('A imagem deve ter no máximo 5MB.');
       return;
     }
 
@@ -280,7 +281,7 @@ export const ProfilePage: React.FC = () => {
         await loggingService.logUserAction('Profile photo updated',
           `User: "${currentUser.email}"`, currentUser as any);
 
-        alert('Foto atualizada com sucesso!');
+        toast.success('Foto atualizada com sucesso!');
       }
     } catch (error: any) {
       console.error('Error uploading photo:', error);
@@ -305,7 +306,7 @@ export const ProfilePage: React.FC = () => {
         errorMessage += 'Tente novamente.';
       }
 
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setUploadingPhoto(false);
       // Clear input for next selection
@@ -340,38 +341,38 @@ export const ProfilePage: React.FC = () => {
         // Refresh the user context to update the menu
         await refreshUser();
         
-        alert('Foto removida com sucesso!');
+        toast.success('Foto removida com sucesso!');
       } catch (error) {
         console.error('Error removing photo:', error);
-        alert('Erro ao remover foto.');
+        toast.error('Erro ao remover foto.');
       }
     }
   };
 
   const handlePasswordChange = async () => {
     if (!auth.currentUser) {
-      alert('Usuário não autenticado');
+      toast.error('Usuário não autenticado');
       return;
     }
 
     // Validações
     if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-      alert('Todos os campos são obrigatórios');
+      toast.error('Todos os campos são obrigatórios');
       return;
     }
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      alert('A nova senha e a confirmação não coincidem');
+      toast.error('A nova senha e a confirmação não coincidem');
       return;
     }
 
     if (passwordForm.newPassword.length < 6) {
-      alert('A nova senha deve ter pelo menos 6 caracteres');
+      toast.error('A nova senha deve ter pelo menos 6 caracteres');
       return;
     }
 
     if (passwordForm.currentPassword === passwordForm.newPassword) {
-      alert('A nova senha deve ser diferente da senha atual');
+      toast.error('A nova senha deve ser diferente da senha atual');
       return;
     }
 
@@ -399,7 +400,7 @@ export const ProfilePage: React.FC = () => {
       await loggingService.logSecurity('info', 'Password changed',
         `User: "${auth.currentUser.email}"`, currentUser as any);
 
-      alert('✅ Senha alterada com sucesso!');
+      toast.success('Senha alterada com sucesso!');
     } catch (error: any) {
       console.error('Error changing password:', error);
       await loggingService.logSecurity('warning', 'Failed password change attempt',
@@ -424,7 +425,7 @@ export const ProfilePage: React.FC = () => {
           errorMessage = error.message || errorMessage;
       }
       
-      alert('❌ ' + errorMessage);
+      toast.error(errorMessage);
     } finally {
       setChangingPassword(false);
     }

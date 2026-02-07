@@ -13,6 +13,7 @@ import {
 import { TipoAssistencia } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { ProfessionalHelpRequestService } from '@modules/assistance/professional/application/services/ProfessionalHelpRequestService';
+import toast from 'react-hot-toast';
 
 export const ProfessionalHelpRequestsPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -498,10 +499,10 @@ export const ProfessionalHelpRequestsPage: React.FC = () => {
               setShowCreateModal(false);
 
               // Show success message (you can add a toast notification here)
-              alert('Pedido de ajuda enviado com sucesso!');
+              toast.success('Pedido de ajuda enviado com sucesso!');
             } catch (error) {
               console.error('Error saving help request:', error);
-              alert('Erro ao salvar pedido de ajuda. Por favor, tente novamente.');
+              toast.error('Erro ao salvar pedido de ajuda. Por favor, tente novamente.');
             } finally {
               setLoading(false);
             }

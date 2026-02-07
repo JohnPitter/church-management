@@ -8,6 +8,8 @@ import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { format as formatDate } from 'date-fns';
 import { FirebaseLogRepository, SystemLog } from '@modules/shared-kernel/logging/infrastructure/repositories/FirebaseLogRepository';
 import { LogSeederService } from '@modules/shared-kernel/logging/infrastructure/services/LogSeederService';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 export const AdminLogsPage: React.FC = () => {
   const { currentUser: _currentUser } = useAuth();
@@ -16,6 +18,7 @@ export const AdminLogsPage: React.FC = () => {
   // Permission checks
   const canView = hasPermission(SystemModule.Logs, PermissionAction.View);
   const canManage = hasPermission(SystemModule.Logs, PermissionAction.Manage);
+  const { confirm } = useConfirmDialog();
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
@@ -118,18 +121,17 @@ export const AdminLogsPage: React.FC = () => {
   };
 
   const handleClearLogs = async () => {
-    if (!window.confirm('Tem certeza que deseja limpar todos os logs? Esta ação não pode ser desfeita.')) {
-      return;
-    }
+    const confirmed = await confirm({ title: 'Confirmação', message: 'Tem certeza que deseja limpar todos os logs? Esta ação não pode ser desfeita.', variant: 'danger' });
+    if (!confirmed) return;
 
     setLoading(true);
     try {
       await logRepository.clearAll();
       setLogs([]);
-      alert('Logs limpos com sucesso!');
+      toast.success('Logs limpos com sucesso!');
     } catch (error) {
       console.error('Error clearing logs:', error);
-      alert('Erro ao limpar logs.');
+      toast.error('Erro ao limpar logs.');
     } finally {
       setLoading(false);
     }
@@ -174,10 +176,10 @@ export const AdminLogsPage: React.FC = () => {
         URL.revokeObjectURL(url);
       }
       
-      alert(`Logs exportados em ${format.toUpperCase()} com sucesso!`);
+      toast.success(`Logs exportados em ${format.toUpperCase()} com sucesso!`);
     } catch (error) {
       console.error('Error exporting logs:', error);
-      alert('Erro ao exportar logs.');
+      toast.error('Erro ao exportar logs.');
     } finally {
       setLoading(false);
     }

@@ -14,6 +14,8 @@ import {
 } from '@modules/church-management/visitors/domain/entities/Visitor';
 import { format } from 'date-fns';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 import { CreateVisitorModal } from '@modules/church-management/visitors/presentation/components/visitors/CreateVisitorModal';
 import { VisitorDetailsModal } from '@modules/church-management/visitors/presentation/components/visitors/VisitorDetailsModal';
 import { ContactVisitorModal } from '@modules/church-management/visitors/presentation/components/visitors/ContactVisitorModal';
@@ -22,6 +24,8 @@ import { RecordVisitModal } from '@modules/church-management/visitors/presentati
 export const AdminVisitorsPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  const { confirm } = useConfirmDialog();
 
   // Permission checks
   const canView = hasPermission(SystemModule.Visitors, PermissionAction.View);
@@ -113,17 +117,18 @@ export const AdminVisitorsPage: React.FC = () => {
   };
 
   const handleDeleteVisitor = async (visitor: Visitor) => {
-    if (window.confirm(`Tem certeza que deseja excluir o visitante "${visitor.name}"? Esta ação não pode ser desfeita.`)) {
+    const confirmed = await confirm({ title: 'Confirmação', message: `Tem certeza que deseja excluir o visitante "${visitor.name}"? Esta ação não pode ser desfeita.`, variant: 'danger' });
+    if (confirmed) {
       try {
         await visitorService.deleteVisitor(visitor.id);
         await loggingService.logDatabase('info', 'Visitor deleted', `Name: ${visitor.name}, ID: ${visitor.id}`, currentUser as any);
         await loadVisitors();
         await loadStats();
-        alert('Visitante excluído com sucesso!');
+        toast.success('Visitante excluído com sucesso!');
       } catch (error) {
         console.error('Error deleting visitor:', error);
         await loggingService.logDatabase('error', 'Error deleting visitor', `Name: ${visitor.name}, ID: ${visitor.id}, Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
-        alert('Erro ao excluir visitante. Tente novamente.');
+        toast.error('Erro ao excluir visitante. Tente novamente.');
       }
     }
   };

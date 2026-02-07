@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import {
   TipoAssistencia,
   StatusAgendamento,
@@ -1124,7 +1125,7 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
 
     if (!isValid) {
       console.log('⛔ Validação falhou, abortando salvamento');
-      alert('Por favor, corrija os erros no formulário antes de continuar.');
+      toast.error('Por favor, corrija os erros no formulário antes de continuar.');
       return;
     }
 
@@ -1391,18 +1392,18 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
         const novoAgendamento = await agendamentoService.createAgendamento(agendamentoData);
         console.log('✅ [AGENDAMENTO] Agendamento criado:', novoAgendamento);
         onSave(novoAgendamento);
-        alert(`✅ Agendamento para ${formData.pacienteNome} foi criado com sucesso!`);
+        toast.success(`Agendamento para ${formData.pacienteNome} foi criado com sucesso!`);
       } else if (mode === 'edit' && agendamento) {
         const agendamentoAtualizado = await agendamentoService.updateAgendamento(agendamento.id, agendamentoData);
         console.log('✅ [AGENDAMENTO] Agendamento atualizado:', agendamentoAtualizado);
         onSave(agendamentoAtualizado);
-        alert(`✅ Agendamento de ${formData.pacienteNome} foi atualizado com sucesso!`);
+        toast.success(`Agendamento de ${formData.pacienteNome} foi atualizado com sucesso!`);
       }
 
       onClose();
     } catch (error: any) {
       console.error('Error saving agendamento:', error);
-      alert(`❌ Erro ao salvar agendamento: ${error.message}`);
+      toast.error(`Erro ao salvar agendamento: ${error.message}`);
     } finally {
       setIsLoading(false);
     }

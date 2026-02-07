@@ -2,6 +2,7 @@
 // Modal for recording new visits from existing visitors
 
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { visitorService } from '@modules/church-management/visitors/application/services/VisitorService';
 import {
   Visitor,
@@ -99,7 +100,7 @@ export const RecordVisitModal: React.FC<RecordVisitModalProps> = ({
       });
     } catch (error) {
       console.error('Error recording visit:', error);
-      alert('Erro ao registrar visita. Tente novamente.');
+      toast.error('Erro ao registrar visita. Tente novamente.');
     } finally {
       setLoading(false);
     }

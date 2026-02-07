@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 interface SocialShareButtonsProps {
   url: string;
@@ -125,7 +126,7 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
     setIsOpen(false); // Close dropdown after copying
     try {
       await navigator.clipboard.writeText(url);
-      alert('🔗 Link copiado para a área de transferência!');
+      toast.success('Link copiado para a área de transferência!');
     } catch (err) {
       console.error('Failed to copy: ', err);
       // Fallback for older browsers
@@ -135,7 +136,7 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      alert('🔗 Link copiado para a área de transferência!');
+      toast.success('Link copiado para a área de transferência!');
     }
   };
 

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
 import { useAuth } from 'presentation/contexts/AuthContext';
 import { useSettings } from 'presentation/contexts/SettingsContext';
+import { useConfirmDialog } from 'presentation/components/ConfirmDialog';
 import { 
   Assistido, 
   AssistidoEntity,
@@ -33,6 +35,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
 }) => {
   const { currentUser } = useAuth();
   const { settings } = useSettings();
+  const { confirm } = useConfirmDialog();
   const assistidoService = new AssistidoService();
   
   const [activeTab, setActiveTab] = useState<'dados' | 'familia' | 'atendimentos'>('dados');
@@ -242,17 +245,17 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
 
   const handleSaveFamiliar = () => {
     if (!familiarForm.nome.trim()) {
-      alert('Nome do familiar é obrigatório');
+      toast.error('Nome do familiar é obrigatório');
       return;
     }
 
     if (familiarForm.cpf && !AssistidoEntity.validarCPF(familiarForm.cpf)) {
-      alert('CPF do familiar é inválido');
+      toast.error('CPF do familiar é inválido');
       return;
     }
 
     if (familiarForm.telefone && !AssistidoEntity.validarTelefone(familiarForm.telefone)) {
-      alert('Telefone do familiar é inválido');
+      toast.error('Telefone do familiar é inválido');
       return;
     }
 
@@ -278,8 +281,13 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
     setEditingFamiliar(null);
   };
 
-  const handleRemoveFamiliar = (familiarId: string) => {
-    if (window.confirm('Tem certeza que deseja remover este familiar?')) {
+  const handleRemoveFamiliar = async (familiarId: string) => {
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: 'Tem certeza que deseja remover este familiar?',
+      variant: 'danger'
+    });
+    if (confirmed) {
       setFamiliares(prev => prev.filter(f => f.id !== familiarId));
     }
   };
@@ -393,12 +401,12 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
 
       if (mode === 'create') {
         await assistidoService.createAssistido(assistidoData);
-        const familiaresInfo = familiares.length > 0 ? `\nFamiliares: ${familiares.length} pessoa${familiares.length > 1 ? 's' : ''} cadastrada${familiares.length > 1 ? 's' : ''}` : '';
-        alert(`✅ ${formData.nome} foi cadastrado(a) como assistido(a) com sucesso!\n\nStatus: Ativo\nResponsável: ${formData.responsavelAtendimento}${familiaresInfo}`);
+        const familiaresInfo = familiares.length > 0 ? ` | Familiares: ${familiares.length} pessoa${familiares.length > 1 ? 's' : ''} cadastrada${familiares.length > 1 ? 's' : ''}` : '';
+        toast.success(`${formData.nome} foi cadastrado(a) como assistido(a) com sucesso! Status: Ativo | Responsável: ${formData.responsavelAtendimento}${familiaresInfo}`);
       } else if (mode === 'edit' && assistido) {
         await assistidoService.updateAssistido(assistido.id, assistidoData);
-        const familiaresInfo = familiares.length > 0 ? `\nFamiliares: ${familiares.length} pessoa${familiares.length > 1 ? 's' : ''}` : '';
-        alert(`✅ Dados de ${formData.nome} foram atualizados com sucesso!${familiaresInfo}`);
+        const familiaresInfo = familiares.length > 0 ? ` | Familiares: ${familiares.length} pessoa${familiares.length > 1 ? 's' : ''}` : '';
+        toast.success(`Dados de ${formData.nome} foram atualizados com sucesso!${familiaresInfo}`);
       }
 
       onSave();
@@ -406,7 +414,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
     } catch (error) {
       console.error('Error saving assistido:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      alert('Erro ao salvar assistido: ' + errorMessage);
+      toast.error('Erro ao salvar assistido: ' + errorMessage);
     } finally {
       setIsLoading(false);
     }

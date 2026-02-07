@@ -20,9 +20,12 @@ import {
 import { User } from '@/domain/entities/User';
 import { CreateRoleModal } from '../components/CreateRoleModal';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 export const PermissionsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { confirm } = useConfirmDialog();
   const { refreshPermissions } = usePermissions();
   const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'custom-roles' | 'public-pages'>('roles');
   const [selectedRole, setSelectedRole] = useState<string>('member');
@@ -73,7 +76,7 @@ export const PermissionsManagementPage: React.FC = () => {
       setPublicPageConfigs(publicConfigs);
     } catch (error) {
       console.error('Error loading permissions data:', error);
-      alert('Erro ao carregar dados de permissões');
+      toast.error('Erro ao carregar dados de permissoes');
     } finally {
       setLoading(false);
     }
@@ -131,7 +134,7 @@ export const PermissionsManagementPage: React.FC = () => {
       await loggingService.logSecurity('info', 'Role permissions updated',
         `Role: ${role}, Modules: ${modules.length}`, currentUser as any);
 
-      alert('Permissões da função atualizadas com sucesso!');
+      toast.success('Permissoes da funcao atualizadas com sucesso!');
     } catch (error: any) {
       console.error('Error saving role permissions:', error);
       await loggingService.logSecurity('error', 'Failed to update role permissions',
@@ -140,9 +143,9 @@ export const PermissionsManagementPage: React.FC = () => {
       // Check if it's a Firestore permission error
       if (error?.message?.includes('permissions') || error?.message?.includes('Firestore')) {
         setShowFirestoreWarning(true);
-        alert('Não foi possível salvar as permissões. Configure as regras do Firestore primeiro (veja as instruções abaixo).');
+        toast.error('Nao foi possivel salvar as permissoes. Configure as regras do Firestore primeiro (veja as instrucoes abaixo).');
       } else {
-        alert('Erro ao salvar permissões da função');
+        toast.error('Erro ao salvar permissoes da funcao');
       }
     } finally {
       setSaving(false);
@@ -150,14 +153,18 @@ export const PermissionsManagementPage: React.FC = () => {
   };
 
   const resetRoleToDefaults = async (role: string) => {
-    if (!window.confirm(`Tem certeza que deseja resetar as permissões de ${permissionService.getRoleDisplayNameSync(role)} para o padrão?`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Confirmacao',
+      message: `Tem certeza que deseja resetar as permissoes de ${permissionService.getRoleDisplayNameSync(role)} para o padrao?`,
+      variant: 'warning'
+    });
+
+    if (!confirmed) return;
 
     setSaving(true);
     try {
       await permissionService.resetRolePermissionsToDefault(role, currentUser?.email || 'Admin');
-      
+
       // Clear cache and refresh permissions
       permissionService.clearAllCache();
       await refreshPermissions();
@@ -166,12 +173,12 @@ export const PermissionsManagementPage: React.FC = () => {
       await loggingService.logSecurity('warning', 'Role permissions reset to defaults',
         `Role: ${role}`, currentUser as any);
 
-      alert('Permissões resetadas com sucesso!');
+      toast.success('Permissoes resetadas com sucesso!');
     } catch (error) {
       console.error('Error resetting permissions:', error);
       await loggingService.logSecurity('error', 'Failed to reset role permissions',
         `Role: ${role}, Error: ${error}`, currentUser as any);
-      alert('Erro ao resetar permissões');
+      toast.error('Erro ao resetar permissoes');
     } finally {
       setSaving(false);
     }
@@ -305,12 +312,12 @@ export const PermissionsManagementPage: React.FC = () => {
       await loggingService.logSecurity('info', 'User permission overrides updated',
         `User: "${user.email}", Granted: ${override?.grantedModules.length || 0}, Revoked: ${override?.revokedModules.length || 0}`, currentUser as any);
 
-      alert('Permissões do usuário atualizadas com sucesso!');
+      toast.success('Permissoes do usuario atualizadas com sucesso!');
     } catch (error) {
       console.error('Error saving user overrides:', error);
       await loggingService.logSecurity('error', 'Failed to update user permission overrides',
         `User: "${user.email}", Error: ${error}`, currentUser as any);
-      alert('Erro ao salvar permissões do usuário');
+      toast.error('Erro ao salvar permissoes do usuario');
     } finally {
       setSaving(false);
     }
@@ -335,15 +342,15 @@ export const PermissionsManagementPage: React.FC = () => {
       await loggingService.logSecurity('info', 'Custom role created',
         `Role: "${roleData.displayName}" (${roleData.roleName}), Modules: ${roleData.modules.length}`, currentUser as any);
 
-      alert('Função personalizada criada com sucesso!');
+      toast.success('Funcao personalizada criada com sucesso!');
       await loadData(); // Reload data to show new role
       setShowCreateRoleModal(false);
     } catch (error: any) {
       console.error('Error creating custom role:', error);
       await loggingService.logSecurity('error', 'Failed to create custom role',
         `Role: "${roleData.roleName}", Error: ${error}`, currentUser as any);
-      const errorMessage = error.message || 'Erro ao criar função personalizada';
-      alert(errorMessage);
+      const errorMessage = error.message || 'Erro ao criar funcao personalizada';
+      toast.error(errorMessage);
       throw error; // Re-throw to prevent modal from closing on error
     } finally {
       setCreateRoleLoading(false);
@@ -370,7 +377,7 @@ export const PermissionsManagementPage: React.FC = () => {
       await loggingService.logSecurity('info', 'Custom role updated',
         `Role: "${roleData.displayName}" (${roleId}), Modules: ${roleData.modules.length}`, currentUser as any);
 
-      alert('✓ Função personalizada atualizada com sucesso!');
+      toast.success('Funcao personalizada atualizada com sucesso!');
       await loadData(); // Reload data to show updated role
       await refreshPermissions(); // Refresh user permissions
       setShowCreateRoleModal(false);
@@ -379,8 +386,8 @@ export const PermissionsManagementPage: React.FC = () => {
       console.error('Error updating custom role:', error);
       await loggingService.logSecurity('error', 'Failed to update custom role',
         `Role ID: ${roleId}, Error: ${error}`, currentUser as any);
-      const errorMessage = error.message || 'Erro ao atualizar função personalizada';
-      alert(errorMessage);
+      const errorMessage = error.message || 'Erro ao atualizar funcao personalizada';
+      toast.error(errorMessage);
       throw error; // Re-throw to prevent modal from closing on error
     } finally {
       setCreateRoleLoading(false);
@@ -427,7 +434,7 @@ export const PermissionsManagementPage: React.FC = () => {
       console.error('Error updating public page visibility:', error);
       await loggingService.logSecurity('error', 'Failed to update public page visibility',
         `Page: ${page}, Error: ${error}`, currentUser as any);
-      alert('Erro ao atualizar visibilidade da página');
+      toast.error('Erro ao atualizar visibilidade da pagina');
     } finally {
       setSaving(false);
     }
@@ -450,7 +457,7 @@ export const PermissionsManagementPage: React.FC = () => {
       console.error('Error updating registration setting:', error);
       await loggingService.logSecurity('error', 'Failed to update page registration setting',
         `Page: ${page}, Error: ${error}`, currentUser as any);
-      alert('Erro ao atualizar configuração de registro');
+      toast.error('Erro ao atualizar configuracao de registro');
     } finally {
       setSaving(false);
     }
@@ -997,21 +1004,27 @@ export const PermissionsManagementPage: React.FC = () => {
                             </button>
                             <button
                               onClick={async () => {
-                                if (window.confirm(`⚠️ Tem certeza que deseja desativar a função "${role.displayName}"?\n\nUsuários com esta função perderão suas permissões associadas.`)) {
-                                  try {
-                                    setSaving(true);
-                                    await permissionService.deleteCustomRole(role.roleId);
-                                    await loggingService.logSecurity('warning', 'Custom role deleted',
-                                      `Role: "${role.displayName}" (${role.roleId})`, currentUser as any);
-                                    await loadData();
-                                    await refreshPermissions();
-                                    alert('✓ Função desativada com sucesso!');
-                                  } catch (error) {
-                                    console.error('Error deactivating role:', error);
-                                    alert('❌ Erro ao desativar função');
-                                  } finally {
-                                    setSaving(false);
-                                  }
+                                const confirmed = await confirm({
+                                  title: 'Confirmacao',
+                                  message: `Tem certeza que deseja desativar a funcao "${role.displayName}"?\n\nUsuarios com esta funcao perderao suas permissoes associadas.`,
+                                  variant: 'danger'
+                                });
+
+                                if (!confirmed) return;
+
+                                try {
+                                  setSaving(true);
+                                  await permissionService.deleteCustomRole(role.roleId);
+                                  await loggingService.logSecurity('warning', 'Custom role deleted',
+                                    `Role: "${role.displayName}" (${role.roleId})`, currentUser as any);
+                                  await loadData();
+                                  await refreshPermissions();
+                                  toast.success('Funcao desativada com sucesso!');
+                                } catch (error) {
+                                  console.error('Error deactivating role:', error);
+                                  toast.error('Erro ao desativar funcao');
+                                } finally {
+                                  setSaving(false);
                                 }
                               }}
                               disabled={saving}

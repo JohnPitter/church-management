@@ -3,6 +3,8 @@ import { AssistidoService } from '@modules/assistance/assistidos/application/ser
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 import AssistidoModal from '@modules/assistance/assistidos/presentation/components/AssistidoModal';
 import AtendimentoModal from '../components/AtendimentoModal';
 import {
@@ -37,6 +39,7 @@ interface AssistidosManagementPageProps {}
 const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => {
   const { currentUser } = useAuth();
   const { settings } = useSettings();
+  const { confirm, prompt } = useConfirmDialog();
   const [activeTab, setActiveTab] = useState<'assistidos' | 'atendimentos' | 'relatorios'>('assistidos');
   const [assistidos, setAssistidos] = useState<Assistido[]>([]);
   const [selectedAssistido, setSelectedAssistido] = useState<Assistido | null>(null);
@@ -67,9 +70,9 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
       console.error('Error loading assistidos:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       if (errorMessage.includes('permissions') || errorMessage.includes('insufficient')) {
-        alert('Erro: Você não tem permissão para acessar os dados de assistidos. Contate o administrador.');
+        toast.error('Erro: Voce nao tem permissao para acessar os dados de assistidos. Contate o administrador.');
       } else {
-        alert('Erro ao carregar assistidos: ' + errorMessage);
+        toast.error('Erro ao carregar assistidos: ' + errorMessage);
       }
     } finally {
       setIsLoading(false);
@@ -126,44 +129,40 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
       await loadAssistidos();
       await loadStatistics();
       await loggingService.logDatabase('info', 'Assistido status changed', `Name: ${assistido.nome}, Status: ${newStatus}`, currentUser as any);
-      alert('Status atualizado com sucesso!');
+      toast.success('Status atualizado com sucesso!');
     } catch (error) {
       console.error('Error updating status:', error);
       await loggingService.logDatabase('error', 'Error changing assistido status', `Name: ${assistido.nome}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
-      alert('Erro ao atualizar status');
+      toast.error('Erro ao atualizar status');
     }
   };
 
   const handleDeleteAssistido = async (assistido: Assistido) => {
     // Double confirmation for safety
-    const firstConfirm = window.confirm(
-      `⚠️ ATENÇÃO: Tem certeza que deseja EXCLUIR PERMANENTEMENTE o assistido "${assistido.nome}"?\n\n` +
-      `Esta ação não pode ser desfeita e todos os dados serão perdidos:\n` +
-      `• Dados pessoais e familiares\n` +
-      `• Histórico completo de atendimentos\n` +
-      `• Registros de doações\n\n` +
-      `Clique em OK para continuar ou Cancelar para voltar.`
-    );
+    const firstConfirm = await confirm({
+      title: 'Confirmacao',
+      message: `ATENCAO: Tem certeza que deseja EXCLUIR PERMANENTEMENTE o assistido "${assistido.nome}"?\n\nEsta acao nao pode ser desfeita e todos os dados serao perdidos:\n- Dados pessoais e familiares\n- Historico completo de atendimentos\n- Registros de doacoes`,
+      variant: 'danger'
+    });
 
     if (!firstConfirm) return;
 
-    const secondConfirm = window.confirm(
-      `🔴 CONFIRMAÇÃO FINAL\n\n` +
-      `Você está prestes a EXCLUIR PERMANENTEMENTE:\n` +
-      `Nome: ${assistido.nome}\n` +
-      `CPF: ${assistido.cpf || 'Não informado'}\n` +
-      `Telefone: ${assistido.telefone}\n\n` +
-      `Digite "CONFIRMAR" no próximo prompt para prosseguir.`
-    );
+    const secondConfirm = await confirm({
+      title: 'Confirmacao Final',
+      message: `Voce esta prestes a EXCLUIR PERMANENTEMENTE:\nNome: ${assistido.nome}\nCPF: ${assistido.cpf || 'Nao informado'}\nTelefone: ${assistido.telefone}\n\nDigite "CONFIRMAR" no proximo prompt para prosseguir.`,
+      variant: 'danger'
+    });
 
     if (!secondConfirm) return;
 
-    const finalConfirmation = window.prompt(
-      'Para confirmar a exclusão PERMANENTE, digite exatamente: CONFIRMAR'
-    );
+    const finalConfirmation = await prompt({
+      title: 'Confirmacao de Exclusao',
+      message: 'Para confirmar a exclusao PERMANENTE, digite exatamente: CONFIRMAR',
+      inputPlaceholder: 'CONFIRMAR'
+    });
 
     if (finalConfirmation !== 'CONFIRMAR') {
-      alert('Exclusão cancelada. Texto de confirmação não confere.');
+      toast('Exclusao cancelada. Texto de confirmacao nao confere.');
       return;
     }
 
@@ -172,12 +171,12 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
       await loadAssistidos();
       await loadStatistics();
       await loggingService.logDatabase('warning', 'Assistido deleted', `Name: ${assistido.nome}, ID: ${assistido.id}`, currentUser as any);
-      alert(`✅ ${assistido.nome} foi excluído permanentemente do sistema.`);
+      toast.success(`${assistido.nome} foi excluido permanentemente do sistema.`);
     } catch (error) {
       console.error('Error deleting assistido:', error);
       await loggingService.logDatabase('error', 'Error deleting assistido', `Name: ${assistido.nome}, ID: ${assistido.id}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      alert('Erro ao excluir assistido: ' + errorMessage);
+      toast.error('Erro ao excluir assistido: ' + errorMessage);
     }
   };
 
@@ -1011,7 +1010,7 @@ const RelatoriosView: React.FC<{
       });
     } catch (error) {
       console.error('Error generating report:', error);
-      alert('Erro ao gerar relatório');
+      toast.error('Erro ao gerar relatorio');
     } finally {
       setIsGenerating(false);
     }

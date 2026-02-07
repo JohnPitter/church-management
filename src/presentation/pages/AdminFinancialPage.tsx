@@ -34,6 +34,7 @@ import { DepartmentTransactionModal } from '../components/DepartmentTransactionM
 import { DepartmentReportModal } from '../components/DepartmentReportModal';
 import { DepartmentActionsMenu } from '../components/DepartmentActionsMenu';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import toast from 'react-hot-toast';
 import { IncomeExpenseChart } from '../components/charts/IncomeExpenseChart';
 import { CategoryPieChart } from '../components/charts/CategoryPieChart';
 import { MonthlyComparisonChart } from '../components/charts/MonthlyComparisonChart';
@@ -279,7 +280,7 @@ export const AdminFinancialPage: React.FC = () => {
       console.error('Error toggling department status:', error);
       await loggingService.logDatabase('error', 'Failed to change department status',
         `Department: "${department.name}", ID: ${department.id}, Error: ${error}`, currentUser as any);
-      alert('Erro ao atualizar status do departamento');
+      toast.error('Erro ao atualizar status do departamento');
     }
   };
 
@@ -310,12 +311,12 @@ export const AdminFinancialPage: React.FC = () => {
       await loggingService.logUserAction('Financial data exported',
         `Format: ${format.toUpperCase()}, Period: ${selectedPeriod}`, currentUser as any);
 
-      alert(`Dados exportados em ${format.toUpperCase()} com sucesso!`);
+      toast.success(`Dados exportados em ${format.toUpperCase()} com sucesso!`);
     } catch (error) {
       console.error('Error exporting data:', error);
       await loggingService.logDatabase('error', 'Failed to export financial data',
         `Format: ${format.toUpperCase()}, Period: ${selectedPeriod}, Error: ${error}`, currentUser as any);
-      alert('Erro ao exportar dados');
+      toast.error('Erro ao exportar dados');
     } finally {
       setLoading(false);
     }

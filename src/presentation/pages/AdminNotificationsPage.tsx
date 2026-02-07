@@ -9,6 +9,7 @@ import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { NotificationPriority } from '@modules/shared-kernel/notifications/domain/entities/Notification';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import toast from 'react-hot-toast';
 
 interface CustomNotificationForm {
   title: string;
@@ -108,17 +109,17 @@ export const AdminNotificationsPage: React.FC = () => {
     e.preventDefault();
     
     if (!form.title.trim() || !form.message.trim()) {
-      alert('Título e mensagem são obrigatórios');
+      toast.error('Título e mensagem são obrigatórios');
       return;
     }
 
     if (form.targetUsers === 'roles' && form.roles.length === 0) {
-      alert('Selecione pelo menos uma função');
+      toast.error('Selecione pelo menos uma função');
       return;
     }
 
     if (form.targetUsers === 'specific' && form.userIds.length === 0) {
-      alert('Selecione pelo menos um usuário');
+      toast.error('Selecione pelo menos um usuário');
       return;
     }
 
@@ -146,7 +147,7 @@ export const AdminNotificationsPage: React.FC = () => {
         options
       );
 
-      alert(`Notificação enviada para ${notificationCount} usuários com sucesso!`);
+      toast.success(`Notificação enviada para ${notificationCount} usuários com sucesso!`);
 
       await loggingService.logApi('info', 'Custom notification sent',
         `Title: ${form.title}, Target: ${form.targetUsers}`, currentUser as any);
@@ -170,7 +171,7 @@ export const AdminNotificationsPage: React.FC = () => {
       console.error('Error creating notification:', error);
       await loggingService.logApi('error', 'Failed to send notification',
         `Title: ${form.title}, Target: ${form.targetUsers}, Error: ${error}`, currentUser as any);
-      alert(`Erro ao criar notificação: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      toast.error(`Erro ao criar notificação: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       setLoading(false);
     }

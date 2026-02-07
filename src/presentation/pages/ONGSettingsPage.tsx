@@ -4,6 +4,7 @@ import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
 import { ONGInfo, ONGEntity } from '@modules/ong-management/settings/domain/entities/ONG';
+import toast from 'react-hot-toast';
 
 const ONGSettingsPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -77,7 +78,7 @@ const ONGSettingsPage: React.FC = () => {
     } catch (error) {
       console.error('Error loading ONG info:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar informações da ONG';
-      alert(`❌ ${errorMessage}`);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -106,7 +107,7 @@ const ONGSettingsPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('❌ A imagem deve ter no máximo 5MB');
+        toast.error('A imagem deve ter no máximo 5MB');
         return;
       }
       
@@ -155,22 +156,22 @@ const ONGSettingsPage: React.FC = () => {
 
   const validateForm = (): boolean => {
     if (!formData.nome?.trim()) {
-      alert('❌ Nome da ONG é obrigatório');
+      toast.error('Nome da ONG é obrigatório');
       return false;
     }
     
     if (!formData.contato?.email?.trim()) {
-      alert('❌ Email de contato é obrigatório');
+      toast.error('Email de contato é obrigatório');
       return false;
     }
     
     if (!formData.contato?.telefone?.trim()) {
-      alert('❌ Telefone de contato é obrigatório');
+      toast.error('Telefone de contato é obrigatório');
       return false;
     }
     
     if (formData.cnpj && !ONGEntity.validarCNPJ(formData.cnpj)) {
-      alert('❌ CNPJ inválido');
+      toast.error('CNPJ inválido');
       return false;
     }
     
@@ -196,11 +197,11 @@ const ONGSettingsPage: React.FC = () => {
       };
       
       await ongRepository.updateONGInfo(updatedData);
-      alert('✅ Informações da ONG atualizadas com sucesso!');
+      toast.success('Informações da ONG atualizadas com sucesso!');
     } catch (error) {
       console.error('Error saving ONG info:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro ao salvar informações da ONG';
-      alert(`❌ ${errorMessage}`);
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }

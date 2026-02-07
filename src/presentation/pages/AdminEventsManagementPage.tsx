@@ -5,9 +5,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotificationActions } from '../hooks/useNotificationActions';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import { FirebaseEventRepository } from '@modules/church-management/events/infrastructure/repositories/FirebaseEventRepository';
 import { Event as DomainEvent, EventStatus, EventConfirmation, ConfirmationStatus } from '../../domain/entities/Event';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 interface Event {
   id: string;
@@ -64,6 +66,7 @@ const mapEnumToStatus = (status: EventStatus): Event['status'] => {
 export const AdminEventsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { notifyNewEvent } = useNotificationActions();
+  const { confirm } = useConfirmDialog();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -169,7 +172,12 @@ export const AdminEventsManagementPage: React.FC = () => {
 
 
   const handleStatusChange = async (eventId: string, newStatus: string) => {
-    if (!window.confirm(`Tem certeza que deseja alterar o status para "${getStatusText(newStatus)}"?`)) {
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: `Tem certeza que deseja alterar o status para "${getStatusText(newStatus)}"?`,
+      variant: 'warning'
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -212,17 +220,22 @@ export const AdminEventsManagementPage: React.FC = () => {
         )
       );
       
-      alert('Status atualizado com sucesso!');
+      toast.success('Status atualizado com sucesso!');
     } catch (error) {
       console.error('Error updating event status:', error);
-      alert('Erro ao atualizar status.');
+      toast.error('Erro ao atualizar status.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteEvent = async (eventId: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir este evento?')) {
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: 'Tem certeza que deseja excluir este evento?',
+      variant: 'danger'
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -230,18 +243,18 @@ export const AdminEventsManagementPage: React.FC = () => {
     const event = events.find(e => e.id === eventId);
     try {
       await eventRepository.delete(eventId);
-      
+
       setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
-      
-      await loggingService.logDatabase('info', 'Event deleted successfully', 
+
+      await loggingService.logDatabase('info', 'Event deleted successfully',
         `Event: "${event?.title}", ID: ${eventId}`, currentUser);
-      
-      alert('Evento excluído com sucesso!');
+
+      toast.success('Evento excluído com sucesso!');
     } catch (error) {
       console.error('Error deleting event:', error);
-      await loggingService.logDatabase('error', 'Failed to delete event', 
+      await loggingService.logDatabase('error', 'Failed to delete event',
         `Event: "${event?.title}", ID: ${eventId}, Error: ${error}`, currentUser);
-      alert('Erro ao excluir evento.');
+      toast.error('Erro ao excluir evento.');
     } finally {
       setLoading(false);
     }
@@ -329,7 +342,7 @@ export const AdminEventsManagementPage: React.FC = () => {
       setEditingEvent(null);
     } catch (error) {
       console.error('Error updating event:', error);
-      alert('Erro ao atualizar evento. Por favor, tente novamente.');
+      toast.error('Erro ao atualizar evento. Por favor, tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -412,24 +425,29 @@ export const AdminEventsManagementPage: React.FC = () => {
       
       setEvents(prevEvents => [presentationEvent, ...prevEvents]);
       setShowCreateModal(false);
-      alert('Evento criado com sucesso!');
+      toast.success('Evento criado com sucesso!');
     } catch (error) {
       console.error('Error creating event:', error);
-      alert('Erro ao criar evento.');
+      toast.error('Erro ao criar evento.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDuplicateEvent = async (event: Event) => {
-    if (!window.confirm('Tem certeza que deseja duplicar este evento?')) {
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: 'Tem certeza que deseja duplicar este evento?',
+      variant: 'warning'
+    });
+    if (!confirmed) {
       return;
     }
 
     setLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const duplicatedEvent: Event = {
         ...event,
         id: Date.now().toString(),
@@ -439,12 +457,12 @@ export const AdminEventsManagementPage: React.FC = () => {
         createdAt: new Date(),
         updatedAt: new Date()
       };
-      
+
       setEvents(prevEvents => [duplicatedEvent, ...prevEvents]);
-      alert('Evento duplicado com sucesso!');
+      toast.success('Evento duplicado com sucesso!');
     } catch (error) {
       console.error('Error duplicating event:', error);
-      alert('Erro ao duplicar evento.');
+      toast.error('Erro ao duplicar evento.');
     } finally {
       setLoading(false);
     }
@@ -460,7 +478,7 @@ export const AdminEventsManagementPage: React.FC = () => {
       setConfirmations(eventConfirmations);
     } catch (error) {
       console.error('Error loading confirmations:', error);
-      alert('Erro ao carregar confirmações.');
+      toast.error('Erro ao carregar confirmações.');
       setConfirmations([]);
     } finally {
       setLoadingConfirmations(false);
@@ -960,14 +978,14 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSave, onCancel
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim()) {
-      alert('Por favor, insira o título do evento.');
+      toast.error('Por favor, insira o título do evento.');
       return;
     }
-    
+
     if (!formData.location.trim()) {
-      alert('Por favor, insira o local do evento.');
+      toast.error('Por favor, insira o local do evento.');
       return;
     }
 
@@ -1234,14 +1252,14 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ onSave, onCancel, l
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim()) {
-      alert('Por favor, insira o título do evento.');
+      toast.error('Por favor, insira o título do evento.');
       return;
     }
-    
+
     if (!formData.location.trim()) {
-      alert('Por favor, insira o local do evento.');
+      toast.error('Por favor, insira o local do evento.');
       return;
     }
 

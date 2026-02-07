@@ -20,6 +20,7 @@ import {
 } from '@modules/content-management/forum/infrastructure/services/ForumService';
 import { CreateTopicModal } from '../components/CreateTopicModal';
 import SocialShareButtons from '../components/SocialShareButtons';
+import toast from 'react-hot-toast';
 
 export const Forum: React.FC = () => {
   const { currentUser } = useAuth();
@@ -144,7 +145,7 @@ export const Forum: React.FC = () => {
 
   const handleLikeTopic = async (topicId: string) => {
     if (!currentUser) {
-      alert('Você precisa estar logado para curtir');
+      toast.error('Você precisa estar logado para curtir');
       return;
     }
 
@@ -168,7 +169,7 @@ export const Forum: React.FC = () => {
 
   const handleLikeReply = async (replyId: string) => {
     if (!currentUser) {
-      alert('Você precisa estar logado para curtir');
+      toast.error('Você precisa estar logado para curtir');
       return;
     }
 
@@ -191,7 +192,7 @@ export const Forum: React.FC = () => {
     }
 
     if (selectedTopic.isLocked) {
-      alert('Este tópico está bloqueado para novas respostas');
+      toast.error('Este tópico está bloqueado para novas respostas');
       return;
     }
 
@@ -219,7 +220,7 @@ export const Forum: React.FC = () => {
       if (updatedTopic) setSelectedTopic(updatedTopic);
     } catch (error) {
       console.error('Error creating reply:', error);
-      alert('Erro ao criar resposta');
+      toast.error('Erro ao criar resposta');
     }
   };
 

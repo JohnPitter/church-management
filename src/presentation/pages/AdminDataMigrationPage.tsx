@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DataMigrationService } from '@modules/shared-kernel/migration/application/services/DataMigrationService';
 import { useSettings } from '../contexts/SettingsContext';
+import toast from 'react-hot-toast';
 
 interface MigrationProgress {
   collection: string;
@@ -87,9 +88,9 @@ const AdminDataMigrationPage: React.FC = () => {
       });
 
       setMigrationResult(result);
-      alert(`✅ Migração concluída!\n\nTotal: ${result.totalRecords}\nMigrados: ${result.migratedRecords}\nErros: ${result.errors}\nDuração: ${(result.duration / 1000).toFixed(2)}s`);
+      toast.success(`Migração concluída! Total: ${result.totalRecords}, Migrados: ${result.migratedRecords}, Erros: ${result.errors}, Duração: ${(result.duration / 1000).toFixed(2)}s`);
     } catch (error) {
-      alert(`❌ Erro na migração: ${error}`);
+      toast.error(`Erro na migração: ${error}`);
     } finally {
       setIsMigrating(false);
     }

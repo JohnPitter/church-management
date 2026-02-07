@@ -3,6 +3,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 interface FichaModalProps {
   isOpen: boolean;
@@ -78,10 +80,10 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
       
       onSave(fichaAtualizada);
       setNovoComentario('');
-      alert('✅ Comentário adicionado com sucesso!');
+      toast.success('Comentário adicionado com sucesso!');
     } catch (error: any) {
       console.error('Error adding comment:', error);
-      alert('❌ Erro ao adicionar comentário: ' + (error?.message || 'Erro desconhecido'));
+      toast.error('Erro ao adicionar comentário: ' + (error?.message || 'Erro desconhecido'));
     } finally {
       setIsLoading(false);
     }
@@ -114,14 +116,14 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
         evolucao: ''
       });
       await loadSessoes(); // Recarrega as sessões
-      alert('✅ Sessão adicionada com sucesso!');
+      toast.success('Sessão adicionada com sucesso!');
     } catch (error: any) {
       console.error('Error adding sessao:', error);
       const errorMessage = error?.message || 'Erro desconhecido';
       if (errorMessage.includes('permission') || errorMessage.includes('insufficient')) {
-        alert('❌ Erro de permissão. Verifique se você tem acesso a esta ficha.');
+        toast.error('Erro de permissão. Verifique se você tem acesso a esta ficha.');
       } else {
-        alert('❌ Erro ao adicionar sessão: ' + errorMessage);
+        toast.error('Erro ao adicionar sessão: ' + errorMessage);
       }
     } finally {
       setIsLoading(false);
@@ -139,10 +141,10 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
 
       onSave(fichaAtualizada);
       setEditandoDadosEspecializados(false);
-      alert('✅ Dados especializados salvos com sucesso!');
+      toast.success('Dados especializados salvos com sucesso!');
     } catch (error: any) {
       console.error('Error saving specialized data:', error);
-      alert('❌ Erro ao salvar dados especializados: ' + (error?.message || 'Erro desconhecido'));
+      toast.error('Erro ao salvar dados especializados: ' + (error?.message || 'Erro desconhecido'));
     } finally {
       setIsLoading(false);
     }
@@ -2604,6 +2606,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
 
 const ProfessionalFichasPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { confirm } = useConfirmDialog();
   const [loading, setLoading] = useState(false);
   const [fichas, setFichas] = useState<FichaAcompanhamento[]>([]);
   const [fichasFiltradas, setFichasFiltradas] = useState<FichaAcompanhamento[]>([]);
@@ -2690,20 +2693,22 @@ const ProfessionalFichasPage: React.FC = () => {
     const nextIndex = (currentIndex + 1) % statusOptions.length;
     const newStatus = statusOptions[nextIndex].value;
 
-    const confirmed = window.confirm(
-      `Alterar status da ficha de ${ficha.pacienteNome} de "${statusOptions[currentIndex]?.label}" para "${statusOptions[nextIndex].label}"?`
-    );
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: `Alterar status da ficha de ${ficha.pacienteNome} de "${statusOptions[currentIndex]?.label}" para "${statusOptions[nextIndex].label}"?`,
+      variant: 'warning'
+    });
 
     if (confirmed) {
       try {
-        const updatedFicha = await fichaRepository.updateFicha(ficha.id, { 
+        const updatedFicha = await fichaRepository.updateFicha(ficha.id, {
           status: newStatus as any,
           updatedAt: new Date()
         });
         setFichas(prev => prev.map(f => f.id === ficha.id ? updatedFicha : f));
       } catch (error) {
         console.error('Erro ao alterar status da ficha:', error);
-        alert('Erro ao alterar status da ficha. Por favor, tente novamente.');
+        toast.error('Erro ao alterar status da ficha. Por favor, tente novamente.');
       }
     }
   };

@@ -7,8 +7,10 @@ import { useNotificationActions } from '../hooks/useNotificationActions';
 import { FirebaseBlogRepository } from '@modules/content-management/blog/infrastructure/repositories/FirebaseBlogRepository';
 import { BlogPost as DomainBlogPost, PostStatus, PostVisibility } from '@modules/content-management/blog/domain/entities/BlogPost';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { PermissionGuard } from '../components/PermissionGuard';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 
 // Presentation interface that maps to domain entities
@@ -55,6 +57,7 @@ const mapDomainToPresentation = (domainPost: DomainBlogPost): PresentationBlogPo
 export const AdminBlogManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { notifyNewBlogPost } = useNotificationActions();
+  const { confirm } = useConfirmDialog();
   const [posts, setPosts] = useState<PresentationBlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -119,19 +122,24 @@ export const AdminBlogManagementPage: React.FC = () => {
   };
 
   const handleStatusChange = async (postId: string, newStatus: string) => {
-    if (!window.confirm(`Tem certeza que deseja alterar o status para "${getStatusText(newStatus)}"?`)) {
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: `Tem certeza que deseja alterar o status para "${getStatusText(newStatus)}"?`,
+      variant: 'warning'
+    });
+    if (!confirmed) {
       return;
     }
 
     setLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       setPosts(prevPosts =>
         prevPosts.map(post =>
-          post.id === postId 
-            ? { 
-                ...post, 
+          post.id === postId
+            ? {
+                ...post,
                 status: newStatus as PresentationBlogPost['status'],
                 publishDate: newStatus === 'published' && !post.publishDate ? new Date() : post.publishDate,
                 updatedAt: new Date()
@@ -139,11 +147,11 @@ export const AdminBlogManagementPage: React.FC = () => {
             : post
         )
       );
-      
-      alert('Status atualizado com sucesso!');
+
+      toast.success('Status atualizado com sucesso!');
     } catch (error) {
       console.error('Error updating post status:', error);
-      alert('Erro ao atualizar status.');
+      toast.error('Erro ao atualizar status.');
     } finally {
       setLoading(false);
     }
@@ -167,17 +175,22 @@ export const AdminBlogManagementPage: React.FC = () => {
         )
       );
       
-      alert(`Post ${!post.isHighlighted ? 'destacado' : 'removido do destaque'} com sucesso!`);
+      toast.success(`Post ${!post.isHighlighted ? 'destacado' : 'removido do destaque'} com sucesso!`);
     } catch (error) {
       console.error('Error toggling highlight:', error);
-      alert('Erro ao alterar destaque.');
+      toast.error('Erro ao alterar destaque.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeletePost = async (postId: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta postagem?')) {
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: 'Tem certeza que deseja excluir esta postagem?',
+      variant: 'danger'
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -185,18 +198,18 @@ export const AdminBlogManagementPage: React.FC = () => {
     const post = posts.find(p => p.id === postId);
     try {
       await blogRepository.delete(postId);
-      
+
       setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
-      
-      await loggingService.logDatabase('info', 'Blog post deleted successfully', 
+
+      await loggingService.logDatabase('info', 'Blog post deleted successfully',
         `Post: "${post?.title}", ID: ${postId}`, currentUser);
-      
-      alert('Postagem excluída com sucesso!');
+
+      toast.success('Postagem excluída com sucesso!');
     } catch (error) {
       console.error('Error deleting post:', error);
-      await loggingService.logDatabase('error', 'Failed to delete blog post', 
+      await loggingService.logDatabase('error', 'Failed to delete blog post',
         `Post: "${post?.title}", ID: ${postId}, Error: ${error}`, currentUser);
-      alert('Erro ao excluir postagem.');
+      toast.error('Erro ao excluir postagem.');
     } finally {
       setLoading(false);
     }
@@ -251,10 +264,10 @@ export const AdminBlogManagementPage: React.FC = () => {
       setPosts(updatedPosts);
       
       setEditingPost(null);
-      alert('Postagem atualizada com sucesso!');
+      toast.success('Postagem atualizada com sucesso!');
     } catch (error) {
       console.error('Error updating post:', error);
-      alert('Erro ao atualizar postagem. Tente novamente.');
+      toast.error('Erro ao atualizar postagem. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -315,10 +328,10 @@ export const AdminBlogManagementPage: React.FC = () => {
       setPosts(prevPosts => [presentationPost, ...prevPosts]);
       
       setShowCreateModal(false);
-      alert('Postagem criada com sucesso!');
+      toast.success('Postagem criada com sucesso!');
     } catch (error) {
       console.error('Error creating post:', error);
-      alert('Erro ao criar postagem. Tente novamente.');
+      toast.error('Erro ao criar postagem. Tente novamente.');
     } finally {
       setLoading(false);
     }

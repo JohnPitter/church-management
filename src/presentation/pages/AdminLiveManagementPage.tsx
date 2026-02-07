@@ -5,8 +5,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotificationActions } from '../hooks/useNotificationActions';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import { FirebaseLiveStreamRepository } from '@modules/content-management/live-streaming/infrastructure/repositories/FirebaseLiveStreamRepository';
 import { LiveStream as DomainLiveStream, StreamCategory, StreamStatus } from '@modules/content-management/live-streaming/domain/entities/LiveStream';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 import { db, storage } from '@/config/firebase';
 import { onSnapshot, collection } from 'firebase/firestore';
 import { ref, uploadBytesResumable, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -153,6 +155,7 @@ const mapPresentationToDomain = (presentationStream: Partial<PresentationLiveStr
 export const AdminLiveManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { notifyNewLiveStream } = useNotificationActions();
+  const { confirm } = useConfirmDialog();
   const [streams, setStreams] = useState<PresentationLiveStream[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -272,7 +275,12 @@ export const AdminLiveManagementPage: React.FC = () => {
   };
 
   const handleStatusChange = async (streamId: string, newStatus: string) => {
-    if (!window.confirm(`Tem certeza que deseja alterar o status para "${getStatusText(newStatus)}"?`)) {
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: `Tem certeza que deseja alterar o status para "${getStatusText(newStatus)}"?`,
+      variant: 'warning'
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -280,27 +288,32 @@ export const AdminLiveManagementPage: React.FC = () => {
     try {
       // Update status via repository
       await streamRepository.updateStatus(streamId, newStatus as StreamStatus);
-      
+
       // Update local state
       setStreams(prevStreams =>
         prevStreams.map(stream =>
-          stream.id === streamId 
+          stream.id === streamId
             ? { ...stream, status: newStatus as PresentationLiveStream['status'], isLive: newStatus === 'live' }
             : stream
         )
       );
-      
-      alert('Status atualizado com sucesso!');
+
+      toast.success('Status atualizado com sucesso!');
     } catch (error) {
       console.error('Error updating stream status:', error);
-      alert('Erro ao atualizar status.');
+      toast.error('Erro ao atualizar status.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteStream = async (streamId: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta transmissão?')) {
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: 'Tem certeza que deseja excluir esta transmissão?',
+      variant: 'danger'
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -309,19 +322,19 @@ export const AdminLiveManagementPage: React.FC = () => {
     try {
       // Delete via repository
       await streamRepository.delete(streamId);
-      
+
       // Update local state
       setStreams(prevStreams => prevStreams.filter(stream => stream.id !== streamId));
-      
-      await loggingService.logDatabase('info', 'Live stream deleted successfully', 
+
+      await loggingService.logDatabase('info', 'Live stream deleted successfully',
         `Stream: "${stream?.title}", ID: ${streamId}`, currentUser);
-      
-      alert('Transmissão excluída com sucesso!');
+
+      toast.success('Transmissão excluída com sucesso!');
     } catch (error) {
       console.error('Error deleting stream:', error);
-      await loggingService.logDatabase('error', 'Failed to delete live stream', 
+      await loggingService.logDatabase('error', 'Failed to delete live stream',
         `Stream: "${stream?.title}", ID: ${streamId}, Error: ${error}`, currentUser);
-      alert('Erro ao excluir transmissão.');
+      toast.error('Erro ao excluir transmissão.');
     } finally {
       setLoading(false);
     }
@@ -377,7 +390,7 @@ export const AdminLiveManagementPage: React.FC = () => {
         );
 
         setEditingStream(null);
-        alert('Transmissão atualizada com sucesso!');
+        toast.success('Transmissão atualizada com sucesso!');
       } else {
         // CREATE NEW STREAM
         const presentationData: Partial<PresentationLiveStream> = {
@@ -422,11 +435,11 @@ export const AdminLiveManagementPage: React.FC = () => {
         const presentationStream = mapDomainToPresentation(createdStream);
         setStreams(prevStreams => [presentationStream, ...prevStreams]);
         setShowCreateModal(false);
-        alert('Transmissão criada com sucesso!');
+        toast.success('Transmissão criada com sucesso!');
       }
     } catch (error) {
       console.error('Error saving stream:', error);
-      alert(isUpdate ? 'Erro ao atualizar transmissão.' : 'Erro ao criar transmissão.');
+      toast.error(isUpdate ? 'Erro ao atualizar transmissão.' : 'Erro ao criar transmissão.');
     } finally {
       setLoading(false);
     }
@@ -795,18 +808,18 @@ const CreateStreamModal: React.FC<CreateStreamModalProps> = ({ onSave, onCancel,
   const validateAndProcessFile = (file: File) => {
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Por favor, selecione apenas arquivos de imagem.');
+      toast.error('Por favor, selecione apenas arquivos de imagem.');
       return false;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('A imagem deve ter no máximo 5MB.');
+      toast.error('A imagem deve ter no máximo 5MB.');
       return false;
     }
 
     setSelectedFile(file);
-    
+
     // Create preview URL
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -867,7 +880,7 @@ const CreateStreamModal: React.FC<CreateStreamModalProps> = ({ onSave, onCancel,
       return downloadURL;
     } catch (error) {
       console.error('Error uploading thumbnail:', error);
-      alert('Erro ao fazer upload da imagem. Tente novamente.');
+      toast.error('Erro ao fazer upload da imagem. Tente novamente.');
       return null;
     } finally {
       setUploading(false);
@@ -878,12 +891,12 @@ const CreateStreamModal: React.FC<CreateStreamModalProps> = ({ onSave, onCancel,
     e.preventDefault();
     
     if (!formData.title.trim()) {
-      alert('Por favor, insira o título da transmissão.');
+      toast.error('Por favor, insira o título da transmissão.');
       return;
     }
-    
+
     if (!formData.streamUrl.trim()) {
-      alert('Por favor, insira a URL da transmissão.');
+      toast.error('Por favor, insira a URL da transmissão.');
       return;
     }
 
@@ -1106,13 +1119,13 @@ const EditStreamModal: React.FC<EditStreamModalProps> = ({ stream, onSave, onCan
 
   const validateAndProcessFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Por favor, selecione apenas arquivos de imagem (JPG, PNG, GIF)');
+      toast.error('Por favor, selecione apenas arquivos de imagem (JPG, PNG, GIF)');
       return false;
     }
 
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      alert('O arquivo é muito grande. O tamanho máximo é 5MB.');
+      toast.error('O arquivo é muito grande. O tamanho máximo é 5MB.');
       return false;
     }
 
@@ -1210,7 +1223,7 @@ const EditStreamModal: React.FC<EditStreamModalProps> = ({ stream, onSave, onCan
     e.preventDefault();
 
     if (!formData.title || !formData.streamUrl) {
-      alert('Por favor, preencha todos os campos obrigatórios');
+      toast.error('Por favor, preencha todos os campos obrigatórios');
       return;
     }
 
@@ -1237,7 +1250,7 @@ const EditStreamModal: React.FC<EditStreamModalProps> = ({ stream, onSave, onCan
       onSave(saveData);
     } catch (error) {
       console.error('Error saving stream:', error);
-      alert('Erro ao salvar transmissão. Tente novamente.');
+      toast.error('Erro ao salvar transmissão. Tente novamente.');
     } finally {
       setUploading(false);
     }

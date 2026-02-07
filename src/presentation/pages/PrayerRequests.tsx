@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { PrayerRequestService } from '@modules/church-management/prayer-requests/application/services/PrayerRequestService';
 import { PrayerRequest, PrayerRequestStatus } from '@modules/church-management/prayer-requests/domain/entities/PrayerRequest';
 import { CreatePrayerRequestModal } from '@modules/church-management/prayer-requests/presentation/components/CreatePrayerRequestModal';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 const PrayerRequests: React.FC = () => {
   const [prayerRequests, setPrayerRequests] = useState<PrayerRequest[]>([]);
@@ -14,6 +15,7 @@ const PrayerRequests: React.FC = () => {
   const [message, setMessage] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
 
+  const { confirm } = useConfirmDialog();
   const prayerRequestService = new PrayerRequestService();
 
   const loadPrayerRequests = async () => {
@@ -71,7 +73,8 @@ const PrayerRequests: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir este pedido de oração?')) {
+    const confirmed = await confirm({ title: 'Confirmação', message: 'Tem certeza que deseja excluir este pedido de oração?', variant: 'danger' });
+    if (!confirmed) {
       return;
     }
 

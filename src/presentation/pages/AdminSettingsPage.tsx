@@ -7,6 +7,8 @@ import { useSettings } from '../contexts/SettingsContext';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/config/firebase';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 interface AboutStatistic {
   value: string;
@@ -56,6 +58,7 @@ interface SystemSettings {
 export const AdminSettingsPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { settings: contextSettings, updateSettings: updateContextSettings, loading: contextLoading } = useSettings();
+  const { confirm } = useConfirmDialog();
   const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -157,12 +160,12 @@ export const AdminSettingsPage: React.FC = () => {
       await loggingService.logSystem('info', 'System settings updated', 
         `Updated by: ${currentUser?.email}, Church: ${settings.churchName}`, currentUser);
       
-      alert('Configurações salvas com sucesso!');
+      toast.success('Configurações salvas com sucesso!');
     } catch (error) {
       console.error('Error saving settings:', error);
       await loggingService.logSystem('error', 'Failed to update system settings', 
         `Error: ${error}, User: ${currentUser?.email}`, currentUser);
-      alert('Erro ao salvar configurações.');
+      toast.error('Erro ao salvar configurações.');
     } finally {
       setSaving(false);
     }
@@ -179,13 +182,13 @@ export const AdminSettingsPage: React.FC = () => {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Por favor, selecione apenas arquivos de imagem.');
+      toast.error('Por favor, selecione apenas arquivos de imagem.');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('O arquivo é muito grande. O tamanho máximo é 5MB.');
+      toast.error('O arquivo é muito grande. O tamanho máximo é 5MB.');
       return;
     }
 
@@ -212,17 +215,17 @@ export const AdminSettingsPage: React.FC = () => {
       await loggingService.logSystem('info', 'Church logo updated', 
         `New logo uploaded by: ${currentUser?.email}, Size: ${(file.size / 1024).toFixed(2)}KB`, currentUser);
 
-      alert('Logo atualizado com sucesso!');
+      toast.success('Logo atualizado com sucesso!');
     } catch (error: any) {
       console.error('Error uploading logo:', error);
       await loggingService.logSystem('error', 'Failed to upload church logo', 
         `Error: ${error}, User: ${currentUser?.email}`, currentUser);
       if (error.code === 'storage/unauthorized') {
-        alert('Erro de permissão. Verifique se você tem permissão de administrador.');
+        toast.error('Erro de permissão. Verifique se você tem permissão de administrador.');
       } else if (error.code === 'storage/canceled') {
-        alert('Upload cancelado.');
+        toast.error('Upload cancelado.');
       } else {
-        alert('Erro ao fazer upload do logo: ' + (error.message || 'Erro desconhecido'));
+        toast.error('Erro ao fazer upload do logo: ' + (error.message || 'Erro desconhecido'));
       }
     } finally {
       setUploadingLogo(false);
@@ -230,28 +233,31 @@ export const AdminSettingsPage: React.FC = () => {
   };
 
   const handleRemoveLogo = async () => {
-    if (!settings || !window.confirm('Tem certeza que deseja remover o logo?')) return;
+    if (!settings) return;
+    const confirmed = await confirm({ title: 'Confirmação', message: 'Tem certeza que deseja remover o logo?', variant: 'danger' });
+    if (!confirmed) return;
 
     setSaving(true);
     try {
       handleChange('logoURL', undefined);
-      
+
       await updateContextSettings({
         ...settings,
         logoURL: undefined
       });
 
-      alert('Logo removido com sucesso!');
+      toast.success('Logo removido com sucesso!');
     } catch (error) {
       console.error('Error removing logo:', error);
-      alert('Erro ao remover logo.');
+      toast.error('Erro ao remover logo.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleReset = () => {
-    if (window.confirm('Tem certeza que deseja restaurar as configurações padrão?')) {
+  const handleReset = async () => {
+    const confirmed = await confirm({ title: 'Confirmação', message: 'Tem certeza que deseja restaurar as configurações padrão?', variant: 'warning' });
+    if (confirmed) {
       if (contextSettings) {
         setSettings({
           ...contextSettings,

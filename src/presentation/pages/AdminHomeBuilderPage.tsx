@@ -19,11 +19,14 @@ import { LayoutStyle, LayoutTemplateFactory } from '@modules/content-management/
 import { ComponentRenderer } from '../components/HomeBuilder/ComponentRenderer';
 import { ComponentSettings } from '../components/HomeBuilder/ComponentSettings';
 import { LayoutTemplateSelector } from '../components/HomeBuilder/LayoutTemplateSelector';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 export const AdminHomeBuilderPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { isDarkMode } = useTheme();
   const { settings } = useSettings();
+  const { confirm, prompt } = useConfirmDialog();
 
   // State
   const [layouts, setLayouts] = useState<HomeLayout[]>([]);
@@ -227,7 +230,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
   // Component actions
   const handleAddComponent = async (template: ComponentTemplate) => {
     if (!currentLayout) {
-      alert('❌ Selecione um layout primeiro');
+      toast.error('Selecione um layout primeiro');
       return;
     }
 
@@ -242,7 +245,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
     } catch (error) {
       console.error('Error adding component:', error);
       await loggingService.logDatabase('error', 'Error adding home component', `Type: ${template.type}, Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
-      alert('❌ Erro ao adicionar componente');
+      toast.error('Erro ao adicionar componente');
     }
   };
 
@@ -254,7 +257,8 @@ export const AdminHomeBuilderPage: React.FC = () => {
   const handleDeleteComponent = async (componentId: string) => {
     if (!currentLayout) return;
 
-    if (!window.confirm('Excluir este componente?')) return;
+    const confirmed = await confirm({ title: 'Confirmação', message: 'Excluir este componente?', variant: 'danger' });
+    if (!confirmed) return;
 
     try {
       const updatedLayout = await homeBuilderService.removeComponent(
@@ -267,7 +271,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
     } catch (error) {
       console.error('Error deleting component:', error);
       await loggingService.logDatabase('error', 'Error deleting home component', `ID: ${componentId}, Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
-      alert('❌ Erro ao excluir componente');
+      toast.error('Erro ao excluir componente');
     }
   };
 
@@ -303,7 +307,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
     } catch (error) {
       console.error('Error saving settings:', error);
       await loggingService.logDatabase('error', 'Error saving home component settings', `ID: ${editingComponent.id}, Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
-      alert('❌ Erro ao salvar configurações');
+      toast.error('Erro ao salvar configurações');
     }
   };
 
@@ -321,7 +325,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
       await loadData();
     } catch (error) {
       console.error('Error saving layout:', error);
-      alert('Erro ao salvar layout');
+      toast.error('Erro ao salvar layout');
     } finally {
       setSaving(false);
     }
@@ -330,23 +334,24 @@ export const AdminHomeBuilderPage: React.FC = () => {
   const handlePublishLayout = async () => {
     if (!currentLayout) return;
 
-    if (!window.confirm('Publicar este layout? Ele se tornará a página inicial ativa.')) return;
+    const confirmed = await confirm({ title: 'Confirmação', message: 'Publicar este layout? Ele se tornará a página inicial ativa.', variant: 'warning' });
+    if (!confirmed) return;
 
     try {
       setSaving(true);
       await homeBuilderService.setActiveLayout(currentLayout.id);
-      alert('Layout publicado com sucesso!');
+      toast.success('Layout publicado com sucesso!');
       await loadData();
     } catch (error) {
       console.error('Error publishing:', error);
-      alert('Erro ao publicar layout');
+      toast.error('Erro ao publicar layout');
     } finally {
       setSaving(false);
     }
   };
 
   const handleCreateNewLayout = async () => {
-    const name = window.prompt('Nome do novo layout:');
+    const name = await prompt({ title: 'Novo Layout', message: 'Digite o nome do novo layout:', inputPlaceholder: 'Nome do layout' });
     if (!name) return;
 
     try {
@@ -354,7 +359,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
       newLayout.name = name;
       newLayout.createdBy = currentUser?.email || 'unknown';
       newLayout.isActive = false;
-      newLayout.isDefault = false; // ✅ Force isDefault to false for new layouts
+      newLayout.isDefault = false; // Force isDefault to false for new layouts
 
       const createdLayout = await homeBuilderService.createLayout(newLayout);
       setCurrentLayout(createdLayout);
@@ -363,7 +368,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
     } catch (error) {
       console.error('Error creating layout:', error);
       await loggingService.logDatabase('error', 'Error creating home layout', `Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
-      alert('❌ Erro ao criar layout');
+      toast.error('Erro ao criar layout');
     }
   };
 
@@ -386,10 +391,10 @@ export const AdminHomeBuilderPage: React.FC = () => {
       setCurrentLayout(createdLayout);
       setShowTemplateSelector(false);
       await loadData();
-      alert(`✅ Layout "${newLayout.name}" criado com sucesso!`);
+      toast.success(`Layout "${newLayout.name}" criado com sucesso!`);
     } catch (error) {
       console.error('Error creating layout from template:', error);
-      alert('❌ Erro ao criar layout do template');
+      toast.error('Erro ao criar layout do template');
     }
   };
 
@@ -399,28 +404,28 @@ export const AdminHomeBuilderPage: React.FC = () => {
       await homeBuilderService.updateLayout(layoutId, {
         isDefault: !currentIsDefault
       });
-      alert(currentIsDefault ? '✅ Layout desmarcado como padrão' : '✅ Layout marcado como padrão');
+      toast.success(currentIsDefault ? 'Layout desmarcado como padrão' : 'Layout marcado como padrão');
       await loadData();
     } catch (error) {
       console.error('Error toggling default:', error);
-      alert('❌ Erro ao atualizar layout');
+      toast.error('Erro ao atualizar layout');
     }
   };
 
   const handleDeleteLayout = async (layoutId: string, layoutName: string, isActive: boolean, isDefault: boolean) => {
     // Prevent deletion of active layouts
     if (isActive) {
-      alert('❌ Não é possível excluir o layout ativo. Desative-o primeiro.');
+      toast.error('Não é possível excluir o layout ativo. Desative-o primeiro.');
       return;
     }
 
     // If it's default, ask if user wants to unmark it first
     if (isDefault) {
-      const unmarkFirst = window.confirm(
-        `Este layout está marcado como padrão.\n\n` +
-        `Deseja desmarcar como padrão para poder excluí-lo?\n\n` +
-        `Clique em OK para desmarcar, ou Cancelar para manter.`
-      );
+      const unmarkFirst = await confirm({
+        title: 'Layout Padrão',
+        message: 'Este layout está marcado como padrão. Deseja desmarcar como padrão para poder excluí-lo?',
+        variant: 'warning'
+      });
 
       if (unmarkFirst) {
         await handleToggleDefault(layoutId, true);
@@ -430,8 +435,12 @@ export const AdminHomeBuilderPage: React.FC = () => {
       }
     }
 
-    const confirmed = window.confirm(`Tem certeza que deseja excluir o layout "${layoutName}"?\n\nEsta ação não pode ser desfeita.`);
-    if (!confirmed) return;
+    const deleteConfirmed = await confirm({
+      title: 'Confirmação',
+      message: `Tem certeza que deseja excluir o layout "${layoutName}"? Esta ação não pode ser desfeita.`,
+      variant: 'danger'
+    });
+    if (!deleteConfirmed) return;
 
     try {
       await homeBuilderService.deleteLayout(layoutId);
@@ -446,12 +455,12 @@ export const AdminHomeBuilderPage: React.FC = () => {
         setCurrentLayout(updatedLayouts[0] || null);
       }
 
-      alert('✅ Layout excluído com sucesso!');
+      toast.success('Layout excluído com sucesso!');
       await loadData();
     } catch (error: any) {
       console.error('Error deleting layout:', error);
       await loggingService.logDatabase('error', 'Error deleting home layout', `Name: ${layoutName}, ID: ${layoutId}, Error: ${error.message || 'Erro desconhecido'}`, currentUser as any);
-      alert(`❌ Erro ao excluir layout: ${error.message || 'Erro desconhecido'}`);
+      toast.error('Erro ao excluir layout: ' + (error.message || 'Erro desconhecido'));
     }
   };
 

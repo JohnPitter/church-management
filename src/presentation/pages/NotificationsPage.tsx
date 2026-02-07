@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { useNotifications } from '../contexts/NotificationContext';
 import { NotificationsList } from '../components/NotificationsList';
+import toast from 'react-hot-toast';
 
 export const NotificationsPage: React.FC = () => {
   const {
@@ -21,7 +22,7 @@ export const NotificationsPage: React.FC = () => {
     setCleaningUp(true);
     try {
       // For now, just show a message - this would require admin privileges to implement
-      alert('Funcionalidade de limpeza será implementada para administradores');
+      toast.error('Funcionalidade de limpeza será implementada para administradores');
     } catch (error) {
       console.error('Error cleaning up expired notifications:', error);
     } finally {

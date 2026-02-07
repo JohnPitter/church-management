@@ -15,12 +15,15 @@ import {
 } from '../../domain/entities/Member';
 import { CreateMemberModal } from '@modules/church-management/members/presentation/components/CreateMemberModal';
 import { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } from 'docx';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 interface MembersManagementPageProps {}
 
 const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
   const { currentUser } = useAuth();
   const { hasPermission, loading: permissionsLoading } = usePermissions();
+  const { confirm } = useConfirmDialog();
 
   // Permission checks
   const canView = hasPermission(SystemModule.Members, PermissionAction.View);
@@ -64,9 +67,9 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       console.error('Error loading members:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       if (errorMessage.includes('permissions') || errorMessage.includes('insufficient')) {
-        alert('Erro: Você não tem permissão para acessar os dados de membros. Contate o administrador.');
+        toast.error('Erro: Voce nao tem permissao para acessar os dados de membros. Contate o administrador.');
       } else {
-        alert('Erro ao carregar membros: ' + errorMessage);
+        toast.error('Erro ao carregar membros: ' + errorMessage);
       }
     } finally {
       setIsLoading(false);
@@ -89,20 +92,21 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       await loadMembers();
       await loadStatistics();
       await loggingService.logDatabase('info', 'Member status changed', `Member: ${member.name}, Status: ${newStatus}`, currentUser as any);
-      alert(`Status de ${member.name} atualizado com sucesso!`);
+      toast.success(`Status de ${member.name} atualizado com sucesso!`);
     } catch (error) {
       console.error('Error updating member status:', error);
       await loggingService.logDatabase('error', 'Error changing member status', `Member: ${member.name}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      alert('Erro ao atualizar status: ' + errorMessage);
+      toast.error('Erro ao atualizar status: ' + errorMessage);
     }
   };
 
   const handleDeleteMember = async (member: Member) => {
-    const confirmed = window.confirm(
-      `Tem certeza que deseja excluir o membro "${member.name}"?\n\n` +
-      `Esta ação NÃO pode ser desfeita. Todos os dados do membro serão permanentemente removidos.`
-    );
+    const confirmed = await confirm({
+      title: 'Confirmacao',
+      message: `Tem certeza que deseja excluir o membro "${member.name}"?\n\nEsta acao NAO pode ser desfeita. Todos os dados do membro serao permanentemente removidos.`,
+      variant: 'danger'
+    });
 
     if (!confirmed) return;
 
@@ -111,12 +115,12 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       await loadMembers();
       await loadStatistics();
       await loggingService.logDatabase('warning', 'Member deleted', `Member: ${member.name}, ID: ${member.id}`, currentUser as any);
-      alert(`Membro ${member.name} excluído com sucesso!`);
+      toast.success(`Membro ${member.name} excluido com sucesso!`);
     } catch (error) {
       console.error('Error deleting member:', error);
       await loggingService.logDatabase('error', 'Error deleting member', `Member: ${member.name}, ID: ${member.id}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      alert('Erro ao excluir membro: ' + errorMessage);
+      toast.error('Erro ao excluir membro: ' + errorMessage);
     }
   };
 
@@ -256,11 +260,11 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       document.body.removeChild(link);
 
       await loggingService.logUserAction('Members exported', `Format: CSV, Count: ${members.length}`, currentUser as any);
-      alert('Dados exportados com sucesso!');
+      toast.success('Dados exportados com sucesso!');
     } catch (error) {
       console.error('Error exporting to CSV:', error);
       await loggingService.logDatabase('error', 'Error exporting members to CSV', `Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
-      alert('Erro ao exportar dados para CSV');
+      toast.error('Erro ao exportar dados para CSV');
     }
   };
 
@@ -350,11 +354,11 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       document.body.removeChild(link);
 
       await loggingService.logUserAction('Members exported', `Format: Excel, Count: ${members.length}`, currentUser as any);
-      alert('Dados exportados com sucesso!');
+      toast.success('Dados exportados com sucesso!');
     } catch (error) {
       console.error('Error exporting to Excel:', error);
       await loggingService.logDatabase('error', 'Error exporting members to Excel', `Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
-      alert('Erro ao exportar dados para Excel');
+      toast.error('Erro ao exportar dados para Excel');
     }
   };
 
@@ -363,7 +367,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       // Create a printable HTML for PDF
       const printWindow = window.open('', '', 'height=600,width=800');
       if (!printWindow) {
-        alert('Por favor, permita popups para exportar para PDF');
+        toast.error('Por favor, permita popups para exportar para PDF');
         return;
       }
 
@@ -473,7 +477,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
     } catch (error) {
       console.error('Error exporting to PDF:', error);
       await loggingService.logDatabase('error', 'Error exporting members to PDF', `Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
-      alert('Erro ao exportar dados para PDF');
+      toast.error('Erro ao exportar dados para PDF');
     }
   };
 
@@ -483,14 +487,14 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       const membersWhoCanSign = getMembersWhoCanSign();
 
       if (membersWhoCanSign.length === 0) {
-        alert('Nenhum membro disponível para lista de assinaturas');
+        toast('Nenhum membro disponivel para lista de assinaturas');
         return;
       }
 
       // Create a printable HTML for PDF with signature format
       const printWindow = window.open('', '', 'height=600,width=800');
       if (!printWindow) {
-        alert('Por favor, permita popups para exportar para PDF');
+        toast.error('Por favor, permita popups para exportar para PDF');
         return;
       }
 
@@ -620,7 +624,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       };
     } catch (error) {
       console.error('Error exporting signature list to PDF:', error);
-      alert('Erro ao exportar lista de assinaturas para PDF');
+      toast.error('Erro ao exportar lista de assinaturas para PDF');
     }
   };
 
@@ -630,7 +634,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       const membersWhoCanSign = getMembersWhoCanSign();
 
       if (membersWhoCanSign.length === 0) {
-        alert('Nenhum membro disponível para lista de assinaturas');
+        toast('Nenhum membro disponivel para lista de assinaturas');
         return;
       }
 
@@ -768,10 +772,10 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
       link.click();
       URL.revokeObjectURL(url);
 
-      alert('Lista de assinaturas exportada com sucesso para Word!');
+      toast.success('Lista de assinaturas exportada com sucesso para Word!');
     } catch (error) {
       console.error('Error exporting signature list to Word:', error);
-      alert('Erro ao exportar lista de assinaturas para Word');
+      toast.error('Erro ao exportar lista de assinaturas para Word');
     }
   };
 

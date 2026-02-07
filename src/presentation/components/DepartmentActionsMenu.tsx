@@ -3,6 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Department } from '@modules/church-management/departments/domain/entities/Department';
+import { useConfirmDialog } from './ConfirmDialog';
 
 interface DepartmentActionsMenuProps {
   department: Department;
@@ -15,6 +16,7 @@ export const DepartmentActionsMenu: React.FC<DepartmentActionsMenuProps> = ({
   onEdit,
   onToggleActive
 }) => {
+  const { confirm } = useConfirmDialog();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -67,13 +69,16 @@ export const DepartmentActionsMenu: React.FC<DepartmentActionsMenuProps> = ({
             </button>
 
             <button
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                if (window.confirm(
-                  department.isActive
-                    ? `Deseja desativar o departamento "${department.name}"?\n\nO departamento será ocultado mas seus dados serão preservados.`
-                    : `Deseja reativar o departamento "${department.name}"?`
-                )) {
+                const confirmed = await confirm({
+                  title: 'Confirmação',
+                  message: department.isActive
+                    ? `Deseja desativar o departamento "${department.name}"? O departamento será ocultado mas seus dados serão preservados.`
+                    : `Deseja reativar o departamento "${department.name}"?`,
+                  variant: 'warning'
+                });
+                if (confirmed) {
                   onToggleActive(department);
                 }
                 setIsOpen(false);

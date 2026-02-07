@@ -2,6 +2,7 @@
 // Modal for professionals to request help from other professionals
 
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { HelpRequestPriority } from '../../domain/entities/HelpRequest';
 import { ProfissionalAssistencia, TipoAssistencia } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import { HelpRequestService } from '@modules/assistance/help-requests/application/services/HelpRequestService';
@@ -168,7 +169,7 @@ export const SolicitarAjudaModal: React.FC<SolicitarAjudaModalProps> = ({
         createdBy: currentUserId
       });
 
-      alert('✓ Pedido de ajuda enviado com sucesso!');
+      toast.success('Pedido de ajuda enviado com sucesso!');
       onSuccess();
       onClose();
     } catch (error) {

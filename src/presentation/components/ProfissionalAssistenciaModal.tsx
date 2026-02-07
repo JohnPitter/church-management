@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import {
   TipoAssistencia,
   StatusProfissional,
@@ -7,6 +8,7 @@ import {
 } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { useAuth } from '../contexts/AuthContext';
+import { useConfirmDialog } from './ConfirmDialog';
 
 // Component for managing user account
 interface UserAccountSectionProps {
@@ -30,14 +32,8 @@ const UserAccountSection: React.FC<UserAccountSectionProps> = ({ professional, o
       const result = await profissionalService.createUserAccountForProfessional(professional.id);
       
       if (result.success && result.temporaryPassword) {
-        alert(
-          `✅ Conta de usuário criada com sucesso!\n\n` +
-          `📧 Email: ${professional.email}\n` +
-          `🔑 Senha temporária: ${result.temporaryPassword}\n\n` +
-          `⚠️ IMPORTANTE: \n` +
-          `1. Copie/anote esta senha temporária AGORA\n` +
-          `2. Oriente o profissional a alterar a senha no primeiro acesso\n\n` +
-          `✅ Você continua logado como administrador.`
+        toast.success(
+          `Conta de usuário criada com sucesso! Email: ${professional.email} | Senha temporária: ${result.temporaryPassword} | IMPORTANTE: Copie/anote esta senha temporária AGORA. Oriente o profissional a alterar a senha no primeiro acesso.`
         );
         
         // Update local state to immediately show account was created
@@ -49,7 +45,7 @@ const UserAccountSection: React.FC<UserAccountSectionProps> = ({ professional, o
         // Call parent callback with userId
         onAccountCreated(result.userId || 'created');
       } else {
-        alert(`❌ Erro ao criar conta: ${result.error}`);
+        toast.error(`Erro ao criar conta: ${result.error}`);
         
         // If requires reauth, redirect to login
         if (result.requiresReauth) {
@@ -59,7 +55,7 @@ const UserAccountSection: React.FC<UserAccountSectionProps> = ({ professional, o
         }
       }
     } catch (error: any) {
-      alert(`❌ Erro ao criar conta de usuário: ${error.message}`);
+      toast.error(`Erro ao criar conta de usuário: ${error.message}`);
     } finally {
       setIsCreatingAccount(false);
     }
@@ -152,6 +148,7 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
   mode
 }) => {
   const { currentUser } = useAuth();
+  const { confirm, prompt: promptDialog } = useConfirmDialog();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [localProfissional, setLocalProfissional] = useState<ProfissionalAssistencia | null>(profissional || null);
@@ -384,11 +381,11 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
         const novoProfissional: any = await profissionalService.createProfissional(profissionalData);
         onSave(novoProfissional);
         
-        alert(`✅ Profissional ${formData.nome} foi cadastrado com sucesso!\n\nPara criar uma conta de usuário, visualize o profissional e clique em "🔐 Criar Conta".`);
+        toast.success(`Profissional ${formData.nome} foi cadastrado com sucesso! Para criar uma conta de usuário, visualize o profissional e clique em "Criar Conta".`);
       } else if (mode === 'edit' && profissional) {
         const profissionalAtualizado = await profissionalService.updateProfissional(profissional.id, profissionalData);
         onSave(profissionalAtualizado);
-        alert(`✅ Profissional ${formData.nome} foi atualizado com sucesso!`);
+        toast.success(`Profissional ${formData.nome} foi atualizado com sucesso!`);
       }
 
       // Clear form data after successful creation
@@ -431,7 +428,7 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
         errorMessage = 'Erro de permissão. Verifique se você tem acesso para criar profissionais.';
       }
       
-      alert(`❌ Erro ao salvar profissional: ${errorMessage}`);
+      toast.error(`Erro ao salvar profissional: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -440,31 +437,29 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
   const handleInactivate = async () => {
     if (!profissional || mode !== 'view') return;
 
-    const motivo = window.prompt(
-      `⚠️ INATIVAÇÃO DE PROFISSIONAL\n\n` +
-      `Você está prestes a INATIVAR o profissional "${profissional.nome}".\n\n` +
-      `Esta ação:\n` +
-      `• Marca o profissional como inativo\n` +
-      `• Mantém todos os dados e histórico\n` +
-      `• Pode ser revertida posteriormente\n\n` +
-      `Digite o motivo da inativação (opcional):`,
-      'Inativação manual'
-    );
+    const motivo = await promptDialog({
+      title: 'Inativação de Profissional',
+      message: `Você está prestes a INATIVAR o profissional "${profissional.nome}". Esta ação marca o profissional como inativo, mantém todos os dados e histórico, e pode ser revertida posteriormente.`,
+      inputLabel: 'Motivo da inativação (opcional)',
+      inputPlaceholder: 'Digite o motivo da inativação',
+      inputDefaultValue: 'Inativação manual',
+      variant: 'warning'
+    });
 
     if (motivo === null) return; // User cancelled
 
     setIsLoading(true);
     try {
       await profissionalService.inativarProfissional(profissional.id, motivo);
-      
-      alert(`✅ Profissional ${profissional.nome} foi inativado com sucesso!`);
-      
+
+      toast.success(`Profissional ${profissional.nome} foi inativado com sucesso!`);
+
       if (onInactivate) {
         onInactivate(profissional.id, motivo);
       }
     } catch (error: any) {
       console.error('Error inactivating professional:', error);
-      alert(`❌ Erro ao inativar profissional: ${error.message}`);
+      toast.error(`Erro ao inativar profissional: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -473,16 +468,11 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
   const handleDelete = async () => {
     if (!profissional || mode !== 'view') return;
 
-    const confirmDelete = window.confirm(
-      `🚨 EXCLUSÃO PERMANENTE\n\n` +
-      `ATENÇÃO: Você está prestes a EXCLUIR PERMANENTEMENTE o profissional "${profissional.nome}".\n\n` +
-      `Esta ação:\n` +
-      `• Remove TODOS os dados do profissional\n` +
-      `• NÃO PODE SER DESFEITA\n` +
-      `• Será bloqueada se houver agendamentos no histórico\n\n` +
-      `💡 RECOMENDAÇÃO: Use "Inativar" em vez de excluir\n\n` +
-      `⚠️ Tem CERTEZA que deseja EXCLUIR PERMANENTEMENTE?`
-    );
+    const confirmDelete = await confirm({
+      title: 'Exclusão Permanente',
+      message: `ATENÇÃO: Você está prestes a EXCLUIR PERMANENTEMENTE o profissional "${profissional.nome}". Esta ação remove TODOS os dados do profissional, NÃO PODE SER DESFEITA e será bloqueada se houver agendamentos no histórico. RECOMENDAÇÃO: Use "Inativar" em vez de excluir. Tem CERTEZA que deseja EXCLUIR PERMANENTEMENTE?`,
+      variant: 'danger'
+    });
 
     if (!confirmDelete) return;
 
@@ -490,44 +480,37 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
     try {
       // First attempt: normal deletion (respects appointment check)
       await profissionalService.deleteProfissionalPermanente(profissional.id, false);
-      
-      alert(`✅ Profissional ${profissional.nome} foi excluído permanentemente!`);
-      
+
+      toast.success(`Profissional ${profissional.nome} foi excluído permanentemente!`);
+
       if (onDelete) {
         onDelete(profissional.id);
       }
-      
+
       onClose();
     } catch (error: any) {
       console.error('Error deleting professional:', error);
-      
+
       // Check if error is about existing appointments
       if (error.message && error.message.includes('agendamento')) {
-        const forceDelete = window.confirm(
-          `⚠️ PROFISSIONAL COM HISTÓRICO\n\n` +
-          `${error.message}\n\n` +
-          `💡 OPÇÕES:\n` +
-          `• Clique "Cancelar" e use "Inativar" (RECOMENDADO)\n` +
-          `• Clique "OK" para FORÇAR EXCLUSÃO com agendamentos\n\n` +
-          `⚠️ FORÇAR EXCLUSÃO irá:\n` +
-          `• Excluir o profissional E seus agendamentos\n` +
-          `• Perder TODO o histórico permanentemente\n` +
-          `• NÃO PODE SER DESFEITO\n\n` +
-          `Deseja FORÇAR a exclusão?`
-        );
-        
+        const forceDelete = await confirm({
+          title: 'Profissional com Histórico',
+          message: `${error.message}\n\nOPÇÕES: Clique "Cancelar" e use "Inativar" (RECOMENDADO) ou clique "Confirmar" para FORÇAR EXCLUSÃO com agendamentos. FORÇAR EXCLUSÃO irá excluir o profissional E seus agendamentos, perder TODO o histórico permanentemente e NÃO PODE SER DESFEITO.`,
+          variant: 'danger'
+        });
+
         if (forceDelete) {
           try {
             await profissionalService.deleteProfissionalPermanente(profissional.id, true);
-            alert(`✅ Profissional ${profissional.nome} foi excluído permanentemente (com histórico)!`);
-            
+            toast.success(`Profissional ${profissional.nome} foi excluído permanentemente (com histórico)!`);
+
             if (onDelete) {
               onDelete(profissional.id);
             }
             onClose();
           } catch (forceError: any) {
             console.error('Error force deleting professional:', forceError);
-            alert(`❌ Erro ao forçar exclusão: ${forceError.message}`);
+            toast.error(`Erro ao forçar exclusão: ${forceError.message}`);
           }
         }
       } else {
@@ -535,7 +518,7 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
         if (errorMessage.includes('permissions') || errorMessage.includes('permissão')) {
           errorMessage = 'Erro de permissão. Verifique se você tem acesso para excluir profissionais.';
         }
-        alert(`❌ Erro ao excluir profissional: ${errorMessage}`);
+        toast.error(`Erro ao excluir profissional: ${errorMessage}`);
       }
     } finally {
       setIsLoading(false);

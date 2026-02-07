@@ -12,6 +12,8 @@ import { AuthProvider } from './presentation/contexts/AuthContext';
 import { SettingsProvider } from './presentation/contexts/SettingsContext';
 import { NotificationProvider } from './presentation/contexts/NotificationContext';
 import { DynamicFavicon } from './presentation/components/DynamicFavicon';
+import { Toaster } from 'react-hot-toast';
+import { ConfirmDialogProvider } from './presentation/components/ConfirmDialog';
 
 // Pages
 import Home from './modules/church-management/home/presentation/pages/HomeSimplified';
@@ -100,10 +102,13 @@ const router = createBrowserRouter([
       <AuthProvider>
         <SettingsProvider>
           <NotificationProvider>
-            <DynamicFavicon />
-            <AdminSetupGuard>
-              <Outlet />
-            </AdminSetupGuard>
+            <ConfirmDialogProvider>
+              <DynamicFavicon />
+              <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+              <AdminSetupGuard>
+                <Outlet />
+              </AdminSetupGuard>
+            </ConfirmDialogProvider>
           </NotificationProvider>
         </SettingsProvider>
       </AuthProvider>

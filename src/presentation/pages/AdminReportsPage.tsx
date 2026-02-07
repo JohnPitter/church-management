@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { ReportData, reportsService } from '@modules/ong-management/settings/application/services/ReportsService';
+import toast from 'react-hot-toast';
 
 export const AdminReportsPage: React.FC = () => {
   const { currentUser: _currentUser } = useAuth();
@@ -45,7 +46,7 @@ export const AdminReportsPage: React.FC = () => {
       setReportData(data);
     } catch (error) {
       console.error('Error loading report data:', error);
-      alert('Erro ao carregar dados dos relatórios');
+      toast.error('Erro ao carregar dados dos relatórios');
     } finally {
       setLoading(false);
     }
@@ -71,7 +72,7 @@ export const AdminReportsPage: React.FC = () => {
 
   const handleExportReport = async (format: 'pdf' | 'excel') => {
     if (!reportData) {
-      alert('Dados não carregados. Aguarde o carregamento dos relatórios.');
+      toast.error('Dados não carregados. Aguarde o carregamento dos relatórios.');
       return;
     }
 
@@ -89,17 +90,17 @@ export const AdminReportsPage: React.FC = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      alert(`Relatório exportado em ${format.toUpperCase()} com sucesso!`);
+      toast.success(`Relatório exportado em ${format.toUpperCase()} com sucesso!`);
     } catch (error) {
       console.error('Error exporting report:', error);
-      alert('Erro ao exportar relatório.');
+      toast.error('Erro ao exportar relatório.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleScheduleReport = () => {
-    alert('Funcionalidade de agendamento será implementada em breve!');
+    toast('Funcionalidade de agendamento será implementada em breve!');
   };
 
   // Permission loading state

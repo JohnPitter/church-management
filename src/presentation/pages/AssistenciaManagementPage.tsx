@@ -18,6 +18,8 @@ import AssistanceReports from '../components/AssistanceReports';
 import AnamnesesPsicologicaModal, { AnamnesesPsicologicaData } from '../components/AnamnesesPsicologicaModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 import {
   HiHeart,
   HiClipboardDocumentList,
@@ -39,6 +41,7 @@ import {
 
 const AssistenciaManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { confirm } = useConfirmDialog();
   const { settings: _settings } = useSettings();
   const [activeTab, setActiveTab] = useState(0);
   const [_isLoading, setIsLoading] = useState(false);
@@ -305,7 +308,7 @@ const AssistenciaManagementPage: React.FC = () => {
       // Use the specific methods that trigger automatic ficha creation
       if (newStatus === StatusAgendamento.Confirmado) {
         await agendamentoService.confirmarAgendamento(agendamentoId, currentUser?.email || 'admin');
-        alert('✅ Agendamento confirmado! Ficha de acompanhamento criada automaticamente.');
+        toast.success('Agendamento confirmado! Ficha de acompanhamento criada automaticamente.');
       } else {
         await agendamentoService.updateAgendamento(agendamentoId, { status: newStatus });
       }
@@ -318,25 +321,29 @@ const AssistenciaManagementPage: React.FC = () => {
     } catch (error) {
       console.error('Error updating status:', error);
       await loggingService.logDatabase('error', 'Error changing agendamento status', `ID: ${agendamentoId}, Status: ${newStatus}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
-      alert('❌ Erro ao atualizar status do agendamento: ' + error);
+      toast.error('Erro ao atualizar status do agendamento: ' + error);
     }
   };
 
   const handleDeleteAgendamento = async (agendamento: AgendamentoAssistencia) => {
-    if (!window.confirm(`Tem certeza que deseja excluir o agendamento de ${agendamento.pacienteNome}?`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Confirmacao',
+      message: `Tem certeza que deseja excluir o agendamento de ${agendamento.pacienteNome}?`,
+      variant: 'danger'
+    });
+
+    if (!confirmed) return;
 
     try {
       await agendamentoService.deleteAgendamento(agendamento.id);
       setAgendamentos(prev => prev.filter(a => a.id !== agendamento.id));
       loadStatistics();
       await loggingService.logDatabase('warning', 'Agendamento deleted', `Patient: ${agendamento.pacienteNome}, ID: ${agendamento.id}`, currentUser as any);
-      alert('✅ Agendamento excluído com sucesso!');
+      toast.success('Agendamento excluido com sucesso!');
     } catch (error) {
       console.error('Error deleting agendamento:', error);
       await loggingService.logDatabase('error', 'Error deleting agendamento', `Patient: ${agendamento.pacienteNome}, ID: ${agendamento.id}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
-      alert('❌ Erro ao excluir agendamento: ' + error);
+      toast.error('Erro ao excluir agendamento: ' + error);
     }
   };
 
@@ -433,18 +440,18 @@ const AssistenciaManagementPage: React.FC = () => {
       if (anamneseModalMode === 'create') {
         await anamneseService.createAnamnese(anamneseCompleta);
         await loggingService.logDatabase('info', 'Anamnese created', `Patient: ${anamneseAssistidoNome || anamnese.nome}, Assistido ID: ${anamneseAssistidoId}`, currentUser as any);
-        alert('✅ Anamnese psicológica criada com sucesso!');
+        toast.success('Anamnese psicologica criada com sucesso!');
       } else if (anamneseModalMode === 'edit' && anamnese.id) {
         await anamneseService.updateAnamnese(anamnese.id, anamneseCompleta);
         await loggingService.logDatabase('info', 'Anamnese updated', `Patient: ${anamneseAssistidoNome || anamnese.nome}, ID: ${anamnese.id}`, currentUser as any);
-        alert('✅ Anamnese psicológica atualizada com sucesso!');
+        toast.success('Anamnese psicologica atualizada com sucesso!');
       }
 
       setIsAnamneseModalOpen(false);
     } catch (error) {
       console.error('Erro ao salvar anamnese:', error);
       await loggingService.logDatabase('error', 'Error saving anamnese', `Patient: ${anamneseAssistidoNome || anamnese.nome}, Error: ${error instanceof Error ? error.message : 'Unknown'}`, currentUser as any);
-      alert('❌ Erro ao salvar anamnese: ' + error);
+      toast.error('Erro ao salvar anamnese: ' + error);
     }
   };
 

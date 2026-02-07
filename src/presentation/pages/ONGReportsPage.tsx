@@ -9,6 +9,7 @@ import {
   RelatorioFinanceiro,
   ONGEntity
 } from '@modules/ong-management/settings/domain/entities/ONG';
+import toast from 'react-hot-toast';
 
 const ONGReportsPage: React.FC = () => {
   const { hasPermission, loading: permissionsLoading } = usePermissions();
@@ -45,7 +46,7 @@ const ONGReportsPage: React.FC = () => {
       setRelatorioFinanceiro(financeiro);
     } catch (error) {
       console.error('Error loading reports:', error);
-      alert('Erro ao carregar relatórios');
+      toast.error('Erro ao carregar relatórios');
     } finally {
       setLoading(false);
     }

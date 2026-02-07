@@ -10,6 +10,8 @@ import { permissionService } from '@modules/user-management/permissions/applicat
 import { PermissionGuard } from '../components/PermissionGuard';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 // Presentation interface that maps to domain entities
 interface PresentationUser {
@@ -79,6 +81,7 @@ const mapDomainUserToPresentation = (domainUser: DomainUser): PresentationUser =
 
 export const UserManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { confirm, prompt: promptDialog } = useConfirmDialog();
   const [users, setUsers] = useState<PresentationUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -164,9 +167,13 @@ export const UserManagementPage: React.FC = () => {
   }, [userRepository]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
-    if (!window.confirm(`Tem certeza que deseja alterar a função deste usuário?`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Confirmacao',
+      message: 'Tem certeza que deseja alterar a funcao deste usuario?',
+      variant: 'warning'
+    });
+
+    if (!confirmed) return;
 
     setLoading(true);
     try {
@@ -188,7 +195,7 @@ export const UserManagementPage: React.FC = () => {
       await loggingService.logSecurity('info', 'User role changed',
         `User: "${targetUser?.email}", Old role: ${oldRole}, New role: ${newRole}`, currentUser as any);
 
-      alert('Função do usuário atualizada com sucesso!');
+      toast.success('Funcao do usuario atualizada com sucesso!');
 
       // Reload users to get fresh data from the database
       await loadUsers();
@@ -196,7 +203,7 @@ export const UserManagementPage: React.FC = () => {
       console.error('Error updating user role:', error);
       await loggingService.logSecurity('error', 'Failed to change user role',
         `User ID: ${userId}, New role: ${newRole}, Error: ${error}`, currentUser as any);
-      alert('Erro ao atualizar função do usuário.');
+      toast.error('Erro ao atualizar funcao do usuario.');
     } finally {
       setLoading(false);
     }
@@ -204,9 +211,13 @@ export const UserManagementPage: React.FC = () => {
 
   const handleToggleStatus = async (userId: string, isActive: boolean) => {
     const action = isActive ? 'ativar' : 'desativar';
-    if (!window.confirm(`Tem certeza que deseja ${action} este usuário?`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Confirmacao',
+      message: `Tem certeza que deseja ${action} este usuario?`,
+      variant: 'warning'
+    });
+
+    if (!confirmed) return;
 
     setLoading(true);
     try {
@@ -216,7 +227,7 @@ export const UserManagementPage: React.FC = () => {
       } else {
         await userRepository.suspendUser(userId, currentUser?.email || 'Admin', 'Suspenso pelo administrador');
       }
-      
+
       const targetUser = users.find(u => u.id === userId);
 
       // Update local state
@@ -229,12 +240,12 @@ export const UserManagementPage: React.FC = () => {
       await loggingService.logSecurity('info', 'User status changed',
         `User: "${targetUser?.email}", Status: ${isActive ? 'approved' : 'suspended'}`, currentUser as any);
 
-      alert(`Usuário ${action}do com sucesso!`);
+      toast.success(`Usuario ${action}do com sucesso!`);
     } catch (error) {
       console.error('Error updating user status:', error);
       await loggingService.logSecurity('error', 'Failed to change user status',
         `User ID: ${userId}, Action: ${action}, Error: ${error}`, currentUser as any);
-      alert(`Erro ao ${action} usuário.`);
+      toast.error(`Erro ao ${action} usuario.`);
     } finally {
       setLoading(false);
     }
@@ -243,55 +254,55 @@ export const UserManagementPage: React.FC = () => {
   const handleDeleteUser = async (userId: string, userName: string) => {
     // Prevent admin from deleting themselves
     if (userId === currentUser?.id) {
-      alert('Você não pode deletar sua própria conta!');
+      toast.error('Voce nao pode deletar sua propria conta!');
       return;
     }
 
     // Double confirmation for delete action
-    const firstConfirm = window.confirm(
-      `⚠️ ATENÇÃO: Você está prestes a deletar permanentemente o usuário "${userName}".\n\n` +
-      `Esta ação irá:\n` +
-      `• Remover o usuário do Firebase Auth\n` +
-      `• Deletar todos os dados do usuário\n` +
-      `• Esta ação NÃO pode ser desfeita\n\n` +
-      `Tem certeza que deseja continuar?`
-    );
+    const firstConfirm = await confirm({
+      title: 'Confirmacao',
+      message: `ATENCAO: Voce esta prestes a deletar permanentemente o usuario "${userName}".\n\nEsta acao ira:\n- Remover o usuario do Firebase Auth\n- Deletar todos os dados do usuario\n- Esta acao NAO pode ser desfeita\n\nTem certeza que deseja continuar?`,
+      variant: 'danger'
+    });
 
     if (!firstConfirm) return;
 
-    const finalConfirm = window.confirm(
-      `🚨 CONFIRMAÇÃO FINAL:\n\n` +
-      `Digite "DELETAR" no próximo prompt para confirmar a exclusão permanente do usuário "${userName}"`
-    );
+    const finalConfirm = await confirm({
+      title: 'Confirmacao Final',
+      message: `Digite "DELETAR" no proximo prompt para confirmar a exclusao permanente do usuario "${userName}"`,
+      variant: 'danger'
+    });
 
     if (!finalConfirm) return;
 
-    const confirmationText = prompt(
-      `Para confirmar a exclusão permanente do usuário "${userName}", digite exatamente: DELETAR`
-    );
+    const confirmationText = await promptDialog({
+      title: 'Confirmacao de Exclusao',
+      message: `Para confirmar a exclusao permanente do usuario "${userName}", digite exatamente: DELETAR`,
+      inputPlaceholder: 'DELETAR'
+    });
 
     if (confirmationText !== 'DELETAR') {
-      alert('Texto de confirmação incorreto. Exclusão cancelada.');
+      toast('Texto de confirmacao incorreto. Exclusao cancelada.');
       return;
     }
 
     setLoading(true);
     try {
       await userRepository.delete(userId);
-      
+
       // Remove user from local state
       setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
 
       await loggingService.logSecurity('warning', 'User deleted permanently',
         `User: "${userName}", ID: ${userId}`, currentUser as any);
 
-      alert(`Usuário "${userName}" deletado permanentemente com sucesso!`);
+      toast.success(`Usuario "${userName}" deletado permanentemente com sucesso!`);
     } catch (error) {
       console.error('Error deleting user:', error);
       await loggingService.logSecurity('error', 'Failed to delete user',
         `User: "${userName}", ID: ${userId}, Error: ${error}`, currentUser as any);
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao deletar usuário';
-      alert(`Erro ao deletar usuário: ${errorMessage}`);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao deletar usuario';
+      toast.error(`Erro ao deletar usuario: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -309,14 +320,14 @@ export const UserManagementPage: React.FC = () => {
       await loggingService.logSecurity('info', 'User account created',
         `User: "${userData.email}", Role: ${userData.role}`, currentUser as any);
 
-      alert('Usuário criado com sucesso!');
+      toast.success('Usuario criado com sucesso!');
       setCreateModalOpen(false);
     } catch (error) {
       console.error('Error creating user:', error);
       await loggingService.logSecurity('error', 'Failed to create user',
         `Email: "${userData.email}", Error: ${error}`, currentUser as any);
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao criar usuário';
-      alert(errorMessage);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao criar usuario';
+      toast.error(errorMessage);
       throw error; // Re-throw to let the modal handle it
     } finally {
       setCreateLoading(false);

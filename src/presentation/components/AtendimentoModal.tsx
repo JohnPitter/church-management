@@ -2,6 +2,7 @@
 // Modal for creating and managing assistance records for assistidos
 
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
 import { useAuth } from '../contexts/AuthContext';
 import { 
@@ -98,7 +99,7 @@ const AtendimentoModal: React.FC<AtendimentoModalProps> = ({
 
   const handleSave = async () => {
     if (!assistido || !formData.descricao.trim()) {
-      alert('Por favor, preencha a descrição do atendimento.');
+      toast.error('Por favor, preencha a descrição do atendimento.');
       return;
     }
 
@@ -117,14 +118,14 @@ const AtendimentoModal: React.FC<AtendimentoModalProps> = ({
 
       await assistidoService.addAtendimento(assistido.id, atendimentoData);
       
-      alert(`✅ Atendimento registrado com sucesso para ${assistido.nome}!\n\nTipo: ${getTipoAtendimentoLabel(formData.tipo)}\nData: ${new Date().toLocaleDateString('pt-BR')}`);
+      toast.success(`Atendimento registrado com sucesso para ${assistido.nome}! Tipo: ${getTipoAtendimentoLabel(formData.tipo)} | Data: ${new Date().toLocaleDateString('pt-BR')}`);
       
       onSave();
       onClose();
     } catch (error) {
       console.error('Error saving atendimento:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      alert('Erro ao registrar atendimento: ' + errorMessage);
+      toast.error('Erro ao registrar atendimento: ' + errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -12,9 +12,12 @@ import {
 } from '@modules/church-management/assets/domain/entities/Asset';
 import { useAuth } from '../contexts/AuthContext';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 const AssetsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { confirm } = useConfirmDialog();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,7 +75,7 @@ const AssetsManagementPage: React.FC = () => {
       setAssets(data);
     } catch (error: any) {
       console.error('Error loading assets:', error);
-      alert(error.message || 'Erro ao carregar patrimônios');
+      toast.error(error.message || 'Erro ao carregar patrimonios');
     } finally {
       setIsLoading(false);
     }
@@ -136,7 +139,7 @@ const AssetsManagementPage: React.FC = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      alert('Por favor, corrija os erros no formulário antes de salvar.');
+      toast.error('Por favor, corrija os erros no formulario antes de salvar.');
       return;
     }
 
@@ -150,11 +153,11 @@ const AssetsManagementPage: React.FC = () => {
       if (editingAsset) {
         await assetService.updateAsset(editingAsset.id, dataToSave);
         await loggingService.logDatabase('info', 'Asset updated', `Name: ${formData.name}, ID: ${editingAsset.id}`, currentUser as any);
-        alert('Patrimônio atualizado com sucesso!');
+        toast.success('Patrimonio atualizado com sucesso!');
       } else {
         await assetService.createAsset(dataToSave);
         await loggingService.logDatabase('info', 'Asset created', `Name: ${formData.name}`, currentUser as any);
-        alert('Patrimônio criado com sucesso!');
+        toast.success('Patrimonio criado com sucesso!');
       }
 
       closeModal();
@@ -163,7 +166,7 @@ const AssetsManagementPage: React.FC = () => {
     } catch (error: any) {
       console.error('Error saving asset:', error);
       await loggingService.logDatabase('error', 'Error saving asset', `Name: ${formData.name}, Error: ${error.message || String(error)}`, currentUser as any);
-      alert(error.message || 'Erro ao salvar patrimônio');
+      toast.error(error.message || 'Erro ao salvar patrimonio');
     }
   };
 
@@ -195,20 +198,24 @@ const AssetsManagementPage: React.FC = () => {
   };
 
   const handleDelete = async (asset: Asset) => {
-    if (!window.confirm(`Tem certeza que deseja excluir "${asset.name}"?`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Confirmacao',
+      message: `Tem certeza que deseja excluir "${asset.name}"?`,
+      variant: 'danger'
+    });
+
+    if (!confirmed) return;
 
     try {
       await assetService.deleteAsset(asset.id);
       await loggingService.logDatabase('warning', 'Asset deleted', `Name: ${asset.name}, ID: ${asset.id}`, currentUser as any);
-      alert('Patrimônio excluído com sucesso!');
+      toast.success('Patrimonio excluido com sucesso!');
       loadAssets();
       loadStatistics();
     } catch (error: any) {
       console.error('Error deleting asset:', error);
       await loggingService.logDatabase('error', 'Error deleting asset', `Name: ${asset.name}, ID: ${asset.id}, Error: ${error.message || String(error)}`, currentUser as any);
-      alert(error.message || 'Erro ao excluir patrimônio');
+      toast.error(error.message || 'Erro ao excluir patrimonio');
     }
   };
 

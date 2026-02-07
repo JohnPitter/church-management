@@ -10,9 +10,12 @@ import {
   RelatorioAtividade,
   ONGEntity
 } from '@modules/ong-management/settings/domain/entities/ONG';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 const ONGActivitiesPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { confirm } = useConfirmDialog();
   const [activities, setActivities] = useState<AtividadeONG[]>([]);
   const [volunteers, setVolunteers] = useState<Voluntario[]>([]);
   const [loading, setLoading] = useState(false);
@@ -83,7 +86,7 @@ const ONGActivitiesPage: React.FC = () => {
       setVolunteers(volunteersData);
     } catch (error) {
       console.error('Error loading data:', error);
-      alert('Erro ao carregar dados');
+      toast.error('Erro ao carregar dados');
     } finally {
       setLoading(false);
     }
@@ -178,27 +181,27 @@ const ONGActivitiesPage: React.FC = () => {
 
   const validateForm = (): boolean => {
     if (!formData.nome.trim()) {
-      alert('Nome da atividade é obrigatório');
+      toast.error('Nome da atividade é obrigatório');
       return false;
     }
     
     if (!formData.dataInicio || !formData.dataFim) {
-      alert('Datas de início e fim são obrigatórias');
+      toast.error('Datas de início e fim são obrigatórias');
       return false;
     }
     
     if (new Date(formData.dataInicio) > new Date(formData.dataFim)) {
-      alert('Data de início não pode ser posterior à data de fim');
+      toast.error('Data de início não pode ser posterior à data de fim');
       return false;
     }
     
     if (!formData.local.trim()) {
-      alert('Local da atividade é obrigatório');
+      toast.error('Local da atividade é obrigatório');
       return false;
     }
     
     if (!formData.responsavel.trim()) {
-      alert('Responsável pela atividade é obrigatório');
+      toast.error('Responsável pela atividade é obrigatório');
       return false;
     }
     
@@ -218,30 +221,31 @@ const ONGActivitiesPage: React.FC = () => {
       
       if (editingActivity) {
         await ongRepository.updateAtividade(editingActivity.id, activityData);
-        alert('Atividade atualizada com sucesso!');
+        toast.success('Atividade atualizada com sucesso!');
       } else {
         await ongRepository.createAtividade(activityData);
-        alert('Atividade cadastrada com sucesso!');
+        toast.success('Atividade cadastrada com sucesso!');
       }
       
       handleCloseModal();
       loadData();
     } catch (error) {
       console.error('Error saving activity:', error);
-      alert('Erro ao salvar atividade');
+      toast.error('Erro ao salvar atividade');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta atividade?')) return;
-    
+    const confirmed = await confirm({ title: 'Confirmação', message: 'Tem certeza que deseja excluir esta atividade?', variant: 'danger' });
+    if (!confirmed) return;
+
     try {
       await ongRepository.deleteAtividade(id);
-      alert('Atividade excluída com sucesso!');
+      toast.success('Atividade excluída com sucesso!');
       loadData();
     } catch (error) {
       console.error('Error deleting activity:', error);
-      alert('Erro ao excluir atividade');
+      toast.error('Erro ao excluir atividade');
     }
   };
 
@@ -277,12 +281,12 @@ const ONGActivitiesPage: React.FC = () => {
         relatorio: reportData,
         status: StatusAtividade.Concluida
       });
-      alert('Relatório salvo com sucesso!');
+      toast.success('Relatório salvo com sucesso!');
       setShowReportModal(false);
       loadData();
     } catch (error) {
       console.error('Error saving report:', error);
-      alert('Erro ao salvar relatório');
+      toast.error('Erro ao salvar relatório');
     }
   };
 

@@ -8,6 +8,8 @@ import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { format } from 'date-fns';
 import { BackupInfo, DatabaseStats, backupService } from '@modules/analytics/backup/application/services/BackupService';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 export const AdminBackupPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -17,6 +19,7 @@ export const AdminBackupPage: React.FC = () => {
   const canView = hasPermission(SystemModule.Backup, PermissionAction.View);
   const canCreate = hasPermission(SystemModule.Backup, PermissionAction.Create);
   const canManage = hasPermission(SystemModule.Backup, PermissionAction.Manage);
+  const { confirm } = useConfirmDialog();
   const [backups, setBackups] = useState<BackupInfo[]>([]);
   const [databaseStats, setDatabaseStats] = useState<DatabaseStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +45,7 @@ export const AdminBackupPage: React.FC = () => {
       setDatabaseStats(statsData);
     } catch (error) {
       console.error('Error loading backup data:', error);
-      alert('Erro ao carregar dados de backup');
+      toast.error('Erro ao carregar dados de backup');
     } finally {
       setLoading(false);
     }
@@ -71,12 +74,12 @@ export const AdminBackupPage: React.FC = () => {
         loadData();
       }, 1000);
 
-      alert('Backup iniciado com sucesso!');
+      toast.success('Backup iniciado com sucesso!');
     } catch (error) {
       console.error('Error creating backup:', error);
       await loggingService.logSystem('error', 'Failed to create backup',
         `Type: ${selectedBackupType}, Error: ${error}`, currentUser as any);
-      alert('Erro ao criar backup');
+      toast.error('Erro ao criar backup');
     } finally {
       setCreating(false);
     }
@@ -103,14 +106,15 @@ export const AdminBackupPage: React.FC = () => {
       console.error('Error downloading backup:', error);
       await loggingService.logSystem('error', 'Failed to download backup',
         `ID: ${backupId}, Name: ${backupName}, Error: ${error}`, currentUser as any);
-      alert('Erro ao baixar backup');
+      toast.error('Erro ao baixar backup');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteBackup = async (backupId: string, backupName: string) => {
-    if (!window.confirm(`Tem certeza que deseja excluir o backup "${backupName}"?`)) {
+    const confirmed = await confirm({ title: 'Confirmação', message: `Tem certeza que deseja excluir o backup "${backupName}"?`, variant: 'danger' });
+    if (!confirmed) {
       return;
     }
 
@@ -121,12 +125,12 @@ export const AdminBackupPage: React.FC = () => {
       await loggingService.logSystem('warning', 'Backup deleted',
         `ID: ${backupId}, Name: ${backupName}`, currentUser as any);
 
-      alert('Backup excluído com sucesso');
+      toast.success('Backup excluído com sucesso');
     } catch (error) {
       console.error('Error deleting backup:', error);
       await loggingService.logSystem('error', 'Failed to delete backup',
         `ID: ${backupId}, Name: ${backupName}, Error: ${error}`, currentUser as any);
-      alert('Erro ao excluir backup');
+      toast.error('Erro ao excluir backup');
     }
   };
 
@@ -170,17 +174,18 @@ export const AdminBackupPage: React.FC = () => {
 
 
   const handleRestoreBackup = async (backupId: string) => {
-    if (!window.confirm('ATENÇÃO: Esta ação irá substituir todos os dados atuais. Tem certeza que deseja continuar?')) {
+    const confirmed = await confirm({ title: 'ATENÇÃO', message: 'Esta ação irá substituir todos os dados atuais. Tem certeza que deseja continuar?', variant: 'danger' });
+    if (!confirmed) {
       return;
     }
 
     // In a real implementation, this would restore data from the backup
-    alert('Funcionalidade de restauração em desenvolvimento.\n\nEm uma implementação completa, esta função:\n- Validaria o backup selecionado\n- Faria backup dos dados atuais\n- Restauraria os dados do backup escolhido\n- Atualizaria todas as coleções do Firestore');
+    toast('Funcionalidade de restauração em desenvolvimento.');
   };
 
   const handleExportData = async (format: 'json' | 'csv') => {
     if (!databaseStats) {
-      alert('Aguarde o carregamento das estatísticas do banco de dados.');
+      toast.error('Aguarde o carregamento das estatísticas do banco de dados.');
       return;
     }
 
@@ -242,12 +247,12 @@ export const AdminBackupPage: React.FC = () => {
       await loggingService.logSystem('info', 'Data exported',
         `Format: ${format.toUpperCase()}`, currentUser as any);
 
-      alert(`Dados exportados em ${format.toUpperCase()} com sucesso!`);
+      toast.success(`Dados exportados em ${format.toUpperCase()} com sucesso!`);
     } catch (error) {
       console.error('Error exporting data:', error);
       await loggingService.logSystem('error', 'Failed to export data',
         `Format: ${format.toUpperCase()}, Error: ${error}`, currentUser as any);
-      alert('Erro ao exportar dados.');
+      toast.error('Erro ao exportar dados.');
     } finally {
       setLoading(false);
     }

@@ -7,13 +7,15 @@ import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { format as formatDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { 
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
+import {
   ForumTopic,
   ForumCategory,
   ForumStats,
   TopicStatus
 } from '@modules/content-management/forum/domain/entities/Forum';
-import { 
+import {
   forumService,
   TopicFilters
 } from '@modules/content-management/forum/infrastructure/services/ForumService';
@@ -24,6 +26,7 @@ import { loggingService } from '@modules/shared-kernel/logging/infrastructure/se
 export const AdminForumPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { hasPermission, loading: permissionsLoading } = usePermissions();
+  const { confirm } = useConfirmDialog();
 
   // Permission checks
   const canView = hasPermission(SystemModule.Forum, PermissionAction.View);
@@ -87,7 +90,7 @@ export const AdminForumPage: React.FC = () => {
       console.error('Error updating topic status:', error);
       await loggingService.logDatabase('error', 'Failed to update forum topic status',
         `Topic: ${topic?.title}, ID: ${topicId}, Error: ${error}`, currentUser as any);
-      alert('Erro ao atualizar status do tópico');
+      toast.error('Erro ao atualizar status do tópico');
     }
   };
 
@@ -101,7 +104,7 @@ export const AdminForumPage: React.FC = () => {
       console.error('Error toggling pin:', error);
       await loggingService.logDatabase('error', 'Failed to toggle forum topic pin',
         `Topic: ${topic.title}, ID: ${topic.id}, Error: ${error}`, currentUser as any);
-      alert('Erro ao fixar/desfixar tópico');
+      toast.error('Erro ao fixar/desfixar tópico');
     }
   };
 
@@ -115,12 +118,17 @@ export const AdminForumPage: React.FC = () => {
       console.error('Error toggling lock:', error);
       await loggingService.logDatabase('error', 'Failed to toggle forum topic lock',
         `Topic: ${topic.title}, ID: ${topic.id}, Error: ${error}`, currentUser as any);
-      alert('Erro ao bloquear/desbloquear tópico');
+      toast.error('Erro ao bloquear/desbloquear tópico');
     }
   };
 
   const handleDeleteTopic = async (topicId: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir este tópico?')) return;
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: 'Tem certeza que deseja excluir este tópico?',
+      variant: 'danger'
+    });
+    if (!confirmed) return;
 
     const topic = topics.find(t => t.id === topicId);
     try {
@@ -132,7 +140,7 @@ export const AdminForumPage: React.FC = () => {
       console.error('Error deleting topic:', error);
       await loggingService.logDatabase('error', 'Failed to delete forum topic',
         `Topic: ${topic?.title}, ID: ${topicId}, Error: ${error}`, currentUser as any);
-      alert('Erro ao excluir tópico');
+      toast.error('Erro ao excluir tópico');
     }
   };
 

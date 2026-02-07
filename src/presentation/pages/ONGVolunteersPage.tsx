@@ -7,9 +7,12 @@ import {
   DisponibilidadeVoluntario,
   ONGEntity 
 } from '@modules/ong-management/settings/domain/entities/ONG';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 const ONGVolunteersPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { confirm } = useConfirmDialog();
   const [volunteers, setVolunteers] = useState<Voluntario[]>([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -67,7 +70,7 @@ const ONGVolunteersPage: React.FC = () => {
       setVolunteers(data);
     } catch (error) {
       console.error('Error loading volunteers:', error);
-      alert('Erro ao carregar voluntários');
+      toast.error('Erro ao carregar voluntários');
     } finally {
       setLoading(false);
     }
@@ -218,37 +221,37 @@ const ONGVolunteersPage: React.FC = () => {
 
   const validateForm = (): boolean => {
     if (!formData.nome.trim()) {
-      alert('❌ Nome é obrigatório');
+      toast.error('Nome é obrigatório');
       return false;
     }
     
     if (!formData.email.trim()) {
-      alert('❌ Email é obrigatório');
+      toast.error('Email é obrigatório');
       return false;
     }
     
     if (!formData.telefone.trim()) {
-      alert('❌ Telefone é obrigatório');
+      toast.error('Telefone é obrigatório');
       return false;
     }
     
     if (!formData.dataInicio.trim()) {
-      alert('❌ Data de início é obrigatória');
+      toast.error('Data de início é obrigatória');
       return false;
     }
     
     if (!formData.cpf.trim()) {
-      alert('❌ CPF é obrigatório');
+      toast.error('CPF é obrigatório');
       return false;
     }
     
     if (!ONGEntity.validarCPF(formData.cpf)) {
-      alert('❌ CPF inválido');
+      toast.error('CPF inválido');
       return false;
     }
     
     if (!formData.emergencia.nome.trim()) {
-      alert('❌ Contato de emergência é obrigatório');
+      toast.error('Contato de emergência é obrigatório');
       return false;
     }
     
@@ -266,15 +269,15 @@ const ONGVolunteersPage: React.FC = () => {
 
       // Validate if dates are valid
       if (formData.dataNascimento && isNaN(dataNascimento.getTime())) {
-        alert('❌ Data de nascimento inválida');
+        toast.error('Data de nascimento inválida');
         return;
       }
       if (formData.dataInicio && isNaN(dataInicio.getTime())) {
-        alert('❌ Data de início inválida');
+        toast.error('Data de início inválida');
         return;
       }
       if (dataFim && isNaN(dataFim.getTime())) {
-        alert('❌ Data de fim inválida');
+        toast.error('Data de fim inválida');
         return;
       }
 
@@ -288,30 +291,31 @@ const ONGVolunteersPage: React.FC = () => {
       
       if (editingVolunteer) {
         await ongRepository.updateVoluntario(editingVolunteer.id, volunteerData);
-        alert('Voluntário atualizado com sucesso!');
+        toast.success('Voluntário atualizado com sucesso!');
       } else {
         await ongRepository.createVoluntario(volunteerData);
-        alert('Voluntário cadastrado com sucesso!');
+        toast.success('Voluntário cadastrado com sucesso!');
       }
       
       handleCloseModal();
       loadVolunteers();
     } catch (error) {
       console.error('Error saving volunteer:', error);
-      alert('Erro ao salvar voluntário');
+      toast.error('Erro ao salvar voluntário');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir este voluntário?')) return;
-    
+    const confirmed = await confirm({ title: 'Confirmação', message: 'Tem certeza que deseja excluir este voluntário?', variant: 'danger' });
+    if (!confirmed) return;
+
     try {
       await ongRepository.deleteVoluntario(id);
-      alert('Voluntário excluído com sucesso!');
+      toast.success('Voluntário excluído com sucesso!');
       loadVolunteers();
     } catch (error) {
       console.error('Error deleting volunteer:', error);
-      alert('Erro ao excluir voluntário');
+      toast.error('Erro ao excluir voluntário');
     }
   };
 

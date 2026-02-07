@@ -15,6 +15,7 @@ import {
   DevotionalFilters
 } from '@modules/church-management/devotionals/application/services/DevotionalService';
 import SocialShareButtons from '../components/SocialShareButtons';
+import toast from 'react-hot-toast';
 
 export const Devotionals: React.FC = () => {
   const { currentUser } = useAuth();
@@ -75,7 +76,7 @@ export const Devotionals: React.FC = () => {
 
   const handleLike = async (devotionalId: string) => {
     if (!currentUser) {
-      alert('Você precisa estar logado para curtir');
+      toast.error('Você precisa estar logado para curtir');
       return;
     }
 
@@ -89,7 +90,7 @@ export const Devotionals: React.FC = () => {
 
   const handleBookmark = async (devotionalId: string) => {
     if (!currentUser) {
-      alert('Você precisa estar logado para favoritar');
+      toast.error('Você precisa estar logado para favoritar');
       return;
     }
 
@@ -110,12 +111,12 @@ export const Devotionals: React.FC = () => {
       await devotionalService.markAsRead(selectedDevotional.id, currentUser.id);
       console.log('Successfully marked as read');
       // Show success feedback
-      alert('Devocional marcado como lido!');
+      toast.success('Devocional marcado como lido!');
       // Return to list view
       setViewMode('list');
     } catch (error) {
       console.error('Error marking as read:', error);
-      alert('Erro ao marcar como lido. Tente novamente.');
+      toast.error('Erro ao marcar como lido. Tente novamente.');
     }
   };
 

@@ -12,10 +12,13 @@ import {
   LAYOUT_STYLE_INFO,
   SECTION_INFO
 } from '@modules/content-management/home-settings/domain/entities/HomeSettings';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 export const AdminHomeSettingsPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { settings: _churchSettings } = useSettings();
+  const { confirm } = useConfirmDialog();
   const [homeSettings, setHomeSettings] = useState<HomeSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -66,11 +69,11 @@ export const AdminHomeSettingsPage: React.FC = () => {
         },
         currentUser.email
       );
-      alert('✅ Configurações salvas com sucesso!');
+      toast.success('Configurações salvas com sucesso!');
       await loadSettings();
     } catch (error) {
       console.error('Error saving settings:', error);
-      alert('❌ Erro ao salvar configurações');
+      toast.error('Erro ao salvar configurações');
     } finally {
       setSaving(false);
     }
@@ -79,7 +82,7 @@ export const AdminHomeSettingsPage: React.FC = () => {
   const handleToggleSection = (section: keyof HomeSectionVisibility) => {
     // Don't allow disabling required sections
     if (SECTION_INFO[section].required && sectionVisibility[section]) {
-      alert(`⚠️ A seção "${SECTION_INFO[section].name}" é obrigatória e não pode ser desativada.`);
+      toast.error(`A seção "${SECTION_INFO[section].name}" é obrigatória e não pode ser desativada.`);
       return;
     }
 
@@ -342,14 +345,15 @@ export const AdminHomeSettingsPage: React.FC = () => {
 
           <div className="flex gap-3">
             <button
-              onClick={() => {
-                if (window.confirm('Tem certeza que deseja restaurar as configurações padrão?')) {
+              onClick={async () => {
+                const confirmed = await confirm({ title: 'Confirmação', message: 'Tem certeza que deseja restaurar as configurações padrão?', variant: 'warning' });
+                if (confirmed) {
                   homeSettingsService.resetToDefaults(currentUser?.email || 'unknown')
                     .then(() => {
-                      alert('✅ Configurações restauradas!');
+                      toast.success('Configurações restauradas!');
                       loadSettings();
                     })
-                    .catch(() => alert('❌ Erro ao restaurar configurações'));
+                    .catch(() => toast.error('Erro ao restaurar configurações'));
                 }
               }}
               className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors font-medium"

@@ -9,6 +9,7 @@ import { FirebaseProjectRepository } from '@modules/content-management/projects/
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { format } from 'date-fns';
 import SocialShareButtons from '../components/SocialShareButtons';
+import toast from 'react-hot-toast';
 
 export const ProjectsPage: React.FC = () => {
   const { currentUser, canCreateContent: _canCreateContent } = useAuth();
@@ -131,12 +132,12 @@ export const ProjectsPage: React.FC = () => {
 
   const handleRegisterForProject = async (project: Project) => {
     if (!currentUser?.id || !currentUser?.email) {
-      alert('Você precisa estar logado para se inscrever em um projeto.');
+      toast.error('Você precisa estar logado para se inscrever em um projeto.');
       return;
     }
 
     if (userRegistrations.includes(project.id)) {
-      alert('Você já está inscrito neste projeto.');
+      toast.error('Você já está inscrito neste projeto.');
       return;
     }
 
@@ -162,9 +163,9 @@ export const ProjectsPage: React.FC = () => {
       );
 
       if (project.requiresApproval) {
-        alert('Inscrição realizada com sucesso! Aguarde a aprovação do responsável pelo projeto.');
+        toast.success('Inscrição realizada com sucesso! Aguarde a aprovação do responsável pelo projeto.');
       } else {
-        alert('Inscrição realizada e aprovada automaticamente!');
+        toast.success('Inscrição realizada e aprovada automaticamente!');
       }
     } catch (error) {
       console.error('Error registering for project:', error);
@@ -172,7 +173,7 @@ export const ProjectsPage: React.FC = () => {
         `User: ${currentUser.email}, Project: "${project.name}", Error: ${error}`, 
         currentUser
       );
-      alert('Erro ao realizar inscrição. Tente novamente.');
+      toast.error('Erro ao realizar inscrição. Tente novamente.');
     } finally {
       setRegistrationLoading(null);
     }

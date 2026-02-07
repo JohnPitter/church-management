@@ -2,6 +2,7 @@
 // Modal for creating new church visitors
 
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { visitorService } from '@modules/church-management/visitors/application/services/VisitorService';
 import {
   VisitorStatus,
@@ -149,7 +150,7 @@ export const CreateVisitorModal: React.FC<CreateVisitorModalProps> = ({
       onClose();
     } catch (error) {
       console.error('Error creating visitor:', error);
-      alert('Erro ao criar visitante. Tente novamente.');
+      toast.error('Erro ao criar visitante. Tente novamente.');
     } finally {
       setLoading(false);
     }

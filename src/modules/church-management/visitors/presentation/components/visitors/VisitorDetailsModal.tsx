@@ -2,7 +2,9 @@
 // Modal for viewing and editing visitor details
 
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { visitorService } from '@modules/church-management/visitors/application/services/VisitorService';
+import { useConfirmDialog } from 'presentation/components/ConfirmDialog';
 import {
   Visitor,
   VisitorStatus,
@@ -25,6 +27,7 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
   visitor,
   onVisitorUpdated
 }) => {
+  const { confirm } = useConfirmDialog();
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [visitHistory, setVisitHistory] = useState<VisitRecord[]>([]);
@@ -70,24 +73,29 @@ export const VisitorDetailsModal: React.FC<VisitorDetailsModalProps> = ({
       onVisitorUpdated();
     } catch (error) {
       console.error('Error updating visitor:', error);
-      alert('Erro ao atualizar visitante. Tente novamente.');
+      toast.error('Erro ao atualizar visitante. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleConvertToMember = async () => {
-    if (window.confirm('Tem certeza que deseja converter este visitante em membro?')) {
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: 'Tem certeza que deseja converter este visitante em membro?',
+      variant: 'warning'
+    });
+    if (confirmed) {
       setLoading(true);
       try {
         // In a real scenario, you'd create a member and get the ID
         const memberId = `member_${Date.now()}`;
         await visitorService.convertToMember(visitor.id, memberId);
         onVisitorUpdated();
-        alert('Visitante convertido em membro com sucesso!');
+        toast.success('Visitante convertido em membro com sucesso!');
       } catch (error) {
         console.error('Error converting to member:', error);
-        alert('Erro ao converter visitante em membro. Tente novamente.');
+        toast.error('Erro ao converter visitante em membro. Tente novamente.');
       } finally {
         setLoading(false);
       }

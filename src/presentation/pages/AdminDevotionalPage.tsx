@@ -8,6 +8,8 @@ import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { format as formatDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 import {
   Devotional,
   DevotionalCategory,
@@ -27,6 +29,7 @@ export const AdminDevotionalPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { settings } = useSettings();
   const { hasPermission, loading: permissionsLoading } = usePermissions();
+  const { confirm } = useConfirmDialog();
 
   // Permission checks
   const canView = hasPermission(SystemModule.Devotionals, PermissionAction.View);
@@ -105,7 +108,12 @@ export const AdminDevotionalPage: React.FC = () => {
   };
 
   const handleDeleteDevotional = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir este devocional?')) return;
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: 'Tem certeza que deseja excluir este devocional?',
+      variant: 'danger'
+    });
+    if (!confirmed) return;
 
     const devotional = devotionals.find(d => d.id === id);
     try {
@@ -115,7 +123,7 @@ export const AdminDevotionalPage: React.FC = () => {
     } catch (error) {
       console.error('Error deleting devotional:', error);
       await loggingService.logDatabase('error', 'Error deleting devotional', `ID: ${id}, Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
-      alert('Erro ao excluir devocional');
+      toast.error('Erro ao excluir devocional');
     }
   };
 
@@ -130,7 +138,7 @@ export const AdminDevotionalPage: React.FC = () => {
     } catch (error) {
       console.error('Error toggling publish:', error);
       await loggingService.logDatabase('error', 'Error toggling devotional publish status', `Title: ${devotional.title}, ID: ${devotional.id}, Error: ${error instanceof Error ? error.message : String(error)}`, currentUser as any);
-      alert('Erro ao alterar status de publicação');
+      toast.error('Erro ao alterar status de publicação');
     }
   };
 
@@ -140,7 +148,7 @@ export const AdminDevotionalPage: React.FC = () => {
       await loadPendingComments();
     } catch (error) {
       console.error('Error approving comment:', error);
-      alert('Erro ao aprovar comentário');
+      toast.error('Erro ao aprovar comentário');
     }
   };
 

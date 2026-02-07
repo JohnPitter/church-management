@@ -2,6 +2,7 @@
 // Modal for adding contact attempts with visitors
 
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { visitorService } from '@modules/church-management/visitors/application/services/VisitorService';
 import {
   Visitor,
@@ -116,7 +117,7 @@ export const ContactVisitorModal: React.FC<ContactVisitorModalProps> = ({
       });
     } catch (error) {
       console.error('Error adding contact attempt:', error);
-      alert('Erro ao registrar contato. Tente novamente.');
+      toast.error('Erro ao registrar contato. Tente novamente.');
     } finally {
       setLoading(false);
     }

@@ -7,10 +7,12 @@ import { useNotificationActions } from '../hooks/useNotificationActions';
 import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import { FirebaseProjectRepository } from '@modules/content-management/projects/infrastructure/repositories/FirebaseProjectRepository';
 import { Project as DomainProject, ProjectStatus, ProjectRegistration, RegistrationStatus } from '@modules/content-management/projects/domain/entities/Project';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 // Presentation interface that maps to domain entities
 interface PresentationProject {
@@ -67,6 +69,7 @@ export const AdminProjectsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { notifyNewProject } = useNotificationActions();
   const { hasPermission, loading: permissionsLoading } = usePermissions();
+  const { confirm } = useConfirmDialog();
 
   // Permission checks
   const canView = hasPermission(SystemModule.Projects, PermissionAction.View);
@@ -169,7 +172,12 @@ export const AdminProjectsManagementPage: React.FC = () => {
   };
 
   const handleStatusChange = async (projectId: string, newStatus: string) => {
-    if (!window.confirm(`Tem certeza que deseja alterar o status para "${getStatusText(newStatus)}"?`)) {
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: `Tem certeza que deseja alterar o status para "${getStatusText(newStatus)}"?`,
+      variant: 'warning'
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -177,27 +185,32 @@ export const AdminProjectsManagementPage: React.FC = () => {
     try {
       // Update status via repository
       await projectRepository.updateStatus(projectId, newStatus as ProjectStatus);
-      
+
       // Update local state
       setProjects(prevProjects =>
         prevProjects.map(project =>
-          project.id === projectId 
+          project.id === projectId
             ? { ...project, status: newStatus as PresentationProject['status'], updatedAt: new Date() }
             : project
         )
       );
-      
-      alert('Status atualizado com sucesso!');
+
+      toast.success('Status atualizado com sucesso!');
     } catch (error) {
       console.error('Error updating project status:', error);
-      alert('Erro ao atualizar status.');
+      toast.error('Erro ao atualizar status.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir este projeto?')) {
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: 'Tem certeza que deseja excluir este projeto?',
+      variant: 'danger'
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -206,19 +219,19 @@ export const AdminProjectsManagementPage: React.FC = () => {
     try {
       // Delete via repository
       await projectRepository.delete(projectId);
-      
+
       // Update local state
       setProjects(prevProjects => prevProjects.filter(project => project.id !== projectId));
-      
-      await loggingService.logDatabase('info', 'Project deleted successfully', 
+
+      await loggingService.logDatabase('info', 'Project deleted successfully',
         `Project: "${project?.name}", ID: ${projectId}`, currentUser);
-      
-      alert('Projeto excluído com sucesso!');
+
+      toast.success('Projeto excluído com sucesso!');
     } catch (error) {
       console.error('Error deleting project:', error);
-      await loggingService.logDatabase('error', 'Failed to delete project', 
+      await loggingService.logDatabase('error', 'Failed to delete project',
         `Project: "${project?.name}", ID: ${projectId}, Error: ${error}`, currentUser);
-      alert('Erro ao excluir projeto.');
+      toast.error('Erro ao excluir projeto.');
     } finally {
       setLoading(false);
     }
@@ -256,10 +269,10 @@ export const AdminProjectsManagementPage: React.FC = () => {
       );
       
       setEditingProject(null);
-      alert('Projeto atualizado com sucesso!');
+      toast.success('Projeto atualizado com sucesso!');
     } catch (error) {
       console.error('Error updating project:', error);
-      alert('Erro ao atualizar projeto.');
+      toast.error('Erro ao atualizar projeto.');
     } finally {
       setLoading(false);
     }
@@ -274,7 +287,7 @@ export const AdminProjectsManagementPage: React.FC = () => {
       setShowRegistrationsModal(true);
     } catch (error) {
       console.error('Error loading registrations:', error);
-      alert('Erro ao carregar inscrições.');
+      toast.error('Erro ao carregar inscrições.');
     } finally {
       setLoading(false);
     }
@@ -282,12 +295,12 @@ export const AdminProjectsManagementPage: React.FC = () => {
 
   const handleApproveRegistration = async (registrationId: string) => {
     if (!selectedProjectForRegistrations) return;
-    
+
     try {
       // Find the registration to get user info
       const registration = projectRegistrations.find(r => r.id === registrationId);
       if (!registration) {
-        alert('Inscrição não encontrada.');
+        toast.error('Inscrição não encontrada.');
         return;
       }
 
@@ -311,22 +324,27 @@ export const AdminProjectsManagementPage: React.FC = () => {
       const registrations = await projectRepository.findRegistrations(selectedProjectForRegistrations.id);
       setProjectRegistrations(registrations);
       
-      alert('Inscrição aprovada com sucesso! O usuário foi notificado.');
+      toast.success('Inscrição aprovada com sucesso! O usuário foi notificado.');
     } catch (error) {
       console.error('Error approving registration:', error);
-      alert('Erro ao aprovar inscrição.');
+      toast.error('Erro ao aprovar inscrição.');
     }
   };
 
   const handleRejectRegistration = async (registrationId: string) => {
-    if (!window.confirm('Tem certeza que deseja rejeitar esta inscrição?')) return;
+    const confirmed = await confirm({
+      title: 'Confirmação',
+      message: 'Tem certeza que deseja rejeitar esta inscrição?',
+      variant: 'danger'
+    });
+    if (!confirmed) return;
     if (!selectedProjectForRegistrations) return;
-    
+
     try {
       // Find the registration to get user info
       const registration = projectRegistrations.find(r => r.id === registrationId);
       if (!registration) {
-        alert('Inscrição não encontrada.');
+        toast.error('Inscrição não encontrada.');
         return;
       }
 
@@ -350,10 +368,10 @@ export const AdminProjectsManagementPage: React.FC = () => {
       const registrations = await projectRepository.findRegistrations(selectedProjectForRegistrations.id);
       setProjectRegistrations(registrations);
       
-      alert('Inscrição rejeitada. O usuário foi notificado.');
+      toast.success('Inscrição rejeitada. O usuário foi notificado.');
     } catch (error) {
       console.error('Error rejecting registration:', error);
-      alert('Erro ao rejeitar inscrição.');
+      toast.error('Erro ao rejeitar inscrição.');
     }
   };
 
@@ -403,10 +421,10 @@ export const AdminProjectsManagementPage: React.FC = () => {
       const presentationProject = mapDomainToPresentation(createdProject, 0);
       setProjects(prevProjects => [presentationProject, ...prevProjects]);
       setShowCreateModal(false);
-      alert('Projeto criado com sucesso!');
+      toast.success('Projeto criado com sucesso!');
     } catch (error) {
       console.error('Error creating project:', error);
-      alert('Erro ao criar projeto.');
+      toast.error('Erro ao criar projeto.');
     } finally {
       setLoading(false);
     }
@@ -1025,17 +1043,17 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onSave, onCance
     e.preventDefault();
     
     if (!formData.name.trim()) {
-      alert('Por favor, insira o nome do projeto.');
+      toast.error('Por favor, insira o nome do projeto.');
       return;
     }
     
     if (!formData.description.trim()) {
-      alert('Por favor, insira a descrição do projeto.');
+      toast.error('Por favor, insira a descrição do projeto.');
       return;
     }
 
     if (!formData.endDate) {
-      alert('Por favor, selecione a data de término do projeto.');
+      toast.error('Por favor, selecione a data de término do projeto.');
       return;
     }
 
@@ -1317,17 +1335,17 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onSave, on
     e.preventDefault();
     
     if (!formData.name.trim()) {
-      alert('Por favor, insira o nome do projeto.');
+      toast.error('Por favor, insira o nome do projeto.');
       return;
     }
     
     if (!formData.description.trim()) {
-      alert('Por favor, insira a descrição do projeto.');
+      toast.error('Por favor, insira a descrição do projeto.');
       return;
     }
 
     if (!formData.endDate) {
-      alert('Por favor, selecione a data de término do projeto.');
+      toast.error('Por favor, selecione a data de término do projeto.');
       return;
     }
 
