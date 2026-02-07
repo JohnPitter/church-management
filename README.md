@@ -4,7 +4,7 @@
 
 ![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-4.9-blue?style=for-the-badge&logo=typescript)
-![Firebase](https://img.shields.io/badge/Firebase-12-orange?style=for-the-badge&logo=firebase)
+![Firebase](https://img.shields.io/badge/Firebase-12.9-orange?style=for-the-badge&logo=firebase)
 ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=for-the-badge&logo=tailwindcss)
 ![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)
 
@@ -12,10 +12,10 @@
 
 *Clean Architecture, Domain-Driven Design e Firebase*
 
-[Instalacao](#instalacao) •
-[Funcionalidades](#funcionalidades) •
-[Arquitetura](#arquitetura) •
-[Comandos](#comandos) •
+[Instalacao](#instalacao) |
+[Funcionalidades](#funcionalidades) |
+[Arquitetura](#arquitetura) |
+[Comandos](#comandos) |
 [Deploy](#deploy)
 
 </div>
@@ -27,6 +27,7 @@
 Sistema de gerenciamento de igrejas com modulos para membros, eventos, financas, assistencia social, conteudo e muito mais. Construido com React 19, TypeScript e Firebase 12 seguindo Clean Architecture e DDD.
 
 **O que voce consegue:**
+
 - **Membros** - Cadastro, batismo, status, historico
 - **Eventos** - Agendamento, calendario, check-in
 - **Financas** - Igreja, departamentos e ONG
@@ -107,11 +108,146 @@ npm run setup:indexes
 
 ## Arquitetura
 
+### Clean Architecture - Fluxo de Dependencias
+
 ```
-Presentation  -->  Domain (interfaces)  <--  Data (implementacoes)  <--  Infrastructure
-   React           Entidades, repos          Firebase repos              DI, configs
-   Hooks           Regras de negocio         Mappers
-   Contexts
+┌─────────────────────────────────────────────────────────────────┐
+│                      PRESENTATION LAYER                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
+│  │  Pages   │  │  Hooks   │  │ Contexts │  │  Components   │  │
+│  │  (58)    │  │ useAuth  │  │ Auth     │  │  Modals       │  │
+│  │          │  │ usePerms │  │ Settings │  │  Forms        │  │
+│  │          │  │ useTheme │  │ Confirm  │  │  Layouts (3)  │  │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └──────┬────────┘  │
+│       │              │             │               │            │
+│       └──────────────┴─────────────┴───────────────┘            │
+│                              │                                  │
+│                              │ usa interfaces                   │
+│                              ▼                                  │
+├─────────────────────────────────────────────────────────────────┤
+│                        DOMAIN LAYER                             │
+│  ┌──────────────┐  ┌────────────────┐  ┌────────────────────┐  │
+│  │  Entities    │  │  Repository    │  │  Business Rules    │  │
+│  │  User        │  │  Interfaces    │  │  Permission        │  │
+│  │  Member      │  │  IUserRepo     │  │  Validation        │  │
+│  │  Event       │  │  IMemberRepo   │  │  SystemModule      │  │
+│  │  Department  │  │  IEventRepo    │  │  PermissionAction  │  │
+│  │  Asset       │  │  ...           │  │  ...               │  │
+│  └──────────────┘  └───────┬────────┘  └────────────────────┘  │
+│                            │                                    │
+│                            │ implementa                         │
+│                            ▼                                    │
+├─────────────────────────────────────────────────────────────────┤
+│                   APPLICATION LAYER                             │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │                    Services (por modulo)                   │  │
+│  │  MemberService  EventService  FinancialService  ...       │  │
+│  │  VisitorService  DevotionalService  ProjectsService       │  │
+│  └───────────────────────────┬───────────────────────────────┘  │
+│                              │                                  │
+│                              │ acessa dados via                 │
+│                              ▼                                  │
+├─────────────────────────────────────────────────────────────────┤
+│                         DATA LAYER                              │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │               Firebase Repositories                       │  │
+│  │  FirebaseUserRepo  FirebaseMemberRepo  FirebaseEventRepo  │  │
+│  │  Mappers (Entity <-> Firestore Document)                  │  │
+│  └───────────────────────────┬───────────────────────────────┘  │
+│                              │                                  │
+│                              │ conecta                          │
+│                              ▼                                  │
+├─────────────────────────────────────────────────────────────────┤
+│                    INFRASTRUCTURE LAYER                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐     │
+│  │  DI Container│  │  Firebase     │  │  Cloud Functions  │     │
+│  │  tsyringe    │  │  Config       │  │  (1st Gen, v1)    │     │
+│  │  + manual    │  │  Auth/DB/     │  │  southamerica-    │     │
+│  │              │  │  Storage      │  │  east1            │     │
+│  └──────────────┘  └──────────────┘  └───────────────────┘     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Domain-Driven Design - Modulos
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        modules/                                  │
+│                                                                  │
+│  ┌─────────────────┐    ┌──────────────────┐                    │
+│  │  shared-kernel   │    │ church-management │                   │
+│  │  ───────────────│    │  ────────────────│                    │
+│  │  EventBus       │◄───│  members/        │                    │
+│  │  DI Container   │    │  events/         │                    │
+│  │  ModuleRegistry │    │  visitors/       │                    │
+│  └────────┬────────┘    │  devotionals/    │                    │
+│           │             │  prayer-requests/│                    │
+│           │             │  home/           │                    │
+│           │             └──────────────────┘                    │
+│           │                                                      │
+│           │  ┌──────────────────┐    ┌──────────────────┐       │
+│           ├──│content-management│    │    financial      │       │
+│           │  │  ────────────────│    │  ────────────────│       │
+│           │  │  blog/           │    │  church-finance/ │       │
+│           │  │  home-builder/   │    │  dept-finance/   │       │
+│           │  │  home-settings/  │    │  ong-finance/    │       │
+│           │  │  live-streaming/ │    └──────────────────┘       │
+│           │  └──────────────────┘                                │
+│           │                                                      │
+│           │  ┌──────────────────┐    ┌──────────────────┐       │
+│           ├──│   assistance     │    │  ong-management   │       │
+│           │  │  ────────────────│    │  ────────────────│       │
+│           │  │  assistidos/     │    │  volunteers/      │       │
+│           │  │  fichas/         │    │  activities/      │       │
+│           │  │  help-requests/  │    │  settings/        │       │
+│           │  └──────────────────┘    └──────────────────┘       │
+│           │                                                      │
+│           │  ┌──────────────────┐    ┌──────────────────┐       │
+│           └──│    analytics     │    │  user-management  │       │
+│              │  ────────────────│    │  ────────────────│       │
+│              │  dashboards/     │    │  permissions/     │       │
+│              │  reports/        │    │  roles/           │       │
+│              └──────────────────┘    └──────────────────┘       │
+│                                                                  │
+│  Cada modulo:  domain/entities/                                  │
+│                application/services/                             │
+│                presentation/components/                          │
+│                index.ts (API publica)                            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Comunicacao entre Modulos
+
+```
+┌──────────┐     EventBus      ┌──────────┐
+│ Modulo A │ ──── publish ───► │ Modulo B │
+│          │ ◄── subscribe ─── │          │
+└──────────┘                   └──────────┘
+     ▲                              ▲
+     │        Regra de Ouro         │
+     └──── Nunca importar ──────────┘
+           internals de outro
+           modulo diretamente
+```
+
+### Seguranca - Duas Camadas
+
+```
+┌─────────────────────────────────────────────────┐
+│              CAMADA 1: Firestore Rules           │
+│  Barreira de seguranca (auth, approved, admin)   │
+│  ~460 linhas, role-based, compact                │
+│                                                   │
+│  isAuthenticated() → isApproved() → isAdmin()    │
+│  isOwner() → isDocOwner() → hasRole()            │
+├─────────────────────────────────────────────────┤
+│         CAMADA 2: App PermissionService          │
+│  Logica de negocio granular                      │
+│                                                   │
+│  SystemModule × PermissionAction                 │
+│  users.view  members.edit  events.create  ...    │
+│  financial.export  assistance.approve  ...       │
+└─────────────────────────────────────────────────┘
 ```
 
 ### Principios
@@ -131,35 +267,12 @@ Presentation  -->  Domain (interfaces)  <--  Data (implementacoes)  <--  Infrast
 |--------|------------|
 | UI | React 19, Tailwind CSS, Lucide React, Chart.js |
 | Roteamento | React Router v6 (data router API) |
-| Backend | Firebase 12 (Auth, Firestore, Storage, Functions, Hosting) |
+| Backend | Firebase 12.9 (Auth, Firestore, Storage, Functions, Hosting) |
 | Linguagem | TypeScript 4.9 |
 | Build | CRACO |
 | Testes | Jest, React Testing Library |
+| Notificacoes | React Hot Toast + ConfirmDialog (modal) |
 | Regiao | `southamerica-east1` (Sao Paulo) |
-
-### Modulos
-
-```
-modules/
-  shared-kernel/         # EventBus, DI, ModuleRegistry
-  church-management/     # Membros, eventos, visitantes, oracoes, devocionais
-  content-management/    # Blog, midia, transmissoes, paginas publicas
-  financial/             # Financas da igreja, departamentos, ONG
-  assistance/            # Assistidos, fichas, profissionais, pedidos de ajuda
-  analytics/             # Dashboards e relatorios
-  ong-management/        # Funcionalidades especificas de ONG
-  user-management/       # Usuarios e permissoes
-```
-
-Cada modulo segue:
-
-```
-modulo/
-  domain/entities/          # Regras de negocio
-  application/services/     # Casos de uso
-  presentation/components/  # UI
-  index.ts                  # API publica
-```
 
 ---
 
@@ -215,20 +328,20 @@ src/
   infrastructure/        # Container DI, servicos externos
   modules/               # 8 modulos DDD
   presentation/
-    components/          # 30 componentes reutilizaveis
-    contexts/            # AuthContext, SettingsContext, NotificationContext
-    hooks/               # useAuth, usePermissions, useEvents, etc.
+    components/          # 54 componentes reutilizaveis
+    contexts/            # AuthContext, SettingsContext, NotificationContext, ConfirmDialog
+    hooks/               # useAuth, usePermissions, useEvents, useTheme, etc.
     pages/               # 58 paginas
   types/                 # Definicoes de tipos globais
-functions/               # Cloud Functions (southamerica-east1)
-firestore.rules          # Regras de seguranca Firestore
+functions/               # Cloud Functions (1st Gen, southamerica-east1)
+firestore.rules          # Regras de seguranca Firestore (~460 linhas)
 ```
 
 ---
 
 ## Cloud Functions
 
-Todas rodam em `southamerica-east1`. Definidas em `functions/src/index.ts`:
+Todas rodam em `southamerica-east1` usando **1st Gen** (`firebase-functions/v1`).
 
 | Funcao | Descricao |
 |--------|-----------|
@@ -243,12 +356,12 @@ Todas rodam em `southamerica-east1`. Definidas em `functions/src/index.ts`:
 
 | Metrica | Valor |
 |---------|-------|
-| Arquivos fonte | 291 |
-| Arquivos de teste | 110 |
-| Linhas de codigo | ~103k |
+| Arquivos fonte | 290 |
+| Arquivos de teste | 108 |
+| Linhas de codigo | ~165k |
 | Modulos DDD | 8 |
 | Paginas | 58 |
-| Componentes | 30 |
+| Componentes | 54 |
 | Dependencias | 34 prod / 10 dev |
 
 ---

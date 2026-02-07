@@ -9,6 +9,18 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BibleVerse } from '@/data/verses';
 
+function getChurchArticle(name?: string): string {
+  if (!name) return 'à';
+  const lower = name.trim().toLowerCase();
+  const masculineStarters = [
+    'centro', 'ministério', 'ministerio', 'templo', 'santuário', 'santuario',
+    'tabernáculo', 'tabernaculo', 'movimento', 'grupo', 'espaço', 'espaco',
+    'lugar', 'ponto', 'caminho', 'reino', 'projeto',
+  ];
+  if (masculineStarters.some(s => lower.startsWith(s))) return 'ao';
+  return 'à';
+}
+
 interface AppleHomeLayoutProps {
   sections: HomeSectionVisibility;
   currentTime: Date;
@@ -29,6 +41,9 @@ export const AppleHomeLayout: React.FC<AppleHomeLayoutProps> = ({ sections, curr
             <div className="text-center max-w-5xl mx-auto">
               <p className="text-sm md:text-base text-gray-500 tracking-wide uppercase mb-8 font-medium">
                 {format(currentTime, "EEEE, d 'de' MMMM", { locale: ptBR })}
+              </p>
+              <p className="text-lg md:text-2xl text-gray-400 font-light mb-4 tracking-wide">
+                Seja bem-vindo(a) {getChurchArticle(settings?.churchName)}
               </p>
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-semibold text-black mb-8 tracking-tight leading-none">
                 {settings?.churchName || 'Nossa Igreja'}

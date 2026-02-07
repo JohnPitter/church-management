@@ -9,6 +9,18 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BibleVerse } from '@/data/verses';
 
+function getChurchArticle(name?: string): string {
+  if (!name) return 'À';
+  const lower = name.trim().toLowerCase();
+  const masculineStarters = [
+    'centro', 'ministério', 'ministerio', 'templo', 'santuário', 'santuario',
+    'tabernáculo', 'tabernaculo', 'movimento', 'grupo', 'espaço', 'espaco',
+    'lugar', 'ponto', 'caminho', 'reino', 'projeto',
+  ];
+  if (masculineStarters.some(s => lower.startsWith(s))) return 'AO';
+  return 'À';
+}
+
 interface EnterpriseHomeLayoutProps {
   sections: HomeSectionVisibility;
   currentTime: Date;
@@ -34,9 +46,9 @@ export const EnterpriseHomeLayout: React.FC<EnterpriseHomeLayoutProps> = ({ sect
                 {format(currentTime, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </p>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight leading-tight">
-                SEJA BEM-VINDO<br/>
+                SEJA BEM-VINDO(A)<br/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">
-                  {settings?.churchName || 'NOSSA IGREJA'}
+                  {getChurchArticle(settings?.churchName)} {settings?.churchName || 'NOSSA IGREJA'}
                 </span>
               </h1>
               <p className="text-lg md:text-xl lg:text-2xl text-blue-100 font-light leading-relaxed max-w-3xl mx-auto mb-10">
