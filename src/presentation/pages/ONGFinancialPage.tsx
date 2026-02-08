@@ -966,6 +966,18 @@ export const ONGFinancialPage: React.FC = () => {
         {/* Categories Tab */}
         {!loading && selectedTab === 'categories' && (
           <div className="space-y-6">
+            {/* Add Category Button */}
+            {(canCreate || canManage) && (
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowCategoryModal(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  + Nova Categoria
+                </button>
+              </div>
+            )}
+
             {/* Income Categories */}
             <div className="bg-white shadow rounded-lg">
               <div className="px-6 py-4 border-b border-gray-200">

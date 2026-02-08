@@ -26,6 +26,7 @@ import {
   FinancialEntity
 } from '../../../church-finance/domain/entities/Financial';
 import { format as formatDate } from 'date-fns';
+import { DEFAULT_ONG_INCOME_CATEGORIES, DEFAULT_ONG_EXPENSE_CATEGORIES } from './DefaultONGCategories';
 
 // ONG-specific transaction filters
 export interface ONGTransactionFilters {
@@ -205,25 +206,57 @@ export class ONGFinancialService {
       q = query(q, orderBy('date', 'desc'), limit(limitCount));
 
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          date: data.date.toDate(),
-          createdAt: data.createdAt.toDate(),
-          updatedAt: data.updatedAt.toDate()
-        } as Transaction;
-      }).filter(transaction => {
-        // Apply amount filters (client-side filtering)
+      return this.mapTransactionDocs(snapshot.docs).filter(transaction => {
         if (filters.minAmount && transaction.amount < filters.minAmount) return false;
         if (filters.maxAmount && transaction.amount > filters.maxAmount) return false;
         return true;
       });
     } catch (error) {
-      console.error('Error getting ONG transactions:', error);
-      throw new Error('Erro ao buscar transações da ONG');
+      console.warn('Composite index query failed for ONG transactions, falling back to client-side filter:', error);
+      return this.getTransactionsFallback(filters, limitCount);
     }
+  }
+
+  /**
+   * Fallback: fetch all ONG transactions and filter client-side when composite indexes are missing
+   */
+  private async getTransactionsFallback(filters: ONGTransactionFilters, limitCount: number): Promise<Transaction[]> {
+    try {
+      const q = query(collection(db, this.transactionsCollection), orderBy('date', 'desc'), limit(1000));
+      const snapshot = await getDocs(q);
+      let results = this.mapTransactionDocs(snapshot.docs);
+
+      if (filters.type) results = results.filter(t => t.type === filters.type);
+      if (filters.categoryId) results = results.filter(t => t.category.id === filters.categoryId);
+      if (filters.status) results = results.filter(t => t.status === filters.status);
+      if (filters.paymentMethod) results = results.filter(t => t.paymentMethod === filters.paymentMethod);
+      if (filters.startDate) results = results.filter(t => t.date >= filters.startDate!);
+      if (filters.endDate) results = results.filter(t => t.date <= filters.endDate!);
+      if (filters.createdBy) results = results.filter(t => t.createdBy === filters.createdBy);
+      if (filters.minAmount) results = results.filter(t => t.amount >= filters.minAmount!);
+      if (filters.maxAmount) results = results.filter(t => t.amount <= filters.maxAmount!);
+
+      return results.slice(0, limitCount);
+    } catch (fallbackError) {
+      console.error('Fallback also failed for ONG transactions:', fallbackError);
+      return [];
+    }
+  }
+
+  /**
+   * Map Firestore docs to Transaction objects with safe date conversion
+   */
+  private mapTransactionDocs(docs: any[]): Transaction[] {
+    return docs.map(docSnap => {
+      const data = docSnap.data();
+      return {
+        id: docSnap.id,
+        ...data,
+        date: data.date?.toDate ? data.date.toDate() : new Date(data.date),
+        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt)
+      } as Transaction;
+    });
   }
 
   // ==================== CATEGORY MANAGEMENT ====================
@@ -261,18 +294,84 @@ export class ONGFinancialService {
       q = query(q, orderBy('name'));
 
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          createdAt: data.createdAt.toDate(),
-          updatedAt: data.updatedAt.toDate()
-        } as FinancialCategory;
-      });
+      const results = this.mapCategoryDocs(snapshot.docs);
+
+      // Auto-initialize default categories if collection is empty
+      if (results.length === 0 && !type) {
+        await this.initializeDefaultCategories();
+        return this.getCategoriesFallback(type);
+      }
+
+      return results;
     } catch (error) {
-      console.error('Error getting ONG categories:', error);
-      throw new Error('Erro ao buscar categorias da ONG');
+      console.warn('Composite index query failed for ONG categories, falling back to client-side filter:', error);
+      const fallbackResults = await this.getCategoriesFallback(type);
+
+      // Auto-initialize default categories if collection is empty
+      if (fallbackResults.length === 0 && !type) {
+        await this.initializeDefaultCategories();
+        return this.getCategoriesFallback(type);
+      }
+
+      return fallbackResults;
+    }
+  }
+
+  /**
+   * Fallback: fetch all ONG categories and filter client-side when composite indexes are missing
+   */
+  private async getCategoriesFallback(type?: TransactionType): Promise<FinancialCategory[]> {
+    try {
+      const q = query(collection(db, this.categoriesCollection));
+      const snapshot = await getDocs(q);
+      let results = this.mapCategoryDocs(snapshot.docs);
+
+      results = results.filter(c => c.isActive !== false);
+      if (type) results = results.filter(c => c.type === type);
+      results.sort((a, b) => a.name.localeCompare(b.name));
+
+      return results;
+    } catch (fallbackError) {
+      console.error('Fallback also failed for ONG categories:', fallbackError);
+      return [];
+    }
+  }
+
+  /**
+   * Map Firestore docs to FinancialCategory objects with safe date conversion
+   */
+  private mapCategoryDocs(docs: any[]): FinancialCategory[] {
+    return docs.map(docSnap => {
+      const data = docSnap.data();
+      return {
+        id: docSnap.id,
+        ...data,
+        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt)
+      } as FinancialCategory;
+    });
+  }
+
+  /**
+   * Initialize default ONG categories if the collection is empty
+   */
+  async initializeDefaultCategories(): Promise<void> {
+    try {
+      const snapshot = await getDocs(query(collection(db, this.categoriesCollection), limit(1)));
+      if (!snapshot.empty) return; // Categories already exist
+
+      const allDefaults = [...DEFAULT_ONG_INCOME_CATEGORIES, ...DEFAULT_ONG_EXPENSE_CATEGORIES];
+      const now = new Date();
+
+      for (const category of allDefaults) {
+        await addDoc(collection(db, this.categoriesCollection), {
+          ...category,
+          createdAt: Timestamp.fromDate(now),
+          updatedAt: Timestamp.fromDate(now)
+        });
+      }
+    } catch (error) {
+      console.error('Error initializing default ONG categories:', error);
     }
   }
 
