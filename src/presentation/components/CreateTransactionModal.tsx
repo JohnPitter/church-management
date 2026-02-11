@@ -140,7 +140,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
         category: selectedCategory,
         amount: parseFloat(formData.amount),
         description: formData.description.trim(),
-        date: new Date(formData.date),
+        date: new Date(formData.date + 'T00:00:00'),
         paymentMethod: formData.paymentMethod,
         createdBy: currentUser?.email || 'unknown',
         status: TransactionStatus.APPROVED // Auto-approve for now

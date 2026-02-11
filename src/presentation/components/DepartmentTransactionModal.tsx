@@ -48,7 +48,7 @@ export const DepartmentTransactionModal: React.FC<DepartmentTransactionModalProp
         type: formData.type,
         amount: formData.amount,
         description: formData.description.trim(),
-        date: new Date(formData.date),
+        date: new Date(formData.date + 'T00:00:00'),
         status: DepartmentTransactionStatus.APPROVED,
         createdBy: currentUser?.uid || 'system'
       };

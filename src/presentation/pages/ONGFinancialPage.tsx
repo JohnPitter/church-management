@@ -28,6 +28,7 @@ import { MonthlyComparisonChart } from '../components/charts/MonthlyComparisonCh
 import { DonationDonutChart } from '../components/charts/DonationDonutChart';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
+import { useConfirmDialog } from '../components/ConfirmDialog';
 
 export const ONGFinancialPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -37,8 +38,8 @@ export const ONGFinancialPage: React.FC = () => {
   // Permission checks (uses ONG module permissions)
   const canView = hasPermission(SystemModule.ONG, PermissionAction.View);
   const canCreate = hasPermission(SystemModule.ONG, PermissionAction.Create);
-  const _canUpdate = hasPermission(SystemModule.ONG, PermissionAction.Update);
-  const _canDelete = hasPermission(SystemModule.ONG, PermissionAction.Delete);
+  const canUpdate = hasPermission(SystemModule.ONG, PermissionAction.Update);
+  const canDelete = hasPermission(SystemModule.ONG, PermissionAction.Delete);
   const canManage = hasPermission(SystemModule.ONG, PermissionAction.Manage);
 
   const [loading, setLoading] = useState(true);
@@ -51,6 +52,8 @@ export const ONGFinancialPage: React.FC = () => {
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedTab, setSelectedTab] = useState('overview');
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const { confirm } = useConfirmDialog();
 
   // Chart data states
   const [chartData, setChartData] = useState({
@@ -168,6 +171,32 @@ export const ONGFinancialPage: React.FC = () => {
     await loggingService.logONG('info', 'ONG donation created',
       `Value: N/A`, currentUser as any);
     loadData(); // Reload data after donation is created
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setShowCreateModal(true);
+  };
+
+  const handleDeleteTransaction = async (transaction: Transaction) => {
+    const ok = await confirm({
+      title: 'Excluir Transação',
+      message: `Tem certeza que deseja excluir a transação "${transaction.description}" no valor de ${FinancialEntity.formatCurrency(transaction.amount)}?`,
+      variant: 'danger',
+      confirmText: 'Excluir',
+    });
+    if (!ok) return;
+    try {
+      await ongFinancialService.deleteTransaction(transaction.id);
+      toast.success('Transação excluída com sucesso');
+      loadData();
+      await loggingService.logONG('warning', 'ONG transaction deleted',
+        `Transaction "${transaction.description}" (ID: ${transaction.id}) deleted`, currentUser as any);
+    } catch (error) {
+      toast.error('Erro ao excluir transação');
+      await loggingService.logONG('error', 'Failed to delete ONG transaction',
+        `Error: ${error}`, currentUser as any);
+    }
   };
 
   const loadChartData = async (startDate: Date, endDate: Date) => {
@@ -853,12 +882,22 @@ export const ONGFinancialPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button className="text-indigo-600 hover:text-indigo-900 mr-3">
-                          Editar
-                        </button>
-                        <button className="text-red-600 hover:text-red-900">
-                          Excluir
-                        </button>
+                        {(canUpdate || canManage) && (
+                          <button
+                            onClick={() => handleEditTransaction(transaction)}
+                            className="text-indigo-600 hover:text-indigo-900 mr-3"
+                          >
+                            Editar
+                          </button>
+                        )}
+                        {(canDelete || canManage) && (
+                          <button
+                            onClick={() => handleDeleteTransaction(transaction)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Excluir
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -1194,10 +1233,11 @@ export const ONGFinancialPage: React.FC = () => {
       {/* Create Transaction Modal */}
       <CreateTransactionModal
         isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onTransactionCreated={handleTransactionCreated}
+        onClose={() => { setShowCreateModal(false); setEditingTransaction(null); }}
+        onTransactionCreated={() => { handleTransactionCreated(); setEditingTransaction(null); }}
         currentUser={currentUser}
         service={ongFinancialService}
+        editTransaction={editingTransaction}
       />
 
       {/* Create Donation Modal */}

@@ -141,7 +141,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
         category: selectedCategory,
         amount: parseFloat(formData.amount),
         memberName: formData.isAnonymous ? 'Anônimo' : formData.memberName.trim(),
-        date: new Date(formData.date),
+        date: new Date(formData.date + 'T00:00:00'),
         paymentMethod: formData.paymentMethod,
         isAnonymous: formData.isAnonymous,
         createdBy: currentUser?.email || 'unknown'
