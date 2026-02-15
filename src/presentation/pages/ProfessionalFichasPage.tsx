@@ -6,6 +6,9 @@ import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/f
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import jsPDF from 'jspdf';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import { saveAs } from 'file-saver';
 
 interface FichaModalProps {
   isOpen: boolean;
@@ -82,11 +85,11 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
       onSave(fichaAtualizada);
       setNovoComentario('');
       await loggingService.logDatabase('info', 'Comment added to ficha', `Ficha ID: ${ficha.id}`, currentUser);
-      toast.success('Comentário adicionado com sucesso!');
+      toast.success('Registro adicionado ao prontuário com sucesso!');
     } catch (error: any) {
-      console.error('Error adding comment:', error);
-      await loggingService.logDatabase('error', 'Failed to add comment to ficha', `Ficha ID: ${ficha.id}, Error: ${error?.message || 'Unknown error'}`, currentUser);
-      toast.error('Erro ao adicionar comentário: ' + (error?.message || 'Erro desconhecido'));
+      console.error('Error adding to prontuário:', error);
+      await loggingService.logDatabase('error', 'Failed to add to prontuário', `Ficha ID: ${ficha.id}, Error: ${error?.message || 'Unknown error'}`, currentUser);
+      toast.error('Erro ao adicionar registro ao prontuário: ' + (error?.message || 'Erro desconhecido'));
     } finally {
       setIsLoading(false);
     }
@@ -259,11 +262,158 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
     tipoAssistencia: ficha.tipoAssistencia
   });
 
+  // Função para gerar PDF do prontuário
+  const generateProntuarioPDF = () => {
+    if (!ficha) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+
+    // Título
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PRONTUÁRIO DO PACIENTE', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Informações do paciente
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Informações do Paciente', 20, yPos);
+    yPos += 8;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Nome: ${ficha.pacienteNome}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Profissional: ${ficha.profissionalNome}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Tipo de Assistência: ${ficha.tipoAssistencia}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Data de Início: ${new Date(ficha.dataInicio).toLocaleDateString('pt-BR')}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Status: ${ficha.status}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Objetivo: ${ficha.objetivo || 'Não informado'}`, 20, yPos);
+    yPos += 12;
+
+    // Conteúdo do prontuário
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Registro do Prontuário', 20, yPos);
+    yPos += 8;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+
+    if (ficha.observacoes) {
+      const splitText = doc.splitTextToSize(ficha.observacoes, pageWidth - 40);
+      for (const line of splitText) {
+        if (yPos > 270) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.text(line, 20, yPos);
+        yPos += 5;
+      }
+    } else {
+      doc.text('Nenhum registro no prontuário.', 20, yPos);
+    }
+
+    // Rodapé
+    yPos = 280;
+    doc.setFontSize(8);
+    doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 20, yPos);
+
+    // Salvar
+    doc.save(`prontuario_${ficha.pacienteNome.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  // Função para gerar documento Word do prontuário
+  const generateProntuarioWord = async () => {
+    if (!ficha) return;
+
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: [
+          new Paragraph({
+            text: 'PRONTUÁRIO DO PACIENTE',
+            heading: HeadingLevel.TITLE,
+            alignment: AlignmentType.CENTER,
+          }),
+          new Paragraph({ text: '' }),
+          new Paragraph({
+            text: 'Informações do Paciente',
+            heading: HeadingLevel.HEADING_1,
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Nome: ', bold: true }),
+              new TextRun(ficha.pacienteNome),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Profissional: ', bold: true }),
+              new TextRun(ficha.profissionalNome),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Tipo de Assistência: ', bold: true }),
+              new TextRun(ficha.tipoAssistencia),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Data de Início: ', bold: true }),
+              new TextRun(new Date(ficha.dataInicio).toLocaleDateString('pt-BR')),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Status: ', bold: true }),
+              new TextRun(ficha.status),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Objetivo: ', bold: true }),
+              new TextRun(ficha.objetivo || 'Não informado'),
+            ],
+          }),
+          new Paragraph({ text: '' }),
+          new Paragraph({
+            text: 'Registro do Prontuário',
+            heading: HeadingLevel.HEADING_1,
+          }),
+          new Paragraph({ text: '' }),
+          ...(ficha.observacoes
+            ? ficha.observacoes.split('\n').map(line =>
+                new Paragraph({ text: line })
+              )
+            : [new Paragraph({ text: 'Nenhum registro no prontuário.' })]
+          ),
+          new Paragraph({ text: '' }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: `Gerado em: ${new Date().toLocaleString('pt-BR')}`, italics: true, size: 18 }),
+            ],
+          }),
+        ],
+      }],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, `prontuario_${ficha.pacienteNome.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.docx`);
+  };
+
   const tabs = [
     { id: 'detalhes', label: 'Detalhes' },
     { id: 'dados-especializados', label: 'Dados Especializados' },
     { id: 'sessoes', label: 'Sessões' },
-    { id: 'comentarios', label: 'Comentários' }
+    { id: 'prontuario', label: 'Prontuário' }
   ];
 
   return (
@@ -2566,22 +2716,38 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
             </div>
           )}
 
-          {/* Tab 4: Comentários */}
+          {/* Tab 4: Prontuário */}
           {activeTab === 3 && (
             <div className="space-y-6">
+              {/* Botões de Download */}
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={generateProntuarioPDF}
+                  className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm flex items-center gap-1"
+                >
+                  <span>📄</span> Baixar PDF
+                </button>
+                <button
+                  onClick={generateProntuarioWord}
+                  className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm flex items-center gap-1"
+                >
+                  <span>📝</span> Baixar Word
+                </button>
+              </div>
+
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Histórico de Observações</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Registro do Prontuário</h3>
                 {ficha.observacoes ? (
                   <div className="bg-gray-50 p-4 rounded max-h-60 overflow-y-auto">
                     <pre className="whitespace-pre-wrap text-sm text-gray-700">{ficha.observacoes}</pre>
                   </div>
                 ) : (
-                  <p className="text-gray-500">Nenhuma observação registrada ainda.</p>
+                  <p className="text-gray-500">Nenhum registro no prontuário ainda.</p>
                 )}
               </div>
 
               <div className="border-t pt-6">
-                <h4 className="text-md font-semibold text-gray-900 mb-4">Adicionar Observação</h4>
+                <h4 className="text-md font-semibold text-gray-900 mb-4">Adicionar Registro ao Prontuário</h4>
                 <textarea
                   value={novoComentario}
                   onChange={(e) => setNovoComentario(e.target.value)}
@@ -2597,7 +2763,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
                     disabled={isLoading || !novoComentario.trim()}
                     className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
                   >
-                    {isLoading ? 'Salvando...' : '💬 Adicionar Observação'}
+                    {isLoading ? 'Salvando...' : 'Adicionar ao Prontuário'}
                   </button>
                 </div>
               </div>
