@@ -361,13 +361,13 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
         profissionalData.valorConsulta = parseFloat(formData.valorConsulta);
       }
 
-      // Set default working hours (Monday to Friday, 8am to 6pm)
+      // Set default working hours (Monday to Friday, 7am to 9pm)
       profissionalData.horariosFuncionamento = [
-        { diaSemana: 1, horaInicio: '08:00', horaFim: '18:00' }, // Monday
-        { diaSemana: 2, horaInicio: '08:00', horaFim: '18:00' }, // Tuesday  
-        { diaSemana: 3, horaInicio: '08:00', horaFim: '18:00' }, // Wednesday
-        { diaSemana: 4, horaInicio: '08:00', horaFim: '18:00' }, // Thursday
-        { diaSemana: 5, horaInicio: '08:00', horaFim: '18:00' }, // Friday
+        { diaSemana: 1, horaInicio: '07:00', horaFim: '21:00' }, // Monday
+        { diaSemana: 2, horaInicio: '07:00', horaFim: '21:00' }, // Tuesday
+        { diaSemana: 3, horaInicio: '07:00', horaFim: '21:00' }, // Wednesday
+        { diaSemana: 4, horaInicio: '07:00', horaFim: '21:00' }, // Thursday
+        { diaSemana: 5, horaInicio: '07:00', horaFim: '21:00' }, // Friday
       ];
       
       // Set default consultation duration (50 minutes)

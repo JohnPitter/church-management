@@ -419,11 +419,11 @@ export class ProfissionalAssistenciaService implements IProfissionalAssistenciaS
       // Check if professional has working hours configured, provide defaults if not
       if (!profissional.horariosFuncionamento || profissional.horariosFuncionamento.length === 0) {
         profissional.horariosFuncionamento = [
-          { diaSemana: 1, horaInicio: '08:00', horaFim: '18:00' }, // Monday
-          { diaSemana: 2, horaInicio: '08:00', horaFim: '18:00' }, // Tuesday  
-          { diaSemana: 3, horaInicio: '08:00', horaFim: '18:00' }, // Wednesday
-          { diaSemana: 4, horaInicio: '08:00', horaFim: '18:00' }, // Thursday
-          { diaSemana: 5, horaInicio: '08:00', horaFim: '18:00' }, // Friday
+          { diaSemana: 1, horaInicio: '07:00', horaFim: '21:00' }, // Monday
+          { diaSemana: 2, horaInicio: '07:00', horaFim: '21:00' }, // Tuesday
+          { diaSemana: 3, horaInicio: '07:00', horaFim: '21:00' }, // Wednesday
+          { diaSemana: 4, horaInicio: '07:00', horaFim: '21:00' }, // Thursday
+          { diaSemana: 5, horaInicio: '07:00', horaFim: '21:00' }, // Friday
         ];
       }
       
