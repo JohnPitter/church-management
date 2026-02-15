@@ -4,7 +4,8 @@ import {
   TipoAssistencia,
   StatusProfissional,
   ProfissionalAssistencia,
-  AssistenciaEntity
+  AssistenciaEntity,
+  HorarioFuncionamento
 } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { useAuth } from '../contexts/AuthContext';
@@ -182,6 +183,39 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
 
   const isReadOnly = mode === 'view';
 
+  const diasSemana = [
+    { value: 0, label: 'Domingo' },
+    { value: 1, label: 'Segunda-feira' },
+    { value: 2, label: 'Terça-feira' },
+    { value: 3, label: 'Quarta-feira' },
+    { value: 4, label: 'Quinta-feira' },
+    { value: 5, label: 'Sexta-feira' },
+    { value: 6, label: 'Sábado' },
+  ];
+
+  const defaultHorarios: HorarioFuncionamento[] = [
+    { diaSemana: 1, horaInicio: '07:00', horaFim: '21:00' },
+    { diaSemana: 2, horaInicio: '07:00', horaFim: '21:00' },
+    { diaSemana: 3, horaInicio: '07:00', horaFim: '21:00' },
+    { diaSemana: 4, horaInicio: '07:00', horaFim: '21:00' },
+    { diaSemana: 5, horaInicio: '07:00', horaFim: '21:00' },
+  ];
+
+  const [horarios, setHorarios] = useState<HorarioFuncionamento[]>(defaultHorarios);
+
+  const handleToggleDia = (diaSemana: number) => {
+    const existe = horarios.find(h => h.diaSemana === diaSemana);
+    if (existe) {
+      setHorarios(prev => prev.filter(h => h.diaSemana !== diaSemana));
+    } else {
+      setHorarios(prev => [...prev, { diaSemana, horaInicio: '07:00', horaFim: '21:00' }].sort((a, b) => a.diaSemana - b.diaSemana));
+    }
+  };
+
+  const handleHorarioChange = (diaSemana: number, field: 'horaInicio' | 'horaFim', value: string) => {
+    setHorarios(prev => prev.map(h => h.diaSemana === diaSemana ? { ...h, [field]: value } : h));
+  };
+
   useEffect(() => {
     if (profissional && (mode === 'edit' || mode === 'view')) {
       setFormData({
@@ -203,6 +237,11 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
         cidade: profissional.endereco?.cidade || '',
         estado: profissional.endereco?.estado || ''
       });
+      if (profissional.horariosFuncionamento && profissional.horariosFuncionamento.length > 0) {
+        setHorarios(profissional.horariosFuncionamento);
+      } else {
+        setHorarios(defaultHorarios);
+      }
     } else {
       setFormData({
         nome: '',
@@ -223,8 +262,10 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
         cidade: '',
         estado: ''
       });
+      setHorarios(defaultHorarios);
     }
     setErrors({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profissional, mode, isOpen]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -361,17 +402,7 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
         profissionalData.valorConsulta = parseFloat(formData.valorConsulta);
       }
 
-      // Set default working hours (Monday to Friday, 7am to 9pm)
-      profissionalData.horariosFuncionamento = [
-        { diaSemana: 1, horaInicio: '07:00', horaFim: '21:00' }, // Monday
-        { diaSemana: 2, horaInicio: '07:00', horaFim: '21:00' }, // Tuesday
-        { diaSemana: 3, horaInicio: '07:00', horaFim: '21:00' }, // Wednesday
-        { diaSemana: 4, horaInicio: '07:00', horaFim: '21:00' }, // Thursday
-        { diaSemana: 5, horaInicio: '07:00', horaFim: '21:00' }, // Friday
-      ];
-      
-      // Set default consultation duration (50 minutes)
-      profissionalData.tempoConsulta = 50;
+      profissionalData.horariosFuncionamento = horarios;
 
       if (formData.observacoes) {
         profissionalData.observacoes = formData.observacoes;
@@ -696,18 +727,51 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Disponibilidade
+                  Horários de Atendimento
                 </label>
-                <input
-                  type="text"
-                  value={formData.disponibilidade}
-                  onChange={(e) => handleInputChange('disponibilidade', e.target.value)}
-                  placeholder="Segunda-feira 08:00-17:00, Terça-feira 14:00-18:00..."
-                  disabled={isReadOnly || isLoading}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300 ${
-                    isReadOnly ? 'bg-gray-100' : ''
-                  }`}
-                />
+                <div className="space-y-2 border border-gray-200 rounded-md p-3">
+                  {diasSemana.map(dia => {
+                    const horario = horarios.find(h => h.diaSemana === dia.value);
+                    const ativo = !!horario;
+                    return (
+                      <div key={dia.value} className="flex items-center gap-3">
+                        <label className="flex items-center gap-2 w-36 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={ativo}
+                            onChange={() => handleToggleDia(dia.value)}
+                            disabled={isReadOnly || isLoading}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className={`text-sm ${ativo ? 'font-medium text-gray-900' : 'text-gray-400'}`}>
+                            {dia.label}
+                          </span>
+                        </label>
+                        {ativo ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="time"
+                              value={horario!.horaInicio}
+                              onChange={(e) => handleHorarioChange(dia.value, 'horaInicio', e.target.value)}
+                              disabled={isReadOnly || isLoading}
+                              className="px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="text-gray-500 text-sm">até</span>
+                            <input
+                              type="time"
+                              value={horario!.horaFim}
+                              onChange={(e) => handleHorarioChange(dia.value, 'horaFim', e.target.value)}
+                              disabled={isReadOnly || isLoading}
+                              className="px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400 italic">Não atende</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="md:col-span-2">
