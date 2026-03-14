@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { visitorService } from '@modules/church-management/visitors/application/services/VisitorService';
+import { todayLocalString } from '../../../../../../utils/dateUtils';
 import {
   Visitor,
   ServiceType
@@ -26,7 +27,7 @@ export const RecordVisitModal: React.FC<RecordVisitModalProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    visitDate: new Date().toISOString().split('T')[0],
+    visitDate: todayLocalString(),
     service: ServiceType.SUNDAY_MORNING,
     notes: '',
     broughtBy: ''
@@ -93,7 +94,7 @@ export const RecordVisitModal: React.FC<RecordVisitModalProps> = ({
       
       // Reset form
       setFormData({
-        visitDate: new Date().toISOString().split('T')[0],
+        visitDate: todayLocalString(),
         service: ServiceType.SUNDAY_MORNING,
         notes: '',
         broughtBy: ''
@@ -162,7 +163,7 @@ export const RecordVisitModal: React.FC<RecordVisitModalProps> = ({
                 name="visitDate"
                 value={formData.visitDate}
                 onChange={handleInputChange}
-                max={new Date().toISOString().split('T')[0]}
+                max={todayLocalString()}
                 className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${
                   errors.visitDate ? 'border-red-300' : ''
                 }`}

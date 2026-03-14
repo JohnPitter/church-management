@@ -2,12 +2,13 @@
 // Modal for creating new financial transactions
 
 import React, { useState, useEffect } from 'react';
-import { 
-  FinancialCategory, 
-  TransactionType, 
+import {
+  FinancialCategory,
+  TransactionType,
   PaymentMethod,
-  TransactionStatus 
+  TransactionStatus
 } from '@modules/financial/church-finance/domain/entities/Financial';
+import { toLocalDateString, parseLocalDate, todayLocalString } from '../../utils/dateUtils';
 import { financialService } from '@modules/financial/church-finance/application/services/FinancialService';
 
 interface FinancialServiceLike {
@@ -40,7 +41,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
     categoryId: editTransaction?.category?.id || '',
     amount: editTransaction?.amount?.toString() || '',
     description: editTransaction?.description || '',
-    date: editTransaction?.date ? new Date(editTransaction.date.seconds ? editTransaction.date.seconds * 1000 : editTransaction.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    date: editTransaction?.date ? toLocalDateString(new Date(editTransaction.date.seconds ? editTransaction.date.seconds * 1000 : editTransaction.date)) : todayLocalString(),
     paymentMethod: editTransaction?.paymentMethod || PaymentMethod.CASH,
     reference: editTransaction?.reference || '',
     notes: editTransaction?.notes || ''
@@ -140,7 +141,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
         category: selectedCategory,
         amount: parseFloat(formData.amount),
         description: formData.description.trim(),
-        date: new Date(formData.date + 'T00:00:00'),
+        date: parseLocalDate(formData.date),
         paymentMethod: formData.paymentMethod,
         createdBy: currentUser?.email || 'unknown',
         status: TransactionStatus.APPROVED // Auto-approve for now
@@ -166,7 +167,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
         categoryId: '',
         amount: '',
         description: '',
-        date: new Date().toISOString().split('T')[0],
+        date: todayLocalString(),
         paymentMethod: PaymentMethod.CASH,
         reference: '',
         notes: ''
@@ -189,7 +190,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
       categoryId: '',
       amount: '',
       description: '',
-      date: new Date().toISOString().split('T')[0],
+      date: todayLocalString(),
       paymentMethod: PaymentMethod.CASH,
       reference: '',
       notes: ''

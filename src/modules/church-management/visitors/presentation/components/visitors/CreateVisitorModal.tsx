@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { visitorService } from '@modules/church-management/visitors/application/services/VisitorService';
+import { todayLocalString } from '../../../../../../utils/dateUtils';
 import {
   VisitorStatus,
   FollowUpStatus
@@ -40,7 +41,7 @@ export const CreateVisitorModal: React.FC<CreateVisitorModalProps> = ({
     howDidYouKnow: '',
     interests: [] as string[],
     observations: '',
-    firstVisitDate: new Date().toISOString().split('T')[0],
+    firstVisitDate: todayLocalString(),
     broughtBy: ''
   });
 

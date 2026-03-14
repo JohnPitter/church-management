@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
+import { toLocalDateString } from '../../utils/dateUtils';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { 
   AtividadeONG, 
@@ -100,8 +101,8 @@ const ONGActivitiesPage: React.FC = () => {
         nome: activity.nome,
         descricao: activity.descricao,
         tipo: activity.tipo,
-        dataInicio: activity.dataInicio.toISOString().split('T')[0],
-        dataFim: activity.dataFim.toISOString().split('T')[0],
+        dataInicio: toLocalDateString(activity.dataInicio),
+        dataFim: toLocalDateString(activity.dataFim),
         horaInicio: activity.horaInicio,
         horaFim: activity.horaFim,
         local: activity.local,

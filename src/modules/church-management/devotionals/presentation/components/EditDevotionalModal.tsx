@@ -7,6 +7,7 @@ import {
   DevotionalCategory
 } from '../../domain/entities/Devotional';
 import { devotionalService } from '@modules/church-management/devotionals/application/services/DevotionalService';
+import { toLocalDateString } from '../../../../../utils/dateUtils';
 
 interface EditDevotionalModalProps {
   isOpen: boolean;
@@ -55,7 +56,7 @@ export const EditDevotionalModal: React.FC<EditDevotionalModalProps> = ({
         reflection: devotional.reflection,
         prayer: devotional.prayer,
         author: devotional.author,
-        publishDate: devotional.publishDate.toISOString().split('T')[0],
+        publishDate: toLocalDateString(devotional.publishDate),
         categoryId: devotional.category.id,
         tags: devotional.tags.join(', '),
         imageUrl: devotional.imageUrl || '',

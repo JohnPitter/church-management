@@ -13,6 +13,7 @@ import {
 import { ProfissionalAssistenciaService, AgendamentoAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { toLocalDateString, todayLocalString } from '../../utils/dateUtils';
 
 interface AgendamentoAssistenciaModalProps {
   isOpen: boolean;
@@ -575,7 +576,7 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
     if (agendamento && (mode === 'edit' || mode === 'view')) {
       // Load existing data
       const dataHora = new Date(agendamento.dataHoraAgendamento);
-      const dataStr = dataHora.toISOString().split('T')[0];
+      const dataStr = toLocalDateString(dataHora);
       const horaStr = dataHora.toTimeString().slice(0, 5);
 
       setFormData(prev => ({
@@ -632,7 +633,8 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
 
   const loadHorariosDisponiveis = async () => {
     try {
-      const data = new Date(formData.dataAgendamento);
+      const [year, month, day] = formData.dataAgendamento.split('-').map(Number);
+      const data = new Date(year, month - 1, day);
       const horarios = await agendamentoService.obterHorariosDisponiveis(formData.profissionalId, data);
       setHorariosDisponiveis(horarios);
     } catch (error) {
@@ -869,10 +871,11 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
     if (!formData.dataAgendamento) {
       newErrors['dataAgendamento'] = 'Data é obrigatória';
     } else {
-      const selectedDate = new Date(formData.dataAgendamento);
+      const [sy, sm, sd] = formData.dataAgendamento.split('-').map(Number);
+      const selectedDate = new Date(sy, sm - 1, sd);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       if (selectedDate < today) {
         newErrors['dataAgendamento'] = 'Data deve ser hoje ou futura';
       }
@@ -1138,8 +1141,8 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
       }
 
       const [hora, minuto] = formData.horaAgendamento.split(':').map(Number);
-      const dataHoraAgendamento = new Date(formData.dataAgendamento);
-      dataHoraAgendamento.setHours(hora, minuto, 0, 0);
+      const [ay, am, ad] = formData.dataAgendamento.split('-').map(Number);
+      const dataHoraAgendamento = new Date(ay, am - 1, ad, hora, minuto, 0, 0);
 
       const dataHoraFim = new Date(dataHoraAgendamento.getTime() + profissionalSelecionado.tempoConsulta * 60000);
 
@@ -1508,7 +1511,7 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
                     value={formData.pacienteDataNascimento}
                     onChange={(e) => handleInputChange('pacienteDataNascimento', e.target.value)}
                     disabled={isReadOnly || isLoading}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={todayLocalString()}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.pacienteDataNascimento ? 'border-red-500' : 'border-gray-300'
                     } ${isReadOnly ? 'bg-gray-100' : ''}`}
@@ -1696,7 +1699,7 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
                     type="date"
                     value={formData.dataAgendamento}
                     onChange={(e) => handleInputChange('dataAgendamento', e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={todayLocalString()}
                     disabled={isReadOnly || isLoading}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.dataAgendamento ? 'border-red-500' : 'border-gray-300'

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toLocalDateString } from '../../utils/dateUtils';
 import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
@@ -224,7 +225,7 @@ const ONGReportsPage: React.FC = () => {
               </label>
               <input
                 type="date"
-                value={periodo.dataInicio.toISOString().split('T')[0]}
+                value={toLocalDateString(periodo.dataInicio)}
                 onChange={(e) => handlePeriodChange('dataInicio', new Date(e.target.value))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />
@@ -235,7 +236,7 @@ const ONGReportsPage: React.FC = () => {
               </label>
               <input
                 type="date"
-                value={periodo.dataFim.toISOString().split('T')[0]}
+                value={toLocalDateString(periodo.dataFim)}
                 onChange={(e) => handlePeriodChange('dataFim', new Date(e.target.value))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />

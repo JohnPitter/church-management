@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
+import { toLocalDateString, todayLocalString } from '../../utils/dateUtils';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { 
   Voluntario, 
@@ -43,7 +44,7 @@ const ONGVolunteersPage: React.FC = () => {
     disponibilidade: [] as DisponibilidadeVoluntario[],
     horasSemanaisDisponivel: 0,
     status: StatusVoluntario.Pendente,
-    dataInicio: new Date().toISOString().split('T')[0],
+    dataInicio: todayLocalString(),
     dataFim: '',
     observacoes: '',
     emergencia: {
@@ -85,7 +86,7 @@ const ONGVolunteersPage: React.FC = () => {
         email: volunteer.email,
         telefone: volunteer.telefone,
         cpf: volunteer.cpf,
-        dataNascimento: volunteer.dataNascimento.toISOString().split('T')[0],
+        dataNascimento: toLocalDateString(volunteer.dataNascimento),
         endereco: {
           ...volunteer.endereco,
           complemento: volunteer.endereco.complemento || ''
@@ -95,8 +96,8 @@ const ONGVolunteersPage: React.FC = () => {
         disponibilidade: volunteer.disponibilidade,
         horasSemanaisDisponivel: volunteer.horasSemanaisDisponivel,
         status: volunteer.status,
-        dataInicio: volunteer.dataInicio.toISOString().split('T')[0],
-        dataFim: volunteer.dataFim ? volunteer.dataFim.toISOString().split('T')[0] : '',
+        dataInicio: toLocalDateString(volunteer.dataInicio),
+        dataFim: volunteer.dataFim ? toLocalDateString(volunteer.dataFim) : '',
         observacoes: volunteer.observacoes || '',
         emergencia: {
           ...volunteer.emergencia,
@@ -125,7 +126,7 @@ const ONGVolunteersPage: React.FC = () => {
         disponibilidade: [],
         horasSemanaisDisponivel: 0,
         status: StatusVoluntario.Pendente,
-        dataInicio: new Date().toISOString().split('T')[0],
+        dataInicio: todayLocalString(),
         dataFim: '',
         observacoes: '',
         emergencia: {

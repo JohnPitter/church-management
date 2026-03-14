@@ -2,12 +2,13 @@
 // Modal for creating new donations (tithes, offerings, etc.)
 
 import React, { useState, useEffect } from 'react';
-import { 
-  FinancialCategory, 
-  DonationType, 
+import {
+  FinancialCategory,
+  DonationType,
   PaymentMethod,
-  TransactionType 
+  TransactionType
 } from '@modules/financial/church-finance/domain/entities/Financial';
+import { parseLocalDate, todayLocalString } from '../../utils/dateUtils';
 import { financialService } from '@modules/financial/church-finance/application/services/FinancialService';
 
 interface FinancialServiceLike {
@@ -38,7 +39,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
     amount: '',
     memberName: '',
     memberEmail: '',
-    date: new Date().toISOString().split('T')[0],
+    date: todayLocalString(),
     paymentMethod: PaymentMethod.CASH,
     isAnonymous: false,
     notes: ''
@@ -141,7 +142,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
         category: selectedCategory,
         amount: parseFloat(formData.amount),
         memberName: formData.isAnonymous ? 'Anônimo' : formData.memberName.trim(),
-        date: new Date(formData.date + 'T00:00:00'),
+        date: parseLocalDate(formData.date),
         paymentMethod: formData.paymentMethod,
         isAnonymous: formData.isAnonymous,
         createdBy: currentUser?.email || 'unknown'
@@ -168,7 +169,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
         amount: '',
         memberName: '',
         memberEmail: '',
-        date: new Date().toISOString().split('T')[0],
+        date: todayLocalString(),
         paymentMethod: PaymentMethod.CASH,
         isAnonymous: false,
         notes: ''
@@ -192,7 +193,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
       amount: '',
       memberName: '',
       memberEmail: '',
-      date: new Date().toISOString().split('T')[0],
+      date: todayLocalString(),
       paymentMethod: PaymentMethod.CASH,
       isAnonymous: false,
       notes: ''

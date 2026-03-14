@@ -8,6 +8,7 @@ import {
   DepartmentTransactionStatus,
   DepartmentEntity
 } from '@modules/church-management/departments/domain/entities/Department';
+import { parseLocalDate, todayLocalString } from '../../utils/dateUtils';
 import { departmentFinancialService } from '@modules/financial/department-finance/application/services/DepartmentFinancialService';
 
 interface DepartmentTransactionModalProps {
@@ -31,7 +32,7 @@ export const DepartmentTransactionModal: React.FC<DepartmentTransactionModalProp
     description: '',
     notes: '',
     receiptNumber: '',
-    date: new Date().toISOString().split('T')[0]
+    date: todayLocalString()
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -48,7 +49,7 @@ export const DepartmentTransactionModal: React.FC<DepartmentTransactionModalProp
         type: formData.type,
         amount: formData.amount,
         description: formData.description.trim(),
-        date: new Date(formData.date + 'T00:00:00'),
+        date: parseLocalDate(formData.date),
         status: DepartmentTransactionStatus.APPROVED,
         createdBy: currentUser?.uid || 'system'
       };
@@ -81,7 +82,7 @@ export const DepartmentTransactionModal: React.FC<DepartmentTransactionModalProp
         description: '',
         notes: '',
         receiptNumber: '',
-        date: new Date().toISOString().split('T')[0]
+        date: todayLocalString()
       });
     } catch (error) {
       console.error('Error creating transaction:', error);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
 import { useAuth } from 'presentation/contexts/AuthContext';
+import { toLocalDateString } from '../../../../../utils/dateUtils';
 import { useSettings } from 'presentation/contexts/SettingsContext';
 import { useConfirmDialog } from 'presentation/components/ConfirmDialog';
 import { 
@@ -111,7 +112,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
           nome: assistido.nome,
           cpf: assistido.cpf || '',
           rg: assistido.rg || '',
-          dataNascimento: assistido.dataNascimento.toISOString().split('T')[0],
+          dataNascimento: toLocalDateString(assistido.dataNascimento),
           telefone: assistido.telefone,
           email: assistido.email || '',
           endereco: assistido.endereco,
@@ -234,7 +235,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
     setFamiliarForm({
       nome: familiar.nome,
       parentesco: familiar.parentesco,
-      dataNascimento: familiar.dataNascimento ? familiar.dataNascimento.toISOString().split('T')[0] : '',
+      dataNascimento: familiar.dataNascimento ? toLocalDateString(familiar.dataNascimento) : '',
       cpf: familiar.cpf || '',
       telefone: familiar.telefone || '',
       profissao: familiar.profissao || '',

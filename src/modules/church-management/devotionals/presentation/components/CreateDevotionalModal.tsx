@@ -6,6 +6,7 @@ import {
   DevotionalCategory
 } from '../../domain/entities/Devotional';
 import { devotionalService } from '@modules/church-management/devotionals/application/services/DevotionalService';
+import { todayLocalString } from '../../../../../utils/dateUtils';
 
 interface CreateDevotionalModalProps {
   isOpen: boolean;
@@ -30,7 +31,7 @@ export const CreateDevotionalModal: React.FC<CreateDevotionalModalProps> = ({
     reflection: '',
     prayer: '',
     author: currentUser?.displayName || currentUser?.email || '',
-    publishDate: new Date().toISOString().split('T')[0],
+    publishDate: todayLocalString(),
     categoryId: '',
     tags: '',
     imageUrl: '',
@@ -180,7 +181,7 @@ export const CreateDevotionalModal: React.FC<CreateDevotionalModalProps> = ({
         reflection: '',
         prayer: '',
         author: currentUser?.displayName || currentUser?.email || '',
-        publishDate: new Date().toISOString().split('T')[0],
+        publishDate: todayLocalString(),
         categoryId: '',
         tags: '',
         imageUrl: '',
@@ -211,7 +212,7 @@ export const CreateDevotionalModal: React.FC<CreateDevotionalModalProps> = ({
       reflection: '',
       prayer: '',
       author: currentUser?.displayName || currentUser?.email || '',
-      publishDate: new Date().toISOString().split('T')[0],
+      publishDate: todayLocalString(),
       categoryId: '',
       tags: '',
       imageUrl: '',

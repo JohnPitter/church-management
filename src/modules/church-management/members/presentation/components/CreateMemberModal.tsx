@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { Member, MaritalStatus, MemberStatus, MemberType } from 'domain/entities/Member';
 import { useMemberService } from 'presentation/hooks/useMemberService';
 import { useAuth } from 'presentation/contexts/AuthContext';
+import { toLocalDateString } from '../../../../../utils/dateUtils';
 
 interface CreateMemberModalProps {
   isOpen: boolean;
@@ -67,7 +68,7 @@ export const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
         name: member.name || '',
         email: member.email || '',
         phone: member.phone || '',
-        birthDate: member.birthDate ? new Date(member.birthDate).toISOString().split('T')[0] : '',
+        birthDate: member.birthDate ? toLocalDateString(new Date(member.birthDate)) : '',
         maritalStatus: member.maritalStatus || MaritalStatus.Single,
         photoURL: member.photoURL || '',
         street: member.address?.street || '',
@@ -78,8 +79,8 @@ export const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
         state: member.address?.state || '',
         zipCode: member.address?.zipCode || '',
         memberType: member.memberType || MemberType.Member,
-        baptismDate: member.baptismDate ? new Date(member.baptismDate).toISOString().split('T')[0] : '',
-        conversionDate: member.conversionDate ? new Date(member.conversionDate).toISOString().split('T')[0] : '',
+        baptismDate: member.baptismDate ? toLocalDateString(new Date(member.baptismDate)) : '',
+        conversionDate: member.conversionDate ? toLocalDateString(new Date(member.conversionDate)) : '',
         ministries: member.ministries || [],
         role: member.role || '',
         observations: member.observations || '',

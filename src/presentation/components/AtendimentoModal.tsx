@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
 import { useAuth } from '../contexts/AuthContext';
+import { todayLocalString } from '../../utils/dateUtils';
 import { 
   Assistido, 
   AtendimentoAssistido,
@@ -320,7 +321,7 @@ const AtendimentoModal: React.FC<AtendimentoModalProps> = ({
               name="proximoRetorno"
               value={formData.proximoRetorno || ''}
               onChange={handleInputChange}
-              min={new Date().toISOString().split('T')[0]}
+              min={todayLocalString()}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               disabled={isLoading}
             />

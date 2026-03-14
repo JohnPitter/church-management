@@ -2,6 +2,7 @@
 // Church asset and property inventory management
 
 import React, { useState, useEffect } from 'react';
+import { toLocalDateString, todayLocalString } from '../../utils/dateUtils';
 import { AssetService } from '@modules/church-management/assets/application/services/AssetService';
 import {
   Asset,
@@ -607,10 +608,10 @@ const AssetsManagementPage: React.FC = () => {
                   <input
                     type="date"
                     value={formData.acquisitionDate instanceof Date
-                      ? formData.acquisitionDate.toISOString().split('T')[0]
+                      ? toLocalDateString(formData.acquisitionDate)
                       : ''}
                     onChange={(e) => handleInputChange('acquisitionDate', new Date(e.target.value))}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={todayLocalString()}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     required
                   />
@@ -765,7 +766,7 @@ const AssetsManagementPage: React.FC = () => {
                   <input
                     type="date"
                     value={formData.warrantyExpiryDate instanceof Date
-                      ? formData.warrantyExpiryDate.toISOString().split('T')[0]
+                      ? toLocalDateString(formData.warrantyExpiryDate)
                       : ''}
                     onChange={(e) => handleInputChange('warrantyExpiryDate', e.target.value ? new Date(e.target.value) : undefined)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -794,7 +795,7 @@ const AssetsManagementPage: React.FC = () => {
                   <input
                     type="date"
                     value={formData.insuranceExpiryDate instanceof Date
-                      ? formData.insuranceExpiryDate.toISOString().split('T')[0]
+                      ? toLocalDateString(formData.insuranceExpiryDate)
                       : ''}
                     onChange={(e) => handleInputChange('insuranceExpiryDate', e.target.value ? new Date(e.target.value) : undefined)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
