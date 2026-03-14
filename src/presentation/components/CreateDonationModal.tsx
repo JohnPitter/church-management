@@ -159,7 +159,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
       if (activeService.createDonation) {
         await activeService.createDonation(donationData);
       } else if (activeService.createTransaction) {
-        await activeService.createTransaction({ ...donationData, type: 'INCOME' });
+        await activeService.createTransaction({ ...donationData, type: TransactionType.INCOME });
       }
       
       // Reset form

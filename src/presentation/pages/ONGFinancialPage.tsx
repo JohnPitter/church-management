@@ -161,16 +161,16 @@ export const ONGFinancialPage: React.FC = () => {
     }
   };
 
-  const handleTransactionCreated = async () => {
-    await loggingService.logONG('info', 'ONG transaction created',
+  const handleTransactionCreated = () => {
+    loadData();
+    loggingService.logONG('info', 'ONG transaction created',
       `Type: transaction, Value: N/A`, currentUser as any);
-    loadData(); // Reload data after transaction is created
   };
 
-  const handleDonationCreated = async () => {
-    await loggingService.logONG('info', 'ONG donation created',
+  const handleDonationCreated = () => {
+    loadData();
+    loggingService.logONG('info', 'ONG donation created',
       `Value: N/A`, currentUser as any);
-    loadData(); // Reload data after donation is created
   };
 
   const handleEditTransaction = (transaction: Transaction) => {
