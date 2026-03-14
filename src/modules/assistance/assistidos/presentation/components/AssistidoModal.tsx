@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
 import { useAuth } from 'presentation/contexts/AuthContext';
-import { toLocalDateString } from '../../../../../utils/dateUtils';
+import { toLocalDateString, parseLocalDate } from '../../../../../utils/dateUtils';
 import { useSettings } from 'presentation/contexts/SettingsContext';
 import { useConfirmDialog } from 'presentation/components/ConfirmDialog';
 import { 
@@ -322,7 +322,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
     // Usar a validação completa da entidade
     const assistidoData = {
       ...formData,
-      dataNascimento: formData.dataNascimento ? new Date(formData.dataNascimento) : undefined,
+      dataNascimento: formData.dataNascimento ? parseLocalDate(formData.dataNascimento) : undefined,
       quantidadeComodos: formData.quantidadeComodos ? parseInt(formData.quantidadeComodos) : undefined,
       rendaFamiliar: formData.rendaFamiliar ? parseFloat(formData.rendaFamiliar) : undefined
     };
@@ -389,7 +389,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
     try {
       const assistidoData = {
         ...formData,
-        dataNascimento: new Date(formData.dataNascimento),
+        dataNascimento: parseLocalDate(formData.dataNascimento),
         rendaFamiliar: formData.rendaFamiliar ? parseFloat(formData.rendaFamiliar) : undefined,
         quantidadeComodos: parseInt(formData.quantidadeComodos),
         status: StatusAssistido.Ativo,
@@ -721,7 +721,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Situação Familiar</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Situação Familiar *</label>
               <select
                 value={formData.situacaoFamiliar}
                 onChange={(e) => handleInputChange('situacaoFamiliar', e.target.value)}
@@ -739,7 +739,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Escolaridade</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Escolaridade *</label>
               <select
                 value={formData.escolaridade}
                 onChange={(e) => handleInputChange('escolaridade', e.target.value)}
@@ -1169,7 +1169,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
 
             {/* Responsável pelo Atendimento */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Responsável pelo Atendimento</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Responsável pelo Atendimento *</label>
               <input
                 type="text"
                 value={formData.responsavelAtendimento}

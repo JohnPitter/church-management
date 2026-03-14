@@ -30,7 +30,13 @@ export const CreateDepartmentModal: React.FC<CreateDepartmentModalProps> = ({
     responsibleName: ''
   });
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const clearError = (field: string) => {
+    if (errors[field]) {
+      setErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+    }
+  };
 
   const iconOptions = ['🏦', '📚', '🎵', '👶', '🙏', '💒', '🌍', '🎓', '💝', '🏗️', '🍞', '🎯'];
   const colorOptions = [
@@ -66,13 +72,13 @@ export const CreateDepartmentModal: React.FC<CreateDepartmentModalProps> = ({
         responsibleName: ''
       });
     }
-    setErrors([]);
+    setErrors({});
   }, [editDepartment, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setErrors([]);
+    setErrors({});
 
     try {
       // Build department data, only including defined fields
@@ -100,9 +106,18 @@ export const CreateDepartmentModal: React.FC<CreateDepartmentModalProps> = ({
       }
 
       // Validate
-      const validationErrors = DepartmentEntity.validateDepartment(departmentData);
-      if (validationErrors.length > 0) {
-        setErrors(validationErrors);
+      const fieldErrors: Record<string, string> = {};
+      if (!formData.name.trim()) {
+        fieldErrors.name = 'Nome do departamento é obrigatório';
+      }
+
+      const entityErrors = DepartmentEntity.validateDepartment(departmentData);
+      if (entityErrors.length > 0) {
+        fieldErrors.submit = entityErrors.join('. ');
+      }
+
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors(fieldErrors);
         setLoading(false);
         return;
       }
@@ -136,7 +151,7 @@ export const CreateDepartmentModal: React.FC<CreateDepartmentModalProps> = ({
       onClose();
     } catch (error) {
       console.error('Error creating/updating department:', error);
-      setErrors([error instanceof Error ? error.message : 'Erro ao salvar departamento']);
+      setErrors({ submit: error instanceof Error ? error.message : 'Erro ao salvar departamento' });
     } finally {
       setLoading(false);
     }
@@ -164,7 +179,7 @@ export const CreateDepartmentModal: React.FC<CreateDepartmentModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-4">
-          {errors.length > 0 && (
+          {errors.submit && (
             <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
@@ -173,16 +188,9 @@ export const CreateDepartmentModal: React.FC<CreateDepartmentModalProps> = ({
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    Erro ao salvar departamento
-                  </h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <ul className="list-disc list-inside">
-                      {errors.map((error, index) => (
-                        <li key={index}>{error}</li>
-                      ))}
-                    </ul>
-                  </div>
+                  <p className="text-sm font-medium text-red-800">
+                    {errors.submit}
+                  </p>
                 </div>
               </div>
             </div>
@@ -198,10 +206,11 @@ export const CreateDepartmentModal: React.FC<CreateDepartmentModalProps> = ({
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); clearError('name'); }}
+                className={`w-full px-3 py-2 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
                 placeholder="Ex: Escola Bíblica, Louvor, Missões..."
               />
+              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
             </div>
 
             {/* Description */}

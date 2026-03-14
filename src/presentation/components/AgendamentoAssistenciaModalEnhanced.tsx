@@ -1720,7 +1720,11 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
                       errors.horaAgendamento ? 'border-red-500' : 'border-gray-300'
                     } ${isReadOnly ? 'bg-gray-100' : ''}`}
                   >
-                    <option value="">Selecione um horário</option>
+                    <option value="">
+                      {formData.profissionalId && formData.dataAgendamento && horariosDisponiveis.length === 0
+                        ? 'Nenhum horário disponível nesta data'
+                        : 'Selecione um horário'}
+                    </option>
                     {horariosDisponiveis.map((horario, index) => (
                       <option key={index} value={horario.toTimeString().slice(0, 5)}>
                         {horario.toTimeString().slice(0, 5)}
@@ -1728,6 +1732,9 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
                     ))}
                   </select>
                   {errors.horaAgendamento && <p className="text-red-500 text-sm mt-1">{errors.horaAgendamento}</p>}
+                  {formData.profissionalId && formData.dataAgendamento && horariosDisponiveis.length === 0 && !errors.horaAgendamento && (
+                    <p className="text-amber-600 text-sm mt-1">O profissional não possui horários configurados para este dia. Configure os horários no cadastro do profissional.</p>
+                  )}
                 </div>
 
                 <div>

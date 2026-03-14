@@ -416,15 +416,9 @@ export class ProfissionalAssistenciaService implements IProfissionalAssistenciaS
         throw new Error('Profissional não encontrado');
       }
 
-      // Check if professional has working hours configured, provide defaults if not
+      // If professional has no working hours configured, return empty (must be set per professional)
       if (!profissional.horariosFuncionamento || profissional.horariosFuncionamento.length === 0) {
-        profissional.horariosFuncionamento = [
-          { diaSemana: 1, horaInicio: '07:00', horaFim: '21:00' }, // Monday
-          { diaSemana: 2, horaInicio: '07:00', horaFim: '21:00' }, // Tuesday
-          { diaSemana: 3, horaInicio: '07:00', horaFim: '21:00' }, // Wednesday
-          { diaSemana: 4, horaInicio: '07:00', horaFim: '21:00' }, // Thursday
-          { diaSemana: 5, horaInicio: '07:00', horaFim: '21:00' }, // Friday
-        ];
+        return [];
       }
       
       // Check if professional has consultation duration configured
@@ -1220,8 +1214,7 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
   async obterHorariosDisponiveis(profissionalId: string, data: Date): Promise<Date[]> {
     try {
       const dataInicio = new Date(data.getFullYear(), data.getMonth(), data.getDate());
-      const dataFim = new Date(data.getTime());
-      dataFim.setDate(dataFim.getDate() + 1);
+      const dataFim = new Date(data.getFullYear(), data.getMonth(), data.getDate() + 1);
       
       const profissionalService = new ProfissionalAssistenciaService();
       return await profissionalService.getHorariosDisponiveis(profissionalId, dataInicio, dataFim);

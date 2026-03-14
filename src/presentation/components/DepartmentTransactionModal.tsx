@@ -35,12 +35,18 @@ export const DepartmentTransactionModal: React.FC<DepartmentTransactionModalProp
     date: todayLocalString()
   });
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const clearError = (field: string) => {
+    if (errors[field]) {
+      setErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setErrors([]);
+    setErrors({});
 
     try {
       const transactionData: any = {
@@ -63,9 +69,24 @@ export const DepartmentTransactionModal: React.FC<DepartmentTransactionModalProp
       }
 
       // Validate
-      const validationErrors = DepartmentEntity.validateTransaction(transactionData);
-      if (validationErrors.length > 0) {
-        setErrors(validationErrors);
+      const fieldErrors: Record<string, string> = {};
+      if (!formData.amount || formData.amount <= 0) {
+        fieldErrors.amount = 'Valor deve ser maior que zero';
+      }
+      if (!formData.description.trim()) {
+        fieldErrors.description = 'Descrição é obrigatória';
+      }
+      if (!formData.date) {
+        fieldErrors.date = 'Data é obrigatória';
+      }
+
+      const entityErrors = DepartmentEntity.validateTransaction(transactionData);
+      if (entityErrors.length > 0) {
+        fieldErrors.submit = entityErrors.join('. ');
+      }
+
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors(fieldErrors);
         setLoading(false);
         return;
       }
@@ -86,7 +107,7 @@ export const DepartmentTransactionModal: React.FC<DepartmentTransactionModalProp
       });
     } catch (error) {
       console.error('Error creating transaction:', error);
-      setErrors([error instanceof Error ? error.message : 'Erro ao criar transação']);
+      setErrors({ submit: error instanceof Error ? error.message : 'Erro ao criar transação' });
     } finally {
       setLoading(false);
     }
@@ -119,7 +140,7 @@ export const DepartmentTransactionModal: React.FC<DepartmentTransactionModalProp
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-4">
-          {errors.length > 0 && (
+          {errors.submit && (
             <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
@@ -128,16 +149,9 @@ export const DepartmentTransactionModal: React.FC<DepartmentTransactionModalProp
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    Erro ao criar transação
-                  </h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <ul className="list-disc list-inside">
-                      {errors.map((error, index) => (
-                        <li key={index}>{error}</li>
-                      ))}
-                    </ul>
-                  </div>
+                  <p className="text-sm font-medium text-red-800">
+                    {errors.submit}
+                  </p>
                 </div>
               </div>
             </div>
@@ -207,11 +221,12 @@ export const DepartmentTransactionModal: React.FC<DepartmentTransactionModalProp
                   step="0.01"
                   required
                   value={formData.amount || ''}
-                  onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  onChange={(e) => { setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 }); clearError('amount'); }}
+                  className={`w-full pl-10 pr-3 py-2 border ${errors.amount ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
                   placeholder="0,00"
                 />
               </div>
+              {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
               {formData.type === DepartmentTransactionType.WITHDRAWAL && formData.amount > department.currentBalance && (
                 <p className="mt-1 text-sm text-red-600">
                   ⚠️ Valor maior que o saldo disponível
@@ -228,9 +243,10 @@ export const DepartmentTransactionModal: React.FC<DepartmentTransactionModalProp
                 type="date"
                 required
                 value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                onChange={(e) => { setFormData({ ...formData, date: e.target.value }); clearError('date'); }}
+                className={`w-full px-3 py-2 border ${errors.date ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
               />
+              {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
             </div>
 
             {/* Description */}
@@ -242,10 +258,11 @@ export const DepartmentTransactionModal: React.FC<DepartmentTransactionModalProp
                 type="text"
                 required
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                onChange={(e) => { setFormData({ ...formData, description: e.target.value }); clearError('description'); }}
+                className={`w-full px-3 py-2 border ${errors.description ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
                 placeholder="Ex: Oferta do culto, Compra de materiais, etc."
               />
+              {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
             </div>
 
             {/* Receipt Number */}

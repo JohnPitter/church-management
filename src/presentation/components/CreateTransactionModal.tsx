@@ -49,7 +49,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
   
   const [categories, setCategories] = useState<FinancialCategory[]>([]);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const paymentMethods = [
     { value: PaymentMethod.CASH, label: 'Dinheiro' },
@@ -61,6 +61,34 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
     { value: PaymentMethod.BOLETO, label: 'Boleto' },
     { value: PaymentMethod.OTHER, label: 'Outro' }
   ];
+
+  useEffect(() => {
+    if (isOpen && editTransaction) {
+      setFormData({
+        type: editTransaction.type || TransactionType.EXPENSE,
+        categoryId: editTransaction.category?.id || '',
+        amount: editTransaction.amount?.toString() || '',
+        description: editTransaction.description || '',
+        date: editTransaction.date ? toLocalDateString(new Date(editTransaction.date.seconds ? editTransaction.date.seconds * 1000 : editTransaction.date)) : todayLocalString(),
+        paymentMethod: editTransaction.paymentMethod || PaymentMethod.CASH,
+        reference: editTransaction.reference || '',
+        notes: editTransaction.notes || ''
+      });
+    } else if (isOpen && !editTransaction) {
+      setFormData({
+        type: TransactionType.EXPENSE,
+        categoryId: '',
+        amount: '',
+        description: '',
+        date: todayLocalString(),
+        paymentMethod: PaymentMethod.CASH,
+        reference: '',
+        notes: ''
+      });
+    }
+    setErrors({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, editTransaction]);
 
   useEffect(() => {
     if (isOpen) {
@@ -87,9 +115,9 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    // Clear errors when user starts typing
-    if (errors.length > 0) {
-      setErrors([]);
+    // Clear field error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
     }
     
     // If type changes, reset category
@@ -99,26 +127,26 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
   };
 
   const validateForm = (): boolean => {
-    const newErrors: string[] = [];
-    
+    const newErrors: Record<string, string> = {};
+
     if (!formData.description.trim()) {
-      newErrors.push('Descrição é obrigatória');
+      newErrors.description = 'Descrição é obrigatória';
     }
-    
+
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      newErrors.push('Valor deve ser maior que zero');
+      newErrors.amount = 'Valor deve ser maior que zero';
     }
-    
+
     if (!formData.categoryId) {
-      newErrors.push('Categoria é obrigatória');
+      newErrors.categoryId = 'Categoria é obrigatória';
     }
-    
+
     if (!formData.date) {
-      newErrors.push('Data é obrigatória');
+      newErrors.date = 'Data é obrigatória';
     }
-    
+
     setErrors(newErrors);
-    return newErrors.length === 0;
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -132,7 +160,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
     try {
       const selectedCategory = categories.find(cat => cat.id === formData.categoryId);
       if (!selectedCategory) {
-        setErrors(['Categoria não encontrada']);
+        setErrors({ categoryId: 'Categoria não encontrada' });
         return;
       }
       
@@ -178,7 +206,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
       
     } catch (error) {
       console.error('Error creating transaction:', error);
-      setErrors(['Erro ao criar transação. Tente novamente.']);
+      setErrors({ submit: 'Erro ao criar transação. Tente novamente.' });
     } finally {
       setLoading(false);
     }
@@ -195,7 +223,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
       reference: '',
       notes: ''
     });
-    setErrors([]);
+    setErrors({});
     onClose();
   };
 
@@ -221,25 +249,9 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
           </div>
 
           {/* Error Messages */}
-          {errors.length > 0 && (
+          {errors.submit && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    Corrija os seguintes erros:
-                  </h3>
-                  <ul className="mt-2 text-sm text-red-700 list-disc list-inside">
-                    {errors.map((error, index) => (
-                      <li key={index}>{error}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+              <p className="text-sm text-red-700">{errors.submit}</p>
             </div>
           )}
 
@@ -300,7 +312,9 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
               <select
                 value={formData.categoryId}
                 onChange={(e) => handleInputChange('categoryId', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                className={`w-full px-3 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500 ${
+                  errors.categoryId ? 'border-red-500' : 'border-gray-300'
+                }`}
                 required
               >
                 <option value="">Selecione uma categoria</option>
@@ -310,6 +324,7 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
                   </option>
                 ))}
               </select>
+              {errors.categoryId && <p className="text-red-500 text-sm mt-1">{errors.categoryId}</p>}
             </div>
 
             {/* Amount and Date */}
@@ -324,10 +339,13 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
                   min="0.01"
                   value={formData.amount}
                   onChange={(e) => handleInputChange('amount', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500 ${
+                    errors.amount ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="0,00"
                   required
                 />
+                {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
               </div>
               
               <div>
@@ -338,9 +356,12 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
                   type="date"
                   value={formData.date}
                   onChange={(e) => handleInputChange('date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500 ${
+                    errors.date ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   required
                 />
+                {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
               </div>
             </div>
 
@@ -353,10 +374,13 @@ export const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
                 type="text"
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                className={`w-full px-3 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500 ${
+                  errors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="Descreva a transação..."
                 required
               />
+              {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
             </div>
 
             {/* Payment Method */}

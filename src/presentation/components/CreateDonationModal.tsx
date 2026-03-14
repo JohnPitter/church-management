@@ -47,7 +47,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
   
   const [categories, setCategories] = useState<FinancialCategory[]>([]);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const donationTypes = [
     { value: DonationType.TITHE, label: 'Dízimo', icon: '🙏', description: '10% da renda' },
@@ -92,34 +92,34 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Clear errors when user starts typing
-    if (errors.length > 0) {
-      setErrors([]);
+
+    // Clear field-specific error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
     }
   };
 
   const validateForm = (): boolean => {
-    const newErrors: string[] = [];
-    
-    if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      newErrors.push('Valor deve ser maior que zero');
-    }
-    
-    if (!formData.categoryId) {
-      newErrors.push('Categoria é obrigatória');
-    }
-    
-    if (!formData.date) {
-      newErrors.push('Data é obrigatória');
-    }
+    const newErrors: Record<string, string> = {};
 
     if (!formData.isAnonymous && !formData.memberName.trim()) {
-      newErrors.push('Nome do membro é obrigatório para doações não anônimas');
+      newErrors.memberName = 'Nome do membro é obrigatório para doações não anônimas';
     }
-    
+
+    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+      newErrors.amount = 'Valor deve ser maior que zero';
+    }
+
+    if (!formData.categoryId) {
+      newErrors.categoryId = 'Categoria é obrigatória';
+    }
+
+    if (!formData.date) {
+      newErrors.date = 'Data é obrigatória';
+    }
+
     setErrors(newErrors);
-    return newErrors.length === 0;
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -133,7 +133,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
     try {
       const selectedCategory = categories.find(cat => cat.id === formData.categoryId);
       if (!selectedCategory) {
-        setErrors(['Categoria não encontrada']);
+        setErrors({ submit: 'Categoria não encontrada' });
         return;
       }
       
@@ -180,7 +180,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
       
     } catch (error) {
       console.error('Error creating donation:', error);
-      setErrors(['Erro ao criar doação. Tente novamente.']);
+      setErrors({ submit: 'Erro ao criar doação. Tente novamente.' });
     } finally {
       setLoading(false);
     }
@@ -198,7 +198,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
       isAnonymous: false,
       notes: ''
     });
-    setErrors([]);
+    setErrors({});
     onClose();
   };
 
@@ -224,7 +224,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
           </div>
 
           {/* Error Messages */}
-          {errors.length > 0 && (
+          {errors.submit && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
               <div className="flex">
                 <div className="flex-shrink-0">
@@ -233,14 +233,9 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    Corrija os seguintes erros:
-                  </h3>
-                  <ul className="mt-2 text-sm text-red-700 list-disc list-inside">
-                    {errors.map((error, index) => (
-                      <li key={index}>{error}</li>
-                    ))}
-                  </ul>
+                  <p className="text-sm font-medium text-red-800">
+                    {errors.submit}
+                  </p>
                 </div>
               </div>
             </div>
@@ -302,10 +297,11 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
                     type="text"
                     value={formData.memberName}
                     onChange={(e) => handleInputChange('memberName', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    className={`w-full px-3 py-2 border ${errors.memberName ? 'border-red-500' : 'border-gray-300'} rounded-md focus:ring-indigo-500 focus:border-indigo-500`}
                     placeholder="Nome completo"
                     required={!formData.isAnonymous}
                   />
+                  {errors.memberName && <p className="text-red-500 text-sm mt-1">{errors.memberName}</p>}
                 </div>
                 
                 <div>
@@ -335,10 +331,11 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
                   min="0.01"
                   value={formData.amount}
                   onChange={(e) => handleInputChange('amount', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                  className={`w-full px-3 py-2 border ${errors.amount ? 'border-red-500' : 'border-gray-300'} rounded-md focus:ring-indigo-500 focus:border-indigo-500`}
                   placeholder="0,00"
                   required
                 />
+                {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
               </div>
               
               <div>
@@ -349,9 +346,10 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
                   type="date"
                   value={formData.date}
                   onChange={(e) => handleInputChange('date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                  className={`w-full px-3 py-2 border ${errors.date ? 'border-red-500' : 'border-gray-300'} rounded-md focus:ring-indigo-500 focus:border-indigo-500`}
                   required
                 />
+                {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
               </div>
             </div>
 
@@ -364,7 +362,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
                 <select
                   value={formData.categoryId}
                   onChange={(e) => handleInputChange('categoryId', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                  className={`w-full px-3 py-2 border ${errors.categoryId ? 'border-red-500' : 'border-gray-300'} rounded-md focus:ring-indigo-500 focus:border-indigo-500`}
                   required
                 >
                   <option value="">Selecione uma categoria</option>
@@ -374,6 +372,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
                     </option>
                   ))}
                 </select>
+                {errors.categoryId && <p className="text-red-500 text-sm mt-1">{errors.categoryId}</p>}
               </div>
 
               <div>

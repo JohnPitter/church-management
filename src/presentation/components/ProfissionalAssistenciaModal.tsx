@@ -365,6 +365,11 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
       newErrors['estado'] = 'Estado é obrigatório';
     }
 
+    // Working hours validation
+    if (horarios.length === 0) {
+      newErrors['horarios'] = 'É obrigatório definir pelo menos um dia de atendimento com horários';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -727,9 +732,9 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Horários de Atendimento
+                  Horários de Atendimento *
                 </label>
-                <div className="space-y-2 border border-gray-200 rounded-md p-3">
+                <div className={`space-y-2 border rounded-md p-3 ${errors.horarios ? 'border-red-500' : 'border-gray-200'}`}>
                   {diasSemana.map(dia => {
                     const horario = horarios.find(h => h.diaSemana === dia.value);
                     const ativo = !!horario;
@@ -772,6 +777,7 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
                     );
                   })}
                 </div>
+                {errors.horarios && <p className="text-red-500 text-sm mt-1">{errors.horarios}</p>}
               </div>
 
               <div className="md:col-span-2">
