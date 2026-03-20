@@ -175,11 +175,15 @@ export class FirebaseONGRepository {
     try {
       const docRef = doc(db, this.voluntariosCollection, id);
       
-      const updateData: any = {
-        ...updates,
-        updatedAt: Timestamp.now()
-      };
-      
+      // Filter out undefined values (Firestore rejects undefined)
+      const updateData: any = { updatedAt: Timestamp.now() };
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value !== undefined) {
+          updateData[key] = value;
+        }
+      });
+
+      // Convert Date objects to Firestore Timestamps
       if (updates.dataNascimento) {
         updateData.dataNascimento = Timestamp.fromDate(updates.dataNascimento);
       }
@@ -188,6 +192,8 @@ export class FirebaseONGRepository {
       }
       if (updates.dataFim) {
         updateData.dataFim = Timestamp.fromDate(updates.dataFim);
+      } else if ('dataFim' in updates) {
+        updateData.dataFim = null;
       }
       
       await updateDoc(docRef, updateData);
