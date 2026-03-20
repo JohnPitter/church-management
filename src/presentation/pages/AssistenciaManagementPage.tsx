@@ -1051,8 +1051,6 @@ const AssistenciaManagementPage: React.FC = () => {
         isOpen={isProfissionalModalOpen}
         onClose={() => setIsProfissionalModalOpen(false)}
         onSave={handleSaveProfissional}
-        onDelete={handleDeleteProfissional}
-        onInactivate={handleInactivateProfissional}
         profissional={selectedProfissional}
         mode={profissionalModalMode}
       />

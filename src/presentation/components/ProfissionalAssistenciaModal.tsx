@@ -9,15 +9,12 @@ import {
 } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { useAuth } from '../contexts/AuthContext';
-import { useConfirmDialog } from './ConfirmDialog';
 import { applyPhoneMask, applyCEPMask } from '../../utils/inputMasks';
 
 interface ProfissionalAssistenciaModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (profissional: ProfissionalAssistencia) => void;
-  onDelete?: (profissionalId: string) => void;
-  onInactivate?: (profissionalId: string, motivo?: string) => void;
   profissional?: ProfissionalAssistencia | null;
   mode: 'create' | 'edit' | 'view';
 }
@@ -47,13 +44,10 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
   isOpen,
   onClose,
   onSave,
-  onDelete,
-  onInactivate,
   profissional,
   mode
 }) => {
   const { currentUser } = useAuth();
-  const { confirm, prompt: promptDialog } = useConfirmDialog();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [localProfissional, setLocalProfissional] = useState<ProfissionalAssistencia | null>(profissional || null);
@@ -356,97 +350,6 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
       }
       
       toast.error(`Erro ao salvar profissional: ${errorMessage}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleInactivate = async () => {
-    if (!profissional || mode !== 'view') return;
-
-    const motivo = await promptDialog({
-      title: 'Inativação de Profissional',
-      message: `Você está prestes a INATIVAR o profissional "${profissional.nome}". Esta ação marca o profissional como inativo, mantém todos os dados e histórico, e pode ser revertida posteriormente.`,
-      inputLabel: 'Motivo da inativação (opcional)',
-      inputPlaceholder: 'Digite o motivo da inativação',
-      inputDefaultValue: 'Inativação manual',
-      variant: 'warning'
-    });
-
-    if (motivo === null) return; // User cancelled
-
-    setIsLoading(true);
-    try {
-      await profissionalService.inativarProfissional(profissional.id, motivo);
-
-      toast.success(`Profissional ${profissional.nome} foi inativado com sucesso!`);
-
-      if (onInactivate) {
-        onInactivate(profissional.id, motivo);
-      }
-    } catch (error: any) {
-      console.error('Error inactivating professional:', error);
-      toast.error(`Erro ao inativar profissional: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!profissional || mode !== 'view') return;
-
-    const confirmDelete = await confirm({
-      title: 'Exclusão Permanente',
-      message: `ATENÇÃO: Você está prestes a EXCLUIR PERMANENTEMENTE o profissional "${profissional.nome}". Esta ação remove TODOS os dados do profissional, NÃO PODE SER DESFEITA e será bloqueada se houver agendamentos no histórico. RECOMENDAÇÃO: Use "Inativar" em vez de excluir. Tem CERTEZA que deseja EXCLUIR PERMANENTEMENTE?`,
-      variant: 'danger'
-    });
-
-    if (!confirmDelete) return;
-
-    setIsLoading(true);
-    try {
-      // First attempt: normal deletion (respects appointment check)
-      await profissionalService.deleteProfissionalPermanente(profissional.id, false);
-
-      toast.success(`Profissional ${profissional.nome} foi excluído permanentemente!`);
-
-      if (onDelete) {
-        onDelete(profissional.id);
-      }
-
-      onClose();
-    } catch (error: any) {
-      console.error('Error deleting professional:', error);
-
-      // Check if error is about existing appointments
-      if (error.message && error.message.includes('agendamento')) {
-        const forceDelete = await confirm({
-          title: 'Profissional com Histórico',
-          message: `${error.message}\n\nOPÇÕES: Clique "Cancelar" e use "Inativar" (RECOMENDADO) ou clique "Confirmar" para FORÇAR EXCLUSÃO com agendamentos. FORÇAR EXCLUSÃO irá excluir o profissional E seus agendamentos, perder TODO o histórico permanentemente e NÃO PODE SER DESFEITO.`,
-          variant: 'danger'
-        });
-
-        if (forceDelete) {
-          try {
-            await profissionalService.deleteProfissionalPermanente(profissional.id, true);
-            toast.success(`Profissional ${profissional.nome} foi excluído permanentemente (com histórico)!`);
-
-            if (onDelete) {
-              onDelete(profissional.id);
-            }
-            onClose();
-          } catch (forceError: any) {
-            console.error('Error force deleting professional:', forceError);
-            toast.error(`Erro ao forçar exclusão: ${forceError.message}`);
-          }
-        }
-      } else {
-        let errorMessage = error.message || 'Erro desconhecido';
-        if (errorMessage.includes('permissions') || errorMessage.includes('permissão')) {
-          errorMessage = 'Erro de permissão. Verifique se você tem acesso para excluir profissionais.';
-        }
-        toast.error(`Erro ao excluir profissional: ${errorMessage}`);
-      }
     } finally {
       setIsLoading(false);
     }
@@ -843,29 +746,7 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
 
         {/* Footer */}
         <div className="flex justify-between items-center p-6 border-t border-gray-200">
-          {/* Action buttons - only show in view mode for existing professionals */}
-          <div className="flex space-x-3">
-            {mode === 'view' && profissional && onInactivate && (
-              <button
-                onClick={handleInactivate}
-                disabled={isLoading}
-                className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors disabled:opacity-50"
-              >
-                {isLoading ? '⏳ Inativando...' : '🔒 Inativar'}
-              </button>
-            )}
-            {mode === 'view' && profissional && onDelete && (
-              <button
-                onClick={handleDelete}
-                disabled={isLoading}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
-              >
-                {isLoading ? '⏳ Excluindo...' : '🗑️ Excluir Permanente'}
-              </button>
-            )}
-          </div>
-
-          {/* Right side buttons */}
+          <div></div>
           <div className="flex space-x-4">
             <button
               onClick={onClose}
