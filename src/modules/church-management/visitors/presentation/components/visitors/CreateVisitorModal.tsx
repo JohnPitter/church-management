@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { visitorService } from '@modules/church-management/visitors/application/services/VisitorService';
 import { todayLocalString } from '../../../../../../utils/dateUtils';
+import { applyPhoneMask } from '../../../../../../utils/inputMasks';
 import {
   VisitorStatus,
   FollowUpStatus
@@ -62,7 +63,7 @@ export const CreateVisitorModal: React.FC<CreateVisitorModalProps> = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
+
     if (name.startsWith('address.')) {
       const addressField = name.split('.')[1];
       setFormData(prev => ({
@@ -72,6 +73,8 @@ export const CreateVisitorModal: React.FC<CreateVisitorModalProps> = ({
           [addressField]: value
         }
       }));
+    } else if (name === 'phone') {
+      setFormData(prev => ({ ...prev, [name]: applyPhoneMask(value) }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -219,6 +222,7 @@ export const CreateVisitorModal: React.FC<CreateVisitorModalProps> = ({
                   value={formData.phone}
                   onChange={handleInputChange}
                   placeholder="(11) 99999-9999"
+                  maxLength={15}
                   className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${
                     errors.phone ? 'border-red-300' : ''
                   }`}

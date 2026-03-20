@@ -13,6 +13,7 @@ import {
 import { LeadershipService } from '@modules/content-management/leadership/application/services/LeadershipService';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
+import { applyPhoneMask } from '../../utils/inputMasks';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 
 interface LeaderModalProps {
@@ -194,7 +195,9 @@ const LeaderModal: React.FC<LeaderModalProps> = ({ isOpen, onClose, onSave, lead
               <input
                 type="tel"
                 value={formData.telefone}
-                onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, telefone: applyPhoneMask(e.target.value) })}
+                placeholder="(00) 00000-0000"
+                maxLength={15}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
               />
             </div>

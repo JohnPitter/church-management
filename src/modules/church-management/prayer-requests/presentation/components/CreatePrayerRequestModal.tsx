@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { CreatePrayerRequestData, PrayerRequestEntity } from '../../domain/entities/PrayerRequest';
 import { PrayerRequestService } from '@modules/church-management/prayer-requests/application/services/PrayerRequestService';
+import { applyPhoneMask } from '../../../../../utils/inputMasks';
 
 interface CreatePrayerRequestModalProps {
   isOpen: boolean;
@@ -55,6 +56,11 @@ export const CreatePrayerRequestModal: React.FC<CreatePrayerRequestModalProps> =
       setFormData(prev => ({
         ...prev,
         [name]: checked
+      }));
+    } else if (name === 'phone') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: applyPhoneMask(value)
       }));
     } else {
       setFormData(prev => ({
@@ -183,6 +189,7 @@ export const CreatePrayerRequestModal: React.FC<CreatePrayerRequestModalProps> =
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="(00) 00000-0000"
+                maxLength={15}
               />
             </div>
           )}

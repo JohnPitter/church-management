@@ -6,6 +6,7 @@ import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastr
 import { ONGInfo, ONGEntity } from '@modules/ong-management/settings/domain/entities/ONG';
 import toast from 'react-hot-toast';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import { applyPhoneMask, applyCEPMask } from '../../utils/inputMasks';
 
 const ONGSettingsPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -86,6 +87,13 @@ const ONGSettingsPage: React.FC = () => {
   };
 
   const handleInputChange = (field: string, value: any) => {
+    // Apply input masks for specific fields
+    if (field === 'contato.telefone' || field === 'contato.telefone2' || field === 'redesSociais.whatsapp') {
+      value = applyPhoneMask(value);
+    } else if (field === 'endereco.cep') {
+      value = applyCEPMask(value);
+    }
+
     if (field.includes('.')) {
       const [parent, child] = field.split('.');
       setFormData(prev => {
@@ -93,7 +101,7 @@ const ONGSettingsPage: React.FC = () => {
         const updatedParent = typeof parentValue === 'object' && parentValue !== null
           ? { ...parentValue, [child]: value }
           : { [child]: value };
-        
+
         return {
           ...prev,
           [parent]: updatedParent
@@ -471,7 +479,7 @@ const ONGSettingsPage: React.FC = () => {
                       value={formData.contato?.telefone || ''}
                       onChange={(e) => handleInputChange('contato.telefone', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                      placeholder="(11) 99999-9999"
+                      placeholder="(00) 00000-0000"
                       maxLength={15}
                     />
                   </div>
@@ -485,7 +493,7 @@ const ONGSettingsPage: React.FC = () => {
                       value={formData.contato?.telefone2 || ''}
                       onChange={(e) => handleInputChange('contato.telefone2', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                      placeholder="(11) 3333-3333"
+                      placeholder="(00) 00000-0000"
                       maxLength={15}
                     />
                   </div>
@@ -723,7 +731,7 @@ const ONGSettingsPage: React.FC = () => {
                       value={formData.redesSociais?.whatsapp || ''}
                       onChange={(e) => handleInputChange('redesSociais.whatsapp', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                      placeholder="(11) 99999-9999"
+                      placeholder="(00) 00000-0000"
                     />
                   </div>
                 </div>

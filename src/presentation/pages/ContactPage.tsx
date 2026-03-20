@@ -8,6 +8,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { useAuth } from '../contexts/AuthContext';
+import { applyPhoneMask } from '../../utils/inputMasks';
 
 interface ContactForm {
   name: string;
@@ -35,6 +36,9 @@ export const ContactPage: React.FC = () => {
   const [error, setError] = useState('');
 
   const handleChange = (field: keyof ContactForm, value: string) => {
+    if (field === 'phone') {
+      value = applyPhoneMask(value);
+    }
     setForm(prev => ({ ...prev, [field]: value }));
   };
 

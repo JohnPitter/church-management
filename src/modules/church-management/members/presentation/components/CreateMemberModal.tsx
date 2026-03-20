@@ -6,6 +6,7 @@ import { Member, MaritalStatus, MemberStatus, MemberType } from 'domain/entities
 import { useMemberService } from 'presentation/hooks/useMemberService';
 import { useAuth } from 'presentation/contexts/AuthContext';
 import { toLocalDateString } from '../../../../../utils/dateUtils';
+import { applyPhoneMask, applyCEPMask } from '../../../../../utils/inputMasks';
 
 interface CreateMemberModalProps {
   isOpen: boolean;
@@ -119,9 +120,15 @@ export const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+    let maskedValue = value;
+    if (name === 'phone') {
+      maskedValue = applyPhoneMask(value);
+    } else if (name === 'zipCode') {
+      maskedValue = applyCEPMask(value);
+    }
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: maskedValue
     }));
   };
 
@@ -448,6 +455,7 @@ export const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
                     value={formData.phone}
                     onChange={handleInputChange}
                     placeholder="(00) 00000-0000"
+                    maxLength={15}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                       fieldErrors.phone ? 'border-red-500' : 'border-gray-300'
                     }`}
@@ -531,6 +539,7 @@ export const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
                     value={formData.zipCode}
                     onChange={handleInputChange}
                     placeholder="00000-000"
+                    maxLength={9}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                       fieldErrors.zipCode ? 'border-red-500' : 'border-gray-300'
                     }`}

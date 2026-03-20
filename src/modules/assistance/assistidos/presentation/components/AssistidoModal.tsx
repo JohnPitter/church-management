@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
 import { useAuth } from 'presentation/contexts/AuthContext';
 import { toLocalDateString, parseLocalDate } from '../../../../../utils/dateUtils';
+import { applyPhoneMask, applyCPFMask, applyCEPMask } from '../../../../../utils/inputMasks';
 import { useSettings } from 'presentation/contexts/SettingsContext';
 import { useConfirmDialog } from 'presentation/components/ConfirmDialog';
 import { 
@@ -507,11 +508,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
               <input
                 type="text"
                 value={formData.cpf || ''}
-                onChange={(e) => {
-                  // Auto-format CPF as user types
-                  const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                  handleInputChange('cpf', formatted);
-                }}
+                onChange={(e) => handleInputChange('cpf', applyCPFMask(e.target.value))}
                 disabled={isReadOnly}
                 placeholder="000.000.000-00"
                 maxLength={14}
@@ -558,18 +555,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
               <input
                 type="tel"
                 value={formData.telefone}
-                onChange={(e) => {
-                  // Auto-format phone as user types
-                  const numbers = e.target.value.replace(/\D/g, '');
-                  let formatted = numbers;
-                  if (numbers.length >= 2) {
-                    formatted = `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-                  }
-                  if (numbers.length >= 7) {
-                    formatted = `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
-                  }
-                  handleInputChange('telefone', formatted);
-                }}
+                onChange={(e) => handleInputChange('telefone', applyPhoneMask(e.target.value))}
                 disabled={isReadOnly}
                 placeholder="(00) 00000-0000"
                 maxLength={15}
@@ -699,12 +685,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
               <input
                 type="text"
                 value={formData.endereco.cep}
-                onChange={(e) => {
-                  // Auto-format CEP as user types
-                  const numbers = e.target.value.replace(/\D/g, '');
-                  const formatted = numbers.replace(/(\d{5})(\d{3})/, '$1-$2');
-                  handleInputChange('endereco.cep', formatted);
-                }}
+                onChange={(e) => handleInputChange('endereco.cep', applyCEPMask(e.target.value))}
                 disabled={isReadOnly}
                 placeholder="00000-000"
                 maxLength={9}
