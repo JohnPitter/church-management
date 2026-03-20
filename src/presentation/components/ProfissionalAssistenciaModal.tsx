@@ -11,108 +11,12 @@ import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/
 import { useAuth } from '../contexts/AuthContext';
 import { useConfirmDialog } from './ConfirmDialog';
 
-// Component for managing user account
-interface UserAccountSectionProps {
-  professional: ProfissionalAssistencia;
-  onAccountCreated: (userId: string) => void;
-}
-
-const UserAccountSection: React.FC<UserAccountSectionProps> = ({ professional, onAccountCreated }) => {
-  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
-  const [localHasAccount, setLocalHasAccount] = useState(!!professional.userId);
-  const profissionalService = new ProfissionalAssistenciaService();
-
-  // Update local state when professional prop changes
-  useEffect(() => {
-    setLocalHasAccount(!!professional.userId);
-  }, [professional.userId]);
-
-  const handleCreateUserAccount = async () => {
-    setIsCreatingAccount(true);
-    try {
-      const result = await profissionalService.createUserAccountForProfessional(professional.id);
-      
-      if (result.success && result.temporaryPassword) {
-        toast.success(
-          `Conta de usuário criada com sucesso! Email: ${professional.email} | Senha temporária: ${result.temporaryPassword} | IMPORTANTE: Copie/anote esta senha temporária AGORA. Oriente o profissional a alterar a senha no primeiro acesso.`
-        );
-        
-        // Update local state to immediately show account was created
-        setLocalHasAccount(true);
-        
-        // Also update the professional's userId locally
-        professional.userId = result.userId || 'created';
-        
-        // Call parent callback with userId
-        onAccountCreated(result.userId || 'created');
-      } else {
-        toast.error(`Erro ao criar conta: ${result.error}`);
-        
-        // If requires reauth, redirect to login
-        if (result.requiresReauth) {
-          setTimeout(() => {
-            window.location.href = '/login';
-          }, 1000);
-        }
-      }
-    } catch (error: any) {
-      toast.error(`Erro ao criar conta de usuário: ${error.message}`);
-    } finally {
-      setIsCreatingAccount(false);
-    }
-  };
-
-  return (
-    <div className="bg-gray-50 p-4 rounded-lg">
-      {localHasAccount ? (
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-              <span className="font-medium text-green-700">Conta ativa</span>
-            </div>
-            <p className="text-sm text-gray-600">
-              ✅ O profissional possui conta de usuário no sistema
-            </p>
-            <p className="text-sm text-gray-500 mt-1">
-              📧 Email: {professional.email}
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
-              <span className="font-medium text-yellow-700">Sem conta</span>
-            </div>
-            <p className="text-sm text-gray-600">
-              ⚠️ O profissional ainda não possui conta de usuário
-            </p>
-            <p className="text-sm text-gray-500 mt-1">
-              Crie uma conta para que ele possa acessar o sistema
-            </p>
-          </div>
-          <button
-            onClick={handleCreateUserAccount}
-            disabled={isCreatingAccount}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isCreatingAccount ? '⏳ Criando...' : '🔐 Criar Conta'}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
 interface ProfissionalAssistenciaModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (profissional: ProfissionalAssistencia) => void;
   onDelete?: (profissionalId: string) => void;
   onInactivate?: (profissionalId: string, motivo?: string) => void;
-  onAccountCreated?: (profissionalId: string, userId: string) => void;
   profissional?: ProfissionalAssistencia | null;
   mode: 'create' | 'edit' | 'view';
 }
@@ -144,7 +48,6 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
   onSave,
   onDelete,
   onInactivate,
-  onAccountCreated,
   profissional,
   mode
 }) => {
@@ -947,29 +850,6 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
               </div>
             </div>
             
-            {/* User Account Section - Only show in view/edit mode */}
-            {(mode === 'view' || mode === 'edit') && localProfissional && (
-              <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  🔐 Conta de Usuário
-                </h3>
-                <UserAccountSection 
-                  professional={localProfissional} 
-                  onAccountCreated={(userId: string) => {
-                    // Update local professional with userId
-                    if (localProfissional) {
-                      const updatedProfissional = { ...localProfissional, userId };
-                      setLocalProfissional(updatedProfissional);
-                      
-                      // Also call parent callback if provided
-                      if (onAccountCreated) {
-                        onAccountCreated(localProfissional.id, userId);
-                      }
-                    }
-                  }} 
-                />
-              </div>
-            )}
           </div>
         </div>
 

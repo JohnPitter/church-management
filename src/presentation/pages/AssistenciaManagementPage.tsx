@@ -1053,19 +1053,6 @@ const AssistenciaManagementPage: React.FC = () => {
         onSave={handleSaveProfissional}
         onDelete={handleDeleteProfissional}
         onInactivate={handleInactivateProfissional}
-        onAccountCreated={(profissionalId: string, userId: string) => {
-          // Update the professional in the list with the new userId
-          setProfissionais(prev => prev.map(p =>
-            p.id === profissionalId
-              ? { ...p, userId }
-              : p
-          ));
-
-          // Update the selected professional as well
-          if (selectedProfissional && selectedProfissional.id === profissionalId) {
-            setSelectedProfissional({ ...selectedProfissional, userId });
-          }
-        }}
         profissional={selectedProfissional}
         mode={profissionalModalMode}
       />
