@@ -10,6 +10,7 @@ import {
 import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { useAuth } from '../contexts/AuthContext';
 import { useConfirmDialog } from './ConfirmDialog';
+import { applyPhoneMask, applyCEPMask } from '../../utils/inputMasks';
 
 interface ProfissionalAssistenciaModalProps {
   isOpen: boolean;
@@ -178,26 +179,13 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
     if (field === 'telefone') {
       processedValue = applyPhoneMask(value);
     } else if (field === 'cep') {
-      processedValue = applyCepMask(value);
+      processedValue = applyCEPMask(value);
     }
     
     setFormData(prev => ({ ...prev, [field]: processedValue }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
-  };
-
-  const applyPhoneMask = (value: string): string => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 10) {
-      return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-    }
-    return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-  };
-
-  const applyCepMask = (value: string): string => {
-    const numbers = value.replace(/\D/g, '');
-    return numbers.replace(/(\d{5})(\d{3})/, '$1-$2');
   };
 
   const validateForm = (): boolean => {

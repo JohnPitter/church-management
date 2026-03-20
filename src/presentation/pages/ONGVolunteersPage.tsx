@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
 import { toLocalDateString, todayLocalString, parseLocalDate } from '../../utils/dateUtils';
+import { applyPhoneMask, applyCPFMask, applyCEPMask } from '../../utils/inputMasks';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { 
   Voluntario, 
@@ -143,28 +144,6 @@ const ONGVolunteersPage: React.FC = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingVolunteer(null);
-  };
-
-  const applyPhoneMask = (value: string): string => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 2) return `(${numbers}`;
-    if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    if (numbers.length <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
-  };
-
-  const applyCPFMask = (value: string): string => {
-    const numbers = value.replace(/\D/g, '').slice(0, 11);
-    if (numbers.length <= 3) return numbers;
-    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
-    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
-    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9)}`;
-  };
-
-  const applyCEPMask = (value: string): string => {
-    const numbers = value.replace(/\D/g, '').slice(0, 8);
-    if (numbers.length <= 5) return numbers;
-    return `${numbers.slice(0, 5)}-${numbers.slice(5)}`;
   };
 
   const handleInputChange = (field: string, value: any) => {

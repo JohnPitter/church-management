@@ -14,6 +14,7 @@ import { ProfissionalAssistenciaService, AgendamentoAssistenciaService } from '@
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { toLocalDateString, todayLocalString } from '../../utils/dateUtils';
+import { applyPhoneMask, applyCPFMask } from '../../utils/inputMasks';
 
 interface AgendamentoAssistenciaModalProps {
   isOpen: boolean;
@@ -472,25 +473,6 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
   });
 
   const isReadOnly = mode === 'view';
-
-  // Utility functions
-  const applyPhoneMask = (value: string): string => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 2) {
-      return `(${numbers}`;
-    } else if (numbers.length <= 6) {
-      return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    } else if (numbers.length <= 10) {
-      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
-    } else {
-      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
-    }
-  };
-
-  const applyCPFMask = (value: string): string => {
-    const numbers = value.replace(/\D/g, '');
-    return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  };
 
   const _applyEmailValidation = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
