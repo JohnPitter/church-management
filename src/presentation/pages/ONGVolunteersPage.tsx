@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FirebaseONGRepository } from '@modules/ong-management/settings/infrastructure/repositories/FirebaseONGRepository';
-import { toLocalDateString, todayLocalString } from '../../utils/dateUtils';
+import { toLocalDateString, todayLocalString, parseLocalDate } from '../../utils/dateUtils';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { 
   Voluntario, 
@@ -222,41 +222,26 @@ const ONGVolunteersPage: React.FC = () => {
   };
 
   const validateForm = (): boolean => {
-    if (!formData.nome.trim()) {
-      toast.error('Nome é obrigatório');
-      return false;
-    }
-    
-    if (!formData.email.trim()) {
-      toast.error('Email é obrigatório');
-      return false;
-    }
-    
-    if (!formData.telefone.trim()) {
-      toast.error('Telefone é obrigatório');
-      return false;
-    }
-    
-    if (!formData.dataInicio.trim()) {
-      toast.error('Data de início é obrigatória');
-      return false;
-    }
-    
+    const newErrors: string[] = [];
+
+    if (!formData.nome.trim()) newErrors.push('Nome é obrigatório');
+    if (!formData.email.trim()) newErrors.push('Email é obrigatório');
+    if (!formData.telefone.trim()) newErrors.push('Telefone é obrigatório');
     if (!formData.cpf.trim()) {
-      toast.error('CPF é obrigatório');
+      newErrors.push('CPF é obrigatório');
+    } else if (!ONGEntity.validarCPF(formData.cpf)) {
+      newErrors.push('CPF inválido');
+    }
+    if (!formData.dataNascimento) newErrors.push('Data de nascimento é obrigatória');
+    if (!formData.dataInicio.trim()) newErrors.push('Data de início é obrigatória');
+    if (!formData.emergencia.nome.trim()) newErrors.push('Nome do contato de emergência é obrigatório');
+    if (!formData.emergencia.telefone.trim()) newErrors.push('Telefone do contato de emergência é obrigatório');
+
+    if (newErrors.length > 0) {
+      toast.error(newErrors[0]);
       return false;
     }
-    
-    if (!ONGEntity.validarCPF(formData.cpf)) {
-      toast.error('CPF inválido');
-      return false;
-    }
-    
-    if (!formData.emergencia.nome.trim()) {
-      toast.error('Contato de emergência é obrigatório');
-      return false;
-    }
-    
+
     return true;
   };
 
@@ -264,24 +249,10 @@ const ONGVolunteersPage: React.FC = () => {
     if (!validateForm()) return;
     
     try {
-      // Validate and convert dates
-      const dataNascimento = formData.dataNascimento ? new Date(formData.dataNascimento) : new Date();
-      const dataInicio = formData.dataInicio ? new Date(formData.dataInicio) : new Date();
-      const dataFim = formData.dataFim && formData.dataFim.trim() !== '' ? new Date(formData.dataFim) : undefined;
-
-      // Validate if dates are valid
-      if (formData.dataNascimento && isNaN(dataNascimento.getTime())) {
-        toast.error('Data de nascimento inválida');
-        return;
-      }
-      if (formData.dataInicio && isNaN(dataInicio.getTime())) {
-        toast.error('Data de início inválida');
-        return;
-      }
-      if (dataFim && isNaN(dataFim.getTime())) {
-        toast.error('Data de fim inválida');
-        return;
-      }
+      // Convert dates using local timezone
+      const dataNascimento = parseLocalDate(formData.dataNascimento);
+      const dataInicio = parseLocalDate(formData.dataInicio);
+      const dataFim = formData.dataFim && formData.dataFim.trim() !== '' ? parseLocalDate(formData.dataFim) : undefined;
 
       const volunteerData = {
         ...formData,
