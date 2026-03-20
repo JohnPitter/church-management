@@ -145,18 +145,48 @@ const ONGVolunteersPage: React.FC = () => {
     setEditingVolunteer(null);
   };
 
+  const applyPhoneMask = (value: string): string => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 2) return `(${numbers}`;
+    if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    if (numbers.length <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  const applyCPFMask = (value: string): string => {
+    const numbers = value.replace(/\D/g, '').slice(0, 11);
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
+    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9)}`;
+  };
+
+  const applyCEPMask = (value: string): string => {
+    const numbers = value.replace(/\D/g, '').slice(0, 8);
+    if (numbers.length <= 5) return numbers;
+    return `${numbers.slice(0, 5)}-${numbers.slice(5)}`;
+  };
+
   const handleInputChange = (field: string, value: any) => {
+    let processedValue = value;
+
+    // Apply masks based on field
+    if (field === 'cpf') processedValue = applyCPFMask(value);
+    else if (field === 'telefone') processedValue = applyPhoneMask(value);
+    else if (field === 'endereco.cep') processedValue = applyCEPMask(value);
+    else if (field === 'emergencia.telefone' || field === 'emergencia.telefone2') processedValue = applyPhoneMask(value);
+
     if (field.includes('.')) {
       const [parent, child] = field.split('.');
       setFormData(prev => ({
         ...prev,
         [parent]: {
           ...(prev as any)[parent],
-          [child]: value
+          [child]: processedValue
         }
       }));
     } else {
-      setFormData(prev => ({ ...prev, [field]: value }));
+      setFormData(prev => ({ ...prev, [field]: processedValue }));
     }
   };
 
@@ -510,6 +540,7 @@ const ONGVolunteersPage: React.FC = () => {
                         value={formData.cpf}
                         onChange={(e) => handleInputChange('cpf', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        placeholder="000.000.000-00"
                         maxLength={14}
                       />
                     </div>
@@ -535,6 +566,7 @@ const ONGVolunteersPage: React.FC = () => {
                         value={formData.telefone}
                         onChange={(e) => handleInputChange('telefone', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        placeholder="(00) 00000-0000"
                       />
                     </div>
                     
@@ -583,6 +615,8 @@ const ONGVolunteersPage: React.FC = () => {
                         value={formData.endereco.cep}
                         onChange={(e) => handleInputChange('endereco.cep', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        placeholder="00000-000"
+                        maxLength={9}
                       />
                     </div>
                     
@@ -662,7 +696,7 @@ const ONGVolunteersPage: React.FC = () => {
                         type="text"
                         value={newHabilidade}
                         onChange={(e) => setNewHabilidade(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleAddHabilidade()}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddHabilidade()}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
                         placeholder="Digite uma habilidade"
                       />
@@ -698,7 +732,7 @@ const ONGVolunteersPage: React.FC = () => {
                         type="text"
                         value={newArea}
                         onChange={(e) => setNewArea(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleAddArea()}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddArea()}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
                         placeholder="Digite uma área"
                       />
@@ -827,10 +861,11 @@ const ONGVolunteersPage: React.FC = () => {
                         value={formData.emergencia.telefone}
                         onChange={(e) => handleInputChange('emergencia.telefone', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        placeholder="(00) 00000-0000"
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Telefone Secundário
@@ -840,6 +875,7 @@ const ONGVolunteersPage: React.FC = () => {
                         value={formData.emergencia.telefone2 || ''}
                         onChange={(e) => handleInputChange('emergencia.telefone2', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        placeholder="(00) 00000-0000"
                       />
                     </div>
                   </div>
