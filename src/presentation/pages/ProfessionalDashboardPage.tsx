@@ -122,6 +122,13 @@ export const ProfessionalDashboardPage: React.FC = () => {
       icon: '📋'
     },
     {
+      title: 'Minhas Sessoes',
+      description: 'Historico de sessoes realizadas',
+      href: '/professional/sessoes',
+      color: 'bg-teal-500 hover:bg-teal-600',
+      icon: '📊'
+    },
+    {
       title: 'Fichas de Acompanhamento',
       description: 'Gerenciar fichas dos pacientes',
       href: '/professional/fichas',

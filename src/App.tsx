@@ -57,6 +57,7 @@ import AssistenciaManagementPage from './presentation/pages/AssistenciaManagemen
 import { ProfessionalDashboardPage } from './presentation/pages/ProfessionalDashboardPage';
 import ProfessionalAssistenciaPage from './presentation/pages/ProfessionalAssistenciaPage';
 import ProfessionalFichasPage from './presentation/pages/ProfessionalFichasPage';
+import ProfessionalSessoesPage from './presentation/pages/ProfessionalSessoesPage';
 import FichasManagementPage from './presentation/pages/FichasManagementPage';
 import { ProfessionalHelpRequestsPage } from './presentation/pages/ProfessionalHelpRequestsPage';
 import SetupPage from './presentation/pages/SetupPage';
@@ -737,6 +738,19 @@ const router = createBrowserRouter([
           >
             <Layout>
               <ProfessionalFichasPage />
+            </Layout>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'professional/sessoes',
+        element: (
+          <ProtectedRoute
+            requireModule={SystemModule.Assistance}
+            requireAction={PermissionAction.View}
+          >
+            <Layout>
+              <ProfessionalSessoesPage />
             </Layout>
           </ProtectedRoute>
         )
