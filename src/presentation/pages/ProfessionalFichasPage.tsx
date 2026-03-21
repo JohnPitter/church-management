@@ -29,6 +29,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
     evolucao: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [editingSessao, setEditingSessao] = useState<SessaoAcompanhamento | null>(null);
   const [editandoDadosEspecializados, setEditandoDadosEspecializados] = useState(false);
   const [dadosEspecializadosForm, setDadosEspecializadosForm] = useState<any>({});
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -131,6 +132,60 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
       } else {
         toast.error('Erro ao adicionar sessão: ' + errorMessage);
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEditSessao = (sessao: SessaoAcompanhamento) => {
+    setEditingSessao(sessao);
+    setNovaSessao({
+      tipoSessao: sessao.tipoSessao as any,
+      duracao: sessao.duracao,
+      resumo: sessao.resumo,
+      observacoes: sessao.observacoes || '',
+      evolucao: sessao.evolucao || ''
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingSessao(null);
+    setNovaSessao({
+      tipoSessao: 'individual',
+      duracao: 50,
+      resumo: '',
+      observacoes: '',
+      evolucao: ''
+    });
+  };
+
+  const handleUpdateSessao = async () => {
+    if (!ficha || !editingSessao || !novaSessao.resumo.trim()) return;
+
+    setIsLoading(true);
+    try {
+      await fichaRepository.updateSessao(ficha.id, editingSessao.id, {
+        tipoSessao: novaSessao.tipoSessao,
+        duracao: novaSessao.duracao,
+        resumo: novaSessao.resumo,
+        observacoes: novaSessao.observacoes,
+        evolucao: novaSessao.evolucao,
+        updatedAt: new Date()
+      });
+
+      setEditingSessao(null);
+      setNovaSessao({
+        tipoSessao: 'individual',
+        duracao: 50,
+        resumo: '',
+        observacoes: '',
+        evolucao: ''
+      });
+      await loadSessoes();
+      toast.success('Sessao atualizada com sucesso!');
+    } catch (error: any) {
+      console.error('Error updating sessao:', error);
+      toast.error('Erro ao atualizar sessao');
     } finally {
       setIsLoading(false);
     }
@@ -2482,19 +2537,33 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
                 ) : (
                   <div className="space-y-4 max-h-60 overflow-y-auto">
                     {sessoes.map((sessao) => (
-                      <div key={sessao.id} className="border border-gray-200 rounded-lg p-4">
+                      <div key={sessao.id} className={`border rounded-lg p-4 ${editingSessao?.id === sessao.id ? 'border-blue-400 bg-blue-50' : 'border-gray-200'}`}>
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="font-medium text-gray-900">
-                            Sessão #{sessao.numeroSessao} - {sessao.tipoSessao}
+                            Sessao #{sessao.numeroSessao} - {sessao.tipoSessao}
                           </h4>
-                          <span className="text-sm text-gray-500">
-                            {new Date(sessao.data).toLocaleDateString('pt-BR')} ({sessao.duracao}min)
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500">
+                              {new Date(sessao.data).toLocaleDateString('pt-BR')} ({sessao.duracao}min)
+                            </span>
+                            <button
+                              onClick={() => handleEditSessao(sessao)}
+                              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                              title="Editar sessao"
+                            >
+                              Editar
+                            </button>
+                          </div>
                         </div>
                         <p className="text-gray-700 mb-2">{sessao.resumo}</p>
                         {sessao.observacoes && (
                           <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                            <span className="font-medium">Observações:</span> {sessao.observacoes}
+                            <span className="font-medium">Observacoes:</span> {sessao.observacoes}
+                          </p>
+                        )}
+                        {sessao.evolucao && (
+                          <p className="text-sm text-gray-600 bg-green-50 p-2 rounded mt-1">
+                            <span className="font-medium">Evolucao:</span> {sessao.evolucao}
                           </p>
                         )}
                       </div>
@@ -2503,9 +2572,21 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
                 )}
               </div>
 
-              {/* Nova Sessão */}
+              {/* Nova Sessão / Editar Sessão */}
               <div className="border-t pt-6">
-                <h4 className="text-md font-semibold text-gray-900 mb-4">Registrar Nova Sessão</h4>
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-md font-semibold text-gray-900">
+                    {editingSessao ? `Editando Sessao #${editingSessao.numeroSessao}` : 'Registrar Nova Sessao'}
+                  </h4>
+                  {editingSessao && (
+                    <button
+                      onClick={handleCancelEdit}
+                      className="text-sm text-gray-600 hover:text-gray-800"
+                    >
+                      Cancelar edicao
+                    </button>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
@@ -2556,13 +2637,27 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
                   />
                   <p className="text-xs text-gray-500 mt-1">{novaSessao.observacoes.length}/500 caracteres</p>
                 </div>
-                <button
-                  onClick={handleAddSessao}
-                  disabled={isLoading || !novaSessao.resumo.trim()}
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {isLoading ? 'Salvando...' : '📝 Registrar Sessão'}
-                </button>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={editingSessao ? handleUpdateSessao : handleAddSessao}
+                    disabled={isLoading || !novaSessao.resumo.trim()}
+                    className={`px-4 py-2 text-white rounded-md disabled:opacity-50 ${
+                      editingSessao
+                        ? 'bg-green-600 hover:bg-green-700'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    {isLoading ? 'Salvando...' : editingSessao ? 'Salvar Alteracoes' : 'Registrar Sessao'}
+                  </button>
+                  {editingSessao && (
+                    <button
+                      onClick={handleCancelEdit}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           )}
