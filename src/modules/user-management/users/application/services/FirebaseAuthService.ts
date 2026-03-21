@@ -87,9 +87,6 @@ export class FirebaseAuthService implements IAuthService {
 
       return user;
     } catch (error: any) {
-      console.error('Google sign in error:', error);
-      console.error('Error code:', error.code);
-      console.error('Error message:', error.message);
       throw new Error(this.getErrorMessage(error.code || 'unknown'));
     }
   }
@@ -271,34 +268,33 @@ export class FirebaseAuthService implements IAuthService {
   private getErrorMessage(errorCode: string): string {
     switch (errorCode) {
       case 'auth/user-not-found':
-        return 'Usuário não encontrado';
       case 'auth/wrong-password':
-        return 'Senha incorreta';
+      case 'auth/invalid-credential':
+        return 'Email ou senha incorretos';
       case 'auth/email-already-in-use':
-        return 'Este email já está em uso';
+        return 'Este email ja esta em uso';
       case 'auth/weak-password':
         return 'A senha deve ter pelo menos 6 caracteres';
       case 'auth/invalid-email':
-        return 'Email inválido';
+        return 'Email invalido';
       case 'auth/user-disabled':
-        return 'Conta desabilitada';
+        return 'Esta conta foi desativada. Entre em contato com o administrador';
       case 'auth/too-many-requests':
         return 'Muitas tentativas. Tente novamente mais tarde';
       case 'auth/popup-closed-by-user':
-        return 'Login cancelado pelo usuário';
+      case 'auth/cancelled-popup-request':
+        return 'Login cancelado';
       case 'auth/popup-blocked':
         return 'Popup bloqueado pelo navegador. Permita popups para este site';
-      case 'auth/cancelled-popup-request':
-        return 'Solicitação de popup foi cancelada';
       case 'auth/network-request-failed':
-        return 'Erro de conexão. Verifique sua internet';
+        return 'Erro de conexao. Verifique sua internet';
       case 'auth/unauthorized-domain':
-        return 'Domínio não autorizado para login com Google';
+        return 'Este dominio nao esta autorizado para login';
       case 'auth/operation-not-allowed':
-        return 'Login com Google não está habilitado. Configure no Firebase Console: Authentication → Sign-in providers → Google';
+        return 'Este metodo de login nao esta habilitado. Entre em contato com o administrador';
       default:
-        console.error('Firebase Auth Error Code:', errorCode);
-        return `Erro de autenticação: ${errorCode}`;
+        console.error('Auth error:', errorCode);
+        return 'Ocorreu um erro ao autenticar. Tente novamente';
     }
   }
 }
