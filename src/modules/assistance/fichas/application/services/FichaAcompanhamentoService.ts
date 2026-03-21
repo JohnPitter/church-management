@@ -34,7 +34,7 @@ export class FichaAcompanhamentoService {
     try {
       const ficha = FichaAcompanhamentoEntity.create({
         ...fichaData,
-        status: 'ativo'
+        status: 'em_tratamento'
       });
 
       return await this.repository.createFicha(ficha);
@@ -101,7 +101,7 @@ export class FichaAcompanhamentoService {
   async finalizarFicha(id: string, observacoesFinal?: string): Promise<FichaAcompanhamento> {
     try {
       const updates: Partial<FichaAcompanhamento> = {
-        status: 'concluido'
+        status: 'alta'
       };
 
       if (observacoesFinal) {
@@ -131,6 +131,7 @@ export class FichaAcompanhamentoService {
       const sessao = FichaAcompanhamentoEntity.createSessao({
         ...sessaoData,
         fichaId,
+        status: 'concluida',
         anexos: []
       });
 
@@ -202,8 +203,8 @@ export class FichaAcompanhamentoService {
   }> {
     try {
       const fichas = await this.repository.getFichasByProfissional(profissionalId);
-      const fichasAtivas = fichas.filter(f => f.status === 'ativo');
-      const fichasConcluidas = fichas.filter(f => f.status === 'concluido');
+      const fichasAtivas = fichas.filter(f => f.status === 'em_tratamento' || (f.status as string) === 'ativo');
+      const fichasConcluidas = fichas.filter(f => f.status === 'alta' || (f.status as string) === 'concluido');
 
       let totalSessoes = 0;
       for (const ficha of fichas) {

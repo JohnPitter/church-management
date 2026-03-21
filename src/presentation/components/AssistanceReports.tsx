@@ -117,8 +117,8 @@ const AssistanceReports: React.FC<AssistanceReportsProps> = () => {
         return dataAgendamento >= inicioMes && dataAgendamento <= fimMes;
       }).length;
 
-      const fichasAtivas = fichas.filter(f => f.status === 'ativo').length;
-      const fichasConcluidas = fichas.filter(f => f.status === 'concluido').length;
+      const fichasAtivas = fichas.filter(f => f.status === 'em_tratamento' || (f.status as string) === 'ativo').length;
+      const fichasConcluidas = fichas.filter(f => f.status === 'alta' || (f.status as string) === 'concluido').length;
 
       // Agrupar por tipo
       const atendimentosPorTipo = agendamentosData.reduce((acc, a) => {

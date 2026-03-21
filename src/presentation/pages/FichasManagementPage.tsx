@@ -86,6 +86,7 @@ const FichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, ficha, onSave,
         numeroSessao: proximoNumero,
         data: now,
         ...novaSessao,
+        status: 'concluida' as const,
         anexos: [],
         createdAt: now,
         updatedAt: now,
@@ -1054,8 +1055,8 @@ const FichasManagementPage: React.FC = () => {
 
   const counts = {
     todas: fichas.length,
-    ativo: fichas.filter(f => f.status === 'ativo').length,
-    concluido: fichas.filter(f => f.status === 'concluido').length,
+    ativo: fichas.filter(f => f.status === 'em_tratamento' || (f.status as string) === 'ativo').length,
+    concluido: fichas.filter(f => f.status === 'alta' || (f.status as string) === 'concluido').length,
     pausado: fichas.filter(f => f.status === 'pausado').length,
     cancelado: fichas.filter(f => f.status === 'cancelado').length
   };

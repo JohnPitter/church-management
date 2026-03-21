@@ -9,7 +9,7 @@ export interface FichaAcompanhamento {
   profissionalNome: string;
   tipoAssistencia: 'psicologica' | 'social' | 'juridica' | 'medica' | 'fisioterapia' | 'nutricao';
   dataInicio: Date;
-  status: 'ativo' | 'concluido' | 'pausado' | 'cancelado';
+  status: 'em_tratamento' | 'alta' | 'pausado' | 'cancelado';
   objetivo: string;
   diagnosticoInicial?: string;
   observacoes?: string;
@@ -223,6 +223,7 @@ export interface SessaoAcompanhamento {
   data: Date;
   duracao: number; // em minutos
   tipoSessao: 'individual' | 'grupo' | 'familiar' | 'avaliacao';
+  status: 'concluida' | 'nao_realizada';
   resumo: string;
   observacoes?: string;
   evolucao?: string;

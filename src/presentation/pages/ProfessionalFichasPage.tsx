@@ -23,6 +23,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
   const [sessoes, setSessoes] = useState<SessaoAcompanhamento[]>([]);
   const [novaSessao, setNovaSessao] = useState({
     tipoSessao: 'individual' as const,
+    status: 'concluida' as 'concluida' | 'nao_realizada',
     duracao: 50,
     resumo: '',
     observacoes: '',
@@ -115,6 +116,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
       await fichaRepository.createSessao(ficha.id, sessaoData);
       setNovaSessao({
         tipoSessao: 'individual',
+        status: 'concluida',
         duracao: 50,
         resumo: '',
         observacoes: '',
@@ -141,6 +143,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
     setEditingSessao(sessao);
     setNovaSessao({
       tipoSessao: sessao.tipoSessao as any,
+      status: (sessao.status as any) || 'concluida',
       duracao: sessao.duracao,
       resumo: sessao.resumo,
       observacoes: sessao.observacoes || '',
@@ -152,6 +155,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
     setEditingSessao(null);
     setNovaSessao({
       tipoSessao: 'individual',
+      status: 'concluida',
       duracao: 50,
       resumo: '',
       observacoes: '',
@@ -166,6 +170,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
     try {
       await fichaRepository.updateSessao(ficha.id, editingSessao.id, {
         tipoSessao: novaSessao.tipoSessao,
+        status: novaSessao.status,
         duracao: novaSessao.duracao,
         resumo: novaSessao.resumo,
         observacoes: novaSessao.observacoes,
@@ -176,6 +181,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
       setEditingSessao(null);
       setNovaSessao({
         tipoSessao: 'individual',
+        status: 'concluida',
         duracao: 50,
         resumo: '',
         observacoes: '',
@@ -381,14 +387,13 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
                     <div>
                       <span className="font-medium text-gray-700">Status:</span>
                       <span className={`ml-2 px-2 py-1 rounded text-sm ${
-                        ficha.status === 'ativo' ? 'bg-green-100 text-green-800' :
-                        ficha.status === 'concluido' ? 'bg-blue-100 text-blue-800' :
-                        ficha.status === 'pausado' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
+                        (ficha.status === 'em_tratamento' || (ficha.status as string) === 'ativo') ? 'bg-green-100 text-green-800' :
+                        (ficha.status === 'alta' || (ficha.status as string) === 'concluido') ? 'bg-blue-100 text-blue-800' :
+                        ficha.status === 'pausado' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {ficha.status === 'ativo' ? 'Ativa' :
-                         ficha.status === 'concluido' ? 'Concluída' :
-                         ficha.status === 'pausado' ? 'Pausada' : 'Cancelada'}
+                        {(ficha.status === 'em_tratamento' || (ficha.status as string) === 'ativo') ? 'Em Tratamento' :
+                         (ficha.status === 'alta' || (ficha.status as string) === 'concluido') ? 'Alta' :
+                         ficha.status === 'pausado' ? 'Pausado' : 'Cancelado'}
                       </span>
                     </div>
                   </div>
@@ -2539,9 +2544,16 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
                     {sessoes.map((sessao) => (
                       <div key={sessao.id} className={`border rounded-lg p-4 ${editingSessao?.id === sessao.id ? 'border-blue-400 bg-blue-50' : 'border-gray-200'}`}>
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-medium text-gray-900">
-                            Sessao #{sessao.numeroSessao} - {sessao.tipoSessao}
-                          </h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium text-gray-900">
+                              Sessao #{sessao.numeroSessao} - {sessao.tipoSessao}
+                            </h4>
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                              (sessao.status === 'concluida' || !sessao.status) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {sessao.status === 'nao_realizada' ? 'Nao Realizada' : 'Concluida'}
+                            </span>
+                          </div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-gray-500">
                               {new Date(sessao.data).toLocaleDateString('pt-BR')} ({sessao.duracao}min)
@@ -2587,7 +2599,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
                     </button>
                   )}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
                     <select
@@ -2598,11 +2610,22 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
                       <option value="individual">Individual</option>
                       <option value="grupo">Grupo</option>
                       <option value="familiar">Familiar</option>
-                      <option value="avaliacao">Avaliação</option>
+                      <option value="avaliacao">Avaliacao</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Duração (min)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select
+                      value={novaSessao.status}
+                      onChange={(e) => setNovaSessao(prev => ({ ...prev, status: e.target.value as any }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="concluida">Concluida</option>
+                      <option value="nao_realizada">Nao Realizada</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Duracao (min)</label>
                     <input
                       type="number"
                       value={novaSessao.duracao}
@@ -2727,7 +2750,7 @@ const ProfessionalFichasPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [fichas, setFichas] = useState<FichaAcompanhamento[]>([]);
   const [fichasFiltradas, setFichasFiltradas] = useState<FichaAcompanhamento[]>([]);
-  const [filter, setFilter] = useState<'todas' | 'ativo' | 'concluido' | 'pausado'>('todas');
+  const [filter, setFilter] = useState<'todas' | 'em_tratamento' | 'alta' | 'pausado' | 'cancelado'>('todas');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFicha, setSelectedFicha] = useState<FichaAcompanhamento | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -2782,7 +2805,12 @@ const ProfessionalFichasPage: React.FC = () => {
     }
 
     if (filter !== 'todas') {
-      filtered = filtered.filter(ficha => ficha.status === filter);
+      filtered = filtered.filter(ficha => {
+        const status = ficha.status as string;
+        if (filter === 'em_tratamento') return status === 'em_tratamento' || status === 'ativo';
+        if (filter === 'alta') return status === 'alta' || status === 'concluido';
+        return status === filter;
+      });
     }
 
     setFichasFiltradas(filtered);
@@ -2798,22 +2826,20 @@ const ProfessionalFichasPage: React.FC = () => {
     setSelectedFicha(fichaAtualizada);
   };
 
-  const handleChangeStatus = async (ficha: FichaAcompanhamento) => {
-    const statusOptions = [
-      { value: 'ativo', label: 'Ativo' },
-      { value: 'pausado', label: 'Pausado' },
-      { value: 'concluido', label: 'Concluído' },
-      { value: 'cancelado', label: 'Cancelado' }
-    ];
+  const handleChangeStatus = async (ficha: FichaAcompanhamento, newStatus: string) => {
+    if (newStatus === ficha.status) return;
 
-    const currentIndex = statusOptions.findIndex(option => option.value === ficha.status);
-    const nextIndex = (currentIndex + 1) % statusOptions.length;
-    const newStatus = statusOptions[nextIndex].value;
+    const statusLabels: Record<string, string> = {
+      em_tratamento: 'Em Tratamento',
+      alta: 'Alta',
+      pausado: 'Pausado',
+      cancelado: 'Cancelado'
+    };
 
     const confirmed = await confirm({
-      title: 'Confirmação',
-      message: `Alterar status da ficha de ${ficha.pacienteNome} de "${statusOptions[currentIndex]?.label}" para "${statusOptions[nextIndex].label}"?`,
-      variant: 'warning'
+      title: 'Alterar Status',
+      message: `Alterar status da ficha de ${ficha.pacienteNome} para "${statusLabels[newStatus]}"?`,
+      variant: newStatus === 'cancelado' ? 'danger' : 'warning'
     });
 
     if (confirmed) {
@@ -2823,18 +2849,21 @@ const ProfessionalFichasPage: React.FC = () => {
           updatedAt: new Date()
         });
         setFichas(prev => prev.map(f => f.id === ficha.id ? updatedFicha : f));
+        toast.success(`Status alterado para "${statusLabels[newStatus]}"`);
       } catch (error) {
         console.error('Erro ao alterar status da ficha:', error);
-        toast.error('Erro ao alterar status da ficha. Por favor, tente novamente.');
+        toast.error('Erro ao alterar status da ficha.');
       }
     }
   };
 
   const getStatusColor = (status: string): string => {
     switch (status) {
-      case 'ativo':
+      case 'em_tratamento':
+      case 'ativo': // backwards compatibility
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'concluido':
+      case 'alta':
+      case 'concluido': // backwards compatibility
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'pausado':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
@@ -2842,6 +2871,18 @@ const ProfessionalFichasPage: React.FC = () => {
         return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case 'em_tratamento': return 'Em Tratamento';
+      case 'ativo': return 'Em Tratamento'; // backwards compatibility
+      case 'alta': return 'Alta';
+      case 'concluido': return 'Alta'; // backwards compatibility
+      case 'pausado': return 'Pausado';
+      case 'cancelado': return 'Cancelado';
+      default: return status;
     }
   };
 
@@ -2854,9 +2895,10 @@ const ProfessionalFichasPage: React.FC = () => {
   
   const counts = {
     todas: fichas.length,
-    ativo: fichas.filter(f => f.status === 'ativo').length,
-    concluido: fichas.filter(f => f.status === 'concluido').length,
-    pausado: fichas.filter(f => f.status === 'pausado').length
+    em_tratamento: fichas.filter(f => f.status === 'em_tratamento' || f.status === ('ativo' as any)).length,
+    alta: fichas.filter(f => f.status === 'alta' || f.status === ('concluido' as any)).length,
+    pausado: fichas.filter(f => f.status === 'pausado').length,
+    cancelado: fichas.filter(f => f.status === 'cancelado').length
   };
 
   if (loading) {
@@ -2900,9 +2942,10 @@ const ProfessionalFichasPage: React.FC = () => {
           <div className="flex flex-wrap gap-2">
             {[
               { key: 'todas', label: 'Todas', count: counts.todas },
-              { key: 'ativo', label: 'Ativas', count: counts.ativo },
-              { key: 'concluido', label: 'Concluídas', count: counts.concluido },
-              { key: 'pausado', label: 'Pausadas', count: counts.pausado }
+              { key: 'em_tratamento', label: 'Em Tratamento', count: counts.em_tratamento },
+              { key: 'alta', label: 'Alta', count: counts.alta },
+              { key: 'pausado', label: 'Pausadas', count: counts.pausado },
+              { key: 'cancelado', label: 'Canceladas', count: counts.cancelado }
             ].map((filterOption) => (
               <button
                 key={filterOption.key}
@@ -2938,10 +2981,11 @@ const ProfessionalFichasPage: React.FC = () => {
             {fichasFiltradas.length === 0 ? (
               <div className="p-6 text-center">
                 <p className="text-gray-500">
-                  {filter === 'todas' ? 'Nenhuma ficha encontrada.' : 
-                   filter === 'ativo' ? 'Nenhuma ficha ativa.' :
-                   filter === 'concluido' ? 'Nenhuma ficha concluída.' :
-                   'Nenhuma ficha pausada.'}
+                  {filter === 'todas' ? 'Nenhuma ficha encontrada.' :
+                   filter === 'em_tratamento' ? 'Nenhuma ficha em tratamento.' :
+                   filter === 'alta' ? 'Nenhuma ficha com alta.' :
+                   filter === 'pausado' ? 'Nenhuma ficha pausada.' :
+                   'Nenhuma ficha cancelada.'}
                 </p>
               </div>
             ) : (
@@ -2955,10 +2999,7 @@ const ProfessionalFichasPage: React.FC = () => {
                             {ficha.pacienteNome}
                           </h4>
                           <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(ficha.status)}`}>
-                            {ficha.status === 'ativo' ? 'Ativa' :
-                             ficha.status === 'concluido' ? 'Concluída' :
-                             ficha.status === 'pausado' ? 'Pausada' :
-                             'Cancelada'}
+                            {getStatusLabel(ficha.status)}
                           </span>
                         </div>
                         
@@ -3021,15 +3062,16 @@ const ProfessionalFichasPage: React.FC = () => {
                             </svg>
                             Ver Detalhes
                           </button>
-                          <button
-                            onClick={() => handleChangeStatus(ficha)}
-                            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors text-sm flex items-center gap-2"
+                          <select
+                            value={ficha.status}
+                            onChange={(e) => handleChangeStatus(ficha, e.target.value)}
+                            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
                           >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Alterar Status
-                          </button>
+                            <option value="em_tratamento">Em Tratamento</option>
+                            <option value="alta">Alta</option>
+                            <option value="pausado">Pausado</option>
+                            <option value="cancelado">Cancelado</option>
+                          </select>
                         </div>
                       </div>
                     </div>

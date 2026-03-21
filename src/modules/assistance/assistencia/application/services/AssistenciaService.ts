@@ -1136,7 +1136,7 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
         profissionalNome: agendamento.profissionalNome,
         tipoAssistencia: agendamento.tipoAssistencia,
         dataInicio: new Date(),
-        status: 'ativo',
+        status: 'em_tratamento',
         objetivo: `Acompanhamento iniciado automaticamente a partir do agendamento confirmado em ${new Date(agendamento.dataHoraAgendamento).toLocaleDateString('pt-BR')}`,
         diagnosticoInicial: agendamento.motivo || 'Não informado',
         observacoes: agendamento.observacoesPaciente || '',
