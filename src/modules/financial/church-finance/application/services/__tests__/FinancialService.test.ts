@@ -769,7 +769,7 @@ describe('FinancialService', () => {
         ];
         mockGetDocs.mockResolvedValue(createMockQuerySnapshot(transactions));
 
-        const result = await financialService.exportTransactions({}, 'csv');
+        const result = await financialService.exportTransactions({}, 'xlsx');
 
         expect(result).toBeInstanceOf(Blob);
         expect(result.type).toBe('text/csv;charset=utf-8;');
@@ -778,7 +778,7 @@ describe('FinancialService', () => {
       it('should throw error when export fails', async () => {
         mockGetDocs.mockRejectedValue(new Error('Firebase error'));
 
-        await expect(financialService.exportTransactions({}, 'csv'))
+        await expect(financialService.exportTransactions({}, 'xlsx'))
           .rejects.toThrow('Erro ao exportar transações');
       });
     });

@@ -43,7 +43,7 @@ describe('FichaAcompanhamentoService', () => {
   const mockFicha: FichaAcompanhamento = {
     id: 'ficha123',
     ...mockFichaData,
-    status: 'ativo',
+    status: 'em_tratamento',
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01')
   };
@@ -53,6 +53,7 @@ describe('FichaAcompanhamentoService', () => {
     data: new Date('2024-01-15'),
     duracao: 60,
     tipoSessao: 'individual' as const,
+    status: 'concluida' as const,
     resumo: 'Primeira sessão de avaliação',
     observacoes: 'Paciente se mostrou colaborativo',
     evolucao: 'Boa resposta inicial',
@@ -95,7 +96,7 @@ describe('FichaAcompanhamentoService', () => {
         expect(mockRepository.createFicha).toHaveBeenCalledWith(
           expect.objectContaining({
             ...mockFichaData,
-            status: 'ativo',
+            status: 'em_tratamento',
             id: expect.any(String),
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
@@ -119,7 +120,7 @@ describe('FichaAcompanhamentoService', () => {
         const expectedFicha = {
           ...minimalData,
           id: 'ficha456',
-          status: 'ativo',
+          status: 'em_tratamento',
           createdAt: new Date(),
           updatedAt: new Date()
         } as FichaAcompanhamento;
@@ -134,7 +135,7 @@ describe('FichaAcompanhamentoService', () => {
         expect(mockRepository.createFicha).toHaveBeenCalledWith(
           expect.objectContaining({
             ...minimalData,
-            status: 'ativo'
+            status: 'em_tratamento'
           })
         );
       });
@@ -165,7 +166,7 @@ describe('FichaAcompanhamentoService', () => {
         const expectedFicha = {
           ...dataWithSpecialized,
           id: 'ficha789',
-          status: 'ativo',
+          status: 'em_tratamento',
           createdAt: new Date(),
           updatedAt: new Date()
         } as FichaAcompanhamento;
@@ -482,7 +483,7 @@ describe('FichaAcompanhamentoService', () => {
         // Arrange
         const finalizedFicha: FichaAcompanhamento = {
           ...mockFicha,
-          status: 'concluido',
+          status: 'alta',
           updatedAt: new Date()
         };
         mockRepository.updateFicha.mockResolvedValue(finalizedFicha);
@@ -491,9 +492,9 @@ describe('FichaAcompanhamentoService', () => {
         const result = await service.finalizarFicha('ficha123');
 
         // Assert
-        expect(result.status).toBe('concluido');
+        expect(result.status).toBe('alta');
         expect(mockRepository.updateFicha).toHaveBeenCalledWith('ficha123', {
-          status: 'concluido'
+          status: 'alta'
         });
       });
 
@@ -502,7 +503,7 @@ describe('FichaAcompanhamentoService', () => {
         const observacoesFinal = 'Tratamento concluído com sucesso. Paciente apresentou melhora significativa.';
         const finalizedFicha: FichaAcompanhamento = {
           ...mockFicha,
-          status: 'concluido',
+          status: 'alta',
           observacoes: observacoesFinal,
           updatedAt: new Date()
         };
@@ -512,10 +513,10 @@ describe('FichaAcompanhamentoService', () => {
         const result = await service.finalizarFicha('ficha123', observacoesFinal);
 
         // Assert
-        expect(result.status).toBe('concluido');
+        expect(result.status).toBe('alta');
         expect(result.observacoes).toBe(observacoesFinal);
         expect(mockRepository.updateFicha).toHaveBeenCalledWith('ficha123', {
-          status: 'concluido',
+          status: 'alta',
           observacoes: observacoesFinal
         });
       });
@@ -564,6 +565,7 @@ describe('FichaAcompanhamentoService', () => {
           data: new Date('2024-01-22'),
           duracao: 45,
           tipoSessao: 'individual' as const,
+          status: 'concluida' as const,
           resumo: 'Segunda sessão',
           createdBy: 'prof123'
         };
@@ -833,10 +835,10 @@ describe('FichaAcompanhamentoService', () => {
       it('should calculate statistics correctly with multiple fichas', async () => {
         // Arrange
         const fichas: FichaAcompanhamento[] = [
-          { ...mockFicha, id: 'ficha1', status: 'ativo' },
-          { ...mockFicha, id: 'ficha2', status: 'ativo' },
-          { ...mockFicha, id: 'ficha3', status: 'concluido' },
-          { ...mockFicha, id: 'ficha4', status: 'concluido' }
+          { ...mockFicha, id: 'ficha1', status: 'em_tratamento' },
+          { ...mockFicha, id: 'ficha2', status: 'em_tratamento' },
+          { ...mockFicha, id: 'ficha3', status: 'alta' },
+          { ...mockFicha, id: 'ficha4', status: 'alta' }
         ];
 
         const sessoesFicha1: SessaoAcompanhamento[] = [
@@ -903,8 +905,8 @@ describe('FichaAcompanhamentoService', () => {
       it('should handle fichas with no sessoes', async () => {
         // Arrange
         const fichas: FichaAcompanhamento[] = [
-          { ...mockFicha, id: 'ficha1', status: 'ativo' },
-          { ...mockFicha, id: 'ficha2', status: 'ativo' }
+          { ...mockFicha, id: 'ficha1', status: 'em_tratamento' },
+          { ...mockFicha, id: 'ficha2', status: 'em_tratamento' }
         ];
 
         mockRepository.getFichasByProfissional.mockResolvedValue(fichas);
@@ -928,9 +930,9 @@ describe('FichaAcompanhamentoService', () => {
       it('should round media to 2 decimal places', async () => {
         // Arrange
         const fichas: FichaAcompanhamento[] = [
-          { ...mockFicha, id: 'ficha1', status: 'ativo' },
-          { ...mockFicha, id: 'ficha2', status: 'ativo' },
-          { ...mockFicha, id: 'ficha3', status: 'ativo' }
+          { ...mockFicha, id: 'ficha1', status: 'em_tratamento' },
+          { ...mockFicha, id: 'ficha2', status: 'em_tratamento' },
+          { ...mockFicha, id: 'ficha3', status: 'em_tratamento' }
         ];
 
         mockRepository.getFichasByProfissional.mockResolvedValue(fichas);
@@ -950,11 +952,11 @@ describe('FichaAcompanhamentoService', () => {
       it('should count different statuses correctly', async () => {
         // Arrange
         const fichas: FichaAcompanhamento[] = [
-          { ...mockFicha, id: 'ficha1', status: 'ativo' },
-          { ...mockFicha, id: 'ficha2', status: 'concluido' },
+          { ...mockFicha, id: 'ficha1', status: 'em_tratamento' },
+          { ...mockFicha, id: 'ficha2', status: 'alta' },
           { ...mockFicha, id: 'ficha3', status: 'pausado' },
           { ...mockFicha, id: 'ficha4', status: 'cancelado' },
-          { ...mockFicha, id: 'ficha5', status: 'ativo' }
+          { ...mockFicha, id: 'ficha5', status: 'em_tratamento' }
         ];
 
         mockRepository.getFichasByProfissional.mockResolvedValue(fichas);
@@ -982,7 +984,7 @@ describe('FichaAcompanhamentoService', () => {
       it('should handle error when getting sessoes fails', async () => {
         // Arrange
         const fichas: FichaAcompanhamento[] = [
-          { ...mockFicha, id: 'ficha1', status: 'ativo' }
+          { ...mockFicha, id: 'ficha1', status: 'em_tratamento' }
         ];
 
         mockRepository.getFichasByProfissional.mockResolvedValue(fichas);
@@ -1068,7 +1070,7 @@ describe('FichaAcompanhamentoService', () => {
       const expectedFicha = {
         ...fullFichaData,
         id: 'ficha999',
-        status: 'ativo',
+        status: 'em_tratamento',
         createdAt: new Date(),
         updatedAt: new Date()
       } as FichaAcompanhamento;
@@ -1124,7 +1126,7 @@ describe('FichaAcompanhamentoService', () => {
       const expectedFicha = {
         ...dataWithEmptyStrings,
         id: 'ficha888',
-        status: 'ativo',
+        status: 'em_tratamento',
         createdAt: new Date(),
         updatedAt: new Date()
       } as FichaAcompanhamento;
