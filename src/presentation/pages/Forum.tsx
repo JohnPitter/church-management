@@ -4,6 +4,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format as formatDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -26,7 +28,9 @@ import { loggingService } from '@modules/shared-kernel/logging/infrastructure/se
 export const Forum: React.FC = () => {
   const { currentUser } = useAuth();
   const { settings: _settings } = useSettings();
+  const { hasPermission } = usePermissions();
   const navigate = useNavigate();
+  const canCreate = hasPermission(SystemModule.Forum, PermissionAction.Create);
   const { categorySlug, topicId } = useParams();
 
   const [loading, setLoading] = useState(true);
@@ -261,7 +265,7 @@ export const Forum: React.FC = () => {
             <h2 className="text-lg font-medium text-gray-900">Categorias</h2>
             <p className="text-gray-600">Escolha uma categoria para participar das discussões</p>
           </div>
-          {currentUser && (
+          {canCreate && (
             <button
               onClick={() => setShowCreateTopicModal(true)}
               className="px-4 py-2 text-white rounded-lg flex items-center gap-2 transition-colors theme-primary hover:opacity-90"
@@ -388,7 +392,7 @@ export const Forum: React.FC = () => {
             <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
               <div className="text-5xl mb-4">💬</div>
               <p className="text-gray-600 mb-4">Nenhum tópico nesta categoria ainda</p>
-              {currentUser && (
+              {canCreate && (
                 <button
                   onClick={() => setShowCreateTopicModal(true)}
                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"

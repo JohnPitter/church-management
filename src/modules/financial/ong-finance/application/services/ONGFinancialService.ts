@@ -579,34 +579,57 @@ export class ONGFinancialService {
   /**
    * Export ONG transactions in CSV or JSON format
    */
-  async exportTransactions(filters: ONGTransactionFilters, format: 'csv' | 'json' = 'csv'): Promise<Blob> {
+  async exportTransactions(filters: ONGTransactionFilters, format: 'xlsx' | 'json' = 'xlsx'): Promise<Blob> {
     try {
       const transactions = await this.getTransactions(filters, 1000);
 
       if (format === 'json') {
         return new Blob([JSON.stringify(transactions, null, 2)], { type: 'application/json' });
-      } else {
-        // CSV export
-        const headers = ['Data', 'Tipo', 'Categoria', 'Descrição', 'Valor', 'Método Pagamento', 'Status'];
-        const rows = transactions.map(t => [
-          formatDate(t.date, 'dd/MM/yyyy'),
-          t.type === TransactionType.INCOME ? 'Receita' : 'Despesa',
-          t.category.name,
-          t.description,
-          FinancialEntity.formatCurrency(t.amount),
-          t.paymentMethod,
-          t.status
-        ]);
-
-        const csvContent = [headers, ...rows]
-          .map(row => row.map(field => `"${field}"`).join(','))
-          .join('\n');
-
-        return new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
       }
+
+      const XLSX = await import('xlsx');
+
+      const totalIncome = transactions.filter(t => t.type === TransactionType.INCOME).reduce((s, t) => s + t.amount, 0);
+      const totalExpense = transactions.filter(t => t.type === TransactionType.EXPENSE).reduce((s, t) => s + t.amount, 0);
+
+      const headerRows = [
+        ['RELATORIO FINANCEIRO - ONG'],
+        [`Periodo: ${filters.startDate ? formatDate(filters.startDate, 'dd/MM/yyyy') : '-'} a ${filters.endDate ? formatDate(filters.endDate, 'dd/MM/yyyy') : '-'}`],
+        [`Gerado em: ${formatDate(new Date(), 'dd/MM/yyyy HH:mm')}`],
+        [],
+        ['RESUMO'],
+        ['Total Receitas', totalIncome],
+        ['Total Despesas', totalExpense],
+        ['Resultado Liquido', totalIncome - totalExpense],
+        [],
+        ['DATA', 'TIPO', 'CATEGORIA', 'DESCRICAO', 'VALOR (R$)', 'METODO', 'STATUS', 'REFERENCIA']
+      ];
+
+      const dataRows = transactions.map(t => [
+        formatDate(t.date, 'dd/MM/yyyy'),
+        t.type === TransactionType.INCOME ? 'RECEITA' : 'DESPESA',
+        t.category.name,
+        t.description,
+        t.amount,
+        t.paymentMethod || '-',
+        t.status === 'approved' ? 'Aprovada' : t.status === 'pending' ? 'Pendente' : t.status,
+        t.reference || '-'
+      ]);
+
+      const allRows = [...headerRows, ...dataRows];
+      const ws = XLSX.utils.aoa_to_sheet(allRows);
+      ws['!cols'] = [
+        { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 35 },
+        { wch: 15 }, { wch: 18 }, { wch: 12 }, { wch: 15 }
+      ];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Transacoes ONG');
+      const xlsxBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      return new Blob([xlsxBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     } catch (error) {
       console.error('Error exporting ONG transactions:', error);
-      throw new Error('Erro ao exportar transações da ONG');
+      throw new Error('Erro ao exportar transacoes da ONG');
     }
   }
 

@@ -15,6 +15,8 @@ import { loggingService } from '@modules/shared-kernel/logging/infrastructure/se
 import toast from 'react-hot-toast';
 import { applyPhoneMask } from '../../utils/inputMasks';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { usePermissions } from '../hooks/usePermissions';
+import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 
 interface LeaderModalProps {
   isOpen: boolean;
@@ -262,6 +264,8 @@ const LeaderModal: React.FC<LeaderModalProps> = ({ isOpen, onClose, onSave, lead
 export const AdminLeadershipPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { confirm } = useConfirmDialog();
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission(SystemModule.Leadership, PermissionAction.Create);
   const [leaders, setLeaders] = useState<Leader[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -355,12 +359,14 @@ export const AdminLeadershipPage: React.FC = () => {
                 Gerencie os líderes e equipe pastoral da igreja
               </p>
             </div>
-            <button
-              onClick={handleCreate}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-            >
-              <span>➕</span> Novo Líder
-            </button>
+            {canCreate && (
+              <button
+                onClick={handleCreate}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+              >
+                <span>➕</span> Novo Líder
+              </button>
+            )}
           </div>
         </div>
       </div>

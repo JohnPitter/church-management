@@ -47,6 +47,8 @@ export const ONGFinancialPage: React.FC = () => {
   const [categories, setCategories] = useState<FinancialCategory[]>([]);
   const [summary, setSummary] = useState<FinancialSummary | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState('current_month');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
   const [filters, setFilters] = useState<TransactionFilters>({});
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDonationModal, setShowDonationModal] = useState(false);
@@ -83,7 +85,7 @@ export const ONGFinancialPage: React.FC = () => {
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPeriod, filters]);
+  }, [selectedPeriod, filters, customStartDate, customEndDate]);
 
   const getPeriodDates = (period: string): { startDate: Date; endDate: Date } => {
     const now = new Date();
@@ -98,6 +100,13 @@ export const ONGFinancialPage: React.FC = () => {
         return { startDate: startOfMonth(subMonths(now, 2)), endDate: endOfMonth(now) };
       case 'current_year':
         return { startDate: new Date(now.getFullYear(), 0, 1), endDate: new Date(now.getFullYear(), 11, 31) };
+      case 'custom':
+        if (customStartDate && customEndDate) {
+          const [sy, sm, sd] = customStartDate.split('-').map(Number);
+          const [ey, em, ed] = customEndDate.split('-').map(Number);
+          return { startDate: new Date(sy, sm - 1, sd, 0, 0, 0), endDate: new Date(ey, em - 1, ed, 23, 59, 59) };
+        }
+        return { startDate: startOfMonth(now), endDate: endOfMonth(now) };
       default:
         return { startDate: startOfMonth(now), endDate: endOfMonth(now) };
     }
@@ -220,7 +229,7 @@ export const ONGFinancialPage: React.FC = () => {
     }
   };
 
-  const handleExportData = async (format: 'csv' | 'json') => {
+  const handleExportData = async (format: 'xlsx' | 'json') => {
     try {
       setLoading(true);
       const { startDate, endDate } = getPeriodDates(selectedPeriod);
@@ -340,13 +349,29 @@ export const ONGFinancialPage: React.FC = () => {
                   </option>
                 ))}
               </select>
+              {selectedPeriod === 'custom' && (
+                <>
+                  <input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
+                  <input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
+                </>
+              )}
               {canManage && (
                 <button
-                  onClick={() => handleExportData('csv')}
+                  onClick={() => handleExportData('xlsx')}
                   disabled={loading}
                   className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
-                  📊 Exportar CSV
+                  📊 Exportar Excel
                 </button>
               )}
               {canCreate && (
@@ -1124,7 +1149,7 @@ export const ONGFinancialPage: React.FC = () => {
                 </div>
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => handleExportData('csv')}
+                    onClick={() => handleExportData('xlsx')}
                     className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                   >
                     📊 CSV
