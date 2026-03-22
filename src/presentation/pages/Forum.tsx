@@ -374,7 +374,7 @@ export const Forum: React.FC = () => {
         </div>
 
         {/* Create Topic Button */}
-        {currentUser && (
+        {canCreate && (
           <div className="flex justify-end">
             <button
               onClick={() => setShowCreateTopicModal(true)}

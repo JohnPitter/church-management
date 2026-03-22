@@ -21,7 +21,7 @@ const ProfessionalSessoesPage: React.FC = () => {
   const [filterPeriodo, setFilterPeriodo] = useState<'todos' | 'hoje' | 'semana' | 'mes' | 'custom'>('todos');
   const [filterDataInicio, setFilterDataInicio] = useState('');
   const [filterDataFim, setFilterDataFim] = useState('');
-  const [filterTipo, setFilterTipo] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
 
   const profissionalService = new ProfissionalAssistenciaService();
   const fichaRepository = new FirebaseFichaAcompanhamentoRepository();
@@ -48,19 +48,19 @@ const ProfessionalSessoesPage: React.FC = () => {
       // Get all fichas for this professional
       const fichasData = await fichaRepository.getFichasByProfissional(profissional.id);
 
-      // Get all sessoes from all fichas
-      const allSessoes: SessaoComFicha[] = [];
-      for (const ficha of fichasData) {
-        const fichasSessoes = await fichaRepository.getSessoesByFicha(ficha.id);
-        for (const sessao of fichasSessoes) {
-          allSessoes.push({
-            ...sessao,
-            pacienteNome: ficha.pacienteNome,
-            tipoAssistencia: ficha.tipoAssistencia,
-            fichaStatus: ficha.status
-          });
-        }
-      }
+      // Get all sessoes from all fichas (parallel)
+      const sessoesByFicha = await Promise.all(
+        fichasData.map(ficha => fichaRepository.getSessoesByFicha(ficha.id))
+      );
+
+      const allSessoes: SessaoComFicha[] = fichasData.flatMap((ficha, i) =>
+        sessoesByFicha[i].map(sessao => ({
+          ...sessao,
+          pacienteNome: ficha.pacienteNome,
+          tipoAssistencia: ficha.tipoAssistencia,
+          fichaStatus: ficha.status
+        }))
+      );
 
       // Sort by date descending (most recent first)
       allSessoes.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
@@ -88,8 +88,8 @@ const ProfessionalSessoesPage: React.FC = () => {
     }
 
     // Filter by type
-    if (filterTipo) {
-      result = result.filter(s => (s.status || 'concluida') === filterTipo);
+    if (filterStatus) {
+      result = result.filter(s => (s.status || 'concluida') === filterStatus);
     }
 
     // Filter by period
@@ -129,7 +129,7 @@ const ProfessionalSessoesPage: React.FC = () => {
     }
 
     return result;
-  }, [sessoes, filterPaciente, filterTipo, filterPeriodo, filterDataInicio, filterDataFim]);
+  }, [sessoes, filterPaciente, filterStatus, filterPeriodo, filterDataInicio, filterDataFim]);
 
   // Stats
   const stats = useMemo(() => {
@@ -186,7 +186,7 @@ const ProfessionalSessoesPage: React.FC = () => {
     setFilterPeriodo('todos');
     setFilterDataInicio('');
     setFilterDataFim('');
-    setFilterTipo('');
+    setFilterStatus('');
   };
 
   if (loading) {
@@ -310,8 +310,8 @@ const ProfessionalSessoesPage: React.FC = () => {
             <div className="min-w-[140px]">
               <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
-                value={filterTipo}
-                onChange={(e) => setFilterTipo(e.target.value)}
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Todos</option>

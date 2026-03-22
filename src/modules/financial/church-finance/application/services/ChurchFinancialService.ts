@@ -654,56 +654,17 @@ export class ChurchFinancialService {
   async exportTransactions(filters: TransactionFilters, format: 'xlsx' | 'json' = 'xlsx'): Promise<Blob> {
     try {
       const transactions = await this.getTransactions(filters, 1000);
-
       if (format === 'json') {
         return new Blob([JSON.stringify(transactions, null, 2)], { type: 'application/json' });
       }
-
-      // XLSX export with Bloomberg-style layout
-      const XLSX = await import('xlsx');
-
-      const totalIncome = transactions.filter(t => t.type === TransactionType.INCOME).reduce((s, t) => s + t.amount, 0);
-      const totalExpense = transactions.filter(t => t.type === TransactionType.EXPENSE).reduce((s, t) => s + t.amount, 0);
-
-      // Header rows
-      const headerRows = [
-        ['RELATORIO FINANCEIRO'],
-        [`Periodo: ${filters.startDate ? formatDate(filters.startDate, 'dd/MM/yyyy') : '-'} a ${filters.endDate ? formatDate(filters.endDate, 'dd/MM/yyyy') : '-'}`],
-        [`Gerado em: ${formatDate(new Date(), 'dd/MM/yyyy HH:mm')}`],
-        [],
-        ['RESUMO'],
-        ['Total Receitas', totalIncome],
-        ['Total Despesas', totalExpense],
-        ['Resultado Liquido', totalIncome - totalExpense],
-        [],
-        ['DATA', 'TIPO', 'CATEGORIA', 'DESCRICAO', 'VALOR (R$)', 'METODO', 'STATUS', 'REFERENCIA']
-      ];
-
-      // Data rows
-      const dataRows = transactions.map(t => [
-        formatDate(t.date, 'dd/MM/yyyy'),
-        t.type === TransactionType.INCOME ? 'RECEITA' : 'DESPESA',
-        t.category.name,
-        t.description,
-        t.amount,
-        t.paymentMethod || '-',
-        t.status === 'approved' ? 'Aprovada' : t.status === 'pending' ? 'Pendente' : t.status,
-        t.reference || '-'
-      ]);
-
-      const allRows = [...headerRows, ...dataRows];
-      const ws = XLSX.utils.aoa_to_sheet(allRows);
-
-      // Column widths
-      ws['!cols'] = [
-        { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 35 },
-        { wch: 15 }, { wch: 18 }, { wch: 12 }, { wch: 15 }
-      ];
-
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Transacoes');
-      const xlsxBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-      return new Blob([xlsxBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const { exportTransactionsToXlsx } = await import('../../../../../utils/xlsxExport');
+      return exportTransactionsToXlsx(transactions, {
+        title: 'RELATORIO FINANCEIRO',
+        sheetName: 'Transacoes',
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        incomeType: TransactionType.INCOME
+      });
     } catch (error) {
       console.error('Error exporting transactions:', error);
       throw new Error('Erro ao exportar transacoes');

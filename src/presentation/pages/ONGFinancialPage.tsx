@@ -83,6 +83,7 @@ export const ONGFinancialPage: React.FC = () => {
   ];
 
   useEffect(() => {
+    if (selectedPeriod === 'custom' && (!customStartDate || !customEndDate)) return;
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPeriod, filters, customStartDate, customEndDate]);

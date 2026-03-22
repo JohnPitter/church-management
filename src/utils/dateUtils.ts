@@ -38,3 +38,26 @@ export function parseLocalDate(dateString: string): Date {
 export function todayLocalString(): string {
   return toLocalDateString(new Date());
 }
+
+/**
+ * Formats a Date to dd/MM/yyyy for display in pt-BR.
+ */
+export function formatDateBR(date: Date): string {
+  const d = new Date(date);
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+/**
+ * Downloads a Blob as a file.
+ */
+export function downloadBlob(blob: Blob, filename: string): void {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+}

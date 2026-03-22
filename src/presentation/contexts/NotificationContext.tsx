@@ -71,17 +71,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     try {
       setLoading(true);
 
-      // Load notifications and count unread
+      // Load notifications and derive unread count from loaded data
       const userNotifications = await notificationService.getUserNotifications(currentUser.id, 50);
-
-      // Count unread from loaded notifications (avoids composite index requirement)
-      let userUnreadCount = 0;
-      try {
-        userUnreadCount = await notificationService.getUnreadCount(currentUser.id);
-      } catch {
-        // Fallback: count from loaded notifications if Firestore index is missing
-        userUnreadCount = userNotifications.filter(n => n.status === 'unread').length;
-      }
+      const userUnreadCount = userNotifications.filter(n => n.status === 'unread').length;
 
       // Get user preferences from repository directly since service doesn't have this method yet
       let userPreferences = null;

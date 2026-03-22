@@ -27,7 +27,6 @@ interface FormData {
   registroProfissional: string;
   tempoConsulta: string;
   valorConsulta: string;
-  disponibilidade: string;
   observacoes: string;
   status: StatusProfissional;
   // Campos de endereço
@@ -50,14 +49,8 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
   const { currentUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [localProfissional, setLocalProfissional] = useState<ProfissionalAssistencia | null>(profissional || null);
 
   const profissionalService = new ProfissionalAssistenciaService();
-
-  // Sync local professional with prop changes
-  useEffect(() => {
-    setLocalProfissional(profissional || null);
-  }, [profissional]);
 
   const [formData, setFormData] = useState<FormData>({
     nome: '',
@@ -67,7 +60,6 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
     registroProfissional: '',
     tempoConsulta: '60',
     valorConsulta: '',
-    disponibilidade: '',
     observacoes: '',
     status: StatusProfissional.Ativo,
     cep: '',
@@ -124,8 +116,7 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
         registroProfissional: profissional.registroProfissional,
         tempoConsulta: profissional.tempoConsulta.toString(),
         valorConsulta: profissional.valorConsulta?.toString() || '',
-        disponibilidade: '',
-        observacoes: profissional.observacoes || '',
+            observacoes: profissional.observacoes || '',
         status: profissional.status,
         cep: profissional.endereco?.cep || '',
         logradouro: profissional.endereco?.logradouro || '',
@@ -149,8 +140,7 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
         registroProfissional: '',
         tempoConsulta: '60',
         valorConsulta: '',
-        disponibilidade: '',
-        observacoes: '',
+            observacoes: '',
         status: StatusProfissional.Ativo,
         cep: '',
         logradouro: '',
@@ -319,8 +309,7 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
           registroProfissional: '',
           tempoConsulta: '60',
           valorConsulta: '',
-          disponibilidade: '',
-          observacoes: '',
+                observacoes: '',
           status: StatusProfissional.Ativo,
           cep: '',
           logradouro: '',
@@ -745,8 +734,7 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
         </div>
 
         {/* Footer */}
-        <div className="flex justify-between items-center p-6 border-t border-gray-200">
-          <div></div>
+        <div className="flex justify-end items-center p-6 border-t border-gray-200">
           <div className="flex space-x-4">
             <button
               onClick={onClose}
