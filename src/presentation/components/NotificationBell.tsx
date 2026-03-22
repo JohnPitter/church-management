@@ -11,7 +11,7 @@ interface NotificationBellProps {
 }
 
 export const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) => {
-  const { unreadCount, loading } = useNotifications();
+  const { unreadCount } = useNotifications();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -21,7 +21,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        dropdownRef.current && 
+        dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
         buttonRef.current &&
         !buttonRef.current.contains(event.target as Node)
@@ -54,8 +54,10 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
     setIsOpen(!isOpen);
   };
 
+  const badgeText = unreadCount > 99 ? '99+' : String(unreadCount);
+
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${className}`} style={{ overflow: 'visible' }}>
       {/* Bell Button */}
       <button
         ref={buttonRef}
@@ -63,7 +65,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
         className={`relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors ${
           isOpen ? 'bg-gray-100 text-gray-900' : ''
         }`}
-        title="Notificações"
+        title={unreadCount > 0 ? `${unreadCount} notificacoes nao lidas` : 'Notificacoes'}
+        style={{ overflow: 'visible' }}
       >
         {/* Bell Icon */}
         <svg
@@ -79,14 +82,17 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
             d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
           />
         </svg>
-
-        {/* Unread Badge */}
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full min-w-[20px] h-5 z-10">
-            {unreadCount > 99 ? '99+' : unreadCount}
-          </span>
-        )}
       </button>
+
+      {/* Unread Badge - outside button to avoid overflow issues */}
+      {unreadCount > 0 && (
+        <span
+          className="absolute top-0 right-0 flex items-center justify-center px-1.5 py-0.5 text-xs font-bold text-white bg-red-600 rounded-full pointer-events-none"
+          style={{ minWidth: '20px', height: '20px', transform: 'translate(25%, -25%)', zIndex: 50 }}
+        >
+          {badgeText}
+        </span>
+      )}
 
       {/* Dropdown */}
       {isOpen && (
@@ -97,7 +103,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
           {/* Header */}
           <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-900">Notificações</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Notificacoes</h3>
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -111,9 +117,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
 
           {/* Notifications List */}
           <div className="max-h-80 overflow-y-auto">
-            <NotificationsList 
-              className="p-4" 
-              limit={5} 
+            <NotificationsList
+              className="p-4"
+              limit={5}
               showMarkAllAsRead={false}
               onShowMore={() => {
                 setIsOpen(false);
@@ -131,7 +137,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
               }}
               className="w-full text-center text-sm text-blue-600 hover:text-blue-700 font-medium"
             >
-              Ver todas as notificações
+              Ver todas as notificacoes
             </button>
           </div>
         </div>
