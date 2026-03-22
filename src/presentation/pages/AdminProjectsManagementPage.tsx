@@ -314,7 +314,6 @@ export const AdminProjectsManagementPage: React.FC = () => {
           selectedProjectForRegistrations.id,
           selectedProjectForRegistrations.name
         );
-        console.log('Notification sent to user for project approval');
       } catch (notificationError) {
         console.warn('Failed to send approval notification:', notificationError);
         // Don't fail the whole operation if notification fails
@@ -358,7 +357,6 @@ export const AdminProjectsManagementPage: React.FC = () => {
           selectedProjectForRegistrations.id,
           selectedProjectForRegistrations.name
         );
-        console.log('Notification sent to user for project rejection');
       } catch (notificationError) {
         console.warn('Failed to send rejection notification:', notificationError);
         // Don't fail the whole operation if notification fails

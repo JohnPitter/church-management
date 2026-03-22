@@ -149,7 +149,7 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
         url
       });
     } catch (err) {
-      console.log('Share cancelled or failed:', err);
+      // Share cancelled or failed - no action needed
     }
   };
 

@@ -179,8 +179,6 @@ export const UserManagementPage: React.FC = () => {
 
     setLoading(true);
     try {
-      console.log(`[UserManagementPage] Changing user ${userId} role to: ${newRole}`);
-
       // Pass the role directly without conversion to support custom roles
       await userRepository.updateRole(userId, newRole, currentUser?.email || 'Admin');
 

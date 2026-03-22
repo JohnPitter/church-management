@@ -103,13 +103,10 @@ export const Devotionals: React.FC = () => {
   };
 
   const handleMarkAsRead = async () => {
-    console.log('handleMarkAsRead called', { currentUser: !!currentUser, selectedDevotional: !!selectedDevotional });
     if (!currentUser || !selectedDevotional) return;
 
     try {
-      console.log('Calling devotionalService.markAsRead');
       await devotionalService.markAsRead(selectedDevotional.id, currentUser.id);
-      console.log('Successfully marked as read');
       // Show success feedback
       toast.success('Devocional marcado como lido!');
       // Return to list view

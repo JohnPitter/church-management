@@ -1085,8 +1085,6 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
     // Se houver erros, rolar para o primeiro campo com erro
     if (Object.keys(newErrors).length > 0) {
       const firstErrorField = Object.keys(newErrors)[0];
-      console.log('🔴 Primeiro campo com erro:', firstErrorField, '- Erro:', newErrors[firstErrorField]);
-
       // Tentar rolar até o campo com erro
       setTimeout(() => {
         const errorElement = document.querySelector(`[name="${firstErrorField}"]`) ||
@@ -1101,20 +1099,13 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
   };
 
   const handleSave = async () => {
-    console.log('🔵 handleSave chamado');
-    console.log('📋 Dados do formulário:', formData);
-
     const isValid = validateForm();
-    console.log('✅ Formulário válido?', isValid);
-    console.log('❌ Erros encontrados:', errors);
 
     if (!isValid) {
-      console.log('⛔ Validação falhou, abortando salvamento');
       toast.error('Por favor, corrija os erros no formulário antes de continuar.');
       return;
     }
 
-    console.log('✅ Validação passou, iniciando salvamento...');
     setIsLoading(true);
     try {
       const profissionalSelecionado = profissionaisDisponiveis.find(p => p.id === formData.profissionalId);
@@ -1368,19 +1359,12 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
         agendamentoData.observacoesPaciente = formData.observacoesPaciente;
       }
 
-      console.log('🔍 [AGENDAMENTO] Dados que serão salvos:', agendamentoData);
-      console.log('🔍 [AGENDAMENTO] Dados específicos no agendamento:', agendamentoData.dadosEspecificos);
-      console.log('🔍 [AGENDAMENTO] Tipo de assistência:', formData.tipoAssistencia);
-      console.log('🔍 [AGENDAMENTO] Enum fisioterapia:', TipoAssistencia.Fisioterapia);
-
       if (mode === 'create') {
         const novoAgendamento = await agendamentoService.createAgendamento(agendamentoData);
-        console.log('✅ [AGENDAMENTO] Agendamento criado:', novoAgendamento);
         onSave(novoAgendamento);
         toast.success(`Agendamento para ${formData.pacienteNome} foi criado com sucesso!`);
       } else if (mode === 'edit' && agendamento) {
         const agendamentoAtualizado = await agendamentoService.updateAgendamento(agendamento.id, agendamentoData);
-        console.log('✅ [AGENDAMENTO] Agendamento atualizado:', agendamentoAtualizado);
         onSave(agendamentoAtualizado);
         toast.success(`Agendamento de ${formData.pacienteNome} foi atualizado com sucesso!`);
       }

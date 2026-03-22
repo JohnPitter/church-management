@@ -491,8 +491,6 @@ export const ProfessionalHelpRequestsPage: React.FC = () => {
 
               // Save to database
               const requestId = await helpRequestService.create(newRequest);
-              console.log('Help request created with ID:', requestId);
-
               // Add to local state with the real ID
               const savedRequest = { ...newRequest, id: requestId };
               setRequests([savedRequest, ...requests]);

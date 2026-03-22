@@ -1175,14 +1175,13 @@ const EditStreamModal: React.FC<EditStreamModalProps> = ({ stream, onSave, onCan
           (snapshot) => {
             // Track progress
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            console.log('Upload is ' + progress + '% done');
+            // Upload progress: tracked internally
           },
           (error) => {
             console.error('Upload error:', error);
             reject(error);
           },
           () => {
-            console.log('Upload completed successfully');
             resolve();
           }
         );

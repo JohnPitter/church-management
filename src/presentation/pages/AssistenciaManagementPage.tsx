@@ -426,8 +426,6 @@ const AssistenciaManagementPage: React.FC = () => {
 
   const handleSaveAnamnese = async (anamnese: AnamnesesPsicologicaData) => {
     try {
-      console.log('Salvando anamnese:', anamnese);
-
       // Add assistido information if not already present
       const anamneseCompleta = {
         ...anamnese,

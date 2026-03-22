@@ -55,11 +55,6 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
   const loadSessoes = async () => {
     if (!ficha) return;
     try {
-      // Debug: verificar informações do usuário
-      console.log('Debug - Current user:', currentUser?.email);
-      console.log('Debug - Ficha profissionalId:', ficha.profissionalId);
-      console.log('Debug - User ID:', currentUser?.id);
-      
       const sessoesFicha = await fichaRepository.getSessoesByFicha(ficha.id);
       setSessoes(sessoesFicha);
     } catch (error: any) {
@@ -314,12 +309,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
 
   if (!isOpen || !ficha) return null;
 
-  // DEBUG: Log dos dados da ficha
-  console.log('🔍 [Professional] Dados da ficha carregada:', {
-    id: ficha.id,
-    dadosEspecializados: ficha.dadosEspecializados,
-    tipoAssistencia: ficha.tipoAssistencia
-  });
+
 
   const tabs = [
     { id: 'detalhes', label: 'Detalhes' },
