@@ -338,61 +338,88 @@ export class AssistenciaEntity {
   }
 
   static obterProximosHorariosDisponiveis(
-    profissional: ProfissionalAssistencia, 
-    dataInicio: Date, 
+    profissional: ProfissionalAssistencia,
+    dataInicio: Date,
     dataFim: Date,
-    agendamentosExistentes: AgendamentoAssistencia[]
+    agendamentosExistentes: AgendamentoAssistencia[],
+    agora: Date = new Date()
   ): Date[] {
-    const horariosDisponiveis: Date[] = [];
     const duracaoConsulta = profissional.tempoConsulta;
-    
+
     if (!duracaoConsulta || duracaoConsulta <= 0) {
       console.warn('Professional has invalid consultation duration:', duracaoConsulta);
       return [];
     }
-    
+
+    const horariosDisponiveis: Date[] = [];
+    const slotMs = duracaoConsulta * 60000;
+    const agoraMs = agora.getTime();
+
+    // Pre-group working hours by day of week for O(1) lookup
+    const horariosPorDia = new Map<number, typeof profissional.horariosFuncionamento>();
+    for (const h of profissional.horariosFuncionamento) {
+      const arr = horariosPorDia.get(h.diaSemana);
+      if (arr) arr.push(h);
+      else horariosPorDia.set(h.diaSemana, [h]);
+    }
+
+    // Pre-convert appointment times to numeric ranges once
+    const agendamentosRanges = agendamentosExistentes.map(a => ({
+      inicio: new Date(a.dataHoraAgendamento).getTime(),
+      fim: new Date(a.dataHoraFim).getTime(),
+    }));
+
     const dataAtual = new Date(dataInicio);
     while (dataAtual <= dataFim) {
-      const diaSemana = dataAtual.getDay();
-      
-      const horariosDia = profissional.horariosFuncionamento.filter(h => h.diaSemana === diaSemana);
-      
+      const horariosDia = horariosPorDia.get(dataAtual.getDay());
+      if (!horariosDia) {
+        dataAtual.setDate(dataAtual.getDate() + 1);
+        continue;
+      }
+
       for (const horario of horariosDia) {
         const [horaInicio, minutoInicio] = horario.horaInicio.split(':').map(Number);
         const [horaFim, minutoFim] = horario.horaFim.split(':').map(Number);
-        
+
         const inicioAtendimento = new Date(dataAtual);
         inicioAtendimento.setHours(horaInicio, minutoInicio, 0, 0);
-        
+
         const fimAtendimento = new Date(dataAtual);
         fimAtendimento.setHours(horaFim, minutoFim, 0, 0);
-        
-        let horaConsulta = new Date(inicioAtendimento);
-        while (horaConsulta < fimAtendimento) {
-          const fimConsulta = new Date(horaConsulta.getTime() + duracaoConsulta * 60000);
 
-          // Captura o valor atual para evitar referência unsafe no closure
-          const horaConsultaAtual = new Date(horaConsulta);
+        // Skip entire block if it ended in the past
+        if (fimAtendimento.getTime() <= agoraMs) continue;
 
-          // Verificar se não há conflito com agendamentos existentes
-          const temConflito = agendamentosExistentes.some(agendamento => {
-            const inicioExistente = new Date(agendamento.dataHoraAgendamento);
-            const fimExistente = new Date(agendamento.dataHoraFim);
+        let slotStart = inicioAtendimento.getTime();
+        const fimMs = fimAtendimento.getTime();
 
-            return (horaConsultaAtual < fimExistente && fimConsulta > inicioExistente);
-          });
-          
-          if (!temConflito && fimConsulta <= fimAtendimento) {
-            horariosDisponiveis.push(new Date(horaConsulta));
+        while (slotStart < fimMs) {
+          const slotEnd = slotStart + slotMs;
+
+          // Skip past slots
+          if (slotStart < agoraMs) {
+            slotStart = slotEnd;
+            continue;
           }
-          
-          horaConsulta = new Date(horaConsulta.getTime() + duracaoConsulta * 60000);
+
+          if (slotEnd > fimMs) break;
+
+          // Check conflicts using pre-computed numeric ranges
+          const temConflito = agendamentosRanges.some(
+            r => slotStart < r.fim && slotEnd > r.inicio
+          );
+
+          if (!temConflito) {
+            horariosDisponiveis.push(new Date(slotStart));
+          }
+
+          slotStart = slotEnd;
         }
       }
-      
+
       dataAtual.setDate(dataAtual.getDate() + 1);
     }
-    
+
     return horariosDisponiveis;
   }
 
