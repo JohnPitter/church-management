@@ -64,7 +64,6 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
           isOpen ? 'bg-gray-100 text-gray-900' : ''
         }`}
         title="Notificações"
-        disabled={loading}
       >
         {/* Bell Icon */}
         <svg
@@ -83,16 +82,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
 
         {/* Unread Badge */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full min-w-[20px] h-5">
+          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full min-w-[20px] h-5 z-10">
             {unreadCount > 99 ? '99+' : unreadCount}
-          </span>
-        )}
-
-        {/* Loading indicator */}
-        {loading && (
-          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-3 h-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
           </span>
         )}
       </button>
