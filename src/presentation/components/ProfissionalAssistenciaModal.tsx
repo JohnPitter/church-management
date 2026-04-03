@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import {
   TipoAssistencia,
@@ -10,6 +10,8 @@ import {
 import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { useAuth } from '../contexts/AuthContext';
 import { applyPhoneMask, applyCEPMask } from '../../utils/inputMasks';
+import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
+import { User as DomainUser, UserStatus } from '@/domain/entities/User';
 
 interface ProfissionalAssistenciaModalProps {
   isOpen: boolean;
@@ -49,8 +51,13 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
   const { currentUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [systemUsers, setSystemUsers] = useState<DomainUser[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [userSearchTerm, setUserSearchTerm] = useState('');
 
   const profissionalService = new ProfissionalAssistenciaService();
+  const userRepository = useMemo(() => new FirebaseUserRepository(), []);
 
   const [formData, setFormData] = useState<FormData>({
     nome: '',
@@ -106,6 +113,48 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
     setHorarios(prev => prev.map(h => h.diaSemana === diaSemana ? { ...h, [field]: value } : h));
   };
 
+  // Load system users when modal opens in create mode
+  useEffect(() => {
+    if (isOpen && mode === 'create') {
+      const loadUsers = async () => {
+        setLoadingUsers(true);
+        try {
+          const users = await userRepository.findAll();
+          // Only show approved users
+          const approvedUsers = users.filter(u => u.status === UserStatus.Approved);
+          setSystemUsers(approvedUsers);
+        } catch (error) {
+          console.error('Error loading users:', error);
+          toast.error('Erro ao carregar usuários do sistema');
+        } finally {
+          setLoadingUsers(false);
+        }
+      };
+      loadUsers();
+    }
+  }, [isOpen, mode, userRepository]);
+
+  const handleUserSelect = (userId: string) => {
+    setSelectedUserId(userId);
+    const selectedUser = systemUsers.find(u => u.id === userId);
+    if (selectedUser) {
+      setFormData(prev => ({
+        ...prev,
+        nome: selectedUser.displayName,
+        email: selectedUser.email,
+        telefone: selectedUser.phoneNumber ? applyPhoneMask(selectedUser.phoneNumber) : prev.telefone,
+      }));
+      setUserSearchTerm('');
+    }
+  };
+
+  const filteredUsers = userSearchTerm.trim()
+    ? systemUsers.filter(u =>
+        u.displayName.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(userSearchTerm.toLowerCase())
+      )
+    : systemUsers;
+
   useEffect(() => {
     if (profissional && (mode === 'edit' || mode === 'view')) {
       setFormData({
@@ -153,6 +202,8 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
       setHorarios(defaultHorarios);
     }
     setErrors({});
+    setSelectedUserId('');
+    setUserSearchTerm('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profissional, mode, isOpen]);
 
@@ -174,6 +225,10 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
+
+    if (mode === 'create' && !selectedUserId) {
+      newErrors['email'] = 'Selecione um usuário do sistema';
+    }
 
     if (!formData.nome.trim()) {
       newErrors['nome'] = 'Nome é obrigatório';
@@ -369,56 +424,144 @@ const ProfissionalAssistenciaModal: React.FC<ProfissionalAssistenciaModalProps> 
         <div className="p-6 max-h-[60vh] overflow-y-auto">
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nome Completo *
-                </label>
-                <input
-                  type="text"
-                  value={formData.nome}
-                  onChange={(e) => handleInputChange('nome', e.target.value)}
-                  placeholder="Nome completo do profissional"
-                  disabled={isReadOnly || isLoading}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.nome ? 'border-red-500' : 'border-gray-300'
-                  } ${isReadOnly ? 'bg-gray-100' : ''}`}
-                />
-                {errors.nome && <p className="text-red-500 text-sm mt-1">{errors.nome}</p>}
-              </div>
+              {mode === 'create' ? (
+                <>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Vincular a Usuário do Sistema *
+                    </label>
+                    {selectedUserId ? (
+                      <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{formData.nome}</p>
+                          <p className="text-sm text-gray-600">{formData.email}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedUserId('');
+                            setFormData(prev => ({ ...prev, nome: '', email: '', telefone: '' }));
+                          }}
+                          className="text-gray-400 hover:text-gray-600 transition-colors text-lg"
+                          disabled={isLoading}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={userSearchTerm}
+                          onChange={(e) => setUserSearchTerm(e.target.value)}
+                          placeholder="Buscar usuário por nome ou email..."
+                          disabled={isLoading || loadingUsers}
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            errors.email ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                        />
+                        {loadingUsers && (
+                          <p className="text-sm text-gray-500 mt-1">Carregando usuários...</p>
+                        )}
+                        {!loadingUsers && userSearchTerm.trim() && filteredUsers.length === 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
+                            <p className="text-sm text-gray-500">Nenhum usuário encontrado</p>
+                          </div>
+                        )}
+                        {!loadingUsers && userSearchTerm.trim() && filteredUsers.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                            {filteredUsers.map(user => (
+                              <button
+                                key={user.id}
+                                type="button"
+                                onClick={() => handleUserSelect(user.id)}
+                                className="w-full text-left px-3 py-2 hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0"
+                              >
+                                <p className="font-medium text-gray-900 text-sm">{user.displayName}</p>
+                                <p className="text-xs text-gray-500">{user.email}</p>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                    <p className="text-xs text-gray-500 mt-1">
+                      Selecione o usuário que será vinculado como profissional. Nome e email serão preenchidos automaticamente.
+                    </p>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  placeholder="email@exemplo.com"
-                  disabled={isReadOnly || isLoading}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.email ? 'border-red-500' : 'border-gray-300'
-                  } ${isReadOnly ? 'bg-gray-100' : ''}`}
-                />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Telefone *
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.telefone}
+                      onChange={(e) => handleInputChange('telefone', e.target.value)}
+                      placeholder="(11) 99999-9999"
+                      disabled={isLoading}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        errors.telefone ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.telefone && <p className="text-red-500 text-sm mt-1">{errors.telefone}</p>}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nome Completo *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.nome}
+                      onChange={(e) => handleInputChange('nome', e.target.value)}
+                      placeholder="Nome completo do profissional"
+                      disabled={isReadOnly || isLoading}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        errors.nome ? 'border-red-500' : 'border-gray-300'
+                      } ${isReadOnly ? 'bg-gray-100' : ''}`}
+                    />
+                    {errors.nome && <p className="text-red-500 text-sm mt-1">{errors.nome}</p>}
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Telefone *
-                </label>
-                <input
-                  type="tel"
-                  value={formData.telefone}
-                  onChange={(e) => handleInputChange('telefone', e.target.value)}
-                  placeholder="(11) 99999-9999"
-                  disabled={isReadOnly || isLoading}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.telefone ? 'border-red-500' : 'border-gray-300'
-                  } ${isReadOnly ? 'bg-gray-100' : ''}`}
-                />
-                {errors.telefone && <p className="text-red-500 text-sm mt-1">{errors.telefone}</p>}
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      placeholder="email@exemplo.com"
+                      disabled={isReadOnly || isLoading}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        errors.email ? 'border-red-500' : 'border-gray-300'
+                      } ${isReadOnly ? 'bg-gray-100' : ''}`}
+                    />
+                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Telefone *
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.telefone}
+                      onChange={(e) => handleInputChange('telefone', e.target.value)}
+                      placeholder="(11) 99999-9999"
+                      disabled={isReadOnly || isLoading}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        errors.telefone ? 'border-red-500' : 'border-gray-300'
+                      } ${isReadOnly ? 'bg-gray-100' : ''}`}
+                    />
+                    {errors.telefone && <p className="text-red-500 text-sm mt-1">{errors.telefone}</p>}
+                  </div>
+                </>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
