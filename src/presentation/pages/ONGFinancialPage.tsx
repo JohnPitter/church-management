@@ -26,6 +26,8 @@ import { IncomeExpenseChart } from '../components/charts/IncomeExpenseChart';
 import { CategoryPieChart } from '../components/charts/CategoryPieChart';
 import { MonthlyComparisonChart } from '../components/charts/MonthlyComparisonChart';
 import { DonationDonutChart } from '../components/charts/DonationDonutChart';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
@@ -56,6 +58,12 @@ export const ONGFinancialPage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('overview');
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const { confirm } = useConfirmDialog();
+
+  const {
+    paginatedItems: paginatedTransactions,
+    currentPage, totalPages, totalItems, pageSize,
+    setCurrentPage, setPageSize
+  } = usePagination(transactions);
 
   // Chart data states
   const [chartData, setChartData] = useState({
@@ -865,7 +873,7 @@ export const ONGFinancialPage: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  transactions.map((transaction) => (
+                  paginatedTransactions.map((transaction) => (
                     <tr key={transaction.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatDate(transaction.date, 'dd/MM/yyyy')}
@@ -931,6 +939,15 @@ export const ONGFinancialPage: React.FC = () => {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="transações"
+            />
           </div>
         )}
 
