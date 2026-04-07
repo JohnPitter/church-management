@@ -3,6 +3,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 interface SessaoComFicha extends SessaoAcompanhamento {
   pacienteNome: string;
@@ -129,7 +131,10 @@ const ProfessionalSessoesPage: React.FC = () => {
     }
 
     return result;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessoes, filterPaciente, filterStatus, filterPeriodo, filterDataInicio, filterDataFim]);
+
+  const { paginatedItems: paginatedSessoes, currentPage, totalPages, totalItems, pageSize, setCurrentPage, setPageSize } = usePagination(filteredSessoes);
 
   // Stats
   const stats = useMemo(() => {
@@ -371,7 +376,7 @@ const ProfessionalSessoesPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredSessoes.map((sessao) => (
+                  {paginatedSessoes.map((sessao) => (
                     <tr key={`${sessao.fichaId}-${sessao.id}`} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatDate(sessao.data)}
@@ -403,11 +408,16 @@ const ProfessionalSessoesPage: React.FC = () => {
             </div>
           )}
 
-          {/* Results count */}
           {filteredSessoes.length > 0 && (
-            <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 text-sm text-gray-500">
-              Exibindo {filteredSessoes.length} de {sessoes.length} sessoes
-            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="sessões"
+            />
           )}
         </div>
       </div>

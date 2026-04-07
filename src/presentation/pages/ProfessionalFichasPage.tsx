@@ -7,6 +7,8 @@ import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { generateProntuarioPDF, generateProntuarioWord } from '../utils/prontuarioExport';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 interface FichaModalProps {
   isOpen: boolean;
@@ -2740,6 +2742,7 @@ const ProfessionalFichasPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [fichas, setFichas] = useState<FichaAcompanhamento[]>([]);
   const [fichasFiltradas, setFichasFiltradas] = useState<FichaAcompanhamento[]>([]);
+  const { paginatedItems: paginatedFichas, currentPage: fichasCurrentPage, totalPages: fichasTotalPages, totalItems: fichasTotalItems, pageSize: fichasPageSize, setCurrentPage: fichasSetCurrentPage, setPageSize: fichasSetPageSize } = usePagination(fichasFiltradas);
   const [filter, setFilter] = useState<'todas' | 'em_tratamento' | 'alta' | 'pausado' | 'cancelado'>('todas');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFicha, setSelectedFicha] = useState<FichaAcompanhamento | null>(null);
@@ -2980,7 +2983,7 @@ const ProfessionalFichasPage: React.FC = () => {
               </div>
             ) : (
               <div className="divide-y divide-gray-200">
-                {fichasFiltradas.map((ficha) => (
+                {paginatedFichas.map((ficha) => (
                   <div key={ficha.id} className="p-6 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -3070,6 +3073,18 @@ const ProfessionalFichasPage: React.FC = () => {
               </div>
             )}
           </div>
+
+          {fichasFiltradas.length > 0 && (
+            <Pagination
+              currentPage={fichasCurrentPage}
+              totalPages={fichasTotalPages}
+              totalItems={fichasTotalItems}
+              pageSize={fichasPageSize}
+              onPageChange={fichasSetCurrentPage}
+              onPageSizeChange={fichasSetPageSize}
+              itemLabel="fichas"
+            />
+          )}
         </div>
       </div>
 

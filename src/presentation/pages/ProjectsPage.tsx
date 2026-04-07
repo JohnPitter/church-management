@@ -10,6 +10,8 @@ import { loggingService } from '@modules/shared-kernel/logging/infrastructure/se
 import { format } from 'date-fns';
 import SocialShareButtons from '../components/SocialShareButtons';
 import toast from 'react-hot-toast';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 export const ProjectsPage: React.FC = () => {
   const { currentUser, canCreateContent: _canCreateContent } = useAuth();
@@ -78,6 +80,8 @@ export const ProjectsPage: React.FC = () => {
                          project.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesCategory && matchesSearch;
   });
+
+  const { paginatedItems, currentPage, totalPages, totalItems, pageSize, setCurrentPage, setPageSize } = usePagination(filteredProjects, { initialPageSize: 12 });
 
   const getStatusColor = (status: ProjectStatus) => {
     switch (status) {
@@ -261,7 +265,7 @@ export const ProjectsPage: React.FC = () => {
 
         {(!loading || projects.length > 0) && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {filteredProjects.map(project => (
+            {paginatedItems.map(project => (
             <div key={project.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
               {project.imageURL && (
                 <img
@@ -426,6 +430,19 @@ export const ProjectsPage: React.FC = () => {
             </div>
             ))}
           </div>
+        )}
+
+        {/* Pagination */}
+        {filteredProjects.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="projetos"
+          />
         )}
 
         {/* Empty State */}

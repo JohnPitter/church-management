@@ -19,6 +19,8 @@ import {
   forumService,
   TopicFilters
 } from '@modules/content-management/forum/infrastructure/services/ForumService';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 import { CreateTopicModal } from '../components/CreateTopicModal';
 import { CreateForumCategoryModal } from '@modules/content-management/forum/presentation/components/CreateForumCategoryModal';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
@@ -43,6 +45,8 @@ export const AdminForumPage: React.FC = () => {
   const [showCreateTopicModal, setShowCreateTopicModal] = useState(false);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
   const [_hasMore, setHasMore] = useState(false);
+
+  const { paginatedItems: paginatedTopics, currentPage: topicsCurrentPage, totalPages: topicsTotalPages, totalItems: topicsTotalItems, pageSize: topicsPageSize, setCurrentPage: setTopicsCurrentPage, setPageSize: setTopicsPageSize } = usePagination(topics);
 
   // Helper function to safely format dates
   const safeFormatDate = (date: Date | undefined, format: string) => {
@@ -257,7 +261,7 @@ export const AdminForumPage: React.FC = () => {
 
     return (
       <div className="space-y-4">
-        {topics.map(topic => (
+        {paginatedTopics.map(topic => (
           <div key={topic.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex justify-between items-start">
               <div className="flex-1">
@@ -375,6 +379,17 @@ export const AdminForumPage: React.FC = () => {
             </div>
           </div>
         ))}
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={topicsCurrentPage}
+          totalPages={topicsTotalPages}
+          totalItems={topicsTotalItems}
+          pageSize={topicsPageSize}
+          onPageChange={setTopicsCurrentPage}
+          onPageSizeChange={setTopicsPageSize}
+          itemLabel="tópicos"
+        />
       </div>
     );
   };

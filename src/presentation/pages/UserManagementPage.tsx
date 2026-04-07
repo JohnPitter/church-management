@@ -13,6 +13,8 @@ import { loggingService } from '@modules/shared-kernel/logging/infrastructure/se
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 // Presentation interface that maps to domain entities
 interface PresentationUser {
@@ -114,6 +116,8 @@ export const UserManagementPage: React.FC = () => {
     const matchesRole = selectedRole === 'all' || user.role === selectedRole;
     return matchesSearch && matchesRole;
   });
+
+  const { paginatedItems: paginatedUsers, currentPage, totalPages, totalItems, pageSize, setCurrentPage, setPageSize } = usePagination(filteredUsers);
 
   // Load roles (including custom roles) on component mount
   useEffect(() => {
@@ -454,7 +458,7 @@ export const UserManagementPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredUsers.map((user) => (
+                    {paginatedUsers.map((user) => (
                       <tr key={user.id} className={!user.isActive ? 'opacity-50' : ''}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
@@ -559,6 +563,18 @@ export const UserManagementPage: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {filteredUsers.length > 0 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                  itemLabel="usuários"
+                />
+              )}
 
               {filteredUsers.length === 0 && !loading && (
                 <div className="text-center py-12">

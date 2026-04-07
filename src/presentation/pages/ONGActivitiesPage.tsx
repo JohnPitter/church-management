@@ -14,6 +14,8 @@ import {
 } from '@modules/ong-management/settings/domain/entities/ONG';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 const ONGActivitiesPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -309,6 +311,8 @@ const ONGActivitiesPage: React.FC = () => {
     return matchesSearch && matchesStatus && matchesType;
   });
 
+  const { paginatedItems, currentPage, totalPages, totalItems, pageSize, setCurrentPage, setPageSize } = usePagination(filteredActivities);
+
   const getStatusColor = (status: StatusAtividade) => {
     switch (status) {
       case StatusAtividade.Planejada: return 'bg-blue-100 text-blue-800';
@@ -450,7 +454,7 @@ const ONGActivitiesPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredActivities.map((activity) => (
+                {paginatedItems.map((activity) => (
                   <tr key={activity.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
@@ -514,6 +518,15 @@ const ONGActivitiesPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="atividades"
+          />
         </div>
       </div>
 

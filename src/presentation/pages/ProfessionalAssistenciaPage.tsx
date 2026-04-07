@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { AgendamentoAssistenciaService, ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { AgendamentoAssistencia, StatusAgendamento, TipoAssistencia, AssistenciaEntity } from '@modules/assistance/assistencia/domain/entities/Assistencia';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 const ProfessionalAssistenciaPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -263,6 +265,7 @@ const ProfessionalAssistenciaPage: React.FC = () => {
   };
 
   const filteredAgendamentos = getFilteredAgendamentos();
+  const { paginatedItems: paginatedAgendamentos, currentPage, totalPages, totalItems, pageSize, setCurrentPage, setPageSize } = usePagination(filteredAgendamentos);
   const counts = {
     todos: agendamentos.length,
     hoje: agendamentos.filter(a => {
@@ -372,7 +375,7 @@ const ProfessionalAssistenciaPage: React.FC = () => {
               </div>
             ) : (
               <div className="divide-y divide-gray-200">
-                {filteredAgendamentos.map((agendamento) => (
+                {paginatedAgendamentos.map((agendamento) => (
                   <div key={agendamento.id} className="p-6 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -470,6 +473,18 @@ const ProfessionalAssistenciaPage: React.FC = () => {
               </div>
             )}
           </div>
+
+          {filteredAgendamentos.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="agendamentos"
+            />
+          )}
         </div>
       </div>
     </div>

@@ -12,6 +12,8 @@ import {
 } from '@modules/ong-management/settings/domain/entities/ONG';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 const ONGVolunteersPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -322,6 +324,8 @@ const ONGVolunteersPage: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const { paginatedItems, currentPage, totalPages, totalItems, pageSize, setCurrentPage, setPageSize } = usePagination(filteredVolunteers);
+
   const getStatusColor = (status: StatusVoluntario) => {
     switch (status) {
       case StatusVoluntario.Ativo: return 'bg-green-100 text-green-800';
@@ -430,7 +434,7 @@ const ONGVolunteersPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredVolunteers.map((volunteer) => (
+                {paginatedItems.map((volunteer) => (
                   <tr key={volunteer.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
@@ -477,6 +481,15 @@ const ONGVolunteersPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="voluntários"
+          />
         </div>
       </div>
 
