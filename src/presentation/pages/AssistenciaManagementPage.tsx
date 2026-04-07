@@ -20,6 +20,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 import {
   HiHeart,
   HiClipboardDocumentList,
@@ -83,7 +85,17 @@ const AssistenciaManagementPage: React.FC = () => {
   const [anamneseAssistidoId, setAnamneseAssistidoId] = useState<string>('');
   const [anamneseAssistidoNome, setAnamneseAssistidoNome] = useState<string>('');
 
-  
+  // Pagination
+  const {
+    paginatedItems: paginatedAgendamentos,
+    currentPage: agendPage,
+    totalPages: agendTotalPages,
+    totalItems: agendTotalItems,
+    pageSize: agendPageSize,
+    setCurrentPage: setAgendPage,
+    setPageSize: setAgendPageSize,
+  } = usePagination(agendamentosFiltrados);
+
   // Statistics
   const [statistics, setStatistics] = useState({
     totalAgendamentos: 0,
@@ -680,7 +692,7 @@ const AssistenciaManagementPage: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {agendamentosFiltrados.map((agendamento) => (
+                        {paginatedAgendamentos.map((agendamento) => (
                           <tr key={agendamento.id} className="hover:bg-gray-50">
                             <td className="px-4 sm:px-6 py-4">
                               <div>
@@ -762,13 +774,25 @@ const AssistenciaManagementPage: React.FC = () => {
                       </div>
                       <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum agendamento encontrado</h3>
                       <p className="text-gray-500">
-                        {searchTerm || statusFilter !== 'all' || tipoFilter !== 'all' 
+                        {searchTerm || statusFilter !== 'all' || tipoFilter !== 'all'
                           ? 'Tente ajustar os filtros de busca'
                           : 'Clique em "Novo Agendamento" para criar o primeiro agendamento'}
                       </p>
                     </div>
                   )}
                 </div>
+
+                {agendamentosFiltrados.length > 0 && (
+                  <Pagination
+                    currentPage={agendPage}
+                    totalPages={agendTotalPages}
+                    totalItems={agendTotalItems}
+                    pageSize={agendPageSize}
+                    onPageChange={setAgendPage}
+                    onPageSizeChange={setAgendPageSize}
+                    itemLabel="agendamentos"
+                  />
+                )}
               </div>
             )}
 

@@ -11,6 +11,8 @@ import { Event as DomainEvent, EventStatus, EventConfirmation, ConfirmationStatu
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 interface Event {
   id: string;
@@ -140,6 +142,16 @@ export const AdminEventsManagementPage: React.FC = () => {
                          event.location.toLowerCase().includes(debouncedSearch.toLowerCase());
     return matchesStatus && matchesCategory && matchesSearch;
   });
+
+  const {
+    paginatedItems,
+    currentPage,
+    totalPages,
+    totalItems,
+    pageSize,
+    setCurrentPage,
+    setPageSize,
+  } = usePagination(filteredEvents);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -644,7 +656,7 @@ export const AdminEventsManagementPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredEvents.map((event) => (
+                {paginatedItems.map((event) => (
                   <tr key={event.id} className="hover:bg-gray-50">
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
@@ -723,6 +735,16 @@ export const AdminEventsManagementPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="eventos"
+          />
 
           {loading && events.length === 0 && (
             <div className="text-center py-12">

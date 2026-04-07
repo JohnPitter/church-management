@@ -13,6 +13,8 @@ import { Project as DomainProject, ProjectStatus, ProjectRegistration, Registrat
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 // Presentation interface that maps to domain entities
 interface PresentationProject {
@@ -130,6 +132,11 @@ export const AdminProjectsManagementPage: React.FC = () => {
                          project.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesCategory && matchesSearch;
   });
+
+  const {
+    currentPage, pageSize, totalPages, totalItems, paginatedItems,
+    setCurrentPage, setPageSize,
+  } = usePagination(filteredProjects);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -642,7 +649,7 @@ export const AdminProjectsManagementPage: React.FC = () => {
                     </tr>
                   ))
                 ) : (
-                  filteredProjects.map((project) => (
+                  paginatedItems.map((project) => (
                   <tr key={project.id}>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
@@ -746,6 +753,20 @@ export const AdminProjectsManagementPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          {!loading && filteredProjects.length > 0 && (
+            <div className="px-6 py-4 border-t border-gray-200">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+                itemLabel="projetos"
+              />
+            </div>
+          )}
 
           {!loading && filteredProjects.length === 0 && (
             <div className="text-center py-12">

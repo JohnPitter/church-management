@@ -9,6 +9,8 @@ import toast from 'react-hot-toast';
 import { FirebaseLiveStreamRepository } from '@modules/content-management/live-streaming/infrastructure/repositories/FirebaseLiveStreamRepository';
 import { LiveStream as DomainLiveStream, StreamCategory, StreamStatus } from '@modules/content-management/live-streaming/domain/entities/LiveStream';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 import { db, storage } from '@/config/firebase';
 import { onSnapshot, collection } from 'firebase/firestore';
 import { ref, uploadBytesResumable, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -243,6 +245,11 @@ export const AdminLiveManagementPage: React.FC = () => {
                          stream.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesCategory && matchesSearch;
   });
+
+  const {
+    currentPage, pageSize, totalItems, totalPages, paginatedItems,
+    setCurrentPage, setPageSize,
+  } = usePagination(filteredStreams);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -638,7 +645,7 @@ export const AdminLiveManagementPage: React.FC = () => {
                     </tr>
                   ))
                 ) : (
-                  filteredStreams.map((stream) => (
+                  paginatedItems.map((stream) => (
                   <tr key={stream.id}>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
@@ -740,6 +747,18 @@ export const AdminLiveManagementPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          {!loading && filteredStreams.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="transmissões"
+            />
+          )}
 
           {!loading && filteredStreams.length === 0 && (
             <div className="text-center py-12">

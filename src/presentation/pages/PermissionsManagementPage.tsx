@@ -19,6 +19,8 @@ import {
 } from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
 import { User } from '@/domain/entities/User';
 import { CreateRoleModal } from '../components/CreateRoleModal';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
@@ -463,10 +465,20 @@ export const PermissionsManagementPage: React.FC = () => {
     }
   };
 
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     (user.displayName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const {
+    currentPage: usersCurrentPage,
+    totalPages: usersTotalPages,
+    totalItems: usersTotalItems,
+    pageSize: usersPageSize,
+    paginatedItems: paginatedUsers,
+    setCurrentPage: setUsersCurrentPage,
+    setPageSize: setUsersPageSize,
+  } = usePagination(filteredUsers);
 
   const modules = PermissionManager.getAllModules();
   const actions = PermissionManager.getAllActions();
@@ -729,7 +741,7 @@ export const PermissionsManagementPage: React.FC = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">Selecione um usuário...</option>
-                    {filteredUsers.map(user => (
+                    {paginatedUsers.map(user => (
                       <option key={user.id} value={user.id}>
                         {user.displayName} ({user.email}) - {permissionService.getRoleDisplayNameSync(user.role)}
                       </option>
@@ -737,6 +749,15 @@ export const PermissionsManagementPage: React.FC = () => {
                   </select>
                 </div>
               </div>
+              <Pagination
+                currentPage={usersCurrentPage}
+                totalPages={usersTotalPages}
+                totalItems={usersTotalItems}
+                pageSize={usersPageSize}
+                onPageChange={setUsersCurrentPage}
+                onPageSizeChange={setUsersPageSize}
+                itemLabel="usuários"
+              />
             </div>
 
             {/* User Permissions Matrix */}

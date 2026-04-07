@@ -33,6 +33,7 @@ import { CreateDepartmentModal } from '../components/CreateDepartmentModal';
 import { DepartmentTransactionModal } from '../components/DepartmentTransactionModal';
 import { DepartmentReportModal } from '../components/DepartmentReportModal';
 import { DepartmentActionsMenu } from '../components/DepartmentActionsMenu';
+import { Pagination } from '../components/common/Pagination';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
@@ -67,6 +68,13 @@ export const AdminFinancialPage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('overview');
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const { confirm } = useConfirmDialog();
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [totalTransactions, setTotalTransactions] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   // Department states
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -105,6 +113,7 @@ export const AdminFinancialPage: React.FC = () => {
 
   useEffect(() => {
     if (selectedPeriod === 'custom' && (!customStartDate || !customEndDate)) return;
+    setCurrentPage(1);
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPeriod, filters, customStartDate, customEndDate]);
@@ -140,16 +149,51 @@ export const AdminFinancialPage: React.FC = () => {
     }
   };
 
+  const loadTransactionsPage = async (page?: number) => {
+    setLoadingTransactions(true);
+    try {
+      const { startDate, endDate } = getPeriodDates(selectedPeriod);
+      const targetPage = page ?? currentPage;
+      const result = await financialService.getTransactionsPaginated(
+        { ...filters, startDate, endDate },
+        targetPage,
+        itemsPerPage
+      );
+      setTransactions(result.data);
+      setTotalTransactions(result.total);
+      setTotalPages(result.totalPages);
+    } catch (error) {
+      console.error('Error loading transactions page:', error);
+      setTransactions([]);
+      setTotalTransactions(0);
+      setTotalPages(0);
+    } finally {
+      setLoadingTransactions(false);
+    }
+  };
+
+  // Reload transactions when page or page size changes (not on initial load)
+  useEffect(() => {
+    if (!loading) {
+      loadTransactionsPage();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, itemsPerPage]);
+
   const loadData = async () => {
     setLoading(true);
     try {
       const { startDate, endDate } = getPeriodDates(selectedPeriod);
-      
-      // Load data with individual error handling
-      const [transactionsData, categoriesData] = await Promise.all([
-        financialService.getTransactions({ ...filters, startDate, endDate }).catch(err => {
+
+      // Load paginated transactions and categories in parallel
+      const [paginatedResult, categoriesData] = await Promise.all([
+        financialService.getTransactionsPaginated(
+          { ...filters, startDate, endDate },
+          1,
+          itemsPerPage
+        ).catch(err => {
           console.error('Error loading transactions:', err);
-          return [];
+          return { data: [] as Transaction[], total: 0, page: 1, pageSize: itemsPerPage, totalPages: 0 };
         }),
         financialService.getCategories().catch(err => {
           console.error('Error loading categories:', err);
@@ -163,27 +207,29 @@ export const AdminFinancialPage: React.FC = () => {
         summaryData = await financialService.getFinancialSummary(startDate, endDate);
       } catch (error) {
         console.error('Error loading summary:', error);
-        // Create fallback summary
         summaryData = {
           totalIncome: 0,
           totalExpenses: 0,
           netIncome: 0,
-          transactionCount: transactionsData.length,
+          transactionCount: paginatedResult.total,
           pendingTransactions: 0,
           topCategories: []
         };
       }
 
-      setTransactions(transactionsData);
+      setTransactions(paginatedResult.data);
+      setTotalTransactions(paginatedResult.total);
+      setTotalPages(paginatedResult.totalPages);
       setCategories(categoriesData);
       setSummary(summaryData);
-      
+
       // Load chart data
       await loadChartData(startDate, endDate);
     } catch (error) {
       console.error('Error loading financial data:', error);
-      // Set fallback data instead of showing alert
       setTransactions([]);
+      setTotalTransactions(0);
+      setTotalPages(0);
       setCategories([]);
       setSummary({
         totalIncome: 0,
@@ -1039,6 +1085,27 @@ export const AdminFinancialPage: React.FC = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalTransactions}
+              pageSize={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(size) => {
+                setItemsPerPage(size);
+                setCurrentPage(1);
+              }}
+              itemLabel="transações"
+            />
+
+            {/* Loading overlay for page changes */}
+            {loadingTransactions && !loading && (
+              <div className="px-6 py-3 text-center text-sm text-gray-500">
+                Carregando transações...
+              </div>
+            )}
           </div>
         )}
 

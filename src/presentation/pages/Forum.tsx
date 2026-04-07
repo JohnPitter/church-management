@@ -23,6 +23,8 @@ import {
 import { CreateTopicModal } from '../components/CreateTopicModal';
 import SocialShareButtons from '../components/SocialShareButtons';
 import toast from 'react-hot-toast';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 
 export const Forum: React.FC = () => {
@@ -45,6 +47,11 @@ export const Forum: React.FC = () => {
   const [viewMode, setViewMode] = useState<'categories' | 'topics' | 'topic'>('categories');
   const [_hasMoreTopics, setHasMoreTopics] = useState(false);
   const [_hasMoreReplies, setHasMoreReplies] = useState(false);
+
+  const {
+    currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedTopics,
+    setCurrentPage, setPageSize
+  } = usePagination(topics, { initialPageSize: 12 });
 
   useEffect(() => {
     loadInitialData();
@@ -402,7 +409,8 @@ export const Forum: React.FC = () => {
               )}
             </div>
           ) : (
-            topics.map(topic => {
+            <>
+            {paginatedTopics.map(topic => {
               const isLiked = currentUser && topic.likes.includes(currentUser.id);
               
               return (
@@ -490,7 +498,23 @@ export const Forum: React.FC = () => {
                   </div>
                 </div>
               );
-            })
+            })}
+
+            {/* Pagination */}
+            {topics.length > 0 && (
+              <div className="mt-8">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                  itemLabel="tópicos"
+                />
+              </div>
+            )}
+            </>
           )}
         </div>
       </div>

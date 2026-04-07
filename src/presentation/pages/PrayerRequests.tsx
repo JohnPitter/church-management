@@ -8,6 +8,8 @@ import { CreatePrayerRequestModal } from '@modules/church-management/prayer-requ
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { useAuth } from '../contexts/AuthContext';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 const PrayerRequests: React.FC = () => {
   const { currentUser } = useAuth();
@@ -143,6 +145,11 @@ const PrayerRequests: React.FC = () => {
   };
 
   const stats = getStats();
+
+  const {
+    currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedRequests,
+    setCurrentPage, setPageSize
+  } = usePagination(prayerRequests, { initialPageSize: 12 });
 
   if (loading) {
     return (
@@ -313,7 +320,7 @@ const PrayerRequests: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {prayerRequests.map((request) => (
+                {paginatedRequests.map((request) => (
                   <tr key={request.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col">
@@ -393,6 +400,21 @@ const PrayerRequests: React.FC = () => {
           </div>
         )}
         </div>
+
+        {/* Pagination */}
+        {prayerRequests.length > 0 && (
+          <div className="mt-8">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="pedidos"
+            />
+          </div>
+        )}
       </div>
 
       {/* Create Prayer Request Modal */}

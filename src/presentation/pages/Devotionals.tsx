@@ -16,6 +16,8 @@ import {
 } from '@modules/church-management/devotionals/application/services/DevotionalService';
 import SocialShareButtons from '../components/SocialShareButtons';
 import toast from 'react-hot-toast';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 export const Devotionals: React.FC = () => {
   const { currentUser } = useAuth();
@@ -28,6 +30,11 @@ export const Devotionals: React.FC = () => {
   const [filters, setFilters] = useState<DevotionalFilters>({ isPublished: true });
   const [hasMore, setHasMore] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'reading'>('list');
+
+  const {
+    currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedDevotionals,
+    setCurrentPage, setPageSize
+  } = usePagination(devotionals, { initialPageSize: 12 });
 
   useEffect(() => {
     loadData();
@@ -199,8 +206,9 @@ export const Devotionals: React.FC = () => {
     }
 
     return (
+      <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {devotionals.map(devotional => {
+        {paginatedDevotionals.map(devotional => {
           const isLiked = currentUser && devotional.likes.includes(currentUser.id);
           const isBookmarked = currentUser && devotional.bookmarks.includes(currentUser.id);
 
@@ -290,6 +298,22 @@ export const Devotionals: React.FC = () => {
           );
         })}
       </div>
+
+      {/* Pagination */}
+      {devotionals.length > 0 && (
+        <div className="mt-8">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="devocionais"
+          />
+        </div>
+      )}
+      </>
     );
   };
 

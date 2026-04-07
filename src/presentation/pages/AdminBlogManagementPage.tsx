@@ -12,6 +12,8 @@ import { loggingService } from '@modules/shared-kernel/logging/infrastructure/se
 import { PermissionGuard } from '../components/PermissionGuard';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
 
 // Presentation interface that maps to domain entities
@@ -104,6 +106,16 @@ export const AdminBlogManagementPage: React.FC = () => {
                          post.tags.some(tag => tag.toLowerCase().includes(debouncedSearch.toLowerCase()));
     return matchesStatus && matchesCategory && matchesSearch;
   });
+
+  const {
+    paginatedItems: paginatedPosts,
+    currentPage,
+    totalPages,
+    totalItems,
+    pageSize,
+    setCurrentPage,
+    setPageSize,
+  } = usePagination(filteredPosts);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -511,8 +523,8 @@ export const AdminBlogManagementPage: React.FC = () => {
                       <p className="mt-2 text-sm text-gray-500">Carregando postagens...</p>
                     </td>
                   </tr>
-                ) : filteredPosts.length > 0 ? (
-                  filteredPosts.map((post) => (
+                ) : paginatedPosts.length > 0 ? (
+                  paginatedPosts.map((post) => (
                     <tr key={post.id}>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
@@ -624,6 +636,16 @@ export const AdminBlogManagementPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="posts"
+          />
 
         </div>
       </div>

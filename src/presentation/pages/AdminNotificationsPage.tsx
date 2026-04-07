@@ -5,6 +5,8 @@ import React, { useState, useEffect } from 'react';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { NotificationPriority } from '@modules/shared-kernel/notifications/domain/entities/Notification';
@@ -198,6 +200,16 @@ export const AdminNotificationsPage: React.FC = () => {
     return matchesSearch && matchesRole;
   });
 
+  const {
+    currentPage,
+    pageSize,
+    totalItems,
+    totalPages,
+    paginatedItems,
+    setCurrentPage,
+    setPageSize,
+  } = usePagination(filteredUsers);
+
   // Permission loading state
   if (permissionsLoading) {
     return (
@@ -317,14 +329,14 @@ export const AdminNotificationsPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredUsers.length === 0 ? (
+                  {paginatedItems.length === 0 ? (
                     <tr>
                       <td colSpan={3} className="px-6 py-8 text-center text-sm text-gray-500">
                         Nenhum usuário encontrado
                       </td>
                     </tr>
                   ) : (
-                    filteredUsers.map(user => (
+                    paginatedItems.map(user => (
                       <tr key={user.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{user.name}</div>
@@ -349,6 +361,16 @@ export const AdminNotificationsPage: React.FC = () => {
               </table>
             </div>
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="usuários"
+          />
         </div>
       </div>
 

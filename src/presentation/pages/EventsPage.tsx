@@ -9,6 +9,8 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import SocialShareButtons from '../components/SocialShareButtons';
 import { AnonymousRegistrationModal, AnonymousRegistration } from '../components/AnonymousRegistrationModal';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 export const EventsPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -82,6 +84,11 @@ export const EventsPage: React.FC = () => {
                          event.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const {
+    currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedEvents,
+    setCurrentPage, setPageSize
+  } = usePagination(filteredEvents, { initialPageSize: 12 });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -336,7 +343,7 @@ export const EventsPage: React.FC = () => {
           <>
             {/* Events Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredEvents.map((event) => (
+              {paginatedEvents.map((event) => (
                 <article key={event.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
                   {event.imageURL && (
                     <img
@@ -421,6 +428,21 @@ export const EventsPage: React.FC = () => {
                 </article>
               ))}
             </div>
+
+            {/* Pagination */}
+            {filteredEvents.length > 0 && (
+              <div className="mt-8">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                  itemLabel="eventos"
+                />
+              </div>
+            )}
 
             {/* Empty State - No Events */}
             {!loading && filteredEvents.length === 0 && (

@@ -41,6 +41,14 @@ export interface TransactionFilters {
   createdBy?: string;
 }
 
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 export interface FinancialSummary {
   totalIncome: number;
   totalExpenses: number;
@@ -204,6 +212,61 @@ export class FinancialService {
     } catch (error) {
       console.error('Error getting transactions:', error);
       throw new Error('Erro ao buscar transações');
+    }
+  }
+
+  async getTransactionsPaginated(
+    filters: TransactionFilters = {},
+    page: number = 1,
+    pageSize: number = 20
+  ): Promise<PaginatedResult<Transaction>> {
+    try {
+      const [total, allTransactions] = await Promise.all([
+        this.getFilteredTransactionCount(filters),
+        this.getTransactions(filters, page * pageSize)
+      ]);
+
+      const startIdx = (page - 1) * pageSize;
+      const data = allTransactions.slice(startIdx, startIdx + pageSize);
+
+      return {
+        data,
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize)
+      };
+    } catch (error) {
+      console.error('Error getting paginated transactions:', error);
+      throw new Error('Erro ao buscar transações paginadas');
+    }
+  }
+
+  private async getFilteredTransactionCount(filters: TransactionFilters): Promise<number> {
+    try {
+      let q = query(collection(db, this.transactionsCollection));
+
+      if (filters.type) {
+        q = query(q, where('type', '==', filters.type));
+      }
+
+      if (filters.status) {
+        q = query(q, where('status', '==', filters.status));
+      }
+
+      if (filters.startDate) {
+        q = query(q, where('date', '>=', Timestamp.fromDate(filters.startDate)));
+      }
+
+      if (filters.endDate) {
+        q = query(q, where('date', '<=', Timestamp.fromDate(filters.endDate)));
+      }
+
+      const countSnapshot = await getCountFromServer(q);
+      return countSnapshot.data().count;
+    } catch (error) {
+      console.error('Error counting filtered transactions:', error);
+      return 0;
     }
   }
 

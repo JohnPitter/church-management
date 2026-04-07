@@ -6,6 +6,8 @@ import { useConfirmDialog } from '../components/ConfirmDialog';
 import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
 import { generateProntuarioPDF, generateProntuarioWord } from '../utils/prontuarioExport';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 interface FichaModalProps {
   isOpen: boolean;
@@ -919,6 +921,11 @@ const FichasManagementPage: React.FC = () => {
   const [selectedFicha, setSelectedFicha] = useState<FichaAcompanhamento | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const {
+    currentPage, pageSize, totalItems, totalPages, paginatedItems,
+    setCurrentPage, setPageSize,
+  } = usePagination(fichasFiltradas);
+
   const fichaRepository = new FirebaseFichaAcompanhamentoRepository();
 
   useEffect(() => {
@@ -1190,7 +1197,7 @@ const FichasManagementPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {fichasFiltradas.map((ficha) => (
+                    {paginatedItems.map((ficha) => (
                       <tr key={ficha.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{ficha.pacienteNome}</div>
@@ -1234,6 +1241,17 @@ const FichasManagementPage: React.FC = () => {
               </div>
             )}
           </div>
+          {fichasFiltradas.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="fichas"
+            />
+          )}
         </div>
       </div>
 

@@ -9,6 +9,8 @@ import { FirebaseBlogRepository } from '@modules/content-management/blog/infrast
 import { format } from 'date-fns';
 import SocialShareButtons from '../components/SocialShareButtons';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 // Presentation interface for BlogPost
 interface PresentationBlogPost {
@@ -186,6 +188,11 @@ export const BlogPage: React.FC = () => {
   // Get the highlighted post (if any)
   const highlightedPost = posts.find(post => post.isHighlighted) || null;
   const regularPosts = filteredPosts.filter(post => !post.isHighlighted);
+
+  const {
+    currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedPosts,
+    setCurrentPage, setPageSize
+  } = usePagination(regularPosts, { initialPageSize: 12 });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -380,7 +387,7 @@ export const BlogPage: React.FC = () => {
 
             {/* Regular Posts Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {regularPosts.map(post => (
+              {paginatedPosts.map(post => (
                 <article key={post.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
                   {post.featuredImage && (
                     <img
@@ -464,6 +471,21 @@ export const BlogPage: React.FC = () => {
                 </article>
               ))}
             </div>
+
+            {/* Pagination */}
+            {regularPosts.length > 0 && (
+              <div className="mt-8">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                  itemLabel="posts"
+                />
+              </div>
+            )}
 
             {/* Empty State - No Posts */}
             {!loading && posts.length === 0 && (
