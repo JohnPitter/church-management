@@ -316,11 +316,11 @@ export class FinancialService {
   // Financial Summary and Reports
   async getFinancialSummary(startDate: Date, endDate: Date): Promise<FinancialSummary> {
     try {
-      const transactions = await this.getTransactions({
+      const allTransactions = await this.getTransactions({
         startDate,
-        endDate,
-        status: TransactionStatus.APPROVED
+        endDate
       }, 1000);
+      const transactions = allTransactions.filter(t => t.status === TransactionStatus.APPROVED);
 
       const totalIncome = transactions
         .filter(t => t.type === TransactionType.INCOME)
@@ -554,11 +554,13 @@ export class FinancialService {
   // Chart Data Methods
   async getIncomeExpenseTrend(startDate: Date, endDate: Date, period: 'daily' | 'weekly' | 'monthly' = 'monthly'): Promise<{ date: Date; income: number; expense: number }[]> {
     try {
-      const transactions = await this.getTransactions({
+      // Fetch without status filter to avoid composite index requirement,
+      // then filter client-side for approved transactions
+      const allTransactions = await this.getTransactions({
         startDate,
-        endDate,
-        status: TransactionStatus.APPROVED
+        endDate
       }, 1000);
+      const transactions = allTransactions.filter(t => t.status === TransactionStatus.APPROVED);
 
       // Group transactions by period
       const groupedData = new Map<string, { income: number; expense: number; date: Date }>();
@@ -606,12 +608,12 @@ export class FinancialService {
 
   async getCategoryChartData(startDate: Date, endDate: Date, type: TransactionType): Promise<{ category: FinancialCategory; amount: number; count: number }[]> {
     try {
-      const transactions = await this.getTransactions({
+      const allTransactions = await this.getTransactions({
         startDate,
         endDate,
-        type,
-        status: TransactionStatus.APPROVED
+        type
       }, 1000);
+      const transactions = allTransactions.filter(t => t.status === TransactionStatus.APPROVED);
 
       const categoryTotals = new Map<string, { category: FinancialCategory; amount: number; count: number }>();
       
@@ -640,11 +642,11 @@ export class FinancialService {
 
   async getMonthlyComparison(startDate: Date, endDate: Date): Promise<{ month: Date; income: number; expense: number; netIncome: number }[]> {
     try {
-      const transactions = await this.getTransactions({
+      const allTransactions = await this.getTransactions({
         startDate,
-        endDate,
-        status: TransactionStatus.APPROVED
+        endDate
       }, 1000);
+      const transactions = allTransactions.filter(t => t.status === TransactionStatus.APPROVED);
 
       const monthlyData = new Map<string, { month: Date; income: number; expense: number }>();
       

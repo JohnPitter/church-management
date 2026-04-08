@@ -382,11 +382,11 @@ export class ONGFinancialService {
    */
   async getFinancialSummary(startDate: Date, endDate: Date): Promise<ONGFinancialSummary> {
     try {
-      const transactions = await this.getTransactions({
+      const allTransactions = await this.getTransactions({
         startDate,
-        endDate,
-        status: TransactionStatus.APPROVED
+        endDate
       }, 1000);
+      const transactions = allTransactions.filter(t => t.status === TransactionStatus.APPROVED);
 
       const totalIncome = transactions
         .filter(t => t.type === TransactionType.INCOME)
@@ -446,11 +446,11 @@ export class ONGFinancialService {
    */
   async getIncomeExpenseTrend(startDate: Date, endDate: Date, period: 'daily' | 'weekly' | 'monthly' = 'monthly'): Promise<{ date: Date; income: number; expense: number }[]> {
     try {
-      const transactions = await this.getTransactions({
+      const allTransactions = await this.getTransactions({
         startDate,
-        endDate,
-        status: TransactionStatus.APPROVED
+        endDate
       }, 1000);
+      const transactions = allTransactions.filter(t => t.status === TransactionStatus.APPROVED);
 
       // Group transactions by period
       const groupedData = new Map<string, { income: number; expense: number; date: Date }>();
@@ -501,12 +501,12 @@ export class ONGFinancialService {
    */
   async getCategoryChartData(startDate: Date, endDate: Date, type: TransactionType): Promise<{ category: FinancialCategory; amount: number; count: number }[]> {
     try {
-      const transactions = await this.getTransactions({
+      const allTransactions = await this.getTransactions({
         startDate,
         endDate,
-        type,
-        status: TransactionStatus.APPROVED
+        type
       }, 1000);
+      const transactions = allTransactions.filter(t => t.status === TransactionStatus.APPROVED);
 
       const categoryTotals = new Map<string, { category: FinancialCategory; amount: number; count: number }>();
 
@@ -538,11 +538,11 @@ export class ONGFinancialService {
    */
   async getMonthlyComparison(startDate: Date, endDate: Date): Promise<{ month: Date; income: number; expense: number; netIncome: number }[]> {
     try {
-      const transactions = await this.getTransactions({
+      const allTransactions = await this.getTransactions({
         startDate,
-        endDate,
-        status: TransactionStatus.APPROVED
+        endDate
       }, 1000);
+      const transactions = allTransactions.filter(t => t.status === TransactionStatus.APPROVED);
 
       const monthlyData = new Map<string, { month: Date; income: number; expense: number }>();
 
