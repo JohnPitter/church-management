@@ -556,52 +556,77 @@ export class FinancialService {
   // Chart Data Methods
   async getIncomeExpenseTrend(startDate: Date, endDate: Date, period: 'daily' | 'weekly' | 'monthly' = 'monthly'): Promise<{ date: Date; income: number; expense: number }[]> {
     try {
-      // Fetch without status filter to avoid composite index requirement,
-      // then filter client-side for approved transactions
       const allTransactions = await this.getTransactions({
         startDate,
         endDate
       }, 1000);
       const transactions = allTransactions.filter(t => t.status === TransactionStatus.APPROVED);
 
-      // Group transactions by period
-      const groupedData = new Map<string, { income: number; expense: number; date: Date }>();
-      
+      // Generate all period slots in the range, filled with zeros
+      const slots = new Map<string, { income: number; expense: number; date: Date }>();
+      const cursor = new Date(startDate);
+
+      while (cursor <= endDate) {
+        let key: string;
+        let slotDate: Date;
+
+        switch (period) {
+          case 'daily':
+            key = formatDate(cursor, 'yyyy-MM-dd');
+            slotDate = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
+            cursor.setDate(cursor.getDate() + 1);
+            break;
+          case 'weekly': {
+            const weekStart = new Date(cursor);
+            weekStart.setDate(cursor.getDate() - cursor.getDay());
+            key = formatDate(weekStart, 'yyyy-MM-dd');
+            slotDate = new Date(weekStart);
+            cursor.setDate(cursor.getDate() + 7);
+            break;
+          }
+          case 'monthly':
+          default:
+            key = formatDate(cursor, 'yyyy-MM');
+            slotDate = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+            cursor.setMonth(cursor.getMonth() + 1);
+            break;
+        }
+
+        if (!slots.has(key)) {
+          slots.set(key, { income: 0, expense: 0, date: slotDate });
+        }
+      }
+
+      // Fill in transaction data
       transactions.forEach(transaction => {
         let periodKey: string;
-        let periodDate: Date;
-        
         switch (period) {
           case 'daily':
             periodKey = formatDate(transaction.date, 'yyyy-MM-dd');
-            periodDate = new Date(transaction.date.getFullYear(), transaction.date.getMonth(), transaction.date.getDate());
             break;
-          case 'weekly':
+          case 'weekly': {
             const weekStart = new Date(transaction.date);
             weekStart.setDate(transaction.date.getDate() - transaction.date.getDay());
             periodKey = formatDate(weekStart, 'yyyy-MM-dd');
-            periodDate = weekStart;
             break;
+          }
           case 'monthly':
           default:
             periodKey = formatDate(transaction.date, 'yyyy-MM');
-            periodDate = new Date(transaction.date.getFullYear(), transaction.date.getMonth(), 1);
             break;
         }
-        
-        if (!groupedData.has(periodKey)) {
-          groupedData.set(periodKey, { income: 0, expense: 0, date: periodDate });
-        }
-        
-        const data = groupedData.get(periodKey)!;
-        if (transaction.type === TransactionType.INCOME) {
-          data.income += transaction.amount;
-        } else if (transaction.type === TransactionType.EXPENSE) {
-          data.expense += transaction.amount;
+
+        const data = slots.get(periodKey);
+        if (data) {
+          if (transaction.type === TransactionType.INCOME) {
+            data.income += transaction.amount;
+          } else if (transaction.type === TransactionType.EXPENSE) {
+            data.expense += transaction.amount;
+          }
         }
       });
 
-      return Array.from(groupedData.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
+      return Array.from(slots.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
     } catch (error) {
       console.error('Error getting income expense trend:', error);
       return [];
