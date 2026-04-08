@@ -28,6 +28,8 @@ import {
   FinancialEntity
 } from '../../domain/entities/Financial';
 import { startOfMonth, endOfMonth, format as formatDate } from 'date-fns';
+import { FirebaseMemberRepository } from '@modules/church-management/members/infrastructure/repositories/FirebaseMemberRepository';
+import { MemberStatus } from '@modules/church-management/members/domain/entities/Member';
 
 export interface TransactionFilters {
   type?: TransactionType;
@@ -713,6 +715,36 @@ export class FinancialService {
     } catch (error) {
       console.error('Error getting donation chart data:', error);
       return [];
+    }
+  }
+
+  async getMemberFidelityData(startDate: Date, endDate: Date): Promise<{
+    contributingMembers: number;
+    totalActiveMembers: number;
+    percentage: number;
+  }> {
+    try {
+      const memberRepository = new FirebaseMemberRepository();
+      const [donations, totalActiveMembers] = await Promise.all([
+        this.getDonations({ startDate, endDate }),
+        memberRepository.countByStatus(MemberStatus.Active)
+      ]);
+
+      const uniqueDonors = new Set(
+        donations
+          .filter(d => d.memberId && !d.isAnonymous)
+          .map(d => d.memberId)
+      );
+
+      const contributingMembers = uniqueDonors.size;
+      const percentage = totalActiveMembers > 0
+        ? Math.round((contributingMembers / totalActiveMembers) * 100)
+        : 0;
+
+      return { contributingMembers, totalActiveMembers, percentage };
+    } catch (error) {
+      console.error('Error getting member fidelity data:', error);
+      return { contributingMembers: 0, totalActiveMembers: 0, percentage: 0 };
     }
   }
 

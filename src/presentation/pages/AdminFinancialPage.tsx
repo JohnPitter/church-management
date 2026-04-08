@@ -91,7 +91,8 @@ export const AdminFinancialPage: React.FC = () => {
     incomeCategories: [] as { category: FinancialCategory; amount: number; count: number }[],
     expenseCategories: [] as { category: FinancialCategory; amount: number; count: number }[],
     monthlyComparison: [] as { month: Date; income: number; expense: number; netIncome: number }[],
-    donationData: [] as { type: any; amount: number; count: number; label: string }[]
+    donationData: [] as { type: any; amount: number; count: number; label: string }[],
+    memberFidelity: { contributingMembers: 0, totalActiveMembers: 0, percentage: 0 }
   });
 
   const periods = [
@@ -284,12 +285,13 @@ export const AdminFinancialPage: React.FC = () => {
 
   const loadChartData = async (startDate: Date, endDate: Date) => {
     try {
-      const [trendData, incomeCatData, expenseCatData, monthlyData, donationChartData] = await Promise.all([
+      const [trendData, incomeCatData, expenseCatData, monthlyData, donationChartData, fidelityData] = await Promise.all([
         financialService.getIncomeExpenseTrend(startDate, endDate, 'monthly').catch(() => []),
         financialService.getCategoryChartData(startDate, endDate, TransactionType.INCOME).catch(() => []),
         financialService.getCategoryChartData(startDate, endDate, TransactionType.EXPENSE).catch(() => []),
         financialService.getMonthlyComparison(startDate, endDate).catch(() => []),
-        financialService.getDonationChartData(startDate, endDate).catch(() => [])
+        financialService.getDonationChartData(startDate, endDate).catch(() => []),
+        financialService.getMemberFidelityData(startDate, endDate).catch(() => ({ contributingMembers: 0, totalActiveMembers: 0, percentage: 0 }))
       ]);
 
       setChartData({
@@ -297,7 +299,8 @@ export const AdminFinancialPage: React.FC = () => {
         incomeCategories: incomeCatData,
         expenseCategories: expenseCatData,
         monthlyComparison: monthlyData,
-        donationData: donationChartData
+        donationData: donationChartData,
+        memberFidelity: fidelityData
       });
     } catch (error) {
       console.error('Error loading chart data:', error);
@@ -1877,13 +1880,12 @@ export const AdminFinancialPage: React.FC = () => {
 
                   <div className="text-center">
                     <div className="text-3xl mb-2">
-                      {chartData.donationData.length > 0 && 
-                       chartData.donationData.reduce((sum, d) => sum + d.count, 0) > 10 ? '🟢' : 
-                       chartData.donationData.reduce((sum, d) => sum + d.count, 0) > 5 ? '🟡' : '🔴'}
+                      {chartData.memberFidelity.percentage >= 50 ? '🟢' :
+                       chartData.memberFidelity.percentage >= 25 ? '🟡' : '🔴'}
                     </div>
                     <h4 className="font-medium text-gray-900">Fidelidade dos Membros</h4>
                     <p className="text-sm text-gray-600">
-                      {chartData.donationData.reduce((sum, d) => sum + d.count, 0)} contribuições registradas
+                      {chartData.memberFidelity.contributingMembers} de {chartData.memberFidelity.totalActiveMembers} membros contribuíram ({chartData.memberFidelity.percentage}%)
                     </p>
                   </div>
                 </div>
