@@ -71,7 +71,8 @@ export const ONGFinancialPage: React.FC = () => {
     incomeCategories: [] as { category: FinancialCategory; amount: number; count: number }[],
     expenseCategories: [] as { category: FinancialCategory; amount: number; count: number }[],
     monthlyComparison: [] as { month: Date; income: number; expense: number; netIncome: number }[],
-    donationData: [] as { type: any; amount: number; count: number; label: string }[]
+    donationData: [] as { type: any; amount: number; count: number; label: string }[],
+    trendPeriod: 'monthly' as 'daily' | 'weekly' | 'monthly'
   });
 
   const periods = [
@@ -219,8 +220,11 @@ export const ONGFinancialPage: React.FC = () => {
 
   const loadChartData = async (startDate: Date, endDate: Date) => {
     try {
+      const diffDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      const trendPeriod: 'daily' | 'weekly' | 'monthly' = diffDays <= 62 ? 'daily' : diffDays <= 180 ? 'weekly' : 'monthly';
+
       const [trendData, incomeCatData, expenseCatData, monthlyData] = await Promise.all([
-        ongFinancialService.getIncomeExpenseTrend(startDate, endDate, 'monthly').catch(() => []),
+        ongFinancialService.getIncomeExpenseTrend(startDate, endDate, trendPeriod).catch(() => []),
         ongFinancialService.getCategoryChartData(startDate, endDate, TransactionType.INCOME).catch(() => []),
         ongFinancialService.getCategoryChartData(startDate, endDate, TransactionType.EXPENSE).catch(() => []),
         ongFinancialService.getMonthlyComparison(startDate, endDate).catch(() => [])
@@ -231,7 +235,8 @@ export const ONGFinancialPage: React.FC = () => {
         incomeCategories: incomeCatData,
         expenseCategories: expenseCatData,
         monthlyComparison: monthlyData,
-        donationData: [] // ONG donations data placeholder
+        donationData: [],
+        trendPeriod
       });
     } catch (error) {
       console.error('Error loading chart data:', error);
@@ -1241,7 +1246,7 @@ export const ONGFinancialPage: React.FC = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">📈 Análise de Tendências</h3>
                 <IncomeExpenseChart
                   data={chartData.incomeExpenseTrend}
-                  period="monthly"
+                  period={chartData.trendPeriod}
                 />
               </div>
 
