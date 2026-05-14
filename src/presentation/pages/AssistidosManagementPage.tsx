@@ -6,8 +6,10 @@ import { useSettings } from '../contexts/SettingsContext';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { parseLocalDate } from '../../utils/dateUtils';
 import AssistidoModal from '@modules/assistance/assistidos/presentation/components/AssistidoModal';
 import AtendimentoModal from '../components/AtendimentoModal';
+import { FinancialEntity } from '@modules/financial/church-finance/domain/entities/Financial';
 import {
   Assistido,
   AssistidoEntity,
@@ -36,6 +38,11 @@ import {
 } from 'react-icons/hi2';
 
 interface AssistidosManagementPageProps {}
+
+const END_OF_DAY_HOURS = 23;
+const END_OF_DAY_MINUTES = 59;
+const END_OF_DAY_SECONDS = 59;
+const END_OF_DAY_MILLISECONDS = 999;
 
 const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => {
   const { currentUser } = useAuth();
@@ -749,9 +756,10 @@ const AtendimentosListView: React.FC<{
     let matchesDate = true;
     if (dateFilter.startDate && dateFilter.endDate) {
       const atendimentoDate = new Date(atendimento.data);
-      const startDate = new Date(dateFilter.startDate);
-      const endDate = new Date(dateFilter.endDate);
-      endDate.setHours(23, 59, 59, 999);
+      const startDate = parseLocalDate(dateFilter.startDate);
+      const endDate = parseLocalDate(dateFilter.endDate);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(END_OF_DAY_HOURS, END_OF_DAY_MINUTES, END_OF_DAY_SECONDS, END_OF_DAY_MILLISECONDS);
       matchesDate = atendimentoDate >= startDate && atendimentoDate <= endDate;
     }
 
@@ -850,7 +858,7 @@ const AtendimentosListView: React.FC<{
           <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
             <div className="text-sm text-gray-600">Valor Total em Doações</div>
             <div className="text-2xl font-bold text-gray-900">
-              R$ {filteredAtendimentos.reduce((sum, a) => sum + (a.valorDoacao || 0), 0).toFixed(2)}
+              {FinancialEntity.formatCurrency(filteredAtendimentos.reduce((sum, a) => sum + (a.valorDoacao || 0), 0))}
             </div>
           </div>
         </div>
@@ -911,7 +919,7 @@ const AtendimentosListView: React.FC<{
                     {atendimento.responsavel}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {atendimento.valorDoacao ? `R$ ${atendimento.valorDoacao.toFixed(2)}` : '-'}
+                    {atendimento.valorDoacao ? FinancialEntity.formatCurrency(atendimento.valorDoacao) : '-'}
                   </td>
                 </tr>
               ))}
@@ -1122,10 +1130,10 @@ const RelatoriosView: React.FC<{
               <div className="bg-white p-6 rounded-lg shadow">
                 <div className="text-sm text-gray-600">Valor Total Doado</div>
                 <div className="text-3xl font-bold text-gray-900">
-                  R$ {reportData.valorTotalDoacoes.toFixed(2)}
+                  {FinancialEntity.formatCurrency(reportData.valorTotalDoacoes)}
                 </div>
                 <div className="text-xs text-green-600 mt-2">
-                  R$ {reportData.valorDoacoesUltimos30Dias.toFixed(2)} últimos 30 dias
+                  {FinancialEntity.formatCurrency(reportData.valorDoacoesUltimos30Dias)} últimos 30 dias
                 </div>
               </div>
             </div>
@@ -1215,21 +1223,21 @@ const RelatoriosView: React.FC<{
                 <div className="text-center p-4 bg-green-50 rounded">
                   <div className="text-sm text-gray-600">Total de Doações</div>
                   <div className="text-2xl font-bold text-green-600">
-                    R$ {reportData.valorTotalDoacoes.toFixed(2)}
+                    {FinancialEntity.formatCurrency(reportData.valorTotalDoacoes)}
                   </div>
                 </div>
                 <div className="text-center p-4 bg-blue-50 rounded">
                   <div className="text-sm text-gray-600">Média por Atendimento</div>
                   <div className="text-2xl font-bold text-blue-600">
-                    R$ {reportData.totalAtendimentos > 0 
-                      ? (reportData.valorTotalDoacoes / reportData.totalAtendimentos).toFixed(2)
-                      : '0.00'}
+                    {FinancialEntity.formatCurrency(reportData.totalAtendimentos > 0
+                      ? reportData.valorTotalDoacoes / reportData.totalAtendimentos
+                      : 0)}
                   </div>
                 </div>
                 <div className="text-center p-4 bg-purple-50 rounded">
                   <div className="text-sm text-gray-600">Renda Média Familiar</div>
                   <div className="text-2xl font-bold text-purple-600">
-                    R$ {reportData.rendaMediaFamiliar?.toFixed(2) || '0.00'}
+                    {FinancialEntity.formatCurrency(reportData.rendaMediaFamiliar || 0)}
                   </div>
                 </div>
               </div>
@@ -1259,7 +1267,7 @@ const RelatoriosView: React.FC<{
                           <div className="font-medium">{getTipoLabel(tipo as TipoAtendimento)}</div>
                           <div className="text-sm text-gray-500">{data.count} doações</div>
                         </div>
-                        <div className="text-lg font-semibold">R$ {data.total.toFixed(2)}</div>
+                        <div className="text-lg font-semibold">{FinancialEntity.formatCurrency(data.total)}</div>
                       </div>
                     ));
                 })()}

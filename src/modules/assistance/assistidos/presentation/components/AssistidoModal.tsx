@@ -28,6 +28,31 @@ interface AssistidoModalProps {
   mode: 'create' | 'edit' | 'view';
 }
 
+const DISABLED_SAVE_COLOR = '#9CA3AF';
+
+const VALIDATION_FIELD_LABELS: Record<string, string> = {
+  nome: 'Nome completo',
+  dataNascimento: 'Data de nascimento',
+  telefone: 'Telefone',
+  cpf: 'CPF',
+  email: 'Email',
+  'endereco.logradouro': 'Logradouro',
+  'endereco.numero': 'Número',
+  'endereco.bairro': 'Bairro',
+  'endereco.cidade': 'Cidade',
+  'endereco.estado': 'Estado',
+  'endereco.cep': 'CEP',
+  rendaFamiliar: 'Renda familiar',
+  situacaoFamiliar: 'Situação familiar',
+  escolaridade: 'Escolaridade',
+  tipoMoradia: 'Tipo de moradia',
+  quantidadeComodos: 'Quantidade de cômodos',
+  possuiCadUnico: 'CadÚnico',
+  necessidades: 'Necessidades',
+  responsavelAtendimento: 'Responsável pelo atendimento',
+  endereco: 'Endereço'
+};
+
 const AssistidoModal: React.FC<AssistidoModalProps> = ({
   isOpen,
   onClose,
@@ -317,20 +342,18 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
     return labels[parentesco];
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    // Usar a validação completa da entidade
-    const assistidoData = {
+  const getAssistidoDataForValidation = () => {
+    return {
       ...formData,
       dataNascimento: formData.dataNascimento ? parseLocalDate(formData.dataNascimento) : undefined,
-      quantidadeComodos: formData.quantidadeComodos ? parseInt(formData.quantidadeComodos) : undefined,
+      quantidadeComodos: formData.quantidadeComodos ? parseInt(formData.quantidadeComodos, 10) : undefined,
       rendaFamiliar: formData.rendaFamiliar ? parseFloat(formData.rendaFamiliar) : undefined
     };
+  };
 
-    const validationErrors = AssistidoEntity.validarAssistido(assistidoData);
-    
-    // Converter erros para o formato do estado
+  const mapValidationErrors = (validationErrors: string[]): Record<string, string> => {
+    const newErrors: Record<string, string> = {};
+
     validationErrors.forEach((erro, index) => {
       if (erro.includes('Nome')) {
         newErrors.nome = erro;
@@ -376,6 +399,13 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
         newErrors[`error_${index}`] = erro;
       }
     });
+
+    return newErrors;
+  };
+
+  const validateForm = (): boolean => {
+    const validationErrors = AssistidoEntity.validarAssistido(getAssistidoDataForValidation());
+    const newErrors = mapValidationErrors(validationErrors);
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -427,6 +457,14 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
   const isReadOnly = mode === 'view';
   const modalTitle = mode === 'create' ? 'Cadastrar Assistido' : 
                     mode === 'edit' ? 'Editar Assistido' : 'Visualizar Assistido';
+  const currentValidationErrors = mapValidationErrors(
+    AssistidoEntity.validarAssistido(getAssistidoDataForValidation())
+  );
+  const pendingFieldLabels = Object.keys(currentValidationErrors).map(
+    field => VALIDATION_FIELD_LABELS[field] || currentValidationErrors[field]
+  );
+  const pendingFieldCount = Object.keys(currentValidationErrors).length;
+  const isSaveDisabled = isLoading || pendingFieldCount > 0;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1322,7 +1360,18 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
 
         {/* Footer */}
         {!isReadOnly && (
-          <div className="flex justify-end space-x-3 p-6 border-t bg-gray-50">
+          <div className="flex flex-col gap-3 p-6 border-t bg-gray-50 sm:flex-row sm:items-center sm:justify-between">
+            {pendingFieldCount > 0 ? (
+              <div className="text-sm font-medium text-red-700">
+                <p>
+                  Preencha ou corrija {pendingFieldCount} campo{pendingFieldCount > 1 ? 's' : ''} obrigatório{pendingFieldCount > 1 ? 's' : ''} para salvar.
+                </p>
+                <p className="mt-1 font-normal">Pendentes: {pendingFieldLabels.join(', ')}.</p>
+              </div>
+            ) : (
+              <p className="text-sm font-medium text-green-700">Todos os campos obrigatórios foram preenchidos.</p>
+            )}
+            <div className="flex justify-end space-x-3">
             <button
               onClick={onClose}
               disabled={isLoading}
@@ -1332,12 +1381,14 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
             </button>
             <button
               onClick={handleSave}
-              disabled={isLoading}
-              className="px-4 py-2 rounded-md text-white font-medium hover:opacity-90 disabled:opacity-50"
-              style={{ backgroundColor: settings?.primaryColor || '#3B82F6' }}
+              disabled={isSaveDisabled}
+              className="px-4 py-2 rounded-md text-white font-medium hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+              title={pendingFieldCount > 0 ? 'Preencha os campos obrigatórios para salvar' : undefined}
+              style={{ backgroundColor: isSaveDisabled ? DISABLED_SAVE_COLOR : (settings?.primaryColor || '#3B82F6') }}
             >
               {isLoading ? 'Salvando...' : mode === 'create' ? 'Cadastrar' : 'Salvar'}
             </button>
+            </div>
           </div>
         )}
 
