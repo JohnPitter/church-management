@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { AgendamentoAssistenciaService, ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { AgendamentoAssistencia, StatusAgendamento } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 
+const MAX_VISIBLE_DAY_APPOINTMENTS = 4;
+
 export const ProfessionalDashboardPage: React.FC = () => {
   const { currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -96,6 +98,16 @@ export const ProfessionalDashboardPage: React.FC = () => {
     });
   };
 
+  const getAgendamentosForMonth = (date: Date) => {
+    return agendamentos
+      .filter(agendamento => {
+        const agendamentoDate = new Date(agendamento.dataHoraAgendamento);
+        return agendamentoDate.getMonth() === date.getMonth() &&
+               agendamentoDate.getFullYear() === date.getFullYear();
+      })
+      .sort((a, b) => new Date(a.dataHoraAgendamento).getTime() - new Date(b.dataHoraAgendamento).getTime());
+  };
+
   const monthNames = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
@@ -146,6 +158,7 @@ export const ProfessionalDashboardPage: React.FC = () => {
 
   // Get today's appointments
   const todayAgendamentos = getAgendamentosForDate(new Date());
+  const selectedMonthAgendamentos = getAgendamentosForMonth(selectedDate);
   const upcomingAgendamentos = agendamentos
     .filter(a => new Date(a.dataHoraAgendamento) > new Date())
     .sort((a, b) => new Date(a.dataHoraAgendamento).getTime() - new Date(b.dataHoraAgendamento).getTime())
@@ -255,11 +268,7 @@ export const ProfessionalDashboardPage: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total Mês</p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {agendamentos.filter(a => {
-                    const date = new Date(a.dataHoraAgendamento);
-                    return date.getMonth() === selectedDate.getMonth() && 
-                           date.getFullYear() === selectedDate.getFullYear();
-                  }).length}
+                  {selectedMonthAgendamentos.length}
                 </p>
               </div>
             </div>
@@ -305,7 +314,7 @@ export const ProfessionalDashboardPage: React.FC = () => {
                 <div className="grid grid-cols-7 gap-1">
                   {getDaysInMonth(selectedDate).map((day, index) => {
                     if (!day) {
-                      return <div key={`empty-${index}`} className="h-24"></div>;
+                      return <div key={`empty-${index}`} className="min-h-32"></div>;
                     }
                     
                     const dayAgendamentos = getAgendamentosForDate(day);
@@ -314,15 +323,15 @@ export const ProfessionalDashboardPage: React.FC = () => {
                     return (
                       <div
                         key={day.toISOString()}
-                        className={`h-24 border rounded-lg p-2 ${
+                        className={`min-h-32 border rounded-lg p-2 ${
                           isToday ? 'bg-blue-50 border-blue-300' : 'border-gray-200'
-                        } hover:bg-gray-50 cursor-pointer overflow-hidden`}
+                        } hover:bg-gray-50 cursor-pointer`}
                       >
                         <div className="text-xs font-medium text-gray-900 mb-1">
                           {day.getDate()}
                         </div>
                         <div className="space-y-1">
-                          {dayAgendamentos.slice(0, 2).map((agendamento, idx) => (
+                          {dayAgendamentos.slice(0, MAX_VISIBLE_DAY_APPOINTMENTS).map((agendamento) => (
                             <div
                               key={agendamento.id}
                               className={`text-xs px-1 py-0.5 rounded ${getStatusColor(agendamento.status)}`}
@@ -333,15 +342,41 @@ export const ProfessionalDashboardPage: React.FC = () => {
                               </div>
                             </div>
                           ))}
-                          {dayAgendamentos.length > 2 && (
+                          {dayAgendamentos.length > MAX_VISIBLE_DAY_APPOINTMENTS && (
                             <div className="text-xs text-gray-500">
-                              +{dayAgendamentos.length - 2} mais
+                              +{dayAgendamentos.length - MAX_VISIBLE_DAY_APPOINTMENTS} mais
                             </div>
                           )}
                         </div>
                       </div>
                     );
                   })}
+                </div>
+                <div className="mt-6 border-t border-gray-200 pt-4">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">
+                    Agendamentos do mês ({selectedMonthAgendamentos.length})
+                  </h4>
+                  {selectedMonthAgendamentos.length === 0 ? (
+                    <p className="text-sm text-gray-500">Nenhum atendimento neste mês</p>
+                  ) : (
+                    <div className="max-h-80 overflow-y-auto divide-y divide-gray-100">
+                      {selectedMonthAgendamentos.map(agendamento => (
+                        <div key={agendamento.id} className="py-2 flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {agendamento.pacienteNome}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(agendamento.dataHoraAgendamento).toLocaleDateString('pt-BR')} às {formatTime(agendamento.dataHoraAgendamento)}
+                            </p>
+                          </div>
+                          <span className={`shrink-0 text-xs px-2 py-1 rounded-full ${getStatusColor(agendamento.status)}`}>
+                            {agendamento.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

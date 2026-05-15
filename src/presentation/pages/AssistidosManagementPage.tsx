@@ -235,6 +235,12 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
     return AssistidoEntity.formatarNecessidades([necessidade])[0];
   };
 
+  const getValidNecessidades = (necessidades: NecessidadeAssistido[]) => {
+    return necessidades.filter(necessidade =>
+      Object.values(NecessidadeAssistido).includes(necessidade)
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -463,7 +469,10 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedAssistidos.map((assistido) => (
+              {paginatedAssistidos.map((assistido) => {
+                const necessidades = getValidNecessidades(assistido.necessidades);
+
+                return (
                 <tr key={assistido.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
@@ -490,18 +499,22 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
                     </span>
                   </td>
                   <td className="px-6 py-4">
+                    {necessidades.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
-                      {assistido.necessidades.slice(0, 3).map(necessidade => (
+                      {necessidades.slice(0, 3).map(necessidade => (
                         <span key={necessidade} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
                           {getNecessidadeLabel(necessidade)}
                         </span>
                       ))}
-                      {assistido.necessidades.length > 3 && (
+                      {necessidades.length > 3 && (
                         <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                          +{assistido.necessidades.length - 3}
+                          +{necessidades.length - 3}
                         </span>
                       )}
                     </div>
+                    ) : (
+                      <span className="text-sm text-gray-400">Nenhuma</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {assistido.dataUltimoAtendimento 
@@ -565,7 +578,8 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
           </div>

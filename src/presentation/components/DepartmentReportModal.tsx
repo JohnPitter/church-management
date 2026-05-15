@@ -8,15 +8,23 @@ import {
   DepartmentTransactionType,
   DepartmentEntity
 } from '@modules/church-management/departments/domain/entities/Department';
-import { departmentFinancialService } from '@modules/financial/department-finance/application/services/DepartmentFinancialService';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import {
+  DepartmentTransactionFilters,
+  departmentFinancialService
+} from '@modules/financial/department-finance/application/services/DepartmentFinancialService';
+import { downloadBlob } from '../../utils/dateUtils';
+import { exportRowsToXlsx, XlsxCellValue } from '../../utils/xlsxExport';
 
 interface DepartmentReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   department: Department;
 }
+
+const REPORT_FILENAME_PREFIX = 'relatorio-caixinha';
+const REPORT_SHEET_NAME = 'Relatorio';
+const REPORT_COLUMN_WIDTHS = [14, 28, 36, 18, 16, 18, 34];
+type DepartmentReportFilterType = 'all' | DepartmentTransactionType;
 
 export const DepartmentReportModal: React.FC<DepartmentReportModalProps> = ({
   isOpen,
@@ -25,7 +33,8 @@ export const DepartmentReportModal: React.FC<DepartmentReportModalProps> = ({
 }) => {
   const [transactions, setTransactions] = useState<DepartmentTransaction[]>([]);
   const [loading, setLoading] = useState(false);
-  const [filterType, setFilterType] = useState<'all' | DepartmentTransactionType>('all');
+  const [exporting, setExporting] = useState(false);
+  const [filterType, setFilterType] = useState<DepartmentReportFilterType>('all');
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
 
   useEffect(() => {
@@ -42,7 +51,7 @@ export const DepartmentReportModal: React.FC<DepartmentReportModalProps> = ({
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 0);
 
-      const filters: any = {
+      const filters: DepartmentTransactionFilters = {
         departmentId: department.id,
         startDate,
         endDate
@@ -58,6 +67,88 @@ export const DepartmentReportModal: React.FC<DepartmentReportModalProps> = ({
       console.error('Error loading transactions:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('pt-BR');
+  };
+
+  const formatLongDate = (date: Date) => {
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const formatMonth = (month: string) => {
+    return new Date(`${month}-01T12:00:00`).toLocaleDateString('pt-BR', {
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const formatDateTime = (date: Date) => {
+    return date.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const buildReportRows = (): XlsxCellValue[][] => {
+    const totals = getTotals();
+    const monthLabel = formatMonth(selectedMonth);
+    const typeLabel = filterType === 'all' ? 'Todas' : DepartmentEntity.getTransactionTypeLabel(filterType);
+
+    return [
+      [`Relatório - ${department.name}`],
+      ['Mês', monthLabel],
+      ['Tipo', typeLabel],
+      ['Saldo atual', DepartmentEntity.formatCurrency(department.currentBalance)],
+      ['Gerado em', formatDateTime(new Date())],
+      [],
+      ['Resumo'],
+      ['Total de entradas', DepartmentEntity.formatCurrency(totals.deposits)],
+      ['Total de saídas', DepartmentEntity.formatCurrency(totals.withdrawals)],
+      ['Saldo do período', DepartmentEntity.formatCurrency(totals.balance)],
+      [],
+      ['Data', 'Tipo', 'Descrição', 'Valor', 'Status', 'Recibo', 'Observações'],
+      ...transactions.map(transaction => [
+        formatDate(transaction.date),
+        DepartmentEntity.getTransactionTypeLabel(transaction.type),
+        transaction.description,
+        DepartmentEntity.formatCurrency(transaction.amount),
+        DepartmentEntity.getTransactionStatusLabel(transaction.status),
+        transaction.receiptNumber || '',
+        transaction.notes || ''
+      ])
+    ];
+  };
+
+  const exportReport = async () => {
+    setExporting(true);
+    const safeDepartmentName = department.name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    try {
+      const blob = await exportRowsToXlsx(buildReportRows(), {
+        sheetName: REPORT_SHEET_NAME,
+        columnWidths: REPORT_COLUMN_WIDTHS
+      });
+
+      downloadBlob(blob, `${REPORT_FILENAME_PREFIX}-${safeDepartmentName}-${selectedMonth}.xlsx`);
+    } catch (error) {
+      console.error('Error exporting department report:', error);
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -159,7 +250,7 @@ export const DepartmentReportModal: React.FC<DepartmentReportModalProps> = ({
               </label>
               <select
                 value={filterType}
-                onChange={(e) => setFilterType(e.target.value as any)}
+                onChange={(e) => setFilterType(e.target.value as DepartmentReportFilterType)}
                 className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               >
                 <option value="all">Todas</option>
@@ -230,7 +321,7 @@ export const DepartmentReportModal: React.FC<DepartmentReportModalProps> = ({
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
                             {DepartmentEntity.getTransactionTypeLabel(transaction.type)} •{' '}
-                            {format(transaction.date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                            {formatLongDate(transaction.date)}
                           </p>
                           {transaction.receiptNumber && (
                             <p className="text-xs text-gray-500 mt-1">
@@ -271,7 +362,15 @@ export const DepartmentReportModal: React.FC<DepartmentReportModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="mt-6 flex justify-end pt-4 border-t border-gray-200">
+          <div className="mt-6 flex justify-between pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={exportReport}
+              disabled={loading || exporting}
+              className="px-4 py-2 border border-green-600 rounded-md text-sm font-medium text-green-700 hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {exporting ? 'Exportando...' : 'Exportar Excel'}
+            </button>
             <button
               onClick={onClose}
               className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"

@@ -1,5 +1,7 @@
 import { format as formatDate } from 'date-fns';
 
+const XLSX_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
 interface ExportableTransaction {
   date: Date;
   type: string;
@@ -19,12 +21,34 @@ interface ExportOptions {
   incomeType: string;
 }
 
+export type XlsxCellValue = string | number | boolean | Date | null;
+
+interface RowsExportOptions {
+  sheetName: string;
+  columnWidths?: number[];
+}
+
+export async function exportRowsToXlsx(
+  rows: XlsxCellValue[][],
+  options: RowsExportOptions
+): Promise<Blob> {
+  const XLSX = await import('xlsx');
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+
+  if (options.columnWidths) {
+    ws['!cols'] = options.columnWidths.map(width => ({ wch: width }));
+  }
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options.sheetName);
+  const xlsxBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  return new Blob([xlsxBuffer], { type: XLSX_MIME_TYPE });
+}
+
 export async function exportTransactionsToXlsx(
   transactions: ExportableTransaction[],
   options: ExportOptions
 ): Promise<Blob> {
-  const XLSX = await import('xlsx');
-
   const totalIncome = transactions.filter(t => t.type === options.incomeType).reduce((s, t) => s + t.amount, 0);
   const totalExpense = transactions.filter(t => t.type !== options.incomeType).reduce((s, t) => s + t.amount, 0);
 
@@ -53,14 +77,8 @@ export async function exportTransactionsToXlsx(
   ]);
 
   const allRows = [...headerRows, ...dataRows];
-  const ws = XLSX.utils.aoa_to_sheet(allRows);
-  ws['!cols'] = [
-    { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 35 },
-    { wch: 15 }, { wch: 18 }, { wch: 12 }, { wch: 15 }
-  ];
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options.sheetName);
-  const xlsxBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  return new Blob([xlsxBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  return exportRowsToXlsx(allRows, {
+    sheetName: options.sheetName,
+    columnWidths: [12, 10, 20, 35, 15, 18, 12, 15]
+  });
 }

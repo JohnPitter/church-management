@@ -37,6 +37,14 @@ const mockAuthContext = {
   getSignInMethods: jest.fn()
 };
 
+jest.mock('../../components/ConfirmDialog', () => ({
+  useConfirmDialog: () => ({
+    confirm: jest.fn().mockResolvedValue(true),
+    prompt: jest.fn().mockResolvedValue('')
+  }),
+  ConfirmDialogProvider: ({ children }: any) => children
+}));
+
 jest.mock('../../contexts/AuthContext', () => ({
   useAuth: () => mockAuthContext
 }));
@@ -146,5 +154,26 @@ describe('AssistidosManagementPage', () => {
     await waitFor(() => {
       expect(mockGetStatistics).toHaveBeenCalled();
     });
+  });
+
+  it('should not render empty necessidade badges', async () => {
+    mockGetAllAssistidos.mockResolvedValueOnce([
+      {
+        id: 'assistido-1',
+        nome: 'Assistido Sem Necessidade',
+        dataNascimento: new Date('1990-01-01T12:00:00.000Z'),
+        endereco: { cidade: 'Recife' },
+        telefone: '(81) 99999-9999',
+        status: 'ativo',
+        necessidades: [''],
+        familiares: [],
+        atendimentos: []
+      }
+    ]);
+
+    render(<AssistidosManagementPage />);
+
+    expect(await screen.findByText('Assistido Sem Necessidade')).toBeInTheDocument();
+    expect(screen.getByText('Nenhuma')).toBeInTheDocument();
   });
 });
