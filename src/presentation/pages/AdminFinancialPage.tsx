@@ -32,6 +32,7 @@ import { CreateCategoryModal } from '../components/CreateCategoryModal';
 import { CreateDepartmentModal } from '../components/CreateDepartmentModal';
 import { DepartmentTransactionModal } from '../components/DepartmentTransactionModal';
 import { DepartmentReportModal } from '../components/DepartmentReportModal';
+import { DepartmentHistoryModal } from '../components/DepartmentHistoryModal';
 import { DepartmentActionsMenu } from '../components/DepartmentActionsMenu';
 import { Pagination } from '../components/common/Pagination';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
@@ -82,6 +83,7 @@ export const AdminFinancialPage: React.FC = () => {
   const [showCreateDepartmentModal, setShowCreateDepartmentModal] = useState(false);
   const [showDepartmentTransactionModal, setShowDepartmentTransactionModal] = useState(false);
   const [showDepartmentReportModal, setShowDepartmentReportModal] = useState(false);
+  const [showDepartmentHistoryModal, setShowDepartmentHistoryModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
   
@@ -354,6 +356,11 @@ export const AdminFinancialPage: React.FC = () => {
   const handleOpenReportModal = (department: Department) => {
     setSelectedDepartment(department);
     setShowDepartmentReportModal(true);
+  };
+
+  const handleOpenHistoryModal = (department: Department) => {
+    setSelectedDepartment(department);
+    setShowDepartmentHistoryModal(true);
   };
 
   const handleEditDepartment = (department: Department) => {
@@ -1636,6 +1643,7 @@ export const AdminFinancialPage: React.FC = () => {
                           department={department}
                           onEdit={handleEditDepartment}
                           onToggleActive={handleToggleActiveDepartment}
+                          onOpenHistory={handleOpenHistoryModal}
                         />
                       </div>
                     </div>
@@ -1955,6 +1963,18 @@ export const AdminFinancialPage: React.FC = () => {
           isOpen={showDepartmentReportModal}
           onClose={() => {
             setShowDepartmentReportModal(false);
+            setSelectedDepartment(null);
+          }}
+          department={selectedDepartment}
+        />
+      )}
+
+      {/* Department History Modal */}
+      {selectedDepartment && (
+        <DepartmentHistoryModal
+          isOpen={showDepartmentHistoryModal}
+          onClose={() => {
+            setShowDepartmentHistoryModal(false);
             setSelectedDepartment(null);
           }}
           department={selectedDepartment}
