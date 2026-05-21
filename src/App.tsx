@@ -16,6 +16,7 @@ import { Toaster } from 'react-hot-toast';
 import { ConfirmDialogProvider } from './presentation/components/ConfirmDialog';
 import ErrorBoundary from './presentation/components/ErrorBoundary';
 import { BuildVersionBadge } from './presentation/components/BuildVersionBadge';
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
 import { SystemModule, PermissionAction } from './domain/entities/Permission';
 
@@ -26,65 +27,82 @@ import { Layout } from './presentation/components/Layout';
 import AdminSetupGuard from './presentation/components/AdminSetupGuard';
 import { PublicPage } from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
 
-const Home = React.lazy(() => import('./modules/church-management/home/presentation/pages/HomeSimplified'));
-const LoginPage = React.lazy(() => import('./presentation/pages/LoginPage').then(module => ({ default: module.LoginPage })));
-const RegisterPage = React.lazy(() => import('./presentation/pages/RegisterPage').then(module => ({ default: module.RegisterPage })));
-const PainelPage = React.lazy(() => import('./presentation/pages/PainelPage').then(module => ({ default: module.PainelPage })));
-const EventsPage = React.lazy(() => import('./presentation/pages/EventsPage').then(module => ({ default: module.EventsPage })));
-const BlogPage = React.lazy(() => import('./presentation/pages/BlogPage').then(module => ({ default: module.BlogPage })));
-const ProjectsPage = React.lazy(() => import('./presentation/pages/ProjectsPage').then(module => ({ default: module.ProjectsPage })));
-const LivePage = React.lazy(() => import('./presentation/pages/LivePage').then(module => ({ default: module.LivePage })));
-const ProfilePage = React.lazy(() => import('./presentation/pages/ProfilePage').then(module => ({ default: module.ProfilePage })));
-const UserManagementPage = React.lazy(() => import('./presentation/pages/UserManagementPage').then(module => ({ default: module.UserManagementPage })));
-const AdminDashboardPage = React.lazy(() => import('./presentation/pages/AdminDashboardPage').then(module => ({ default: module.AdminDashboardPage })));
-const AdminLiveManagementPage = React.lazy(() => import('./presentation/pages/AdminLiveManagementPage').then(module => ({ default: module.AdminLiveManagementPage })));
-const AdminBlogManagementPage = React.lazy(() => import('./presentation/pages/AdminBlogManagementPage').then(module => ({ default: module.AdminBlogManagementPage })));
-const AdminProjectsManagementPage = React.lazy(() => import('./presentation/pages/AdminProjectsManagementPage').then(module => ({ default: module.AdminProjectsManagementPage })));
-const AdminEventsManagementPage = React.lazy(() => import('./presentation/pages/AdminEventsManagementPage').then(module => ({ default: module.AdminEventsManagementPage })));
-const AdminSettingsPage = React.lazy(() => import('./presentation/pages/AdminSettingsPage').then(module => ({ default: module.AdminSettingsPage })));
-const PrayerRequests = React.lazy(() => import('./presentation/pages/PrayerRequests'));
-const AdminVisitorsPage = React.lazy(() => import('./presentation/pages/AdminVisitorsPage').then(module => ({ default: module.AdminVisitorsPage })));
-const VisitorsPage = React.lazy(() => import('./presentation/pages/VisitorsPage').then(module => ({ default: module.VisitorsPage })));
-const AdminReportsPage = React.lazy(() => import('./presentation/pages/AdminReportsPage').then(module => ({ default: module.AdminReportsPage })));
-const AdminBackupPage = React.lazy(() => import('./presentation/pages/AdminBackupPage').then(module => ({ default: module.AdminBackupPage })));
-const AdminFinancialPage = React.lazy(() => import('./presentation/pages/AdminFinancialPage').then(module => ({ default: module.AdminFinancialPage })));
-const AdminLogsPage = React.lazy(() => import('./presentation/pages/AdminLogsPage').then(module => ({ default: module.AdminLogsPage })));
-const AdminHomeSettingsPage = React.lazy(() => import('./presentation/pages/AdminHomeSettingsPage'));
-const AdminDataMigrationPage = React.lazy(() => import('./presentation/pages/AdminDataMigrationPage'));
-const AdminDevotionalPage = React.lazy(() => import('./presentation/pages/AdminDevotionalPage').then(module => ({ default: module.AdminDevotionalPage })));
-const Devotionals = React.lazy(() => import('./presentation/pages/Devotionals').then(module => ({ default: module.Devotionals })));
-const AdminForumPage = React.lazy(() => import('./presentation/pages/AdminForumPage').then(module => ({ default: module.AdminForumPage })));
-const Forum = React.lazy(() => import('./presentation/pages/Forum').then(module => ({ default: module.Forum })));
-const PendingApprovalPage = React.lazy(() => import('./presentation/pages/PendingApprovalPage').then(module => ({ default: module.PendingApprovalPage })));
-const NotificationsPage = React.lazy(() => import('./presentation/pages/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
-const AdminNotificationsPage = React.lazy(() => import('./presentation/pages/AdminNotificationsPage').then(module => ({ default: module.AdminNotificationsPage })));
-const AssistidosManagementPage = React.lazy(() => import('./presentation/pages/AssistidosManagementPage'));
-const MembersManagementPage = React.lazy(() => import('./presentation/pages/MembersManagementPage'));
-const PermissionsManagementPage = React.lazy(() => import('./presentation/pages/PermissionsManagementPage').then(module => ({ default: module.PermissionsManagementPage })));
-const AssistenciaManagementPage = React.lazy(() => import('./presentation/pages/AssistenciaManagementPage'));
-const ProfessionalDashboardPage = React.lazy(() => import('./presentation/pages/ProfessionalDashboardPage').then(module => ({ default: module.ProfessionalDashboardPage })));
-const ProfessionalAssistenciaPage = React.lazy(() => import('./presentation/pages/ProfessionalAssistenciaPage'));
-const ProfessionalFichasPage = React.lazy(() => import('./presentation/pages/ProfessionalFichasPage'));
-const ProfessionalSessoesPage = React.lazy(() => import('./presentation/pages/ProfessionalSessoesPage'));
-const FichasManagementPage = React.lazy(() => import('./presentation/pages/FichasManagementPage'));
-const ProfessionalHelpRequestsPage = React.lazy(() => import('./presentation/pages/ProfessionalHelpRequestsPage').then(module => ({ default: module.ProfessionalHelpRequestsPage })));
-const SetupPage = React.lazy(() => import('./presentation/pages/SetupPage'));
-const SetupPageAlternative = React.lazy(() => import('./presentation/pages/SetupPageAlternative'));
-const SetupPageSimple = React.lazy(() => import('./presentation/pages/SetupPageSimple'));
-const WelcomePage = React.lazy(() => import('./presentation/pages/WelcomePage'));
-const ONGSettingsPage = React.lazy(() => import('./presentation/pages/ONGSettingsPage'));
-const ONGVolunteersPage = React.lazy(() => import('./presentation/pages/ONGVolunteersPage'));
-const ONGActivitiesPage = React.lazy(() => import('./presentation/pages/ONGActivitiesPage'));
-const ONGReportsPage = React.lazy(() => import('./presentation/pages/ONGReportsPage'));
-const ONGFinancialPage = React.lazy(() => import('./presentation/pages/ONGFinancialPage'));
-const AssetsManagementPage = React.lazy(() => import('./presentation/pages/AssetsManagementPage'));
-const LeadershipPage = React.lazy(() => import('./presentation/pages/LeadershipPage').then(module => ({ default: module.LeadershipPage })));
-const AdminLeadershipPage = React.lazy(() => import('./presentation/pages/AdminLeadershipPage').then(module => ({ default: module.AdminLeadershipPage })));
-const PermissionTestPage = React.lazy(() => import('./presentation/pages/PermissionTestPage').then(module => ({ default: module.PermissionTestPage })));
-const AboutPage = React.lazy(() => import('./presentation/pages/AboutPage').then(module => ({ default: module.AboutPage })));
-const DonatePage = React.lazy(() => import('./presentation/pages/DonatePage').then(module => ({ default: module.DonatePage })));
-const PrayerPage = React.lazy(() => import('./presentation/pages/PrayerPage').then(module => ({ default: module.PrayerPage })));
-const ContactPage = React.lazy(() => import('./presentation/pages/ContactPage').then(module => ({ default: module.ContactPage })));
+const Home = lazyWithRetry(() => import('./modules/church-management/home/presentation/pages/HomeSimplified'));
+const LoginPage = lazyWithRetry(() => import('./presentation/pages/LoginPage').then(module => ({ default: module.LoginPage })));
+const RegisterPage = lazyWithRetry(() => import('./presentation/pages/RegisterPage').then(module => ({ default: module.RegisterPage })));
+const PainelPage = lazyWithRetry(() => import('./presentation/pages/PainelPage').then(module => ({ default: module.PainelPage })));
+const EventsPage = lazyWithRetry(() => import('./presentation/pages/EventsPage').then(module => ({ default: module.EventsPage })));
+const BlogPage = lazyWithRetry(() => import('./presentation/pages/BlogPage').then(module => ({ default: module.BlogPage })));
+const ProjectsPage = lazyWithRetry(() => import('./presentation/pages/ProjectsPage').then(module => ({ default: module.ProjectsPage })));
+const LivePage = lazyWithRetry(() => import('./presentation/pages/LivePage').then(module => ({ default: module.LivePage })));
+const ProfilePage = lazyWithRetry(() => import('./presentation/pages/ProfilePage').then(module => ({ default: module.ProfilePage })));
+const UserManagementPage = lazyWithRetry(() => import('./presentation/pages/UserManagementPage').then(module => ({ default: module.UserManagementPage })));
+const AdminDashboardPage = lazyWithRetry(() => import('./presentation/pages/AdminDashboardPage').then(module => ({ default: module.AdminDashboardPage })));
+const AdminLiveManagementPage = lazyWithRetry(() => import('./presentation/pages/AdminLiveManagementPage').then(module => ({ default: module.AdminLiveManagementPage })));
+const AdminBlogManagementPage = lazyWithRetry(() => import('./presentation/pages/AdminBlogManagementPage').then(module => ({ default: module.AdminBlogManagementPage })));
+const AdminProjectsManagementPage = lazyWithRetry(() => import('./presentation/pages/AdminProjectsManagementPage').then(module => ({ default: module.AdminProjectsManagementPage })));
+const AdminEventsManagementPage = lazyWithRetry(() => import('./presentation/pages/AdminEventsManagementPage').then(module => ({ default: module.AdminEventsManagementPage })));
+const AdminSettingsPage = lazyWithRetry(() => import('./presentation/pages/AdminSettingsPage').then(module => ({ default: module.AdminSettingsPage })));
+const PrayerRequests = lazyWithRetry(() => import('./presentation/pages/PrayerRequests'));
+const AdminVisitorsPage = lazyWithRetry(() => import('./presentation/pages/AdminVisitorsPage').then(module => ({ default: module.AdminVisitorsPage })));
+const VisitorsPage = lazyWithRetry(() => import('./presentation/pages/VisitorsPage').then(module => ({ default: module.VisitorsPage })));
+const AdminReportsPage = lazyWithRetry(() => import('./presentation/pages/AdminReportsPage').then(module => ({ default: module.AdminReportsPage })));
+const AdminBackupPage = lazyWithRetry(() => import('./presentation/pages/AdminBackupPage').then(module => ({ default: module.AdminBackupPage })));
+const AdminFinancialPage = lazyWithRetry(() => import('./presentation/pages/AdminFinancialPage').then(module => ({ default: module.AdminFinancialPage })));
+const AdminLogsPage = lazyWithRetry(() => import('./presentation/pages/AdminLogsPage').then(module => ({ default: module.AdminLogsPage })));
+const AdminHomeSettingsPage = lazyWithRetry(() => import('./presentation/pages/AdminHomeSettingsPage'));
+const AdminDataMigrationPage = lazyWithRetry(() => import('./presentation/pages/AdminDataMigrationPage'));
+const AdminDevotionalPage = lazyWithRetry(() => import('./presentation/pages/AdminDevotionalPage').then(module => ({ default: module.AdminDevotionalPage })));
+const Devotionals = lazyWithRetry(() => import('./presentation/pages/Devotionals').then(module => ({ default: module.Devotionals })));
+const AdminForumPage = lazyWithRetry(() => import('./presentation/pages/AdminForumPage').then(module => ({ default: module.AdminForumPage })));
+const Forum = lazyWithRetry(() => import('./presentation/pages/Forum').then(module => ({ default: module.Forum })));
+const PendingApprovalPage = lazyWithRetry(() => import('./presentation/pages/PendingApprovalPage').then(module => ({ default: module.PendingApprovalPage })));
+const NotificationsPage = lazyWithRetry(() => import('./presentation/pages/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
+const AdminNotificationsPage = lazyWithRetry(() => import('./presentation/pages/AdminNotificationsPage').then(module => ({ default: module.AdminNotificationsPage })));
+const AssistidosManagementPage = lazyWithRetry(() => import('./presentation/pages/AssistidosManagementPage'));
+const MembersManagementPage = lazyWithRetry(() => import('./presentation/pages/MembersManagementPage'));
+const PermissionsManagementPage = lazyWithRetry(() => import('./presentation/pages/PermissionsManagementPage').then(module => ({ default: module.PermissionsManagementPage })));
+const AssistenciaManagementPage = lazyWithRetry(() => import('./presentation/pages/AssistenciaManagementPage'));
+const ProfessionalDashboardPage = lazyWithRetry(() => import('./presentation/pages/ProfessionalDashboardPage').then(module => ({ default: module.ProfessionalDashboardPage })));
+const ProfessionalAssistenciaPage = lazyWithRetry(() => import('./presentation/pages/ProfessionalAssistenciaPage'));
+const ProfessionalFichasPage = lazyWithRetry(() => import('./presentation/pages/ProfessionalFichasPage'));
+const ProfessionalSessoesPage = lazyWithRetry(() => import('./presentation/pages/ProfessionalSessoesPage'));
+const FichasManagementPage = lazyWithRetry(() => import('./presentation/pages/FichasManagementPage'));
+const ProfessionalHelpRequestsPage = lazyWithRetry(() => import('./presentation/pages/ProfessionalHelpRequestsPage').then(module => ({ default: module.ProfessionalHelpRequestsPage })));
+const SetupPage = lazyWithRetry(() => import('./presentation/pages/SetupPage'));
+const SetupPageAlternative = lazyWithRetry(() => import('./presentation/pages/SetupPageAlternative'));
+const SetupPageSimple = lazyWithRetry(() => import('./presentation/pages/SetupPageSimple'));
+const WelcomePage = lazyWithRetry(() => import('./presentation/pages/WelcomePage'));
+const ONGSettingsPage = lazyWithRetry(() => import('./presentation/pages/ONGSettingsPage'));
+const ONGVolunteersPage = lazyWithRetry(() => import('./presentation/pages/ONGVolunteersPage'));
+const ONGActivitiesPage = lazyWithRetry(() => import('./presentation/pages/ONGActivitiesPage'));
+const ONGReportsPage = lazyWithRetry(() => import('./presentation/pages/ONGReportsPage'));
+const ONGFinancialPage = lazyWithRetry(() => import('./presentation/pages/ONGFinancialPage'));
+const AssetsManagementPage = lazyWithRetry(() => import('./presentation/pages/AssetsManagementPage'));
+const LeadershipPage = lazyWithRetry(() => import('./presentation/pages/LeadershipPage').then(module => ({ default: module.LeadershipPage })));
+const AdminLeadershipPage = lazyWithRetry(() => import('./presentation/pages/AdminLeadershipPage').then(module => ({ default: module.AdminLeadershipPage })));
+const PermissionTestPage = lazyWithRetry(() => import('./presentation/pages/PermissionTestPage').then(module => ({ default: module.PermissionTestPage })));
+const AboutPage = lazyWithRetry(() => import('./presentation/pages/AboutPage').then(module => ({ default: module.AboutPage })));
+const DonatePage = lazyWithRetry(() => import('./presentation/pages/DonatePage').then(module => ({ default: module.DonatePage })));
+const PrayerPage = lazyWithRetry(() => import('./presentation/pages/PrayerPage').then(module => ({ default: module.PrayerPage })));
+const ContactPage = lazyWithRetry(() => import('./presentation/pages/ContactPage').then(module => ({ default: module.ContactPage })));
+
+const ROUTE_PREFETCH_DELAY_MS = 3000;
+const ROUTE_PREFETCH_INTERVAL_MS = 250;
+const routeChunkPrefetchers = [
+  () => import('./presentation/pages/PainelPage'),
+  () => import('./presentation/pages/AdminDashboardPage'),
+  () => import('./presentation/pages/AdminFinancialPage'),
+  () => import('./presentation/pages/AssistidosManagementPage'),
+  () => import('./presentation/pages/MembersManagementPage'),
+  () => import('./presentation/pages/AssistenciaManagementPage'),
+  () => import('./presentation/pages/ProfessionalDashboardPage'),
+  () => import('./presentation/pages/ONGFinancialPage'),
+  () => import('./presentation/pages/EventsPage'),
+  () => import('./presentation/pages/BlogPage'),
+  () => import('./presentation/pages/ProjectsPage'),
+  () => import('./presentation/pages/LivePage')
+];
 
 const PageFallback: React.FC = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-600">
@@ -798,6 +816,24 @@ const router = createBrowserRouter([
 ]);
 
 const App: React.FC = () => {
+  React.useEffect(() => {
+    let cancelled = false;
+    const timeout = window.setTimeout(() => {
+      routeChunkPrefetchers.forEach((prefetch, index) => {
+        window.setTimeout(() => {
+          if (!cancelled) {
+            prefetch().catch(() => undefined);
+          }
+        }, index * ROUTE_PREFETCH_INTERVAL_MS);
+      });
+    }, ROUTE_PREFETCH_DELAY_MS);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, []);
+
   return <RouterProvider router={router} />;
 };
 
