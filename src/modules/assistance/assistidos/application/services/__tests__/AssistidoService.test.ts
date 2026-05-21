@@ -18,7 +18,7 @@ import {
   AtendimentoAssistido
 } from '../../../domain/entities/Assistido';
 import { FirebaseAssistidoRepository } from '../../../infrastructure/repositories/FirebaseAssistidoRepository';
-import { NotificationService } from '@modules/shared-kernel/infrastructure/services/NotificationService';
+import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 
 // Mock Firebase to prevent auth/invalid-api-key error in CI
 jest.mock('firebase/firestore');
@@ -28,7 +28,7 @@ jest.mock('@/config/firebase', () => ({
 
 // Mock the dependencies
 jest.mock('../../../infrastructure/repositories/FirebaseAssistidoRepository');
-jest.mock('@modules/shared-kernel/infrastructure/services/NotificationService');
+jest.mock('@modules/shared-kernel/notifications/infrastructure/services/NotificationService');
 
 describe('AssistidoService', () => {
   let assistidoService: AssistidoService;
@@ -821,7 +821,7 @@ describe('AssistidoService', () => {
       const assistido = createTestAssistido({ nome: 'João Silva' });
       mockRepository.addAtendimento.mockResolvedValue(undefined);
       mockRepository.findById.mockResolvedValue(assistido);
-      mockNotificationService.createCustomNotification.mockResolvedValue(undefined);
+      mockNotificationService.createCustomNotification.mockResolvedValue(1);
 
       await assistidoService.addAtendimento('assistido-1', atendimento);
 
@@ -846,7 +846,7 @@ describe('AssistidoService', () => {
       const assistido = createTestAssistido({ nome: 'Maria Santos' });
       mockRepository.addAtendimento.mockResolvedValue(undefined);
       mockRepository.findById.mockResolvedValue(assistido);
-      mockNotificationService.createCustomNotification.mockResolvedValue(undefined);
+      mockNotificationService.createCustomNotification.mockResolvedValue(1);
 
       await assistidoService.addAtendimento('assistido-1', atendimento);
 

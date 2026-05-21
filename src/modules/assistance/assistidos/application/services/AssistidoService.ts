@@ -3,7 +3,7 @@
 
 import { IAssistidoService } from '@modules/assistance/assistidos/domain/services/IAssistidoService';
 import { FirebaseAssistidoRepository } from '@modules/assistance/assistidos/infrastructure/repositories/FirebaseAssistidoRepository';
-import { NotificationService } from '@modules/shared-kernel/infrastructure/services/NotificationService';
+import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 import { 
   Assistido, 
   AssistidoEntity,

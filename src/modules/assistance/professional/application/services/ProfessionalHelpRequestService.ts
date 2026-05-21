@@ -22,7 +22,7 @@ import {
   HelpRequestHistory,
   HelpRequestComment
 } from '../../domain/entities/ProfessionalHelpRequest';
-import { NotificationService } from '@modules/shared-kernel/infrastructure/services/NotificationService';
+import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 
 export class ProfessionalHelpRequestService {
   private collectionName = 'professional_help_requests';

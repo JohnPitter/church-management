@@ -11,7 +11,7 @@ import { LoginUseCase } from '@modules/user-management/users/application/usecase
 import { RegisterUseCase } from '@modules/user-management/users/application/usecases/RegisterUseCase';
 import { CreateMemberUseCase } from '@modules/church-management/members/application/usecases/CreateMemberUseCase';
 import { FirebaseAuthService } from '@modules/user-management/users/application/services/FirebaseAuthService';
-import { FirebaseNotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/FirebaseNotificationService';
+import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 import { FirebaseAuditService } from '@modules/shared-kernel/audit/infrastructure/services/FirebaseAuditService';
 
 class DIContainer {
@@ -41,7 +41,7 @@ class DIContainer {
   private registerServices(): void {
     // Register service implementations
     this.services.set('IAuthService', new FirebaseAuthService());
-    this.services.set('INotificationService', new FirebaseNotificationService());
+    this.services.set('INotificationService', new NotificationService());
     this.services.set('IAuditService', new FirebaseAuditService());
   }
 

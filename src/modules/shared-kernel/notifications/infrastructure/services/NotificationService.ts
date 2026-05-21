@@ -1,13 +1,18 @@
 // Infrastructure Service - Notification Service
 // Complete implementation for notification business operations
 
-import { INotificationService } from '@modules/shared-kernel/notifications/domain/services/INotificationService';
+import {
+  INotificationService,
+  SendNotificationInput
+} from '@modules/shared-kernel/notifications/domain/services/INotificationService';
 import { FirebaseNotificationRepository } from '@modules/shared-kernel/notifications/infrastructure/repositories/FirebaseNotificationRepository';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { 
   Notification, 
   NotificationEntity, 
-  NotificationPriority 
+  NotificationPriority,
+  NotificationStatus,
+  NotificationType
 } from '@modules/shared-kernel/notifications/domain/entities/Notification';
 
 export class NotificationService implements INotificationService {
@@ -196,6 +201,39 @@ export class NotificationService implements INotificationService {
       console.error('Error cleaning up expired notifications:', error);
       throw new Error('Erro ao limpar notificações expiradas');
     }
+  }
+
+  async send(notification: SendNotificationInput): Promise<void> {
+    try {
+      await this.notificationRepository.create({
+        userId: notification.userId,
+        title: notification.title,
+        message: notification.message,
+        type: this.resolveNotificationType(notification.type),
+        priority: this.resolveNotificationPriority(notification.priority),
+        status: NotificationStatus.Unread,
+        actionUrl: notification.actionUrl
+      });
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      throw new Error('Erro ao enviar notificação');
+    }
+  }
+
+  private resolveNotificationType(type?: string): NotificationType {
+    if (type && Object.values(NotificationType).includes(type as NotificationType)) {
+      return type as NotificationType;
+    }
+
+    return NotificationType.Custom;
+  }
+
+  private resolveNotificationPriority(priority?: string): NotificationPriority {
+    if (priority && Object.values(NotificationPriority).includes(priority as NotificationPriority)) {
+      return priority as NotificationPriority;
+    }
+
+    return NotificationPriority.Medium;
   }
 
   async notifyHelpRequest(

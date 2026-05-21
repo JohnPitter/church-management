@@ -3,6 +3,15 @@
 
 import { Notification, NotificationPriority } from '../entities/Notification';
 
+export interface SendNotificationInput {
+  userId: string;
+  title: string;
+  message: string;
+  type?: string;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  actionUrl?: string;
+}
+
 export interface INotificationService {
   // Automatic notifications
   notifyNewEvent(eventId: string, eventTitle: string, eventDate: Date): Promise<number>;
@@ -35,4 +44,7 @@ export interface INotificationService {
   
   // Maintenance
   cleanupExpiredNotifications(): Promise<number>;
+
+  // Compatibility operation used by older use cases
+  send(notification: SendNotificationInput): Promise<void>;
 }
