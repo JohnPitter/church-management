@@ -21,12 +21,7 @@ const HomeSimplified: React.FC = () => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [verseOfDay, setVerseOfDay] = useState<BibleVerse>(getVerseOfTheDay());
-  const [homeSettings, setHomeSettings] = useState<HomeSettings>({
-    id: 'default',
-    ...DEFAULT_HOME_SETTINGS,
-    updatedAt: new Date(),
-    updatedBy: ''
-  });
+  const [homeSettings, setHomeSettings] = useState<HomeSettings | null>(null);
 
   const homeSettingsService = new HomeSettingsService();
 
@@ -58,6 +53,12 @@ const HomeSimplified: React.FC = () => {
         setHomeSettings(settings);
       } catch (error) {
         console.error('Error loading home settings:', error);
+        setHomeSettings({
+          id: 'default',
+          ...DEFAULT_HOME_SETTINGS,
+          updatedAt: new Date(),
+          updatedBy: ''
+        });
       }
     };
 
@@ -72,6 +73,14 @@ const HomeSimplified: React.FC = () => {
       navigate('/professional');
     }
   }, [hasPermission, navigate]);
+
+  if (!homeSettings) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-600">
+        Carregando...
+      </div>
+    );
+  }
 
   // Render appropriate layout based on settings
   const layoutProps = {
