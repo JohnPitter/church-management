@@ -1,10 +1,10 @@
 import React, { ComponentType, LazyExoticComponent } from 'react';
 
-const CHUNK_RELOAD_KEY_PREFIX = 'church-management:chunk-reload';
 const RETRY_DELAYS_MS = [500, 1500];
 const CHUNK_ERROR_PATTERNS = [
   'ChunkLoadError',
   'Loading chunk',
+  'Loading CSS chunk',
   'Failed to fetch dynamically imported module',
   'Importing a module script failed'
 ];
@@ -23,24 +23,6 @@ export const isChunkLoadError = (error: unknown): boolean => {
   return CHUNK_ERROR_PATTERNS.some(pattern => message.includes(pattern));
 };
 
-const getReloadKey = (): string => `${CHUNK_RELOAD_KEY_PREFIX}:${window.location.pathname}`;
-
-export const clearChunkReloadAttempt = (): void => {
-  sessionStorage.removeItem(getReloadKey());
-};
-
-const reloadOnceForFreshAssets = (): boolean => {
-  const reloadKey = getReloadKey();
-
-  if (sessionStorage.getItem(reloadKey) !== 'true') {
-    sessionStorage.setItem(reloadKey, 'true');
-    window.location.reload();
-    return true;
-  }
-
-  return false;
-};
-
 export const lazyWithRetry = <T extends ComponentType<any>>(
   loader: () => Promise<{ default: T }>
 ): LazyExoticComponent<T> => React.lazy(async () => {
@@ -48,9 +30,7 @@ export const lazyWithRetry = <T extends ComponentType<any>>(
 
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
     try {
-      const module = await loader();
-      clearChunkReloadAttempt();
-      return module;
+      return await loader();
     } catch (error) {
       lastError = error;
 
@@ -62,12 +42,6 @@ export const lazyWithRetry = <T extends ComponentType<any>>(
       if (delayMs) {
         await wait(delayMs);
       }
-    }
-  }
-
-  if (isChunkLoadError(lastError)) {
-    if (reloadOnceForFreshAssets()) {
-      return new Promise(() => undefined);
     }
   }
 

@@ -11,6 +11,7 @@ interface State {
 }
 
 const CHUNK_RELOAD_KEY = 'chunk-reload-attempt';
+const CHUNK_RELOAD_COOLDOWN_MS = 60_000;
 const CHUNK_ERROR_PATTERNS = [
   'ChunkLoadError',
   'Loading chunk',
@@ -23,6 +24,14 @@ const isChunkLoadError = (error: Error | null): boolean => {
   if (!error) return false;
   const message = `${error.name} ${error.message}`;
   return CHUNK_ERROR_PATTERNS.some((pattern) => message.includes(pattern));
+};
+
+const hasRecentReloadAttempt = (): boolean => {
+  const raw = sessionStorage.getItem(CHUNK_RELOAD_KEY);
+  if (!raw) return false;
+  const timestamp = Number(raw);
+  if (!Number.isFinite(timestamp)) return true;
+  return Date.now() - timestamp < CHUNK_RELOAD_COOLDOWN_MS;
 };
 
 class ErrorBoundary extends Component<Props, State> {
@@ -39,8 +48,7 @@ class ErrorBoundary extends Component<Props, State> {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
 
     if (isChunkLoadError(error)) {
-      const alreadyReloaded = sessionStorage.getItem(CHUNK_RELOAD_KEY);
-      if (!alreadyReloaded) {
+      if (!hasRecentReloadAttempt()) {
         sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now()));
         window.location.reload();
       }
