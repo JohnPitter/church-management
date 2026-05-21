@@ -16,7 +16,8 @@ jest.mock('chart.js', () => ({
   LineElement: jest.fn(),
   Title: jest.fn(),
   Tooltip: jest.fn(),
-  Legend: jest.fn()
+  Legend: jest.fn(),
+  Filler: jest.fn()
 }));
 
 jest.mock('react-chartjs-2', () => ({
