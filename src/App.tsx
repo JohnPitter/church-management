@@ -15,6 +15,7 @@ import { DynamicFavicon } from './presentation/components/DynamicFavicon';
 import { Toaster } from 'react-hot-toast';
 import { ConfirmDialogProvider } from './presentation/components/ConfirmDialog';
 import ErrorBoundary from './presentation/components/ErrorBoundary';
+import { BuildVersionBadge } from './presentation/components/BuildVersionBadge';
 
 import { SystemModule, PermissionAction } from './domain/entities/Permission';
 
@@ -114,6 +115,7 @@ const router = createBrowserRouter([
               <ErrorBoundary>
                 <DynamicFavicon />
                 <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+                <BuildVersionBadge />
                 <AdminSetupGuard>
                   <Suspense fallback={<PageFallback />}>
                     <Outlet />
