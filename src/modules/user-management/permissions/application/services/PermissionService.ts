@@ -125,7 +125,13 @@ export class PermissionService {
     this.unsubscribeFromUser(userId);
 
     const userDocRef = doc(db, this.usersCollection, userId);
+    let hasReceivedInitialSnapshot = false;
     const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
+      if (!hasReceivedInitialSnapshot) {
+        hasReceivedInitialSnapshot = true;
+        return;
+      }
+
       if (snapshot.exists()) {
         this.invalidateUserPermissionCache(userId);
         callback();

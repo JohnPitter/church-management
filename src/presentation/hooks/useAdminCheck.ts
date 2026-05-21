@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 
+const SYSTEM_SETUP_CACHE_KEY = 'church-management:system-setup-initialized';
+
 interface AdminCheckResult {
   hasAdmin: boolean | null; // null = loading, true/false = resultado
   loading: boolean;
@@ -11,8 +13,9 @@ interface AdminCheckResult {
 }
 
 export const useAdminCheck = (): AdminCheckResult => {
-  const [hasAdmin, setHasAdmin] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cachedHasAdmin = localStorage.getItem(SYSTEM_SETUP_CACHE_KEY) === 'true';
+  const [hasAdmin, setHasAdmin] = useState<boolean | null>(cachedHasAdmin ? true : null);
+  const [loading, setLoading] = useState(!cachedHasAdmin);
   const [error, setError] = useState<string | null>(null);
   const [recheckTrigger, setRecheckTrigger] = useState(0);
 
@@ -26,17 +29,18 @@ export const useAdminCheck = (): AdminCheckResult => {
       
       if (systemDoc.exists()) {
         const systemData = systemDoc.data();
-        const isInitialized = systemData.initialized === true;
+        const isInitialized = systemData?.initialized === true;
+        localStorage.setItem(SYSTEM_SETUP_CACHE_KEY, String(isInitialized));
         setHasAdmin(isInitialized);
       } else {
         // Se não existe o documento, o sistema não foi inicializado
+        localStorage.setItem(SYSTEM_SETUP_CACHE_KEY, 'false');
         setHasAdmin(false);
       }
     } catch (error) {
       console.error('Error checking system setup:', error);
       setError('Falha ao verificar configuração do sistema');
-      // Em caso de erro, assume que precisa de setup
-      setHasAdmin(false);
+      setHasAdmin(cachedHasAdmin ? true : false);
     } finally {
       setLoading(false);
     }

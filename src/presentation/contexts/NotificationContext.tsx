@@ -1,7 +1,7 @@
 // Presentation Context - Notification Context
 // Provides notification state management and operations
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { Notification, NotificationPreferences } from '@modules/shared-kernel/notifications/domain/entities/Notification';
 import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 import { useAuth } from './AuthContext';
@@ -39,6 +39,16 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
+const scheduleBackgroundTask = (callback: () => void): (() => void) => {
+  if ('requestIdleCallback' in window) {
+    const handle = window.requestIdleCallback(callback, { timeout: 1500 });
+    return () => window.cancelIdleCallback(handle);
+  }
+
+  const handle = globalThis.setTimeout(callback, 0);
+  return () => globalThis.clearTimeout(handle);
+};
+
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (context === undefined) {
@@ -56,9 +66,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(Boolean(currentUser));
   
-  const notificationService = new NotificationService();
+  const notificationService = useMemo(() => new NotificationService(), []);
 
   const refreshNotifications = useCallback(async () => {
     if (!currentUser) {
@@ -208,7 +218,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   // Load notifications when user changes
   useEffect(() => {
-    refreshNotifications();
+    if (currentUser) {
+      setLoading(true);
+    }
+
+    return scheduleBackgroundTask(() => {
+      refreshNotifications();
+    });
   }, [refreshNotifications]);
 
   // Set up periodic refresh for real-time updates

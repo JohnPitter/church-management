@@ -6,7 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import { usePermissions } from 'presentation/hooks/usePermissions';
 import { SystemModule, PermissionAction } from 'domain/entities/Permission';
 import { HomeSettingsService } from '@modules/content-management/home-settings/application/services/HomeSettingsService';
-import { HomeSettings, HomeLayoutStyle } from '@modules/content-management/home-settings/domain/entities/HomeSettings';
+import {
+  DEFAULT_HOME_SETTINGS,
+  HomeSettings,
+  HomeLayoutStyle
+} from '@modules/content-management/home-settings/domain/entities/HomeSettings';
 import { CanvaHomeLayout } from 'presentation/components/HomeLayouts/CanvaHomeLayout';
 import { AppleHomeLayout } from 'presentation/components/HomeLayouts/AppleHomeLayout';
 import { EnterpriseHomeLayout } from 'presentation/components/HomeLayouts/EnterpriseHomeLayout';
@@ -17,8 +21,12 @@ const HomeSimplified: React.FC = () => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [verseOfDay, setVerseOfDay] = useState<BibleVerse>(getVerseOfTheDay());
-  const [homeSettings, setHomeSettings] = useState<HomeSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [homeSettings, setHomeSettings] = useState<HomeSettings>({
+    id: 'default',
+    ...DEFAULT_HOME_SETTINGS,
+    updatedAt: new Date(),
+    updatedBy: ''
+  });
 
   const homeSettingsService = new HomeSettingsService();
 
@@ -46,32 +54,10 @@ const HomeSimplified: React.FC = () => {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        setLoading(true);
         const settings = await homeSettingsService.getSettings();
         setHomeSettings(settings);
       } catch (error) {
         console.error('Error loading home settings:', error);
-        // Use default settings on error
-        setHomeSettings({
-          id: 'default',
-          layoutStyle: HomeLayoutStyle.CANVA,
-          sections: {
-            hero: true,
-            verseOfDay: true,
-            quickActions: true,
-            welcomeBanner: true,
-            features: true,
-            events: true,
-            statistics: false,
-            contact: false,
-            testimonials: false,
-            socialMedia: true
-          },
-          updatedAt: new Date(),
-          updatedBy: ''
-        });
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -86,18 +72,6 @@ const HomeSimplified: React.FC = () => {
       navigate('/professional');
     }
   }, [hasPermission, navigate]);
-
-  // Loading state
-  if (loading || !homeSettings) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando página inicial...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Render appropriate layout based on settings
   const layoutProps = {

@@ -31,7 +31,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { currentUser, loading, canAccessSystem } = useAuth();
   const { hasPermission, hasAnyPermission: _hasAnyPermission, loading: permissionsLoading } = usePermissions();
-  const { settings, loading: settingsLoading } = useSettings();
+  const { settings } = useSettings();
 
   // Helper to check if user has any manage permission
   const hasAnyManagePermission = () => {
@@ -45,7 +45,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return modules.some(module => hasPermission(module, PermissionAction.Manage));
   };
 
-  if (loading || permissionsLoading || settingsLoading) {
+  if (loading || permissionsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

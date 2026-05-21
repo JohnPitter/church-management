@@ -129,7 +129,7 @@ describe('ProtectedRoute', () => {
       expect(screen.getByText('Carregando...')).toBeInTheDocument();
     });
 
-    it('should show loading spinner when settings are loading', () => {
+    it('should render content while settings are loading', () => {
       setupMocks({
         currentUser: { id: '1', role: 'member' },
         settingsLoading: true
@@ -143,7 +143,8 @@ describe('ProtectedRoute', () => {
         </MemoryRouter>
       );
 
-      expect(screen.getByText('Carregando...')).toBeInTheDocument();
+      expect(screen.getByTestId('protected-content')).toBeInTheDocument();
+      expect(screen.queryByText('Carregando...')).not.toBeInTheDocument();
     });
 
     it('should show loading spinner with spinning animation', () => {

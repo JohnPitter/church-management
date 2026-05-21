@@ -18,9 +18,9 @@ describe('AdminSetupGuard', () => {
     jest.clearAllMocks();
   });
 
-  it('mostra loading enquanto verifica a configuracao', () => {
+  it('renderiza conteudo enquanto verifica a configuracao', () => {
     mockUseAdminCheck.mockReturnValue({
-      hasAdmin: false,
+      hasAdmin: null,
       loading: true,
       error: null,
     });
@@ -31,7 +31,8 @@ describe('AdminSetupGuard', () => {
       </AdminSetupGuard>
     );
 
-    expect(screen.getByText('Verificando configuração do sistema...')).toBeInTheDocument();
+    expect(screen.getByText('Conteudo Protegido')).toBeInTheDocument();
+    expect(screen.queryByText('Verificando configuração do sistema...')).not.toBeInTheDocument();
   });
 
   it('mostra a tela de setup quando nao existe admin', () => {
