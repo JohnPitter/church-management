@@ -32,16 +32,16 @@ export async function exportRowsToXlsx(
   rows: XlsxCellValue[][],
   options: RowsExportOptions
 ): Promise<Blob> {
-  const XLSX = await import('xlsx');
-  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const ExcelJS = await import('exceljs');
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet(options.sheetName);
 
-  if (options.columnWidths) {
-    ws['!cols'] = options.columnWidths.map(width => ({ wch: width }));
-  }
+  rows.forEach(row => worksheet.addRow(row));
+  options.columnWidths?.forEach((width, index) => {
+    worksheet.getColumn(index + 1).width = width;
+  });
 
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options.sheetName);
-  const xlsxBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const xlsxBuffer = await workbook.xlsx.writeBuffer();
   return new Blob([xlsxBuffer], { type: XLSX_MIME_TYPE });
 }
 
