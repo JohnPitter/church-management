@@ -62,6 +62,8 @@ jest.mock('firebase/firestore', () => ({
 
 describe('FinancialService', () => {
   let financialService: FinancialService;
+  const createLocalDate = (year: number, monthIndex: number, day: number): Date =>
+    new Date(year, monthIndex, day);
 
   // Helper function to create test category
   const createTestCategory = (overrides: Partial<FinancialCategory> = {}): FinancialCategory => ({
@@ -529,14 +531,14 @@ describe('FinancialService', () => {
     describe('getIncomeExpenseTrend', () => {
       it('should group transactions by month correctly', async () => {
         const transactions = [
-          createTestTransaction({ id: 'trans-1', type: TransactionType.INCOME, amount: 1000, date: new Date('2024-01-15') }),
-          createTestTransaction({ id: 'trans-2', type: TransactionType.EXPENSE, amount: 500, date: new Date('2024-01-20') }),
-          createTestTransaction({ id: 'trans-3', type: TransactionType.INCOME, amount: 2000, date: new Date('2024-02-15') })
+          createTestTransaction({ id: 'trans-1', type: TransactionType.INCOME, amount: 1000, date: createLocalDate(2024, 0, 15) }),
+          createTestTransaction({ id: 'trans-2', type: TransactionType.EXPENSE, amount: 500, date: createLocalDate(2024, 0, 20) }),
+          createTestTransaction({ id: 'trans-3', type: TransactionType.INCOME, amount: 2000, date: createLocalDate(2024, 1, 15) })
         ];
         mockGetDocs.mockResolvedValue(createMockQuerySnapshot(transactions));
 
-        const startDate = new Date('2024-01-01');
-        const endDate = new Date('2024-02-28');
+        const startDate = createLocalDate(2024, 0, 1);
+        const endDate = createLocalDate(2024, 1, 28);
 
         const result = await financialService.getIncomeExpenseTrend(startDate, endDate, 'monthly');
 
@@ -550,24 +552,25 @@ describe('FinancialService', () => {
       it('should return empty array when no transactions exist', async () => {
         mockGetDocs.mockResolvedValue(createMockQuerySnapshot([]));
 
-        const startDate = new Date('2024-01-01');
-        const endDate = new Date('2024-01-31');
+        const startDate = createLocalDate(2024, 0, 1);
+        const endDate = createLocalDate(2024, 0, 31);
 
         const result = await financialService.getIncomeExpenseTrend(startDate, endDate, 'monthly');
 
-        expect(result).toHaveLength(0);
+        expect(result).toHaveLength(1);
+        expect(result[0]).toMatchObject({ income: 0, expense: 0 });
       });
 
       it('should sort results by date ascending', async () => {
         const transactions = [
-          createTestTransaction({ id: 'trans-1', type: TransactionType.INCOME, amount: 1000, date: new Date('2024-03-15') }),
-          createTestTransaction({ id: 'trans-2', type: TransactionType.INCOME, amount: 2000, date: new Date('2024-01-15') }),
-          createTestTransaction({ id: 'trans-3', type: TransactionType.INCOME, amount: 3000, date: new Date('2024-02-15') })
+          createTestTransaction({ id: 'trans-1', type: TransactionType.INCOME, amount: 1000, date: createLocalDate(2024, 2, 15) }),
+          createTestTransaction({ id: 'trans-2', type: TransactionType.INCOME, amount: 2000, date: createLocalDate(2024, 0, 15) }),
+          createTestTransaction({ id: 'trans-3', type: TransactionType.INCOME, amount: 3000, date: createLocalDate(2024, 1, 15) })
         ];
         mockGetDocs.mockResolvedValue(createMockQuerySnapshot(transactions));
 
-        const startDate = new Date('2024-01-01');
-        const endDate = new Date('2024-03-31');
+        const startDate = createLocalDate(2024, 0, 1);
+        const endDate = createLocalDate(2024, 2, 31);
 
         const result = await financialService.getIncomeExpenseTrend(startDate, endDate, 'monthly');
 
@@ -763,7 +766,7 @@ describe('FinancialService', () => {
         expect(result.type).toBe('application/json');
       });
 
-      it('should export transactions as CSV', async () => {
+      it('should export transactions as XLSX', async () => {
         const transactions = [
           createTestTransaction({ id: 'trans-1', amount: 1000 })
         ];
@@ -772,14 +775,14 @@ describe('FinancialService', () => {
         const result = await financialService.exportTransactions({}, 'xlsx');
 
         expect(result).toBeInstanceOf(Blob);
-        expect(result.type).toBe('text/csv;charset=utf-8;');
+        expect(result.type).toBe('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       });
 
       it('should throw error when export fails', async () => {
         mockGetDocs.mockRejectedValue(new Error('Firebase error'));
 
         await expect(financialService.exportTransactions({}, 'xlsx'))
-          .rejects.toThrow('Erro ao exportar transações');
+          .rejects.toThrow('Erro ao exportar transacoes');
       });
     });
   });

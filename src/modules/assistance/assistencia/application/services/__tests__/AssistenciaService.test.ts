@@ -466,7 +466,7 @@ describe('ProfissionalAssistenciaService', () => {
         .rejects.toThrow('Profissional não encontrado');
     });
 
-    it('should use default working hours if not configured', async () => {
+    it('should return empty slots if working hours are not configured', async () => {
       const profissional = createTestProfissional({ horariosFuncionamento: [] });
       mockProfissionalRepository.findById.mockResolvedValue(profissional);
 
@@ -475,9 +475,10 @@ describe('ProfissionalAssistenciaService', () => {
       };
       (service as any).agendamentoRepository = mockAgendamentoRepository;
 
-      await service.getHorariosDisponiveis('prof-1', new Date(), new Date());
+      const result = await service.getHorariosDisponiveis('prof-1', new Date(), new Date());
 
-      expect(profissional.horariosFuncionamento).toHaveLength(5); // Monday to Friday
+      expect(result).toEqual([]);
+      expect(AssistenciaEntity.obterProximosHorariosDisponiveis).not.toHaveBeenCalled();
     });
   });
 

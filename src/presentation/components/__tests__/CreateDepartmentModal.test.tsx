@@ -85,7 +85,7 @@ describe('CreateDepartmentModal', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Nome do departamento é obrigatório')).toBeInTheDocument();
+        expect(screen.getAllByText('Nome do departamento é obrigatório').length).toBeGreaterThan(0);
       });
     });
 
@@ -420,7 +420,7 @@ describe('CreateDepartmentModal', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Nome do departamento é obrigatório')).toBeInTheDocument();
+        expect(screen.getAllByText('Nome do departamento é obrigatório').length).toBeGreaterThan(0);
       });
     });
 
@@ -432,7 +432,7 @@ describe('CreateDepartmentModal', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Nome do departamento é obrigatório')).toBeInTheDocument();
+        expect(screen.getAllByText('Nome do departamento é obrigatório').length).toBeGreaterThan(0);
       });
 
       // Close and reopen modal

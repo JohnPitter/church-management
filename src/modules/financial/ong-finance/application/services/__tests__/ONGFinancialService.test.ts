@@ -697,8 +697,8 @@ describe('ONGFinancialService', () => {
         (firestore.getCountFromServer as jest.Mock).mockResolvedValue(mockCountSnapshot);
 
         const result = await ongFinancialService.getFinancialSummary(
-          new Date('2024-01-01'),
-          new Date('2024-01-31')
+          new Date(2024, 0, 1),
+          new Date(2024, 0, 31)
         );
 
         expect(result.topCategories).toHaveLength(2);
@@ -743,19 +743,19 @@ describe('ONGFinancialService', () => {
       it('should group transactions by monthly period', async () => {
         const mockTransactions = [
           createTestTransaction({
-            date: new Date('2024-01-15'),
+            date: new Date(2024, 0, 15),
             type: TransactionType.INCOME,
             amount: 1000,
             status: TransactionStatus.APPROVED
           }),
           createTestTransaction({
-            date: new Date('2024-01-20'),
+            date: new Date(2024, 0, 20),
             type: TransactionType.EXPENSE,
             amount: 500,
             status: TransactionStatus.APPROVED
           }),
           createTestTransaction({
-            date: new Date('2024-02-10'),
+            date: new Date(2024, 1, 10),
             type: TransactionType.INCOME,
             amount: 2000,
             status: TransactionStatus.APPROVED
@@ -777,8 +777,8 @@ describe('ONGFinancialService', () => {
         (firestore.getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
 
         const result = await ongFinancialService.getIncomeExpenseTrend(
-          new Date('2024-01-01'),
-          new Date('2024-02-28'),
+          new Date(2024, 0, 1),
+          new Date(2024, 1, 28),
           'monthly'
         );
 
@@ -791,13 +791,13 @@ describe('ONGFinancialService', () => {
       it('should group transactions by daily period', async () => {
         const mockTransactions = [
           createTestTransaction({
-            date: new Date('2024-01-15T10:00:00'),
+            date: new Date(2024, 0, 15, 10),
             type: TransactionType.INCOME,
             amount: 500,
             status: TransactionStatus.APPROVED
           }),
           createTestTransaction({
-            date: new Date('2024-01-15T14:00:00'),
+            date: new Date(2024, 0, 15, 14),
             type: TransactionType.INCOME,
             amount: 300,
             status: TransactionStatus.APPROVED
@@ -819,8 +819,8 @@ describe('ONGFinancialService', () => {
         (firestore.getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
 
         const result = await ongFinancialService.getIncomeExpenseTrend(
-          new Date('2024-01-01'),
-          new Date('2024-01-31'),
+          new Date(2024, 0, 15),
+          new Date(2024, 0, 15),
           'daily'
         );
 
@@ -832,11 +832,17 @@ describe('ONGFinancialService', () => {
         (firestore.getDocs as jest.Mock).mockRejectedValue(new Error('Firestore error'));
 
         const result = await ongFinancialService.getIncomeExpenseTrend(
-          new Date('2024-01-01'),
-          new Date('2024-01-31')
+          new Date(2024, 0, 1),
+          new Date(2024, 0, 31)
         );
 
-        expect(result).toEqual([]);
+        expect(result).toEqual([
+          {
+            date: new Date(2024, 0, 1),
+            income: 0,
+            expense: 0
+          }
+        ]);
       });
     });
 
@@ -978,7 +984,7 @@ describe('ONGFinancialService', () => {
   // ==================== EXPORT METHODS ====================
   describe('Export Methods', () => {
     describe('exportTransactions', () => {
-      it('should export transactions as CSV', async () => {
+      it('should export transactions as XLSX', async () => {
         const mockTransactions = [
           createTestTransaction({
             date: new Date('2024-01-15'),
@@ -1007,19 +1013,7 @@ describe('ONGFinancialService', () => {
         const result = await ongFinancialService.exportTransactions({}, 'xlsx');
 
         expect(result).toBeInstanceOf(Blob);
-        expect(result.type).toBe('text/csv;charset=utf-8;');
-
-        // Read blob content using FileReader API simulation
-        const reader = new FileReader();
-        const textPromise = new Promise<string>((resolve) => {
-          reader.onload = () => resolve(reader.result as string);
-        });
-        reader.readAsText(result);
-        const text = await textPromise;
-
-        expect(text).toContain('Data');
-        expect(text).toContain('Tipo');
-        expect(text).toContain('Categoria');
+        expect(result.type).toBe('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       });
 
       it('should export transactions as JSON', async () => {

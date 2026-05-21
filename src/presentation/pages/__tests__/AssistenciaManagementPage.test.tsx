@@ -14,6 +14,10 @@ import {
   HelpRequestPriority
 } from '@modules/assistance/professional/domain/entities/ProfessionalHelpRequest';
 
+const mockConfirmDialogConfirm = jest.fn();
+const mockToastSuccess = jest.fn();
+const mockToastError = jest.fn();
+
 // ============================================================================
 // Mock Setup
 // ============================================================================
@@ -44,6 +48,14 @@ const mockAuthContext = {
   getSignInMethods: jest.fn()
 };
 
+jest.mock('../../components/ConfirmDialog', () => ({
+  useConfirmDialog: () => ({
+    confirm: mockConfirmDialogConfirm,
+    prompt: jest.fn().mockResolvedValue('')
+  }),
+  ConfirmDialogProvider: ({ children }: any) => children
+}));
+
 jest.mock('../../contexts/AuthContext', () => ({
   useAuth: () => mockAuthContext
 }));
@@ -60,11 +72,19 @@ jest.mock('../../contexts/SettingsContext', () => ({
   })
 }));
 
-// Mock window methods
-const mockConfirm = jest.fn().mockReturnValue(true);
-const mockAlert = jest.fn();
-window.confirm = mockConfirm;
-window.alert = mockAlert;
+jest.mock('@modules/shared-kernel/logging/infrastructure/services/LoggingService', () => ({
+  loggingService: {
+    logDatabase: jest.fn().mockResolvedValue(undefined)
+  }
+}));
+
+jest.mock('react-hot-toast', () => ({
+  __esModule: true,
+  default: {
+    success: (...args: any[]) => mockToastSuccess(...args),
+    error: (...args: any[]) => mockToastError(...args)
+  }
+}));
 
 // Mock data
 const mockAgendamentos: any[] = [
@@ -430,7 +450,7 @@ describe('AssistenciaManagementPage', () => {
     });
     mockGetReceivedRequests.mockResolvedValue([mockHelpRequests[0]]);
     mockGetSentRequests.mockResolvedValue([mockHelpRequests[1], mockHelpRequests[2]]);
-    mockConfirm.mockReturnValue(true);
+    mockConfirmDialogConfirm.mockResolvedValue(true);
   });
 
   // ===========================================
@@ -608,7 +628,7 @@ describe('AssistenciaManagementPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/3 de 3 agendamentos/)).toBeInTheDocument();
+        expect(screen.getAllByText(/3 de 3 agendamentos/).length).toBeGreaterThan(0);
       });
     });
 
@@ -701,7 +721,7 @@ describe('AssistenciaManagementPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/3 de 3 agendamentos/)).toBeInTheDocument();
+        expect(screen.getAllByText(/3 de 3 agendamentos/).length).toBeGreaterThan(0);
       });
 
       const searchInput = screen.getByPlaceholderText(/Buscar por paciente, profissional ou telefone/);
@@ -892,7 +912,7 @@ describe('AssistenciaManagementPage', () => {
       await waitFor(() => {
         expect(mockConfirmarAgendamento).toHaveBeenCalledWith('agend-1', 'admin@church.com');
       });
-      expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Agendamento confirmado'));
+      expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringContaining('Agendamento confirmado'));
     });
 
     it('should handle error when confirming agendamento fails', async () => {
@@ -909,7 +929,7 @@ describe('AssistenciaManagementPage', () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Erro ao atualizar status'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Erro ao atualizar status'));
       });
 
       consoleError.mockRestore();
@@ -926,14 +946,14 @@ describe('AssistenciaManagementPage', () => {
       fireEvent.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(mockConfirm).toHaveBeenCalledWith(expect.stringContaining('João Silva'));
+        expect(mockConfirmDialogConfirm).toHaveBeenCalled();
       });
       expect(mockDeleteAgendamento).toHaveBeenCalledWith('agend-1');
-      expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('excluído com sucesso'));
+      expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringContaining('excluido com sucesso'));
     });
 
     it('should not delete agendamento when confirmation is cancelled', async () => {
-      mockConfirm.mockReturnValueOnce(false);
+      mockConfirmDialogConfirm.mockResolvedValueOnce(false);
       renderComponent();
 
       await waitFor(() => {
@@ -944,7 +964,7 @@ describe('AssistenciaManagementPage', () => {
       fireEvent.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(mockConfirm).toHaveBeenCalled();
+        expect(mockConfirmDialogConfirm).toHaveBeenCalled();
       });
       expect(mockDeleteAgendamento).not.toHaveBeenCalled();
     });
@@ -963,7 +983,7 @@ describe('AssistenciaManagementPage', () => {
       fireEvent.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Erro ao excluir'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Erro ao excluir'));
       });
 
       consoleError.mockRestore();

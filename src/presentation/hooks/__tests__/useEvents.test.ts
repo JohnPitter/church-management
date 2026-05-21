@@ -937,7 +937,7 @@ describe('useEvents Hook', () => {
     });
 
     it('should handle events with same dates', async () => {
-      const sameDate = new Date('2026-03-15T00:00:00');
+      const sameDate = new Date('2027-03-15T00:00:00');
       const mockEvents = [
         createMockEvent({ id: 'event-1', date: sameDate, time: '10:00' }),
         createMockEvent({ id: 'event-2', date: sameDate, time: '14:00' }),

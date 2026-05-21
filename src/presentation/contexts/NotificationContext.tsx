@@ -71,9 +71,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     try {
       setLoading(true);
 
-      // Load notifications and derive unread count from loaded data
-      const userNotifications = await notificationService.getUserNotifications(currentUser.id, 50);
-      const userUnreadCount = userNotifications.filter(n => n.status === 'unread').length;
+      const [userNotifications, userUnreadCount] = await Promise.all([
+        notificationService.getUserNotifications(currentUser.id, 50),
+        notificationService.getUnreadCount(currentUser.id)
+      ]);
 
       // Get user preferences from repository directly since service doesn't have this method yet
       let userPreferences = null;

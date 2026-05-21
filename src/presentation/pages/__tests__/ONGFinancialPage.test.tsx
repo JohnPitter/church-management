@@ -9,6 +9,14 @@ import { TransactionType, TransactionStatus } from '@modules/financial/church-fi
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 
 // Mock Firebase config
+jest.mock('../../components/ConfirmDialog', () => ({
+  useConfirmDialog: () => ({
+    confirm: jest.fn().mockResolvedValue(true),
+    prompt: jest.fn().mockResolvedValue('')
+  }),
+  ConfirmDialogProvider: ({ children }: any) => children
+}));
+
 jest.mock('@/config/firebase', () => ({
   db: {}
 }));
@@ -246,7 +254,7 @@ describe('ONGFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/Exportar CSV/)).toBeInTheDocument();
+        expect(screen.getByText(/Exportar Excel/)).toBeInTheDocument();
       });
     });
 
@@ -264,7 +272,7 @@ describe('ONGFinancialPage', () => {
         expect(screen.getByText('Sistema Financeiro ONG')).toBeInTheDocument();
       });
 
-      expect(screen.queryByText(/Exportar CSV/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Exportar Excel/)).not.toBeInTheDocument();
     });
 
     it('should show new transaction button when user has create permission', async () => {
@@ -661,8 +669,8 @@ describe('ONGFinancialPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Relatório Financeiro Detalhado')).toBeInTheDocument();
-        // Buttons have emoji prefixes: "📊 CSV" and "📋 JSON"
-        expect(screen.getByText(/📊 CSV/)).toBeInTheDocument();
+        // Buttons have emoji prefixes: "📊 Excel" and "📋 JSON"
+        expect(screen.getByText(/📊 Excel/)).toBeInTheDocument();
         expect(screen.getByText(/📋 JSON/)).toBeInTheDocument();
       });
     });
@@ -833,15 +841,15 @@ describe('ONGFinancialPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/Exportar CSV/)).toBeInTheDocument();
+        expect(screen.getByText(/Exportar Excel/)).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText(/Exportar CSV/));
+      fireEvent.click(screen.getByText(/Exportar Excel/));
 
       await waitFor(() => {
         expect(mockOngFinancialService.exportTransactions).toHaveBeenCalledWith(
           expect.any(Object),
-          'csv'
+          'xlsx'
         );
       });
     });

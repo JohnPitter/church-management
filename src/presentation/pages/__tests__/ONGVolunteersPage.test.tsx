@@ -10,7 +10,19 @@ import {
   ONGEntity
 } from '@modules/ong-management/settings/domain/entities/ONG';
 
+const mockConfirm = jest.fn();
+const mockToastSuccess = jest.fn();
+const mockToastError = jest.fn();
+
 // Mock Firebase config
+jest.mock('../../components/ConfirmDialog', () => ({
+  useConfirmDialog: () => ({
+    confirm: mockConfirm,
+    prompt: jest.fn().mockResolvedValue('')
+  }),
+  ConfirmDialogProvider: ({ children }: any) => children
+}));
+
 jest.mock('@/config/firebase', () => ({
   db: {},
   storage: {}
@@ -62,14 +74,19 @@ jest.mock('@modules/ong-management/settings/infrastructure/repositories/Firebase
   };
 });
 
-// Mock window.confirm and window.alert
-const mockConfirm = jest.fn();
-const mockAlert = jest.fn();
+jest.mock('@modules/shared-kernel/logging/infrastructure/services/LoggingService', () => ({
+  loggingService: {
+    logDatabase: jest.fn().mockResolvedValue(undefined)
+  }
+}));
 
-beforeAll(() => {
-  window.confirm = mockConfirm;
-  window.alert = mockAlert;
-});
+jest.mock('react-hot-toast', () => ({
+  __esModule: true,
+  default: {
+    success: (...args: any[]) => mockToastSuccess(...args),
+    error: (...args: any[]) => mockToastError(...args)
+  }
+}));
 
 // Helper to create mock volunteer
 const createMockVolunteer = (overrides: Partial<Voluntario> = {}): Voluntario => ({
@@ -111,7 +128,7 @@ describe('ONGVolunteersPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetAllVoluntarios.mockResolvedValue([]);
-    mockConfirm.mockReturnValue(true);
+    mockConfirm.mockResolvedValue(true);
   });
 
   describe('Loading State', () => {
@@ -202,7 +219,7 @@ describe('ONGVolunteersPage', () => {
       });
 
       // Filter by status
-      const statusSelect = screen.getByRole('combobox');
+      const statusSelect = screen.getAllByRole('combobox')[0];
       fireEvent.change(statusSelect, { target: { value: StatusVoluntario.Ativo } });
 
       await waitFor(() => {
@@ -295,7 +312,7 @@ describe('ONGVolunteersPage', () => {
         expect(screen.getByText('Inactive Volunteer')).toBeInTheDocument();
       });
 
-      const statusSelect = screen.getByRole('combobox');
+      const statusSelect = screen.getAllByRole('combobox')[0];
       fireEvent.change(statusSelect, { target: { value: StatusVoluntario.Ativo } });
 
       await waitFor(() => {
@@ -342,7 +359,7 @@ describe('ONGVolunteersPage', () => {
         fireEvent.click(screen.getByText('Cadastrar'));
       });
 
-      expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Nome'));
+      expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Nome'));
     });
 
     it('should validate CPF format when creating volunteer', async () => {
@@ -381,7 +398,7 @@ describe('ONGVolunteersPage', () => {
       fireEvent.click(screen.getByText('Cadastrar'));
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('CPF'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('CPF'));
       });
     });
 
@@ -423,12 +440,15 @@ describe('ONGVolunteersPage', () => {
       if (emergencyInputs.length >= 1) {
         fireEvent.change(emergencyInputs[0], { target: { value: 'Emergency Contact' } });
       }
+      if (emergencyInputs.length >= 3) {
+        fireEvent.change(emergencyInputs[2], { target: { value: '11988887777' } });
+      }
 
       fireEvent.click(screen.getByText('Cadastrar'));
 
       await waitFor(() => {
         expect(mockCreateVoluntario).toHaveBeenCalled();
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('cadastrado com sucesso'));
+        expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringContaining('cadastrado com sucesso'));
       });
     });
 
@@ -495,7 +515,7 @@ describe('ONGVolunteersPage', () => {
 
       await waitFor(() => {
         expect(mockUpdateVoluntario).toHaveBeenCalled();
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('atualizado com sucesso'));
+        expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringContaining('atualizado com sucesso'));
       });
     });
   });
@@ -503,7 +523,7 @@ describe('ONGVolunteersPage', () => {
   describe('Delete Volunteer', () => {
     it('should show confirmation before deleting', async () => {
       mockGetAllVoluntarios.mockResolvedValue([createMockVolunteer()]);
-      mockConfirm.mockReturnValue(false);
+      mockConfirm.mockResolvedValue(false);
 
       render(<ONGVolunteersPage />);
 
@@ -511,13 +531,17 @@ describe('ONGVolunteersPage', () => {
         fireEvent.click(screen.getByText('Excluir'));
       });
 
-      expect(mockConfirm).toHaveBeenCalledWith(expect.stringContaining('excluir'));
+      expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Confirmação',
+        message: 'Tem certeza que deseja excluir este voluntário?',
+        variant: 'danger'
+      }));
       expect(mockDeleteVoluntario).not.toHaveBeenCalled();
     });
 
     it('should delete volunteer when confirmed', async () => {
       mockGetAllVoluntarios.mockResolvedValue([createMockVolunteer()]);
-      mockConfirm.mockReturnValue(true);
+      mockConfirm.mockResolvedValue(true);
       mockDeleteVoluntario.mockResolvedValue(undefined);
 
       render(<ONGVolunteersPage />);
@@ -528,7 +552,7 @@ describe('ONGVolunteersPage', () => {
 
       await waitFor(() => {
         expect(mockDeleteVoluntario).toHaveBeenCalledWith('volunteer-1');
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('sucesso'));
+        expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringContaining('sucesso'));
       });
     });
   });
@@ -800,7 +824,7 @@ describe('ONGVolunteersPage', () => {
       render(<ONGVolunteersPage />);
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Erro ao carregar'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Erro ao carregar'));
       });
 
       consoleSpy.mockRestore();
@@ -835,17 +859,25 @@ describe('ONGVolunteersPage', () => {
       fireEvent.change(modalInputs[2], { target: { value: 'test@test.com' } }); // email
       fireEvent.change(modalInputs[3], { target: { value: '11999999999' } }); // telefone
 
+      const dateInputs = modal!.querySelectorAll('input[type="date"]');
+      if (dateInputs.length > 0) {
+        fireEvent.change(dateInputs[0], { target: { value: '1990-01-01' } });
+      }
+
       // Fill emergency contact name
       const allModalInputs = modal!.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]');
       const emergencyInputs = Array.from(allModalInputs).slice(-4);
       if (emergencyInputs.length >= 1) {
         fireEvent.change(emergencyInputs[0], { target: { value: 'Emergency' } });
       }
+      if (emergencyInputs.length >= 3) {
+        fireEvent.change(emergencyInputs[2], { target: { value: '11988887777' } });
+      }
 
       fireEvent.click(screen.getByText('Cadastrar'));
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Erro ao salvar'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Erro ao salvar'));
       });
 
       consoleSpy.mockRestore();
@@ -863,7 +895,7 @@ describe('ONGVolunteersPage', () => {
       });
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Erro ao excluir'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Erro ao excluir'));
       });
 
       consoleSpy.mockRestore();

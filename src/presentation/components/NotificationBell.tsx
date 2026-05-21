@@ -11,7 +11,7 @@ interface NotificationBellProps {
 }
 
 export const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) => {
-  const { unreadCount } = useNotifications();
+  const { unreadCount, loading } = useNotifications();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -62,6 +62,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
+        disabled={loading}
+        aria-label="Notificações"
         className={`relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors ${
           isOpen ? 'bg-gray-100 text-gray-900' : ''
         }`}
