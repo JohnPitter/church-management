@@ -389,44 +389,6 @@ const AssistenciaManagementPage: React.FC = () => {
     loadStatistics(); // Refresh statistics
   };
 
-  const handleDeleteProfissional = async (profissionalId: string) => {
-    // Remove the professional from the list
-    setProfissionais(prev => prev.filter(p => p.id !== profissionalId));
-
-    // Refresh statistics
-    loadStatistics();
-
-    await loggingService.logDatabase('warning', 'Professional deleted', `ID: ${profissionalId}`, currentUser as any);
-
-    // Close modal
-    setIsProfissionalModalOpen(false);
-    setSelectedProfissional(null);
-  };
-
-  const handleInactivateProfissional = async (profissionalId: string, motivo?: string) => {
-    // Update the professional status in the list
-    setProfissionais(prev => prev.map(p =>
-      p.id === profissionalId
-        ? {
-            ...p,
-            status: StatusProfissional.Inativo,
-            dataInativacao: new Date(),
-            motivoInativacao: motivo || 'Inativação manual',
-            updatedAt: new Date()
-          }
-        : p
-    ));
-
-    // Refresh statistics
-    loadStatistics();
-
-    await loggingService.logDatabase('info', 'Professional inactivated', `ID: ${profissionalId}, Reason: ${motivo || 'Manual inactivation'}`, currentUser as any);
-
-    // Close modal
-    setIsProfissionalModalOpen(false);
-    setSelectedProfissional(null);
-  };
-
   // Anamnese handlers
   const _handleCreateAnamnese = (agendamento: AgendamentoAssistencia) => {
     setAnamneseAssistidoId(agendamento.pacienteId || '');

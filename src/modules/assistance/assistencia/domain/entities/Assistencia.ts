@@ -404,13 +404,16 @@ export class AssistenciaEntity {
 
           if (slotEnd > fimMs) break;
 
+          const currentSlotStart = slotStart;
+          const currentSlotEnd = slotEnd;
+
           // Check conflicts using pre-computed numeric ranges
           const temConflito = agendamentosRanges.some(
-            r => slotStart < r.fim && slotEnd > r.inicio
+            r => currentSlotStart < r.fim && currentSlotEnd > r.inicio
           );
 
           if (!temConflito) {
-            horariosDisponiveis.push(new Date(slotStart));
+            horariosDisponiveis.push(new Date(currentSlotStart));
           }
 
           slotStart = slotEnd;

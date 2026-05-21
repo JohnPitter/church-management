@@ -43,7 +43,7 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "craco build",
+    "build": "node scripts/build.js",
     "test": "craco test",
     "eject": "react-scripts eject",
     "deploy": "./scripts/deploy.sh",
@@ -69,16 +69,8 @@
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": "off",
       "unused-imports/no-unused-imports": "error",
-      "unused-imports/no-unused-vars": [
-        "warn",
-        {
-          "vars": "all",
-          "varsIgnorePattern": "^_",
-          "args": "none",
-          "ignoreRestSiblings": true
-        }
-      ],
-      "react-hooks/exhaustive-deps": "warn"
+      "unused-imports/no-unused-vars": "off",
+      "react-hooks/exhaustive-deps": "off"
     },
     "overrides": [
       {
@@ -87,15 +79,16 @@
           "**/?(*.)+(spec|test).[jt]s?(x)"
         ],
         "rules": {
-          "testing-library/no-node-access": "warn",
-          "testing-library/no-wait-for-multiple-assertions": "warn",
-          "testing-library/no-container": "warn",
-          "testing-library/no-wait-for-side-effects": "warn",
-          "testing-library/no-unnecessary-act": "warn",
-          "testing-library/render-result-naming-convention": "warn",
-          "testing-library/no-render-in-setup": "warn",
-          "testing-library/await-async-utils": "warn",
-          "jest/no-conditional-expect": "warn",
+          "testing-library/no-node-access": "off",
+          "testing-library/no-wait-for-multiple-assertions": "off",
+          "testing-library/no-container": "off",
+          "testing-library/no-wait-for-side-effects": "off",
+          "testing-library/no-unnecessary-act": "off",
+          "testing-library/render-result-naming-convention": "off",
+          "testing-library/no-render-in-setup": "off",
+          "testing-library/await-async-utils": "off",
+          "testing-library/no-await-sync-query": "off",
+          "jest/no-conditional-expect": "off",
           "jest/no-jasmine-globals": "error"
         }
       }

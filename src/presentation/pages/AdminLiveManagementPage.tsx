@@ -1191,11 +1191,7 @@ const EditStreamModal: React.FC<EditStreamModalProps> = ({ stream, onSave, onCan
       await new Promise<void>((resolve, reject) => {
         uploadTask.on(
           'state_changed',
-          (snapshot) => {
-            // Track progress
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            // Upload progress: tracked internally
-          },
+          () => undefined,
           (error) => {
             console.error('Upload error:', error);
             reject(error);

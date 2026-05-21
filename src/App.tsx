@@ -1,7 +1,7 @@
 // Main Application Component
 // Updated to use Clean Architecture with complete routing
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { 
   createBrowserRouter, 
   RouterProvider, 
@@ -16,67 +16,7 @@ import { Toaster } from 'react-hot-toast';
 import { ConfirmDialogProvider } from './presentation/components/ConfirmDialog';
 import ErrorBoundary from './presentation/components/ErrorBoundary';
 
-// Pages
-import Home from './modules/church-management/home/presentation/pages/HomeSimplified';
-import { LoginPage } from './presentation/pages/LoginPage';
-import { RegisterPage } from './presentation/pages/RegisterPage';
-import { PainelPage } from './presentation/pages/PainelPage';
-import { EventsPage } from './presentation/pages/EventsPage';
-import { BlogPage } from './presentation/pages/BlogPage';
-import { ProjectsPage } from './presentation/pages/ProjectsPage';
-import { LivePage } from './presentation/pages/LivePage';
-import { ProfilePage } from './presentation/pages/ProfilePage';
-import { UserManagementPage } from './presentation/pages/UserManagementPage';
-import { AdminDashboardPage } from './presentation/pages/AdminDashboardPage';
-import { AdminLiveManagementPage } from './presentation/pages/AdminLiveManagementPage';
-import { AdminBlogManagementPage } from './presentation/pages/AdminBlogManagementPage';
-import { AdminProjectsManagementPage } from './presentation/pages/AdminProjectsManagementPage';
-import { AdminEventsManagementPage } from './presentation/pages/AdminEventsManagementPage';
-import { AdminSettingsPage } from './presentation/pages/AdminSettingsPage';
-import PrayerRequests from './presentation/pages/PrayerRequests';
-import { AdminVisitorsPage } from './presentation/pages/AdminVisitorsPage';
-import { VisitorsPage } from './presentation/pages/VisitorsPage';
-import { AdminReportsPage } from './presentation/pages/AdminReportsPage';
-import { AdminBackupPage } from './presentation/pages/AdminBackupPage';
-import { AdminFinancialPage } from './presentation/pages/AdminFinancialPage';
-import { AdminLogsPage } from './presentation/pages/AdminLogsPage';
-import AdminHomeSettingsPage from './presentation/pages/AdminHomeSettingsPage';
-import AdminDataMigrationPage from './presentation/pages/AdminDataMigrationPage';
-import { AdminDevotionalPage } from './presentation/pages/AdminDevotionalPage';
-import { Devotionals } from './presentation/pages/Devotionals';
-import { AdminForumPage } from './presentation/pages/AdminForumPage';
-import { Forum } from './presentation/pages/Forum';
-import { PendingApprovalPage } from './presentation/pages/PendingApprovalPage';
-import { NotificationsPage } from './presentation/pages/NotificationsPage';
-import { AdminNotificationsPage } from './presentation/pages/AdminNotificationsPage';
-import AssistidosManagementPage from './presentation/pages/AssistidosManagementPage';
-import MembersManagementPage from './presentation/pages/MembersManagementPage';
-import { PermissionsManagementPage } from './presentation/pages/PermissionsManagementPage';
 import { SystemModule, PermissionAction } from './domain/entities/Permission';
-import AssistenciaManagementPage from './presentation/pages/AssistenciaManagementPage';
-import { ProfessionalDashboardPage } from './presentation/pages/ProfessionalDashboardPage';
-import ProfessionalAssistenciaPage from './presentation/pages/ProfessionalAssistenciaPage';
-import ProfessionalFichasPage from './presentation/pages/ProfessionalFichasPage';
-import ProfessionalSessoesPage from './presentation/pages/ProfessionalSessoesPage';
-import FichasManagementPage from './presentation/pages/FichasManagementPage';
-import { ProfessionalHelpRequestsPage } from './presentation/pages/ProfessionalHelpRequestsPage';
-import SetupPage from './presentation/pages/SetupPage';
-import SetupPageAlternative from './presentation/pages/SetupPageAlternative';
-import SetupPageSimple from './presentation/pages/SetupPageSimple';
-import WelcomePage from './presentation/pages/WelcomePage';
-import ONGSettingsPage from './presentation/pages/ONGSettingsPage';
-import ONGVolunteersPage from './presentation/pages/ONGVolunteersPage';
-import ONGActivitiesPage from './presentation/pages/ONGActivitiesPage';
-import ONGReportsPage from './presentation/pages/ONGReportsPage';
-import ONGFinancialPage from './presentation/pages/ONGFinancialPage';
-import AssetsManagementPage from './presentation/pages/AssetsManagementPage';
-import { LeadershipPage } from './presentation/pages/LeadershipPage';
-import { AdminLeadershipPage } from './presentation/pages/AdminLeadershipPage';
-import { PermissionTestPage } from './presentation/pages/PermissionTestPage';
-import { AboutPage } from './presentation/pages/AboutPage';
-import { DonatePage } from './presentation/pages/DonatePage';
-import { PrayerPage } from './presentation/pages/PrayerPage';
-import { ContactPage } from './presentation/pages/ContactPage';
 
 // Components
 import { ProtectedRoute } from './presentation/components/ProtectedRoute';
@@ -84,6 +24,72 @@ import { PublicRoute } from './presentation/components/PublicRoute';
 import { Layout } from './presentation/components/Layout';
 import AdminSetupGuard from './presentation/components/AdminSetupGuard';
 import { PublicPage } from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
+
+const Home = React.lazy(() => import('./modules/church-management/home/presentation/pages/HomeSimplified'));
+const LoginPage = React.lazy(() => import('./presentation/pages/LoginPage').then(module => ({ default: module.LoginPage })));
+const RegisterPage = React.lazy(() => import('./presentation/pages/RegisterPage').then(module => ({ default: module.RegisterPage })));
+const PainelPage = React.lazy(() => import('./presentation/pages/PainelPage').then(module => ({ default: module.PainelPage })));
+const EventsPage = React.lazy(() => import('./presentation/pages/EventsPage').then(module => ({ default: module.EventsPage })));
+const BlogPage = React.lazy(() => import('./presentation/pages/BlogPage').then(module => ({ default: module.BlogPage })));
+const ProjectsPage = React.lazy(() => import('./presentation/pages/ProjectsPage').then(module => ({ default: module.ProjectsPage })));
+const LivePage = React.lazy(() => import('./presentation/pages/LivePage').then(module => ({ default: module.LivePage })));
+const ProfilePage = React.lazy(() => import('./presentation/pages/ProfilePage').then(module => ({ default: module.ProfilePage })));
+const UserManagementPage = React.lazy(() => import('./presentation/pages/UserManagementPage').then(module => ({ default: module.UserManagementPage })));
+const AdminDashboardPage = React.lazy(() => import('./presentation/pages/AdminDashboardPage').then(module => ({ default: module.AdminDashboardPage })));
+const AdminLiveManagementPage = React.lazy(() => import('./presentation/pages/AdminLiveManagementPage').then(module => ({ default: module.AdminLiveManagementPage })));
+const AdminBlogManagementPage = React.lazy(() => import('./presentation/pages/AdminBlogManagementPage').then(module => ({ default: module.AdminBlogManagementPage })));
+const AdminProjectsManagementPage = React.lazy(() => import('./presentation/pages/AdminProjectsManagementPage').then(module => ({ default: module.AdminProjectsManagementPage })));
+const AdminEventsManagementPage = React.lazy(() => import('./presentation/pages/AdminEventsManagementPage').then(module => ({ default: module.AdminEventsManagementPage })));
+const AdminSettingsPage = React.lazy(() => import('./presentation/pages/AdminSettingsPage').then(module => ({ default: module.AdminSettingsPage })));
+const PrayerRequests = React.lazy(() => import('./presentation/pages/PrayerRequests'));
+const AdminVisitorsPage = React.lazy(() => import('./presentation/pages/AdminVisitorsPage').then(module => ({ default: module.AdminVisitorsPage })));
+const VisitorsPage = React.lazy(() => import('./presentation/pages/VisitorsPage').then(module => ({ default: module.VisitorsPage })));
+const AdminReportsPage = React.lazy(() => import('./presentation/pages/AdminReportsPage').then(module => ({ default: module.AdminReportsPage })));
+const AdminBackupPage = React.lazy(() => import('./presentation/pages/AdminBackupPage').then(module => ({ default: module.AdminBackupPage })));
+const AdminFinancialPage = React.lazy(() => import('./presentation/pages/AdminFinancialPage').then(module => ({ default: module.AdminFinancialPage })));
+const AdminLogsPage = React.lazy(() => import('./presentation/pages/AdminLogsPage').then(module => ({ default: module.AdminLogsPage })));
+const AdminHomeSettingsPage = React.lazy(() => import('./presentation/pages/AdminHomeSettingsPage'));
+const AdminDataMigrationPage = React.lazy(() => import('./presentation/pages/AdminDataMigrationPage'));
+const AdminDevotionalPage = React.lazy(() => import('./presentation/pages/AdminDevotionalPage').then(module => ({ default: module.AdminDevotionalPage })));
+const Devotionals = React.lazy(() => import('./presentation/pages/Devotionals').then(module => ({ default: module.Devotionals })));
+const AdminForumPage = React.lazy(() => import('./presentation/pages/AdminForumPage').then(module => ({ default: module.AdminForumPage })));
+const Forum = React.lazy(() => import('./presentation/pages/Forum').then(module => ({ default: module.Forum })));
+const PendingApprovalPage = React.lazy(() => import('./presentation/pages/PendingApprovalPage').then(module => ({ default: module.PendingApprovalPage })));
+const NotificationsPage = React.lazy(() => import('./presentation/pages/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
+const AdminNotificationsPage = React.lazy(() => import('./presentation/pages/AdminNotificationsPage').then(module => ({ default: module.AdminNotificationsPage })));
+const AssistidosManagementPage = React.lazy(() => import('./presentation/pages/AssistidosManagementPage'));
+const MembersManagementPage = React.lazy(() => import('./presentation/pages/MembersManagementPage'));
+const PermissionsManagementPage = React.lazy(() => import('./presentation/pages/PermissionsManagementPage').then(module => ({ default: module.PermissionsManagementPage })));
+const AssistenciaManagementPage = React.lazy(() => import('./presentation/pages/AssistenciaManagementPage'));
+const ProfessionalDashboardPage = React.lazy(() => import('./presentation/pages/ProfessionalDashboardPage').then(module => ({ default: module.ProfessionalDashboardPage })));
+const ProfessionalAssistenciaPage = React.lazy(() => import('./presentation/pages/ProfessionalAssistenciaPage'));
+const ProfessionalFichasPage = React.lazy(() => import('./presentation/pages/ProfessionalFichasPage'));
+const ProfessionalSessoesPage = React.lazy(() => import('./presentation/pages/ProfessionalSessoesPage'));
+const FichasManagementPage = React.lazy(() => import('./presentation/pages/FichasManagementPage'));
+const ProfessionalHelpRequestsPage = React.lazy(() => import('./presentation/pages/ProfessionalHelpRequestsPage').then(module => ({ default: module.ProfessionalHelpRequestsPage })));
+const SetupPage = React.lazy(() => import('./presentation/pages/SetupPage'));
+const SetupPageAlternative = React.lazy(() => import('./presentation/pages/SetupPageAlternative'));
+const SetupPageSimple = React.lazy(() => import('./presentation/pages/SetupPageSimple'));
+const WelcomePage = React.lazy(() => import('./presentation/pages/WelcomePage'));
+const ONGSettingsPage = React.lazy(() => import('./presentation/pages/ONGSettingsPage'));
+const ONGVolunteersPage = React.lazy(() => import('./presentation/pages/ONGVolunteersPage'));
+const ONGActivitiesPage = React.lazy(() => import('./presentation/pages/ONGActivitiesPage'));
+const ONGReportsPage = React.lazy(() => import('./presentation/pages/ONGReportsPage'));
+const ONGFinancialPage = React.lazy(() => import('./presentation/pages/ONGFinancialPage'));
+const AssetsManagementPage = React.lazy(() => import('./presentation/pages/AssetsManagementPage'));
+const LeadershipPage = React.lazy(() => import('./presentation/pages/LeadershipPage').then(module => ({ default: module.LeadershipPage })));
+const AdminLeadershipPage = React.lazy(() => import('./presentation/pages/AdminLeadershipPage').then(module => ({ default: module.AdminLeadershipPage })));
+const PermissionTestPage = React.lazy(() => import('./presentation/pages/PermissionTestPage').then(module => ({ default: module.PermissionTestPage })));
+const AboutPage = React.lazy(() => import('./presentation/pages/AboutPage').then(module => ({ default: module.AboutPage })));
+const DonatePage = React.lazy(() => import('./presentation/pages/DonatePage').then(module => ({ default: module.DonatePage })));
+const PrayerPage = React.lazy(() => import('./presentation/pages/PrayerPage').then(module => ({ default: module.PrayerPage })));
+const ContactPage = React.lazy(() => import('./presentation/pages/ContactPage').then(module => ({ default: module.ContactPage })));
+
+const PageFallback: React.FC = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-600">
+    Carregando...
+  </div>
+);
 
 // Placeholder component for pages not yet migrated
 const ComingSoon: React.FC<{ title: string }> = ({ title }) => (
@@ -109,7 +115,9 @@ const router = createBrowserRouter([
                 <DynamicFavicon />
                 <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
                 <AdminSetupGuard>
-                  <Outlet />
+                  <Suspense fallback={<PageFallback />}>
+                    <Outlet />
+                  </Suspense>
                 </AdminSetupGuard>
               </ErrorBoundary>
             </ConfirmDialogProvider>

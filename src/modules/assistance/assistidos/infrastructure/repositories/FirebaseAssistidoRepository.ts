@@ -204,38 +204,8 @@ export class FirebaseAssistidoRepository implements IAssistidoRepository {
         dataInicioAtendimento: Timestamp.fromDate(assistido.dataInicioAtendimento),
         dataUltimoAtendimento: assistido.dataUltimoAtendimento ? Timestamp.fromDate(assistido.dataUltimoAtendimento) : null,
         responsavelAtendimento: assistido.responsavelAtendimento,
-        familiares: assistido.familiares.map(familiar => {
-          const familiarData: any = {
-            id: familiar.id,
-            nome: familiar.nome,
-            parentesco: familiar.parentesco,
-            dataNascimento: familiar.dataNascimento ? Timestamp.fromDate(familiar.dataNascimento) : null
-          };
-          
-          // Only add optional fields if they have values
-          if (familiar.cpf) familiarData.cpf = familiar.cpf;
-          if (familiar.telefone) familiarData.telefone = familiar.telefone;
-          if (familiar.profissao) familiarData.profissao = familiar.profissao;
-          if (familiar.renda !== undefined) familiarData.renda = familiar.renda;
-          
-          return familiarData;
-        }),
-        atendimentos: assistido.atendimentos.map(atendimento => {
-          const atendimentoData: any = {
-            id: atendimento.id,
-            data: Timestamp.fromDate(atendimento.data),
-            tipo: atendimento.tipo,
-            descricao: atendimento.descricao,
-            responsavel: atendimento.responsavel,
-            proximoRetorno: atendimento.proximoRetorno ? Timestamp.fromDate(atendimento.proximoRetorno) : null
-          };
-          
-          // Only add optional fields if they have values
-          if (atendimento.itensDoados) atendimentoData.itensDoados = atendimento.itensDoados;
-          if (atendimento.valorDoacao !== undefined) atendimentoData.valorDoacao = atendimento.valorDoacao;
-          
-          return atendimentoData;
-        }),
+        familiares: assistido.familiares.map(familiar => this.mapFamiliarToFirestore(familiar)),
+        atendimentos: assistido.atendimentos.map(atendimento => this.mapAtendimentoToFirestore(atendimento)),
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
         createdBy: assistido.createdBy
@@ -301,19 +271,12 @@ export class FirebaseAssistidoRepository implements IAssistidoRepository {
 
       // Convert familiares dates
       if (data.familiares) {
-        updateData.familiares = data.familiares.map(familiar => ({
-          ...familiar,
-          dataNascimento: familiar.dataNascimento ? Timestamp.fromDate(familiar.dataNascimento) : null
-        }));
+        updateData.familiares = data.familiares.map(familiar => this.mapFamiliarToFirestore(familiar));
       }
 
       // Convert atendimentos dates
       if (data.atendimentos) {
-        updateData.atendimentos = data.atendimentos.map(atendimento => ({
-          ...atendimento,
-          data: Timestamp.fromDate(atendimento.data),
-          proximoRetorno: atendimento.proximoRetorno ? Timestamp.fromDate(atendimento.proximoRetorno) : null
-        }));
+        updateData.atendimentos = data.atendimentos.map(atendimento => this.mapAtendimentoToFirestore(atendimento));
       }
 
       // Remove fields that shouldn't be updated
@@ -382,11 +345,7 @@ export class FirebaseAssistidoRepository implements IAssistidoRepository {
       const updatedAtendimentos = [...assistido.atendimentos, newAtendimento];
 
       await updateDoc(doc(db, this.assistidosCollection, assistidoId), {
-        atendimentos: updatedAtendimentos.map(at => ({
-          ...at,
-          data: Timestamp.fromDate(at.data),
-          proximoRetorno: at.proximoRetorno ? Timestamp.fromDate(at.proximoRetorno) : null
-        })),
+        atendimentos: updatedAtendimentos.map(at => this.mapAtendimentoToFirestore(at)),
         dataUltimoAtendimento: Timestamp.fromDate(atendimento.data),
         updatedAt: Timestamp.now()
       });
@@ -411,10 +370,7 @@ export class FirebaseAssistidoRepository implements IAssistidoRepository {
       const updatedFamiliares = [...assistido.familiares, newFamiliar];
 
       await updateDoc(doc(db, this.assistidosCollection, assistidoId), {
-        familiares: updatedFamiliares.map(fam => ({
-          ...fam,
-          dataNascimento: fam.dataNascimento ? Timestamp.fromDate(fam.dataNascimento) : null
-        })),
+        familiares: updatedFamiliares.map(fam => this.mapFamiliarToFirestore(fam)),
         updatedAt: Timestamp.now()
       });
     } catch (error) {
@@ -473,6 +429,39 @@ export class FirebaseAssistidoRepository implements IAssistidoRepository {
       console.error('Error getting statistics:', error);
       throw new Error('Erro ao obter estatísticas');
     }
+  }
+
+  private mapFamiliarToFirestore(familiar: FamiliarAssistido): any {
+    const familiarData: any = {
+      id: familiar.id,
+      nome: familiar.nome,
+      parentesco: familiar.parentesco,
+      dataNascimento: familiar.dataNascimento ? Timestamp.fromDate(familiar.dataNascimento) : null
+    };
+
+    if (familiar.cpf) familiarData.cpf = familiar.cpf;
+    if (familiar.telefone) familiarData.telefone = familiar.telefone;
+    if (familiar.profissao) familiarData.profissao = familiar.profissao;
+    if (familiar.renda !== undefined) familiarData.renda = familiar.renda;
+
+    return familiarData;
+  }
+
+  private mapAtendimentoToFirestore(atendimento: AtendimentoAssistido): any {
+    const atendimentoData: any = {
+      id: atendimento.id,
+      data: Timestamp.fromDate(atendimento.data),
+      tipo: atendimento.tipo,
+      descricao: atendimento.descricao,
+      responsavel: atendimento.responsavel,
+      proximoRetorno: atendimento.proximoRetorno ? Timestamp.fromDate(atendimento.proximoRetorno) : null
+    };
+
+    if (atendimento.itensDoados) atendimentoData.itensDoados = atendimento.itensDoados;
+    if (atendimento.valorDoacao !== undefined) atendimentoData.valorDoacao = atendimento.valorDoacao;
+    if (atendimento.observacoes) atendimentoData.observacoes = atendimento.observacoes;
+
+    return atendimentoData;
   }
 
   private mapToAssistido(id: string, data: any): Assistido {

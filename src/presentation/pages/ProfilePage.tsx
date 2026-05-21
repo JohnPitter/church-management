@@ -237,11 +237,7 @@ export const ProfilePage: React.FC = () => {
       await new Promise<void>((resolve, reject) => {
         uploadTask.on(
           'state_changed',
-          (snapshot) => {
-            // Optional: Track progress
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            // Upload progress: tracked internally
-          },
+          () => undefined,
           (error) => {
             console.error('Upload error:', error);
             reject(error);
