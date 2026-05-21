@@ -1,7 +1,7 @@
 // Presentation Page - Permissions Management
 // Admin interface for managing role permissions and user overrides
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { UserPermissionConfig, CustomRoleConfig, permissionService } from '@modules/user-management/permissions/application/services/PermissionService';
@@ -25,11 +25,69 @@ import { loggingService } from '@modules/shared-kernel/logging/infrastructure/se
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 
+type TabId = 'roles' | 'users' | 'custom-roles' | 'public-pages';
+
+const TAB_CONFIG: ReadonlyArray<{ id: TabId; icon: string; label: string }> = [
+  { id: 'roles', icon: '🔐', label: 'Permissões por Função' },
+  { id: 'users', icon: '👤', label: 'Permissões por Usuário' },
+  { id: 'custom-roles', icon: '🏷️', label: 'Funções Personalizadas' },
+  { id: 'public-pages', icon: '🌐', label: 'Páginas Públicas' }
+];
+
+const cloneRoleMatrix = (
+  matrix: Map<string, Map<SystemModule, PermissionAction[]>>
+): Map<string, Map<SystemModule, PermissionAction[]>> => {
+  const cloned = new Map<string, Map<SystemModule, PermissionAction[]>>();
+  matrix.forEach((roleMap, role) => {
+    const clonedRoleMap = new Map<SystemModule, PermissionAction[]>();
+    roleMap.forEach((actions, module) => {
+      clonedRoleMap.set(module, [...actions]);
+    });
+    cloned.set(role, clonedRoleMap);
+  });
+  return cloned;
+};
+
+type ModulePermissionList = { module: SystemModule; actions: PermissionAction[] }[];
+
+const toggleActionInModuleList = (
+  list: ModulePermissionList,
+  module: SystemModule,
+  action: PermissionAction
+): ModulePermissionList => {
+  const existing = list.find(m => m.module === module);
+  if (!existing) {
+    return [...list, { module, actions: [action] }];
+  }
+  const hasAction = existing.actions.includes(action);
+  const newActions = hasAction
+    ? existing.actions.filter(a => a !== action)
+    : [...existing.actions, action];
+  if (newActions.length === 0) {
+    return list.filter(m => m.module !== module);
+  }
+  return list.map(m => (m.module === module ? { module, actions: newActions } : m));
+};
+
+const removeActionFromModuleList = (
+  list: ModulePermissionList,
+  module: SystemModule,
+  action: PermissionAction
+): ModulePermissionList => {
+  const existing = list.find(m => m.module === module);
+  if (!existing || !existing.actions.includes(action)) return list;
+  const newActions = existing.actions.filter(a => a !== action);
+  if (newActions.length === 0) {
+    return list.filter(m => m.module !== module);
+  }
+  return list.map(m => (m.module === module ? { module, actions: newActions } : m));
+};
+
 export const PermissionsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { confirm } = useConfirmDialog();
   const { refreshPermissions } = usePermissions();
-  const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'custom-roles' | 'public-pages'>('roles');
+  const [activeTab, setActiveTab] = useState<TabId>('roles');
   const [selectedRole, setSelectedRole] = useState<string>('member');
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [rolePermissions, setRolePermissions] = useState<Map<string, Map<SystemModule, PermissionAction[]>>>(new Map());
@@ -46,8 +104,8 @@ export const PermissionsManagementPage: React.FC = () => {
   const [publicPageConfigs, setPublicPageConfigs] = useState<PublicPageConfig[]>([]);
 
   // permissionService is now a singleton import
-  const userRepository = new FirebaseUserRepository();
-  const publicPageService = new PublicPageService();
+  const userRepository = useMemo(() => new FirebaseUserRepository(), []);
+  const publicPageService = useMemo(() => new PublicPageService(), []);
 
   useEffect(() => {
     loadData();
@@ -85,27 +143,18 @@ export const PermissionsManagementPage: React.FC = () => {
   };
 
   const handleRolePermissionToggle = (role: string, module: SystemModule, action: PermissionAction) => {
-    const newMatrix = new Map(rolePermissions);
-    const roleMap = newMatrix.get(role) || new Map();
-    const actions = roleMap.get(module) || [];
-    
-    const actionIndex = actions.indexOf(action);
-    let newActions: PermissionAction[];
-    
-    if (actionIndex >= 0) {
-      // Remove action
-      newActions = actions.filter((a: PermissionAction) => a !== action);
-    } else {
-      // Add action
-      newActions = [...actions, action];
-    }
-    
+    const newMatrix = cloneRoleMatrix(rolePermissions);
+    const roleMap = newMatrix.get(role) ?? new Map<SystemModule, PermissionAction[]>();
+    const actions = roleMap.get(module) ?? [];
+    const newActions = actions.includes(action)
+      ? actions.filter(a => a !== action)
+      : [...actions, action];
+
     if (newActions.length === 0) {
       roleMap.delete(module);
     } else {
       roleMap.set(module, newActions);
     }
-    
     newMatrix.set(role, roleMap);
     setRolePermissions(newMatrix);
   };
@@ -192,89 +241,35 @@ export const PermissionsManagementPage: React.FC = () => {
     action: PermissionAction,
     type: 'grant' | 'revoke'
   ) => {
-    const override = userOverrides.find(o => o.userId === userId);
     const user = users.find(u => u.id === userId);
-    
     if (!user) return;
-    
-    let newOverride: UserPermissionConfig;
-    
-    if (override) {
-      newOverride = { ...override };
-    } else {
-      newOverride = {
-        userId,
-        userEmail: user.email,
-        userName: user.displayName,
-        grantedModules: [],
-        revokedModules: []
-      };
-    }
-    
-    if (type === 'grant') {
-      // Toggle grant
-      const moduleConfig = newOverride.grantedModules.find(m => m.module === module);
-      
-      if (moduleConfig) {
-        const actionIndex = moduleConfig.actions.indexOf(action);
-        if (actionIndex >= 0) {
-          moduleConfig.actions = moduleConfig.actions.filter(a => a !== action);
-          if (moduleConfig.actions.length === 0) {
-            newOverride.grantedModules = newOverride.grantedModules.filter(m => m.module !== module);
-          }
-        } else {
-          moduleConfig.actions.push(action);
+
+    const existing = userOverrides.find(o => o.userId === userId);
+    const base: UserPermissionConfig = existing ?? {
+      userId,
+      userEmail: user.email,
+      userName: user.displayName,
+      grantedModules: [],
+      revokedModules: []
+    };
+
+    const updated: UserPermissionConfig = type === 'grant'
+      ? {
+          ...base,
+          grantedModules: toggleActionInModuleList(base.grantedModules, module, action),
+          revokedModules: removeActionFromModuleList(base.revokedModules, module, action)
         }
-      } else {
-        newOverride.grantedModules.push({ module, actions: [action] });
-      }
-      
-      // Remove from revoked if exists
-      const revokedModule = newOverride.revokedModules.find(m => m.module === module);
-      if (revokedModule) {
-        revokedModule.actions = revokedModule.actions.filter(a => a !== action);
-        if (revokedModule.actions.length === 0) {
-          newOverride.revokedModules = newOverride.revokedModules.filter(m => m.module !== module);
-        }
-      }
-    } else {
-      // Toggle revoke
-      const moduleConfig = newOverride.revokedModules.find(m => m.module === module);
-      
-      if (moduleConfig) {
-        const actionIndex = moduleConfig.actions.indexOf(action);
-        if (actionIndex >= 0) {
-          moduleConfig.actions = moduleConfig.actions.filter(a => a !== action);
-          if (moduleConfig.actions.length === 0) {
-            newOverride.revokedModules = newOverride.revokedModules.filter(m => m.module !== module);
-          }
-        } else {
-          moduleConfig.actions.push(action);
-        }
-      } else {
-        newOverride.revokedModules.push({ module, actions: [action] });
-      }
-      
-      // Remove from granted if exists
-      const grantedModule = newOverride.grantedModules.find(m => m.module === module);
-      if (grantedModule) {
-        grantedModule.actions = grantedModule.actions.filter(a => a !== action);
-        if (grantedModule.actions.length === 0) {
-          newOverride.grantedModules = newOverride.grantedModules.filter(m => m.module !== module);
-        }
-      }
-    }
-    
-    // Update or add override
+      : {
+          ...base,
+          revokedModules: toggleActionInModuleList(base.revokedModules, module, action),
+          grantedModules: removeActionFromModuleList(base.grantedModules, module, action)
+        };
+
     const existingIndex = userOverrides.findIndex(o => o.userId === userId);
-    const newOverrides = [...userOverrides];
-    
-    if (existingIndex >= 0) {
-      newOverrides[existingIndex] = newOverride;
-    } else {
-      newOverrides.push(newOverride);
-    }
-    
+    const newOverrides = existingIndex >= 0
+      ? userOverrides.map((o, i) => (i === existingIndex ? updated : o))
+      : [...userOverrides, updated];
+
     setUserOverrides(newOverrides);
   };
 
@@ -398,7 +393,6 @@ export const PermissionsManagementPage: React.FC = () => {
 
   const getUserPermissionStatus = (
     userId: string,
-    userRole: string,
     module: SystemModule,
     action: PermissionAction
   ): 'default' | 'granted' | 'revoked' => {
@@ -465,10 +459,13 @@ export const PermissionsManagementPage: React.FC = () => {
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    (user.displayName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return users.filter(user =>
+      (user.displayName?.toLowerCase() || '').includes(term) ||
+      user.email.toLowerCase().includes(term)
+    );
+  }, [users, searchTerm]);
 
   const {
     currentPage: usersCurrentPage,
@@ -480,8 +477,8 @@ export const PermissionsManagementPage: React.FC = () => {
     setPageSize: setUsersPageSize,
   } = usePagination(filteredUsers);
 
-  const modules = PermissionManager.getAllModules();
-  const actions = PermissionManager.getAllActions();
+  const modules = useMemo(() => PermissionManager.getAllModules(), []);
+  const actions = useMemo(() => PermissionManager.getAllActions(), []);
 
   if (loading) {
     return (
@@ -511,50 +508,20 @@ export const PermissionsManagementPage: React.FC = () => {
         {/* Navigation Tabs */}
         <div className="border-b border-gray-200 mb-8">
           <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab('roles')}
-              className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'roles'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <span className="mr-2 text-lg">🔐</span>
-              Permissões por Função
-            </button>
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'users'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <span className="mr-2 text-lg">👤</span>
-              Permissões por Usuário
-            </button>
-            <button
-              onClick={() => setActiveTab('custom-roles')}
-              className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'custom-roles'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <span className="mr-2 text-lg">🏷️</span>
-              Funções Personalizadas
-            </button>
-            <button
-              onClick={() => setActiveTab('public-pages')}
-              className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'public-pages'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <span className="mr-2 text-lg">🌐</span>
-              Páginas Públicas
-            </button>
+            {TAB_CONFIG.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === tab.id
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <span className="mr-2 text-lg">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
           </nav>
         </div>
         {/* Firestore Warning Banner */}
@@ -845,7 +812,7 @@ export const PermissionsManagementPage: React.FC = () => {
                               </div>
                             </td>
                             {actions.map(action => {
-                              const status = getUserPermissionStatus(selectedUserId, userRole, module, action);
+                              const status = getUserPermissionStatus(selectedUserId, module, action);
                               const hasDefaultPermission = PermissionManager.hasPermission(userRole, module, action);
                               
                               return (
