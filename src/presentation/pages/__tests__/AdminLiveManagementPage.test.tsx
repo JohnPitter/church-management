@@ -2,10 +2,25 @@
 // Tests for live stream admin management functionality
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { AdminLiveManagementPage } from '../AdminLiveManagementPage';
 
 // Mock Firebase
+jest.mock('../../components/ConfirmDialog', () => ({
+  useConfirmDialog: () => ({
+    confirm: jest.fn(async (options?: any) => global.confirm(options?.message ?? '')),
+    prompt: jest.fn().mockResolvedValue('')
+  }),
+  ConfirmDialogProvider: ({ children }: any) => children
+}));
+
+jest.mock('react-hot-toast', () => {
+  const toast = (message: string) => global.alert(message);
+  toast.success = (message: string) => global.alert(message);
+  toast.error = (message: string) => global.alert(message);
+  return { __esModule: true, default: toast };
+});
+
 jest.mock('@/config/firebase', () => ({
   db: {},
   storage: {}
@@ -174,6 +189,11 @@ describe('AdminLiveManagementPage', () => {
     mockFindAll.mockResolvedValue(mockStreams);
     window.confirm = jest.fn().mockReturnValue(true);
     window.alert = jest.fn();
+    const firestore = require('firebase/firestore');
+    firestore.onSnapshot.mockImplementation((_ref: any, onNext?: (snapshot: any) => void) => {
+      onNext?.({ docs: [], empty: true });
+      return () => {};
+    });
   });
 
   describe('Rendering', () => {
@@ -228,16 +248,16 @@ describe('AdminLiveManagementPage', () => {
 
       await waitFor(() => {
         // Check Ao Vivo count (1 live stream)
-        const liveCard = screen.getByText('Ao Vivo').closest('div')?.parentElement;
-        expect(liveCard).toContainElement(screen.getByText('1'));
+        const liveCard = screen.getAllByText('Ao Vivo').find(element => element.tagName.toLowerCase() === 'p')?.closest('.bg-white') as HTMLElement;
+        expect(within(liveCard).getByText('1')).toBeInTheDocument();
 
         // Check Agendados count (1 scheduled stream)
-        const scheduledCard = screen.getByText('Agendados').closest('div')?.parentElement;
-        expect(scheduledCard).toContainElement(screen.getAllByText('1')[0]);
+        const scheduledCard = screen.getAllByText('Agendados').find(element => element.tagName.toLowerCase() === 'p')?.closest('.bg-white') as HTMLElement;
+        expect(within(scheduledCard).getByText('1')).toBeInTheDocument();
 
         // Check Finalizados count (1 ended stream)
-        const endedCard = screen.getByText('Finalizados').closest('div')?.parentElement;
-        expect(endedCard).toContainElement(screen.getAllByText('1')[1]);
+        const endedCard = screen.getAllByText('Finalizados').find(element => element.tagName.toLowerCase() === 'p')?.closest('.bg-white') as HTMLElement;
+        expect(within(endedCard).getByText('1')).toBeInTheDocument();
       });
     });
   });
@@ -387,8 +407,8 @@ describe('AdminLiveManagementPage', () => {
       fireEvent.click(screen.getByRole('button', { name: /Nova Transmissão/i }));
 
       await waitFor(() => {
-        expect(screen.getByText('Nova Transmissão')).toBeInTheDocument();
-        expect(screen.getByPlaceholderText('Ex: Culto Dominical - Domingo Abencoado')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Nova Transmissão' })).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Ex: Culto Dominical - Domingo Abençoado')).toBeInTheDocument();
       });
     });
 
@@ -402,13 +422,13 @@ describe('AdminLiveManagementPage', () => {
       fireEvent.click(screen.getByRole('button', { name: /Nova Transmissão/i }));
 
       await waitFor(() => {
-        expect(screen.getByText('Nova Transmissão')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Nova Transmissão' })).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByText('Cancelar'));
 
       await waitFor(() => {
-        expect(screen.queryByText('Nova Transmissão')).not.toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Nova Transmissão' })).not.toBeInTheDocument();
       });
     });
 
@@ -422,14 +442,14 @@ describe('AdminLiveManagementPage', () => {
       fireEvent.click(screen.getByRole('button', { name: /Nova Transmissão/i }));
 
       await waitFor(() => {
-        expect(screen.getByText('Nova Transmissão')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Nova Transmissão' })).toBeInTheDocument();
       });
 
       // Try to submit without filling required fields
       fireEvent.click(screen.getByText('Criar Transmissão'));
 
       // Form should have required validation on HTML level
-      const titleInput = screen.getByPlaceholderText('Ex: Culto Dominical - Domingo Abencoado');
+      const titleInput = screen.getByPlaceholderText('Ex: Culto Dominical - Domingo Abençoado');
       expect(titleInput).toBeRequired();
     });
 
@@ -458,11 +478,11 @@ describe('AdminLiveManagementPage', () => {
       fireEvent.click(screen.getByRole('button', { name: /Nova Transmissão/i }));
 
       await waitFor(() => {
-        expect(screen.getByText('Nova Transmissão')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Nova Transmissão' })).toBeInTheDocument();
       });
 
       // Fill in the form
-      fireEvent.change(screen.getByPlaceholderText('Ex: Culto Dominical - Domingo Abencoado'), {
+      fireEvent.change(screen.getByPlaceholderText('Ex: Culto Dominical - Domingo Abençoado'), {
         target: { value: 'Novo Culto' }
       });
       fireEvent.change(screen.getByPlaceholderText('Descrição da transmissão...'), {
@@ -519,7 +539,7 @@ describe('AdminLiveManagementPage', () => {
       const titleInput = screen.getByDisplayValue('Culto Dominical');
       fireEvent.change(titleInput, { target: { value: 'Culto Dominical Atualizado' } });
 
-      fireEvent.click(screen.getByText('Salvar Alteracoes'));
+      fireEvent.click(screen.getByText('Salvar Alterações'));
 
       await waitFor(() => {
         expect(mockUpdate).toHaveBeenCalled();

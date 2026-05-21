@@ -30,6 +30,7 @@ jest.mock('firebase/firestore', () => ({
   collection: jest.fn(),
   query: jest.fn(),
   where: jest.fn(),
+  onSnapshot: jest.fn().mockReturnValue(jest.fn()),
   Timestamp: {
     now: jest.fn(() => ({ toDate: () => new Date() }))
   }
@@ -254,6 +255,8 @@ describe('PermissionService', () => {
       ];
 
       mockSetDoc.mockResolvedValueOnce(undefined);
+      mockGetDoc.mockResolvedValueOnce({ exists: () => false });
+      mockGetDocs.mockResolvedValueOnce({ docs: [] });
 
       await service.updateRolePermissions('secretary', modules, 'admin-user');
 
@@ -284,6 +287,8 @@ describe('PermissionService', () => {
 
       // Update permissions
       mockSetDoc.mockResolvedValueOnce(undefined);
+      mockGetDoc.mockResolvedValueOnce({ exists: () => false });
+      mockGetDocs.mockResolvedValueOnce({ docs: [] });
       await service.updateRolePermissions('leader', modules, 'admin');
 
       // Next call should hit Firestore again
@@ -971,6 +976,8 @@ describe('PermissionService', () => {
   describe('resetRolePermissionsToDefault', () => {
     it('should reset role to default permissions', async () => {
       mockSetDoc.mockResolvedValueOnce(undefined);
+      mockGetDoc.mockResolvedValueOnce({ exists: () => false });
+      mockGetDocs.mockResolvedValueOnce({ docs: [] });
 
       await service.resetRolePermissionsToDefault('secretary', 'admin');
 
@@ -1017,7 +1024,10 @@ describe('PermissionService', () => {
 
   // ========== USER ROLE PERMISSIONS TESTS ==========
   describe('updateUserRolePermissions', () => {
-    it('should clear rolePermissions for default roles', async () => {
+    it('should copy default role permissions when firestore has no custom role document', async () => {
+      mockGetDoc.mockResolvedValueOnce({
+        exists: () => false
+      });
       mockUpdateDoc.mockResolvedValueOnce(undefined);
 
       await service.updateUserRolePermissions('user-123', 'admin');
@@ -1025,7 +1035,7 @@ describe('PermissionService', () => {
       expect(mockUpdateDoc).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
-          rolePermissions: null
+          rolePermissions: DEFAULT_ROLE_PERMISSIONS['admin']
         })
       );
     });

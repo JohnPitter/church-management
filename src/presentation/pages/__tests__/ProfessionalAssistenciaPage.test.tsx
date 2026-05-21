@@ -76,9 +76,9 @@ jest.mock('@modules/user-management/permissions/application/services/PermissionS
     getRoleDisplayNameSync(role: string): string {
       const displayNames: Record<string, string> = {
         admin: 'Administrador',
-        secretary: 'Secretario(a)',
+        secretary: 'Secretário(a)',
         professional: 'Profissional',
-        leader: 'Lider',
+        leader: 'Líder',
         member: 'Membro'
       };
       return displayNames[role] || role;
@@ -179,7 +179,7 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/Secretário(a)/i)).toBeInTheDocument();
+        expect(screen.getByText(/Secretário/i)).toBeInTheDocument();
       });
     });
   });
@@ -544,15 +544,15 @@ describe('AdminDashboardPage', () => {
       expect(screen.getByText('Gerenciar visitantes e acompanhamento')).toBeInTheDocument();
     });
 
-    it('should show calendar when user has permission', () => {
+    it('should show assistance management when user has assistance permission', () => {
       mockHasPermission.mockImplementation((module: SystemModule, action: PermissionAction) => {
-        return module === SystemModule.Calendar && action === PermissionAction.Manage;
+        return module === SystemModule.Assistance && action === PermissionAction.Manage;
       });
 
       renderComponent();
 
-      expect(screen.getByText('Calendário')).toBeInTheDocument();
-      expect(screen.getByText('Visualizar e gerenciar calendário da igreja')).toBeInTheDocument();
+      expect(screen.getByText('Gerenciamento de Assistências')).toBeInTheDocument();
+      expect(screen.getByText('Gerenciar assistência psicológica, social, jurídica e médica')).toBeInTheDocument();
     });
 
     it('should show assistance management when user has permission', () => {
@@ -783,7 +783,7 @@ describe('AdminDashboardPage', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/Secretário(a)/i)).toBeInTheDocument();
+        expect(screen.getByText(/Secretário/i)).toBeInTheDocument();
       });
     });
   });
@@ -825,7 +825,6 @@ describe('AdminDashboardPage', () => {
 
       // Church Management
       expect(screen.getByText('Gerenciar Visitantes')).toBeInTheDocument();
-      expect(screen.getByText('Calendário')).toBeInTheDocument();
       expect(screen.getByText('Gerenciamento de Assistências')).toBeInTheDocument();
       expect(screen.getByText('Gerenciar Assistidos')).toBeInTheDocument();
       expect(screen.getByText('Gerenciar Notificações')).toBeInTheDocument();
@@ -969,8 +968,7 @@ describe('AdminDashboardPage', () => {
         // Leader typically has access to events, prayer requests, communication
         const leaderPermissions = [
           { module: SystemModule.Events, action: PermissionAction.Manage },
-          { module: SystemModule.Communication, action: PermissionAction.Manage },
-          { module: SystemModule.Calendar, action: PermissionAction.Manage }
+          { module: SystemModule.Communication, action: PermissionAction.Manage }
         ];
         return leaderPermissions.some(p => p.module === module && p.action === action);
       });
@@ -979,7 +977,6 @@ describe('AdminDashboardPage', () => {
 
       expect(screen.getByText('Gerenciar Eventos')).toBeInTheDocument();
       expect(screen.getByText('Pedidos de Oração')).toBeInTheDocument();
-      expect(screen.getByText('Calendário')).toBeInTheDocument();
     });
   });
 

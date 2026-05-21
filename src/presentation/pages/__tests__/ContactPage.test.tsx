@@ -28,6 +28,23 @@ jest.mock('firebase/firestore', () => ({
   serverTimestamp: () => mockServerTimestamp()
 }));
 
+jest.mock('../../contexts/AuthContext', () => ({
+  useAuth: () => ({
+    currentUser: { uid: 'test-uid', email: 'test@test.com', displayName: 'Test User', role: 'admin' },
+    loading: false
+  })
+}));
+
+jest.mock('@modules/shared-kernel/logging/infrastructure/services/LoggingService', () => ({
+  loggingService: {
+    logApi: jest.fn(),
+    logUserAction: jest.fn(),
+    logSystem: jest.fn(),
+    logSecurity: jest.fn(),
+    logError: jest.fn()
+  }
+}));
+
 describe('ContactPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();

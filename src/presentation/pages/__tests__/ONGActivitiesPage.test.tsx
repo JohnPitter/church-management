@@ -12,7 +12,19 @@ import {
   StatusVoluntario
 } from '@modules/ong-management/settings/domain/entities/ONG';
 
+const mockConfirm = jest.fn();
+const mockToastSuccess = jest.fn();
+const mockToastError = jest.fn();
+
 // Mock Firebase config
+jest.mock('../../components/ConfirmDialog', () => ({
+  useConfirmDialog: () => ({
+    confirm: mockConfirm,
+    prompt: jest.fn().mockResolvedValue('')
+  }),
+  ConfirmDialogProvider: ({ children }: any) => children
+}));
+
 jest.mock('@/config/firebase', () => ({
   db: {},
   storage: {}
@@ -66,14 +78,19 @@ jest.mock('@modules/ong-management/settings/infrastructure/repositories/Firebase
   };
 });
 
-// Mock window.confirm and window.alert
-const mockConfirm = jest.fn();
-const mockAlert = jest.fn();
+jest.mock('@modules/shared-kernel/logging/infrastructure/services/LoggingService', () => ({
+  loggingService: {
+    logDatabase: jest.fn().mockResolvedValue(undefined)
+  }
+}));
 
-beforeAll(() => {
-  window.confirm = mockConfirm;
-  window.alert = mockAlert;
-});
+jest.mock('react-hot-toast', () => ({
+  __esModule: true,
+  default: {
+    success: (...args: any[]) => mockToastSuccess(...args),
+    error: (...args: any[]) => mockToastError(...args)
+  }
+}));
 
 // Helper to create mock activity
 const createMockActivity = (overrides: Partial<AtividadeONG> = {}): AtividadeONG => ({
@@ -136,7 +153,7 @@ describe('ONGActivitiesPage', () => {
     jest.clearAllMocks();
     mockGetAllAtividades.mockResolvedValue([]);
     mockGetAllVoluntarios.mockResolvedValue([]);
-    mockConfirm.mockReturnValue(true);
+    mockConfirm.mockResolvedValue(true);
   });
 
   describe('Loading State', () => {
@@ -346,7 +363,7 @@ describe('ONGActivitiesPage', () => {
         fireEvent.click(screen.getByText('Cadastrar'));
       });
 
-      expect(mockAlert).toHaveBeenCalledWith('Nome da atividade é obrigatório');
+      expect(mockToastError).toHaveBeenCalledWith('Nome da atividade é obrigatório');
     });
 
     it('should validate date range when creating activity', async () => {
@@ -360,21 +377,19 @@ describe('ONGActivitiesPage', () => {
       });
 
       await waitFor(() => {
-        // Fill name
-        const nameInput = document.querySelector('input[type="text"]');
-        if (nameInput) {
-          fireEvent.change(nameInput, { target: { value: 'Test Activity' } });
-        }
+        const modal = document.querySelector('.fixed.inset-0.z-50 .relative.bg-white') as HTMLElement;
+        const textInputs = modal.querySelectorAll('input[type="text"]');
+        fireEvent.change(textInputs[0], { target: { value: 'Test Activity' } });
 
         // Set invalid date range (end before start)
-        const dateInputs = document.querySelectorAll('input[type="date"]');
+        const dateInputs = modal.querySelectorAll('input[type="date"]');
         fireEvent.change(dateInputs[0], { target: { value: '2024-12-31' } });
         fireEvent.change(dateInputs[1], { target: { value: '2024-01-01' } });
       });
 
       fireEvent.click(screen.getByText('Cadastrar'));
 
-      expect(mockAlert).toHaveBeenCalledWith('Data de início não pode ser posterior à data de fim');
+      expect(mockToastError).toHaveBeenCalledWith('Data de início não pode ser posterior à data de fim');
     });
 
     it('should create activity successfully with valid data', async () => {
@@ -389,13 +404,13 @@ describe('ONGActivitiesPage', () => {
       });
 
       await waitFor(() => {
-        // Fill required fields
-        const inputs = document.querySelectorAll('input[type="text"]');
-        fireEvent.change(inputs[0], { target: { value: 'New Activity' } }); // nome
-        fireEvent.change(inputs[1], { target: { value: 'Test Location' } }); // local
-        fireEvent.change(inputs[2], { target: { value: 'Test Responsible' } }); // responsavel
+        const modal = document.querySelector('.fixed.inset-0.z-50 .relative.bg-white') as HTMLElement;
+        const inputs = modal.querySelectorAll('input[type="text"]');
+        fireEvent.change(inputs[0], { target: { value: 'New Activity' } });
+        fireEvent.change(inputs[1], { target: { value: 'Test Location' } });
+        fireEvent.change(inputs[2], { target: { value: 'Test Responsible' } });
 
-        const dateInputs = document.querySelectorAll('input[type="date"]');
+        const dateInputs = modal.querySelectorAll('input[type="date"]');
         fireEvent.change(dateInputs[0], { target: { value: '2024-06-01' } });
         fireEvent.change(dateInputs[1], { target: { value: '2024-06-30' } });
       });
@@ -404,7 +419,7 @@ describe('ONGActivitiesPage', () => {
 
       await waitFor(() => {
         expect(mockCreateAtividade).toHaveBeenCalled();
-        expect(mockAlert).toHaveBeenCalledWith('Atividade cadastrada com sucesso!');
+        expect(mockToastSuccess).toHaveBeenCalledWith('Atividade cadastrada com sucesso!');
       });
     });
 
@@ -470,7 +485,7 @@ describe('ONGActivitiesPage', () => {
 
       await waitFor(() => {
         expect(mockUpdateAtividade).toHaveBeenCalled();
-        expect(mockAlert).toHaveBeenCalledWith('Atividade atualizada com sucesso!');
+        expect(mockToastSuccess).toHaveBeenCalledWith('Atividade atualizada com sucesso!');
       });
     });
   });
@@ -479,7 +494,7 @@ describe('ONGActivitiesPage', () => {
     it('should show confirmation before deleting', async () => {
       mockGetAllAtividades.mockResolvedValue([createMockActivity()]);
       mockGetAllVoluntarios.mockResolvedValue([]);
-      mockConfirm.mockReturnValue(false);
+      mockConfirm.mockResolvedValue(false);
 
       render(<ONGActivitiesPage />);
 
@@ -487,14 +502,18 @@ describe('ONGActivitiesPage', () => {
         fireEvent.click(screen.getByText('Excluir'));
       });
 
-      expect(mockConfirm).toHaveBeenCalledWith('Tem certeza que deseja excluir esta atividade?');
+      expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Confirmação',
+        message: 'Tem certeza que deseja excluir esta atividade?',
+        variant: 'danger'
+      }));
       expect(mockDeleteAtividade).not.toHaveBeenCalled();
     });
 
     it('should delete activity when confirmed', async () => {
       mockGetAllAtividades.mockResolvedValue([createMockActivity()]);
       mockGetAllVoluntarios.mockResolvedValue([]);
-      mockConfirm.mockReturnValue(true);
+      mockConfirm.mockResolvedValue(true);
       mockDeleteAtividade.mockResolvedValue(undefined);
 
       render(<ONGActivitiesPage />);
@@ -505,7 +524,7 @@ describe('ONGActivitiesPage', () => {
 
       await waitFor(() => {
         expect(mockDeleteAtividade).toHaveBeenCalledWith('activity-1');
-        expect(mockAlert).toHaveBeenCalledWith('Atividade excluida com sucesso!');
+        expect(mockToastSuccess).toHaveBeenCalledWith('Atividade excluída com sucesso!');
       });
     });
   });
@@ -604,9 +623,9 @@ describe('ONGActivitiesPage', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/Relatorio da Atividade:/)).toBeInTheDocument();
+        expect(screen.getByText(/Relatório da Atividade:/)).toBeInTheDocument();
         expect(screen.getByText('Horas Realizadas')).toBeInTheDocument();
-        expect(screen.getByText('Beneficiarios Atendidos')).toBeInTheDocument();
+        expect(screen.getByText('Beneficiários Atendidos')).toBeInTheDocument();
       });
     });
 
@@ -623,15 +642,15 @@ describe('ONGActivitiesPage', () => {
       });
 
       await waitFor(() => {
-        const resultsInput = screen.getByPlaceholderText('Descreva os principais resultados alcancados...');
+        const resultsInput = screen.getByPlaceholderText('Descreva os principais resultados alcançados...');
         fireEvent.change(resultsInput, { target: { value: 'Great results achieved' } });
       });
 
-      fireEvent.click(screen.getByText('Salvar Relatorio'));
+      fireEvent.click(screen.getByText('Salvar Relatório'));
 
       await waitFor(() => {
         expect(mockUpdateAtividade).toHaveBeenCalled();
-        expect(mockAlert).toHaveBeenCalledWith('Relatorio salvo com sucesso!');
+        expect(mockToastSuccess).toHaveBeenCalledWith('Relatório salvo com sucesso!');
       });
     });
   });
@@ -673,7 +692,7 @@ describe('ONGActivitiesPage', () => {
       });
 
       await waitFor(() => {
-        const searchInput = screen.getByPlaceholderText(/Pesquisar voluntarios/);
+        const searchInput = screen.getByPlaceholderText(/Pesquisar voluntários/i);
         fireEvent.change(searchInput, { target: { value: 'alice' } });
       });
 
@@ -719,8 +738,8 @@ describe('ONGActivitiesPage', () => {
       });
 
       await waitFor(() => {
-        const tipoInput = screen.getByPlaceholderText('ex: Alimentacao, Material...');
-        const descInput = screen.getByPlaceholderText('ex: Marmitas para almoco...');
+        const tipoInput = screen.getByPlaceholderText('ex: Alimentação, Material...');
+        const descInput = screen.getByPlaceholderText('ex: Marmitas para almoço...');
 
         fireEvent.change(tipoInput, { target: { value: 'Food' } });
         fireEvent.change(descInput, { target: { value: 'Lunch meals' } });
@@ -746,8 +765,8 @@ describe('ONGActivitiesPage', () => {
 
       // Add a resource first
       await waitFor(() => {
-        const tipoInput = screen.getByPlaceholderText('ex: Alimentacao, Material...');
-        const descInput = screen.getByPlaceholderText('ex: Marmitas para almoco...');
+        const tipoInput = screen.getByPlaceholderText('ex: Alimentação, Material...');
+        const descInput = screen.getByPlaceholderText('ex: Marmitas para almoço...');
 
         fireEvent.change(tipoInput, { target: { value: 'Food' } });
         fireEvent.change(descInput, { target: { value: 'Lunch meals' } });
@@ -763,9 +782,8 @@ describe('ONGActivitiesPage', () => {
       fireEvent.click(screen.getByText('Remover'));
 
       await waitFor(() => {
-        // The resource should be removed from the list
-        const resourceItems = screen.queryAllByText(/Food.*Lunch meals/);
-        expect(resourceItems.length).toBe(0);
+        expect(screen.queryByText('Food')).not.toBeInTheDocument();
+        expect(screen.queryByText('Lunch meals')).not.toBeInTheDocument();
       });
     });
   });
@@ -779,7 +797,7 @@ describe('ONGActivitiesPage', () => {
       render(<ONGActivitiesPage />);
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith('Erro ao carregar dados');
+        expect(mockToastError).toHaveBeenCalledWith('Erro ao carregar dados');
       });
 
       consoleSpy.mockRestore();
@@ -798,12 +816,13 @@ describe('ONGActivitiesPage', () => {
       });
 
       await waitFor(() => {
-        const inputs = document.querySelectorAll('input[type="text"]');
+        const modal = document.querySelector('.fixed.inset-0.z-50 .relative.bg-white') as HTMLElement;
+        const inputs = modal.querySelectorAll('input[type="text"]');
         fireEvent.change(inputs[0], { target: { value: 'New Activity' } });
         fireEvent.change(inputs[1], { target: { value: 'Location' } });
         fireEvent.change(inputs[2], { target: { value: 'Responsible' } });
 
-        const dateInputs = document.querySelectorAll('input[type="date"]');
+        const dateInputs = modal.querySelectorAll('input[type="date"]');
         fireEvent.change(dateInputs[0], { target: { value: '2024-06-01' } });
         fireEvent.change(dateInputs[1], { target: { value: '2024-06-30' } });
       });
@@ -811,7 +830,7 @@ describe('ONGActivitiesPage', () => {
       fireEvent.click(screen.getByText('Cadastrar'));
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith('Erro ao salvar atividade');
+        expect(mockToastError).toHaveBeenCalledWith('Erro ao salvar atividade');
       });
 
       consoleSpy.mockRestore();
@@ -830,7 +849,7 @@ describe('ONGActivitiesPage', () => {
       });
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith('Erro ao excluir atividade');
+        expect(mockToastError).toHaveBeenCalledWith('Erro ao excluir atividade');
       });
 
       consoleSpy.mockRestore();

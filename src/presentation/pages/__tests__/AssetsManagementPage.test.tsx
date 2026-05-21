@@ -10,11 +10,19 @@ import {
   AssetStatus,
 } from '@modules/church-management/assets/domain/entities/Asset';
 
-// Mock window.alert and window.confirm globally
-global.alert = jest.fn();
-global.confirm = jest.fn(() => true);
+const mockConfirmDialogConfirm = jest.fn();
+const mockToastSuccess = jest.fn();
+const mockToastError = jest.fn();
 
 // Mock Firebase config
+jest.mock('../../components/ConfirmDialog', () => ({
+  useConfirmDialog: () => ({
+    confirm: mockConfirmDialogConfirm,
+    prompt: jest.fn().mockResolvedValue('')
+  }),
+  ConfirmDialogProvider: ({ children }: any) => children
+}));
+
 jest.mock('@/config/firebase', () => ({
   db: {}
 }));
@@ -69,6 +77,24 @@ jest.mock('../../contexts/AuthContext', () => ({
   })
 }));
 
+jest.mock('../../hooks/useDebouncedValue', () => ({
+  useDebouncedValue: (value: string) => value
+}));
+
+jest.mock('@modules/shared-kernel/logging/infrastructure/services/LoggingService', () => ({
+  loggingService: {
+    logDatabase: jest.fn().mockResolvedValue(undefined)
+  }
+}));
+
+jest.mock('react-hot-toast', () => ({
+  __esModule: true,
+  default: {
+    success: (...args: any[]) => mockToastSuccess(...args),
+    error: (...args: any[]) => mockToastError(...args)
+  }
+}));
+
 // Test data factories
 const createTestAsset = (overrides = {}) => ({
   id: 'asset-1',
@@ -100,10 +126,7 @@ const createTestAsset = (overrides = {}) => ({
 describe('AssetsManagementPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Reset window mocks
-    (global.alert as jest.Mock).mockClear();
-    (global.confirm as jest.Mock).mockReturnValue(true);
+    mockConfirmDialogConfirm.mockResolvedValue(true);
 
     // Default service responses
     mockGetAllAssets.mockResolvedValue([]);
@@ -218,7 +241,7 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Eletrônicos/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Eletrônicos/i).length).toBeGreaterThan(0);
       });
     });
 
@@ -229,7 +252,7 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Bom/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Bom/i).length).toBeGreaterThan(0);
       });
     });
 
@@ -240,7 +263,7 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Em Uso/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Em Uso/i).length).toBeGreaterThan(0);
       });
     });
 
@@ -273,8 +296,8 @@ describe('AssetsManagementPage', () => {
   describe('Search and Filtering', () => {
     it('should filter assets by search term (name)', async () => {
       const assets = [
-        createTestAsset({ id: 'asset-1', name: 'Projetor Epson' }),
-        createTestAsset({ id: 'asset-2', name: 'Piano Digital' })
+        createTestAsset({ id: 'asset-1', name: 'Projetor Epson', description: 'Projetor para cultos' }),
+        createTestAsset({ id: 'asset-2', name: 'Piano Digital', description: 'Instrumento musical' })
       ];
       mockGetAllAssets.mockResolvedValue(assets);
 
@@ -284,7 +307,7 @@ describe('AssetsManagementPage', () => {
         expect(screen.getByText('Projetor Epson')).toBeInTheDocument();
       });
 
-      const searchInput = screen.getByPlaceholderText(/Buscar patrimônio/i);
+      const searchInput = screen.getByPlaceholderText(/Buscar por nome/i);
       fireEvent.change(searchInput, { target: { value: 'Projetor' } });
 
       await waitFor(() => {
@@ -295,8 +318,8 @@ describe('AssetsManagementPage', () => {
 
     it('should filter assets by search term (location)', async () => {
       const assets = [
-        createTestAsset({ id: 'asset-1', name: 'Projetor', location: 'Sala Principal' }),
-        createTestAsset({ id: 'asset-2', name: 'Piano', location: 'Sala de Ensaio' })
+        createTestAsset({ id: 'asset-1', name: 'Projetor', description: 'Projetor para cultos', location: 'Sala Principal' }),
+        createTestAsset({ id: 'asset-2', name: 'Piano', description: 'Instrumento musical', location: 'Sala de Ensaio' })
       ];
       mockGetAllAssets.mockResolvedValue(assets);
 
@@ -306,7 +329,7 @@ describe('AssetsManagementPage', () => {
         expect(screen.getByText('Projetor')).toBeInTheDocument();
       });
 
-      const searchInput = screen.getByPlaceholderText(/Buscar patrimônio/i);
+      const searchInput = screen.getByPlaceholderText(/Buscar por nome/i);
       fireEvent.change(searchInput, { target: { value: 'Principal' } });
 
       await waitFor(() => {
@@ -369,7 +392,7 @@ describe('AssetsManagementPage', () => {
         expect(screen.getByText('Projetor Epson')).toBeInTheDocument();
       });
 
-      const searchInput = screen.getByPlaceholderText(/Buscar patrimônio/i);
+      const searchInput = screen.getByPlaceholderText(/Buscar por nome/i);
       fireEvent.change(searchInput, { target: { value: 'PROJETOR' } });
 
       await waitFor(() => {
@@ -392,7 +415,8 @@ describe('AssetsManagementPage', () => {
       render(<AssetsManagementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Página/i)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Anterior/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Próxima/i })).toBeInTheDocument();
       });
     });
 
@@ -526,11 +550,10 @@ describe('AssetsManagementPage', () => {
       fireEvent.click(newButton);
 
       await waitFor(() => {
-        expect(screen.getByLabelText(/Nome/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Descrição/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Categoria/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Valor de Aquisição/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Localização/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Projetor Epson PowerLite/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Descreva o patrimônio/i)).toBeInTheDocument();
+        expect(screen.getAllByPlaceholderText('0.00').length).toBeGreaterThan(0);
+        expect(screen.getByPlaceholderText(/Sala de Som, Secretaria/i)).toBeInTheDocument();
       });
     });
   });
@@ -553,7 +576,7 @@ describe('AssetsManagementPage', () => {
       fireEvent.click(editButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
+        expect(screen.getByText(/Editar Patrimônio/i)).toBeInTheDocument();
       });
     });
 
@@ -571,7 +594,7 @@ describe('AssetsManagementPage', () => {
       fireEvent.click(editButton);
 
       await waitFor(() => {
-        const nameInput = screen.getByLabelText(/Nome/i) as HTMLInputElement;
+        const nameInput = screen.getByDisplayValue('Projetor Epson') as HTMLInputElement;
         expect(nameInput.value).toBe('Projetor Epson');
       });
     });
@@ -591,13 +614,13 @@ describe('AssetsManagementPage', () => {
       fireEvent.click(editButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
+        expect(screen.getByText(/Editar Patrimônio/i)).toBeInTheDocument();
       });
 
-      const nameInput = screen.getByLabelText(/Nome/i);
+      const nameInput = screen.getByDisplayValue('Projetor Epson');
       fireEvent.change(nameInput, { target: { value: 'Updated Name' } });
 
-      const submitButton = screen.getByRole('button', { name: /Salvar/i });
+      const submitButton = screen.getByRole('button', { name: /Atualizar Patrimônio/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -628,14 +651,13 @@ describe('AssetsManagementPage', () => {
       fireEvent.click(deleteButton);
 
       await waitFor(() => {
-        expect(global.confirm).toHaveBeenCalled();
+        expect(mockConfirmDialogConfirm).toHaveBeenCalled();
       });
     });
 
     it('should call deleteAsset when confirmed', async () => {
       const asset = createTestAsset();
       mockGetAllAssets.mockResolvedValue([asset]);
-      (global.confirm as jest.Mock).mockReturnValue(true);
 
       render(<AssetsManagementPage />);
 
@@ -654,7 +676,7 @@ describe('AssetsManagementPage', () => {
     it('should not delete when confirmation is cancelled', async () => {
       const asset = createTestAsset();
       mockGetAllAssets.mockResolvedValue([asset]);
-      (global.confirm as jest.Mock).mockReturnValue(false);
+      mockConfirmDialogConfirm.mockResolvedValueOnce(false);
 
       render(<AssetsManagementPage />);
 
@@ -673,7 +695,6 @@ describe('AssetsManagementPage', () => {
     it('should reload assets after successful deletion', async () => {
       const asset = createTestAsset();
       mockGetAllAssets.mockResolvedValue([asset]);
-      (global.confirm as jest.Mock).mockReturnValue(true);
 
       render(<AssetsManagementPage />);
 
@@ -693,7 +714,6 @@ describe('AssetsManagementPage', () => {
       const asset = createTestAsset();
       mockGetAllAssets.mockResolvedValue([asset]);
       mockDeleteAsset.mockRejectedValue(new Error('Delete failed'));
-      (global.confirm as jest.Mock).mockReturnValue(true);
 
       render(<AssetsManagementPage />);
 
@@ -705,7 +725,7 @@ describe('AssetsManagementPage', () => {
       fireEvent.click(deleteButton);
 
       await waitFor(() => {
-        expect(global.alert).toHaveBeenCalledWith('Delete failed');
+        expect(mockToastError).toHaveBeenCalledWith('Delete failed');
       });
     });
   });
@@ -730,12 +750,9 @@ describe('AssetsManagementPage', () => {
         expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
       });
 
-      const submitButton = screen.getByRole('button', { name: /Salvar/i });
-      fireEvent.click(submitButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Nome é obrigatório/i)).toBeInTheDocument();
-      });
+      const submitButton = screen.getByRole('button', { name: /Criar Patrimônio/i });
+      expect(submitButton).toBeDisabled();
+      expect(submitButton).toHaveAttribute('title', 'Preencha todos os campos obrigatórios corretamente');
     });
 
     it('should validate name is required', async () => {
@@ -754,8 +771,8 @@ describe('AssetsManagementPage', () => {
         expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
       });
 
-      const submitButton = screen.getByRole('button', { name: /Salvar/i });
-      fireEvent.click(submitButton);
+      const nameInput = screen.getByPlaceholderText(/Projetor Epson PowerLite/i);
+      fireEvent.change(nameInput, { target: { value: ' ' } });
 
       await waitFor(() => {
         expect(screen.getByText(/Nome é obrigatório/i)).toBeInTheDocument();
@@ -778,8 +795,8 @@ describe('AssetsManagementPage', () => {
         expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
       });
 
-      const submitButton = screen.getByRole('button', { name: /Salvar/i });
-      fireEvent.click(submitButton);
+      const locationInput = screen.getByPlaceholderText(/Sala de Som, Secretaria/i);
+      fireEvent.change(locationInput, { target: { value: ' ' } });
 
       await waitFor(() => {
         expect(screen.getByText(/Localização é obrigatória/i)).toBeInTheDocument();
@@ -802,10 +819,10 @@ describe('AssetsManagementPage', () => {
         expect(screen.getByText(/Adicionar Novo Patrimônio/i)).toBeInTheDocument();
       });
 
-      const valueInput = screen.getByLabelText(/Valor de Aquisição/i);
+      const valueInput = screen.getAllByPlaceholderText('0.00')[0];
       fireEvent.change(valueInput, { target: { value: '-100' } });
 
-      const submitButton = screen.getByRole('button', { name: /Salvar/i });
+      const submitButton = screen.getByRole('button', { name: /Criar Patrimônio/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -826,7 +843,7 @@ describe('AssetsManagementPage', () => {
       fireEvent.click(newButton);
 
       await waitFor(() => {
-        const submitButton = screen.getByRole('button', { name: /Salvar/i });
+        const submitButton = screen.getByRole('button', { name: /Criar Patrimônio/i });
         expect(submitButton).toBeDisabled();
       });
     });

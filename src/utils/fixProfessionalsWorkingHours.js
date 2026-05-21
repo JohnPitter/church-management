@@ -3,7 +3,7 @@
 
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, updateDoc, doc } from 'firebase/firestore';
-import { firebaseConfig } from '../infrastructure/config/firebase';
+import { firebaseConfig } from '../config/firebase';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -59,7 +59,12 @@ async function fixProfessionalsWorkingHours() {
 }
 
 // Only run if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+const isDirectRun =
+  typeof process !== 'undefined' &&
+  typeof process.argv?.[1] === 'string' &&
+  process.argv[1].endsWith('fixProfessionalsWorkingHours.js');
+
+if (isDirectRun) {
   fixProfessionalsWorkingHours().then(() => {
     console.log('🎉 Done!');
     process.exit(0);

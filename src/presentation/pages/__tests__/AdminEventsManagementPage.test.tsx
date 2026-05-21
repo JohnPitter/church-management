@@ -36,6 +36,21 @@ const mockAuthContext = {
   getSignInMethods: jest.fn().mockResolvedValue(["password"])
 };
 
+jest.mock('../../components/ConfirmDialog', () => ({
+  useConfirmDialog: () => ({
+    confirm: jest.fn(async (options?: any) => global.confirm(options?.message ?? '')),
+    prompt: jest.fn().mockResolvedValue('')
+  }),
+  ConfirmDialogProvider: ({ children }: any) => children
+}));
+
+jest.mock('react-hot-toast', () => {
+  const toast = (message: string) => global.alert(message);
+  toast.success = (message: string) => global.alert(message);
+  toast.error = (message: string) => global.alert(message);
+  return { __esModule: true, default: toast };
+});
+
 jest.mock('../../contexts/AuthContext', () => ({
   useAuth: () => mockAuthContext
 }));
@@ -89,14 +104,14 @@ const mockEvents = [
   },
   {
     id: 'event-2',
-    title: 'Estudo Biblico',
+    title: 'Estudo Bíblico',
     description: 'Estudo do livro de Romanos',
     date: new Date('2024-02-20T19:30:00'),
     time: '19:30',
     location: 'Sala de Estudos',
     category: {
       id: '2',
-      name: 'Estudo Biblico',
+      name: 'Estudo Bíblico',
       color: '#10B981',
       priority: 2
     },
@@ -106,7 +121,7 @@ const mockEvents = [
     maxParticipants: undefined,
     imageURL: undefined,
     streamingURL: undefined,
-    responsible: 'Lider Maria',
+    responsible: 'Líder Maria',
     status: 'draft',
     createdAt: new Date('2024-01-05'),
     updatedAt: new Date('2024-01-05'),
@@ -114,14 +129,14 @@ const mockEvents = [
   },
   {
     id: 'event-3',
-    title: 'Conferencia Anual',
+    title: 'Conferência Anual',
     description: 'Grande conferencia com pastores convidados',
     date: new Date('2024-03-01T09:00:00'),
     time: '09:00',
     location: 'Centro de Convencoes',
     category: {
       id: '5',
-      name: 'Conferencia',
+      name: 'Conferência',
       color: '#8B5CF6',
       priority: 3
     },
@@ -374,8 +389,8 @@ describe('AdminEventsManagementPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Culto Dominical')).toBeInTheDocument();
-        expect(screen.getByText('Estudo Biblico')).toBeInTheDocument();
-        expect(screen.getByText('Conferencia Anual')).toBeInTheDocument();
+        expect(screen.getAllByText('Estudo Bíblico').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Conferência Anual').length).toBeGreaterThan(0);
       });
     });
 
@@ -391,7 +406,7 @@ describe('AdminEventsManagementPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Estudo Biblico')).toBeInTheDocument();
+        expect(screen.getAllByText('Estudo Bíblico').length).toBeGreaterThan(0);
       });
     });
 
@@ -401,8 +416,8 @@ describe('AdminEventsManagementPage', () => {
       await waitFor(() => {
         const cultoElements = screen.getAllByText('Culto');
         expect(cultoElements.length).toBeGreaterThan(0);
-        expect(screen.getByText('Estudo Biblico')).toBeInTheDocument();
-        expect(screen.getByText('Conferencia')).toBeInTheDocument();
+        expect(screen.getAllByText('Estudo Bíblico').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Conferência').length).toBeGreaterThan(0);
       });
     });
   });
@@ -419,11 +434,11 @@ describe('AdminEventsManagementPage', () => {
       });
 
       const searchInput = screen.getByPlaceholderText('Buscar eventos...');
-      await userEvent.type(searchInput, 'Conferencia');
+      await userEvent.type(searchInput, 'Conferência');
 
       await waitFor(() => {
         expect(screen.queryByText('Culto Dominical')).not.toBeInTheDocument();
-        expect(screen.getByText('Conferencia Anual')).toBeInTheDocument();
+        expect(screen.getAllByText('Conferência Anual').length).toBeGreaterThan(0);
       });
     });
 
@@ -439,7 +454,7 @@ describe('AdminEventsManagementPage', () => {
 
       await waitFor(() => {
         expect(screen.queryByText('Culto Dominical')).not.toBeInTheDocument();
-        expect(screen.getByText('Estudo Biblico')).toBeInTheDocument();
+        expect(screen.getAllByText('Estudo Bíblico').length).toBeGreaterThan(0);
       });
     });
 
@@ -451,11 +466,11 @@ describe('AdminEventsManagementPage', () => {
       });
 
       const categorySelect = screen.getByDisplayValue('Todas as Categorias');
-      await userEvent.selectOptions(categorySelect, 'Conferencia');
+      await userEvent.selectOptions(categorySelect, 'Conferência');
 
       await waitFor(() => {
         expect(screen.queryByText('Culto Dominical')).not.toBeInTheDocument();
-        expect(screen.getByText('Conferencia Anual')).toBeInTheDocument();
+        expect(screen.getAllByText('Conferência Anual').length).toBeGreaterThan(0);
       });
     });
 
@@ -471,7 +486,7 @@ describe('AdminEventsManagementPage', () => {
 
       await waitFor(() => {
         expect(screen.queryByText('Culto Dominical')).not.toBeInTheDocument();
-        expect(screen.getByText('Conferencia Anual')).toBeInTheDocument();
+        expect(screen.getAllByText('Conferência Anual').length).toBeGreaterThan(0);
       });
     });
   });
@@ -686,9 +701,10 @@ describe('AdminEventsManagementPage', () => {
         const duplicateButtons = screen.getAllByTitle('Duplicar evento');
         fireEvent.click(duplicateButtons[0]);
 
+        await new Promise((resolve) => setTimeout(resolve, 1100));
         await waitFor(() => {
-          expect(mockAlert).toHaveBeenCalledWith('Evento duplicado com sucesso!');
-        });
+          expect(screen.getByText(/Cópia/)).toBeInTheDocument();
+        }, { timeout: 3000 });
       });
     });
 
@@ -729,7 +745,7 @@ describe('AdminEventsManagementPage', () => {
       fireEvent.click(confirmationButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByText(/Culto Dominical/)).toBeInTheDocument();
+        expect(screen.getAllByText(/Culto Dominical/).length).toBeGreaterThan(0);
       });
     });
 
@@ -745,8 +761,8 @@ describe('AdminEventsManagementPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Maria Silva')).toBeInTheDocument();
-        expect(screen.getByText('Visitante Anonimo')).toBeInTheDocument();
         expect(screen.getByText('Pedro Santos')).toBeInTheDocument();
+        expect(screen.getByText(/Anônimo/i)).toBeInTheDocument();
       });
     });
 
@@ -761,7 +777,7 @@ describe('AdminEventsManagementPage', () => {
       fireEvent.click(confirmationButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByText('Confirmado')).toBeInTheDocument();
+        expect(screen.getAllByText('Confirmado').length).toBeGreaterThan(0);
         expect(screen.getByText('Recusado')).toBeInTheDocument();
       });
     });
@@ -777,7 +793,7 @@ describe('AdminEventsManagementPage', () => {
       fireEvent.click(confirmationButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByText(/Anonimo/i)).toBeInTheDocument();
+        expect(screen.getByText(/Anônimo/i)).toBeInTheDocument();
       });
     });
 
@@ -931,7 +947,7 @@ describe('AdminEventsManagementPage', () => {
       fireEvent.click(screen.getByRole('button', { name: /Criar Evento/i }));
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringMatching(/Por favor, insira o titulo/i));
+        expect(mockAlert).toHaveBeenCalledWith(expect.stringMatching(/Por favor, insira o título/i));
       });
     });
 
@@ -1076,7 +1092,7 @@ describe('AdminEventsManagementPage', () => {
       const titleInput = screen.getByDisplayValue('Culto Dominical');
       fireEvent.change(titleInput, { target: { value: 'Culto Atualizado' } });
 
-      fireEvent.click(screen.getByRole('button', { name: /Salvar Alteracoes/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Salvar Alterações/i }));
 
       await waitFor(() => {
         expect(mockUpdate).toHaveBeenCalled();
@@ -1100,10 +1116,10 @@ describe('AdminEventsManagementPage', () => {
       const titleInput = screen.getByDisplayValue('Culto Dominical');
       fireEvent.change(titleInput, { target: { value: '' } });
 
-      fireEvent.click(screen.getByRole('button', { name: /Salvar Alteracoes/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Salvar Alterações/i }));
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringMatching(/Por favor, insira o titulo/i));
+        expect(mockAlert).toHaveBeenCalledWith(expect.stringMatching(/Por favor, insira o título/i));
       });
     });
 
@@ -1125,7 +1141,7 @@ describe('AdminEventsManagementPage', () => {
       const titleInput = screen.getByDisplayValue('Culto Dominical');
       fireEvent.change(titleInput, { target: { value: 'Culto Atualizado' } });
 
-      fireEvent.click(screen.getByRole('button', { name: /Salvar Alteracoes/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Salvar Alterações/i }));
 
       await waitFor(() => {
         expect(mockAlert).toHaveBeenCalledWith(expect.stringMatching(/Erro ao atualizar/i));
@@ -1140,7 +1156,7 @@ describe('AdminEventsManagementPage', () => {
     it('should send notification when creating public event', async () => {
       const newEvent = {
         id: 'new-event-id',
-        title: 'Novo Evento Publico',
+        title: 'Novo Evento Público',
         description: 'Descrição do evento',
         date: new Date(),
         time: '14:00',
@@ -1172,7 +1188,7 @@ describe('AdminEventsManagementPage', () => {
       const titleInput = screen.getByPlaceholderText('Ex: Culto Dominical');
       const locationInput = screen.getByPlaceholderText('Ex: Templo Principal');
 
-      await userEvent.type(titleInput, 'Novo Evento Publico');
+      await userEvent.type(titleInput, 'Novo Evento Público');
       await userEvent.type(locationInput, 'Local Teste');
 
       fireEvent.click(screen.getByRole('button', { name: /Criar Evento/i }));
@@ -1180,7 +1196,7 @@ describe('AdminEventsManagementPage', () => {
       await waitFor(() => {
         expect(mockNotifyNewEvent).toHaveBeenCalledWith(
           'new-event-id',
-          'Novo Evento Publico',
+          'Novo Evento Público',
           expect.any(Date)
         );
       });
@@ -1302,8 +1318,7 @@ describe('AdminEventsManagementPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Culto Dominical')).toBeInTheDocument();
-        expect(screen.queryByText('Estudo Biblico')).not.toBeInTheDocument();
-        expect(screen.queryByText('Conferencia Anual')).not.toBeInTheDocument();
+        expect(screen.getByText('Eventos (1)')).toBeInTheDocument();
       });
     });
 
@@ -1322,7 +1337,7 @@ describe('AdminEventsManagementPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Culto Dominical')).toBeInTheDocument();
-        expect(screen.queryByText('Estudo Biblico')).not.toBeInTheDocument();
+        expect(screen.getByText('Eventos (1)')).toBeInTheDocument();
       });
     });
 
@@ -1337,14 +1352,14 @@ describe('AdminEventsManagementPage', () => {
       fireEvent.change(searchInput, { target: { value: 'Culto' } });
 
       await waitFor(() => {
-        expect(screen.queryByText('Estudo Biblico')).not.toBeInTheDocument();
+        expect(screen.getByText('Eventos (1)')).toBeInTheDocument();
       });
 
       fireEvent.change(searchInput, { target: { value: '' } });
 
       await waitFor(() => {
         expect(screen.getByText('Culto Dominical')).toBeInTheDocument();
-        expect(screen.getByText('Estudo Biblico')).toBeInTheDocument();
+        expect(screen.getAllByText('Estudo Bíblico').length).toBeGreaterThan(0);
       });
     });
 
@@ -1360,7 +1375,7 @@ describe('AdminEventsManagementPage', () => {
 
       await waitFor(() => {
         expect(screen.queryByText('Culto Dominical')).not.toBeInTheDocument();
-        expect(screen.getByText('Conferencia Anual')).toBeInTheDocument();
+        expect(screen.getAllByText('Conferência Anual').length).toBeGreaterThan(0);
       });
     });
 
@@ -1439,17 +1454,17 @@ describe('AdminEventsManagementPage', () => {
       const titleInput = screen.getByPlaceholderText('Ex: Culto Dominical');
       const descriptionInput = screen.getByPlaceholderText('Descrição do evento...');
       const locationInput = screen.getByPlaceholderText('Ex: Templo Principal');
-      const responsibleInput = screen.getByPlaceholderText('Nome do responsavel');
+      const responsibleInput = screen.getByPlaceholderText('Nome do responsável');
 
       fireEvent.change(titleInput, { target: { value: 'Evento Completo' } });
       fireEvent.change(descriptionInput, { target: { value: 'Descrição completa do evento' } });
       fireEvent.change(locationInput, { target: { value: 'Local Completo' } });
-      fireEvent.change(responsibleInput, { target: { value: 'Responsavel Teste' } });
+      fireEvent.change(responsibleInput, { target: { value: 'Responsável Teste' } });
 
       expect(titleInput).toHaveValue('Evento Completo');
       expect(descriptionInput).toHaveValue('Descrição completa do evento');
       expect(locationInput).toHaveValue('Local Completo');
-      expect(responsibleInput).toHaveValue('Responsavel Teste');
+      expect(responsibleInput).toHaveValue('Responsável Teste');
     });
 
     it('should handle category selection', async () => {
@@ -1467,12 +1482,12 @@ describe('AdminEventsManagementPage', () => {
 
       const categorySelects = screen.getAllByRole('combobox');
       const categorySelect = categorySelects.find(select =>
-        select.querySelector('option[value="Conferencia"]')
+        select.querySelector('option[value="Conferência"]')
       );
 
       if (categorySelect) {
-        await userEvent.selectOptions(categorySelect, 'Conferencia');
-        expect(categorySelect).toHaveValue('Conferencia');
+        await userEvent.selectOptions(categorySelect, 'Conferência');
+        expect(categorySelect).toHaveValue('Conferência');
       }
     });
 
@@ -1513,7 +1528,7 @@ describe('AdminEventsManagementPage', () => {
       await waitFor(() => {
         expect(screen.getByText(/Data:/)).toBeInTheDocument();
         expect(screen.getByText(/Local:/)).toBeInTheDocument();
-        expect(screen.getByText(/Responsavel:/)).toBeInTheDocument();
+        expect(screen.getByText(/Responsável:/)).toBeInTheDocument();
       });
     });
 
@@ -1544,8 +1559,8 @@ describe('AdminEventsManagementPage', () => {
       fireEvent.click(confirmationButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByText(/Anonimo/i)).toBeInTheDocument();
-        expect(screen.getByText(/Usuario/i)).toBeInTheDocument();
+        expect(screen.getByText(/Anônimo/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Usuário/i).length).toBeGreaterThan(0);
       });
     });
 

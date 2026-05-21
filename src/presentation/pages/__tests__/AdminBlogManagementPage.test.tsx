@@ -39,6 +39,21 @@ const mockAuthContext = {
   getSignInMethods: jest.fn().mockResolvedValue(['password'])
 };
 
+jest.mock('../../components/ConfirmDialog', () => ({
+  useConfirmDialog: () => ({
+    confirm: jest.fn(async (options?: any) => global.confirm(options?.message ?? '')),
+    prompt: jest.fn().mockResolvedValue('')
+  }),
+  ConfirmDialogProvider: ({ children }: any) => children
+}));
+
+jest.mock('react-hot-toast', () => {
+  const toast = (message: string) => global.alert(message);
+  toast.success = (message: string) => global.alert(message);
+  toast.error = (message: string) => global.alert(message);
+  return { __esModule: true, default: toast };
+});
+
 jest.mock('../../contexts/AuthContext', () => ({
   useAuth: () => mockAuthContext
 }));
@@ -95,7 +110,7 @@ const mockBlogPosts = [
     content: '<p>This is the content of blog post 2 with more detailed content for our testing needs.</p>',
     excerpt: 'This is the excerpt of blog post 2',
     author: { id: 'user-2', name: 'Jane Smith', role: 'secretary' },
-    categories: ['Reflexao'],
+    categories: ['Reflexão'],
     tags: ['hope', 'love'],
     status: 'draft',
     visibility: 'public',
@@ -114,7 +129,7 @@ const mockBlogPosts = [
     content: '<p>This is archived content that should still be searchable in the admin panel.</p>',
     excerpt: 'This is an archived post',
     author: { id: 'user-1', name: 'John Doe', role: 'admin' },
-    categories: ['Estudo Biblico'],
+    categories: ['Estudo Bíblico'],
     tags: ['bible', 'study'],
     status: 'archived',
     visibility: 'members_only',
@@ -350,7 +365,7 @@ describe('AdminBlogManagementPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Destaque')).toBeInTheDocument();
+        expect(screen.getAllByText(/Destacar/i).length).toBeGreaterThan(0);
       });
     });
   });
@@ -498,7 +513,7 @@ describe('AdminBlogManagementPage', () => {
         });
 
         // Fill in form
-        const titleInput = screen.getByPlaceholderText('Ex: Reflexao sobre o Amor de Deus');
+        const titleInput = screen.getByPlaceholderText('Ex: Reflexão sobre o Amor de Deus');
         const contentInput = screen.getByPlaceholderText('Escreva o conteúdo da postagem aqui...');
 
         await userEvent.type(titleInput, 'New Test Post');
@@ -677,7 +692,7 @@ describe('AdminBlogManagementPage', () => {
         expect(screen.getByText('Nova Postagem do Blog')).toBeInTheDocument();
       });
 
-      const titleInput = screen.getByPlaceholderText('Ex: Reflexao sobre o Amor de Deus');
+      const titleInput = screen.getByPlaceholderText('Ex: Reflexão sobre o Amor de Deus');
       await userEvent.type(titleInput, 'Test');
 
       await waitFor(() => {

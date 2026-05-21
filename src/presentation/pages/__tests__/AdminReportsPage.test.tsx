@@ -14,6 +14,13 @@ jest.mock('@/config/firebase', () => ({
   db: {}
 }));
 
+jest.mock('react-hot-toast', () => {
+  const toast = (message: string) => global.alert(message);
+  toast.success = (message: string) => global.alert(message);
+  toast.error = (message: string) => global.alert(message);
+  return { __esModule: true, default: toast };
+});
+
 // Mock AuthContext
 const mockCurrentUser = {
   id: 'user-123',
@@ -189,10 +196,10 @@ describe('AdminReportsPage', () => {
       await waitFor(() => {
         expect(screen.getByText(/Vis.*o Geral/i)).toBeInTheDocument();
         expect(screen.getAllByText(/Usu.*rios/i)[0]).toBeInTheDocument();
-        expect(screen.getAllByText('Eventos')[0]).toBeInTheDocument();
+        expect(screen.getAllByText(/Eventos/)[0]).toBeInTheDocument();
         expect(screen.getByText('Projetos')).toBeInTheDocument();
         expect(screen.getByText('Engajamento')).toBeInTheDocument();
-        expect(screen.getByText('Financeiro')).toBeInTheDocument();
+        expect(screen.getByText(/Financeiro/)).toBeInTheDocument();
       });
     });
 
@@ -200,8 +207,8 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Exportar PDF')).toBeInTheDocument();
-        expect(screen.getByText('Exportar Excel')).toBeInTheDocument();
+        expect(screen.getByText(/Exportar PDF/)).toBeInTheDocument();
+        expect(screen.getByText(/Exportar Excel/)).toBeInTheDocument();
       });
     });
 
@@ -212,7 +219,7 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.queryByText('Exportar PDF')).not.toBeInTheDocument();
+        expect(screen.queryByText(/Exportar PDF/)).not.toBeInTheDocument();
       });
     });
   });
@@ -267,13 +274,13 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Tentar Novamente')).toBeInTheDocument();
+        expect(screen.getByText(/Tentar Novamente/i)).toBeInTheDocument();
       });
 
       mockGenerateReportData.mockResolvedValueOnce(mockReportData);
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Tentar Novamente'));
+        await userEvent.click(screen.getByText(/Tentar Novamente/i));
       });
 
       await waitFor(() => {
@@ -317,10 +324,10 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('120')).toBeInTheDocument(); // Total users
-        expect(screen.getByText('25')).toBeInTheDocument(); // Total events
-        expect(screen.getByText('5')).toBeInTheDocument(); // Active projects
-        expect(screen.getByText('30')).toBeInTheDocument(); // Blog posts
+        expect(screen.getAllByText('120').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('25').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('5').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('30').length).toBeGreaterThan(0);
       });
     });
   });
@@ -348,11 +355,11 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getAllByText('Eventos')[0]).toBeInTheDocument();
+        expect(screen.getAllByText(/Eventos/)[0]).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getAllByText('Eventos')[0]);
+        await userEvent.click(screen.getAllByText(/Eventos/)[0]);
       });
 
       await waitFor(() => {
@@ -396,11 +403,11 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Financeiro')).toBeInTheDocument();
+        expect(screen.getByText(/Financeiro/)).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Financeiro'));
+        await userEvent.click(screen.getByText(/Financeiro/));
       });
 
       await waitFor(() => {
@@ -459,11 +466,11 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Exportar PDF')).toBeInTheDocument();
+        expect(screen.getByText(/Exportar PDF/)).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Exportar PDF'));
+        await userEvent.click(screen.getByText(/Exportar PDF/));
       });
 
       await waitFor(() => {
@@ -475,11 +482,11 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Exportar Excel')).toBeInTheDocument();
+        expect(screen.getByText(/Exportar Excel/)).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Exportar Excel'));
+        await userEvent.click(screen.getByText(/Exportar Excel/));
       });
 
       await waitFor(() => {
@@ -491,11 +498,11 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Exportar PDF')).toBeInTheDocument();
+        expect(screen.getByText(/Exportar PDF/)).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Exportar PDF'));
+        await userEvent.click(screen.getByText(/Exportar PDF/));
       });
 
       await waitFor(() => {
@@ -508,11 +515,11 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Exportar PDF')).toBeInTheDocument();
+        expect(screen.getByText(/Exportar PDF/)).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Exportar PDF'));
+        await userEvent.click(screen.getByText(/Exportar PDF/));
       });
 
       await waitFor(() => {
@@ -543,13 +550,13 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Atualizar Dados')).toBeInTheDocument();
+        expect(screen.getByText(/Atualizar Dados/i)).toBeInTheDocument();
       });
 
       mockGenerateReportData.mockClear();
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Atualizar Dados'));
+        await userEvent.click(screen.getByText(/Atualizar Dados/i));
       });
 
       await waitFor(() => {
@@ -598,7 +605,7 @@ describe('AdminReportsPage', () => {
       mockGenerateReportData.mockResolvedValueOnce(mockReportData);
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Tentar Novamente'));
+        await userEvent.click(screen.getByText(/Tentar Novamente/i));
       });
 
       await waitFor(() => {
@@ -641,15 +648,15 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getAllByText('Eventos')[0]).toBeInTheDocument();
+        expect(screen.getAllByText(/Eventos/)[0]).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getAllByText('Eventos')[0]);
+        await userEvent.click(screen.getAllByText(/Eventos/)[0]);
       });
 
       await waitFor(() => {
-        const eventsButton = screen.getAllByText('Eventos')[0].closest('button');
+        const eventsButton = screen.getAllByText(/Eventos/)[0].closest('button');
         expect(eventsButton).toHaveClass('bg-indigo-50');
       });
     });
@@ -708,37 +715,26 @@ describe('AdminReportsPage', () => {
     });
 
     it('should handle download link creation and cleanup', async () => {
-      const mockLink = document.createElement('a');
-      const mockClick = jest.fn();
-      mockLink.click = mockClick;
-
-      const createElementSpy = jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
-        if (tagName === 'a') {
-          return mockLink as any;
-        }
-        return document.createElement(tagName);
-      });
-
-      const appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation(() => null as any);
-      const removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation(() => null as any);
+      const clickSpy = jest
+        .spyOn(HTMLAnchorElement.prototype, 'click')
+        .mockImplementation(() => undefined);
 
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Exportar PDF')).toBeInTheDocument();
+        expect(screen.getByText(/Exportar PDF/)).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Exportar PDF'));
+        await userEvent.click(screen.getByText(/Exportar PDF/));
       });
 
       await waitFor(() => {
-        expect(mockClick).toHaveBeenCalled();
+        expect(global.URL.createObjectURL).toHaveBeenCalled();
+        expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('blob:test');
       });
 
-      createElementSpy.mockRestore();
-      appendChildSpy.mockRestore();
-      removeChildSpy.mockRestore();
+      clickSpy.mockRestore();
     });
 
     it('should show alert when export is clicked without loaded data', async () => {
@@ -749,8 +745,11 @@ describe('AdminReportsPage', () => {
         expect(screen.getByText('Erro ao Carregar Dados')).toBeInTheDocument();
       });
 
-      // The export buttons won't be visible in error state, so this test confirms error handling
-      expect(screen.queryByText('Exportar PDF')).not.toBeInTheDocument();
+      await act(async () => {
+        await userEvent.click(screen.getByText(/Exportar PDF/));
+      });
+
+      expect(window.alert).toHaveBeenCalledWith('Dados não carregados. Aguarde o carregamento dos relatórios.');
     });
   });
 
@@ -759,11 +758,11 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getAllByText('Eventos')[0]).toBeInTheDocument();
+        expect(screen.getAllByText(/Eventos/)[0]).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getAllByText('Eventos')[0]);
+        await userEvent.click(screen.getAllByText(/Eventos/)[0]);
       });
 
       await waitFor(() => {
@@ -836,11 +835,11 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Exportar PDF')).toBeInTheDocument();
+        expect(screen.getByText(/Exportar PDF/)).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Exportar PDF'));
+        await userEvent.click(screen.getByText(/Exportar PDF/));
       });
 
       await waitFor(() => {
@@ -853,11 +852,11 @@ describe('AdminReportsPage', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Exportar Excel')).toBeInTheDocument();
+        expect(screen.getByText(/Exportar Excel/)).toBeInTheDocument();
       });
 
       await act(async () => {
-        await userEvent.click(screen.getByText('Exportar Excel'));
+        await userEvent.click(screen.getByText(/Exportar Excel/));
       });
 
       await waitFor(() => {

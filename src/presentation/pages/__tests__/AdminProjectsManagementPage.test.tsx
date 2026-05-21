@@ -7,6 +7,21 @@ import { AdminProjectsManagementPage } from '../AdminProjectsManagementPage';
 import { Project, ProjectStatus, ProjectRegistration, RegistrationStatus } from '@modules/content-management/projects/domain/entities/Project';
 
 // Mock Firebase config
+jest.mock('../../components/ConfirmDialog', () => ({
+  useConfirmDialog: () => ({
+    confirm: jest.fn(async (options?: any) => global.confirm(options?.message ?? '')),
+    prompt: jest.fn().mockResolvedValue('')
+  }),
+  ConfirmDialogProvider: ({ children }: any) => children
+}));
+
+jest.mock('react-hot-toast', () => {
+  const toast = (message: string) => global.alert(message);
+  toast.success = (message: string) => global.alert(message);
+  toast.error = (message: string) => global.alert(message);
+  return { __esModule: true, default: toast };
+});
+
 jest.mock('@/config/firebase', () => ({
   db: {},
   storage: {}
@@ -122,7 +137,7 @@ const createMockProject = (overrides: Partial<Project> = {}): Project => ({
   endDate: new Date('2024-12-31'),
   responsible: 'John Doe',
   status: ProjectStatus.Active,
-  category: 'Acao Social',
+  category: 'Ação Social',
   budget: 10000,
   maxParticipants: 20,
   requiresApproval: true,
@@ -272,7 +287,7 @@ describe('AdminProjectsManagementPage', () => {
       await waitFor(() => {
         expect(screen.getAllByText('Ativos').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Planejamento').length).toBeGreaterThan(0);
-        expect(screen.getAllByText('Concluidos').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Concluídos').length).toBeGreaterThan(0);
       });
     });
   });
@@ -304,8 +319,8 @@ describe('AdminProjectsManagementPage', () => {
 
     it('should filter projects by category', async () => {
       const projects = [
-        createMockProject({ id: '1', name: 'Social Project', category: 'Acao Social' }),
-        createMockProject({ id: '2', name: 'Education Project', category: 'Educacao' })
+        createMockProject({ id: '1', name: 'Social Project', category: 'Ação Social' }),
+        createMockProject({ id: '2', name: 'Education Project', category: 'Educação' })
       ];
       mockFindAll.mockResolvedValue(projects);
 
@@ -318,7 +333,7 @@ describe('AdminProjectsManagementPage', () => {
 
       // Filter by education category
       const categorySelect = screen.getAllByRole('combobox')[1];
-      fireEvent.change(categorySelect, { target: { value: 'Educacao' } });
+      fireEvent.change(categorySelect, { target: { value: 'Educação' } });
 
       await waitFor(() => {
         expect(screen.queryByText('Social Project')).not.toBeInTheDocument();
@@ -393,7 +408,7 @@ describe('AdminProjectsManagementPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Nome do Projeto *')).toBeInTheDocument();
-        expect(screen.getByText('Descricao *')).toBeInTheDocument();
+        expect(screen.getByText('Descrição *')).toBeInTheDocument();
       });
     });
 
@@ -430,10 +445,10 @@ describe('AdminProjectsManagementPage', () => {
       });
 
       await waitFor(() => {
-        const nameInput = screen.getByPlaceholderText('Ex: Cestas Basicas');
+        const nameInput = screen.getByPlaceholderText('Ex: Cestas Básicas');
         fireEvent.change(nameInput, { target: { value: 'New Test Project' } });
 
-        const descInput = screen.getByPlaceholderText('Descricao detalhada do projeto...');
+        const descInput = screen.getByPlaceholderText('Descrição detalhada do projeto...');
         fireEvent.change(descInput, { target: { value: 'Test description' } });
 
         const endDateInput = document.querySelectorAll('input[type="date"]')[1];
@@ -578,7 +593,7 @@ describe('AdminProjectsManagementPage', () => {
 
       await waitFor(() => {
         expect(mockDelete).toHaveBeenCalledWith('project-1');
-        expect(mockAlert).toHaveBeenCalledWith('Projeto excluido com sucesso!');
+        expect(mockAlert).toHaveBeenCalledWith('Projeto excluído com sucesso!');
       });
     });
   });
@@ -622,11 +637,11 @@ describe('AdminProjectsManagementPage', () => {
       render(<AdminProjectsManagementPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Inscricoes'));
+        fireEvent.click(screen.getByText('Inscrições'));
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/Inscricoes do Projeto:/)).toBeInTheDocument();
+        expect(screen.getByText(/Inscrições do Projeto:/)).toBeInTheDocument();
         expect(screen.getByText('Pendentes')).toBeInTheDocument();
         expect(screen.getByText('Aprovados')).toBeInTheDocument();
       });
@@ -646,7 +661,7 @@ describe('AdminProjectsManagementPage', () => {
       render(<AdminProjectsManagementPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Inscricoes'));
+        fireEvent.click(screen.getByText('Inscrições'));
       });
 
       await waitFor(() => {
@@ -666,7 +681,7 @@ describe('AdminProjectsManagementPage', () => {
       render(<AdminProjectsManagementPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Inscricoes'));
+        fireEvent.click(screen.getByText('Inscrições'));
       });
 
       await waitFor(() => {
@@ -692,7 +707,7 @@ describe('AdminProjectsManagementPage', () => {
       render(<AdminProjectsManagementPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Inscricoes'));
+        fireEvent.click(screen.getByText('Inscrições'));
       });
 
       await waitFor(() => {
@@ -700,7 +715,7 @@ describe('AdminProjectsManagementPage', () => {
       });
 
       await waitFor(() => {
-        expect(mockConfirm).toHaveBeenCalledWith('Tem certeza que deseja rejeitar esta inscricao?');
+        expect(mockConfirm).toHaveBeenCalledWith('Tem certeza que deseja rejeitar esta inscrição?');
         expect(mockUpdateRegistrationStatus).toHaveBeenCalledWith(
           'reg-1',
           RegistrationStatus.Rejected
@@ -716,11 +731,11 @@ describe('AdminProjectsManagementPage', () => {
       render(<AdminProjectsManagementPage />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByText('Inscricoes'));
+        fireEvent.click(screen.getByText('Inscrições'));
       });
 
       await waitFor(() => {
-        expect(screen.getByText('Nenhuma inscricao encontrada para este projeto.')).toBeInTheDocument();
+        expect(screen.getByText('Nenhuma inscrição encontrada para este projeto.')).toBeInTheDocument();
       });
     });
   });
@@ -751,10 +766,10 @@ describe('AdminProjectsManagementPage', () => {
       });
 
       await waitFor(() => {
-        const nameInput = screen.getByPlaceholderText('Ex: Cestas Basicas');
+        const nameInput = screen.getByPlaceholderText('Ex: Cestas Básicas');
         fireEvent.change(nameInput, { target: { value: 'New Project' } });
 
-        const descInput = screen.getByPlaceholderText('Descricao detalhada do projeto...');
+        const descInput = screen.getByPlaceholderText('Descrição detalhada do projeto...');
         fireEvent.change(descInput, { target: { value: 'Description' } });
 
         const endDateInput = document.querySelectorAll('input[type="date"]')[1];

@@ -15,6 +15,9 @@ import {
 
 import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
 
+const mockToastSuccess = jest.fn();
+const mockToastError = jest.fn();
+
 // Mock the AuthContext
 const mockCurrentUser = {
   id: 'user-123',
@@ -44,12 +47,18 @@ jest.mock('../../contexts/AuthContext', () => ({
 const mockAddAtendimento = jest.fn();
 
 jest.mock('@modules/assistance/assistidos/application/services/AssistidoService', () => ({
-  AssistidoService: jest.fn()
+  AssistidoService: jest.fn().mockImplementation(() => ({
+    addAtendimento: mockAddAtendimento
+  }))
 }));
 
-// Mock window.alert
-const mockAlert = jest.fn();
-window.alert = mockAlert;
+jest.mock('react-hot-toast', () => ({
+  __esModule: true,
+  default: {
+    success: (...args: any[]) => mockToastSuccess(...args),
+    error: (...args: any[]) => mockToastError(...args)
+  }
+}));
 
 describe('AtendimentoModal', () => {
   const mockOnClose = jest.fn();
@@ -100,7 +109,6 @@ describe('AtendimentoModal', () => {
     (AssistidoService as jest.Mock).mockImplementation(() => ({
       addAtendimento: mockAddAtendimento
     }));
-    window.alert = mockAlert;
   });
 
   describe('Modal visibility', () => {
@@ -343,7 +351,7 @@ describe('AtendimentoModal', () => {
       });
     });
 
-    it('should show success alert after successful submission', async () => {
+    it('should show success toast after successful submission', async () => {
       render(<AtendimentoModal {...defaultProps} />);
 
       const textarea = screen.getByLabelText(/Descrição do Atendimento/i);
@@ -353,7 +361,7 @@ describe('AtendimentoModal', () => {
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(
+        expect(mockToastSuccess).toHaveBeenCalledWith(
           expect.stringContaining('Atendimento registrado com sucesso')
         );
       });
@@ -435,7 +443,7 @@ describe('AtendimentoModal', () => {
   });
 
   describe('Error handling', () => {
-    it('should show error alert when submission fails', async () => {
+    it('should show error toast when submission fails', async () => {
       const errorMessage = 'Network error';
       mockAddAtendimento.mockRejectedValue(new Error(errorMessage));
 
@@ -448,7 +456,7 @@ describe('AtendimentoModal', () => {
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(`Erro ao registrar atendimento: ${errorMessage}`);
+        expect(mockToastError).toHaveBeenCalledWith(`Erro ao registrar atendimento: ${errorMessage}`);
       });
     });
 

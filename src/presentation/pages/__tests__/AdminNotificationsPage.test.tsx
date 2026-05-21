@@ -90,6 +90,23 @@ jest.mock('@modules/user-management/users/infrastructure/repositories/FirebaseUs
   }
 }));
 
+jest.mock('../../contexts/AuthContext', () => ({
+  useAuth: () => ({
+    currentUser: { uid: 'test-uid', email: 'test@test.com', displayName: 'Test User', role: 'admin' },
+    loading: false
+  })
+}));
+
+jest.mock('@modules/shared-kernel/logging/infrastructure/services/LoggingService', () => ({
+  loggingService: {
+    logApi: jest.fn(),
+    logUserAction: jest.fn(),
+    logSystem: jest.fn(),
+    logSecurity: jest.fn(),
+    logError: jest.fn()
+  }
+}));
+
 // Mock window methods
 const mockAlert = jest.fn();
 window.alert = mockAlert;
@@ -1013,4 +1030,10 @@ describe('AdminNotificationsPage', () => {
       });
     });
   });
+});
+jest.mock('react-hot-toast', () => {
+  const toast = (message: string) => global.alert(message);
+  toast.success = (message: string) => global.alert(message);
+  toast.error = (message: string) => global.alert(message);
+  return { __esModule: true, default: toast };
 });

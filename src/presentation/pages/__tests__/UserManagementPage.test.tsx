@@ -6,7 +6,21 @@ import { render, screen, fireEvent, waitFor, within } from '@testing-library/rea
 import { UserManagementPage } from '../UserManagementPage';
 import { User, UserRole, UserStatus } from '@/domain/entities/User';
 
+const mockConfirmDialogConfirm = jest.fn();
+const mockConfirmDialogPrompt = jest.fn();
+const mockToast = jest.fn();
+const mockToastSuccess = jest.fn();
+const mockToastError = jest.fn();
+
 // Mock Firebase config
+jest.mock('../../components/ConfirmDialog', () => ({
+  useConfirmDialog: () => ({
+    confirm: mockConfirmDialogConfirm,
+    prompt: mockConfirmDialogPrompt
+  }),
+  ConfirmDialogProvider: ({ children }: any) => children
+}));
+
 jest.mock('@/config/firebase', () => ({
   db: {}
 }));
@@ -92,6 +106,24 @@ jest.mock('../../components/PermissionGuard', () => ({
   PermissionGuard: ({ children, fallback }: any) => children
 }));
 
+jest.mock('../../hooks/useDebouncedValue', () => ({
+  useDebouncedValue: (value: string) => value
+}));
+
+jest.mock('@modules/shared-kernel/logging/infrastructure/services/LoggingService', () => ({
+  loggingService: {
+    logSecurity: jest.fn().mockResolvedValue(undefined)
+  }
+}));
+
+jest.mock('react-hot-toast', () => ({
+  __esModule: true,
+  default: Object.assign((...args: any[]) => mockToast(...args), {
+    success: (...args: any[]) => mockToastSuccess(...args),
+    error: (...args: any[]) => mockToastError(...args)
+  })
+}));
+
 // Mock CreateUserModal
 jest.mock('../../components/CreateUserModal', () => ({
   CreateUserModal: ({ isOpen, onClose, onCreateUser, loading, availableRoles }: any) => (
@@ -131,6 +163,8 @@ const createTestUser = (overrides: Partial<User> = {}): User => ({
 describe('UserManagementPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockConfirmDialogConfirm.mockResolvedValue(true);
+    mockConfirmDialogPrompt.mockResolvedValue('DELETAR');
 
     // Default current user (admin)
     mockCurrentUser = createTestUser({
@@ -407,8 +441,6 @@ describe('UserManagementPage', () => {
         mockFindAll.mockResolvedValue([]);
         mockCreate.mockResolvedValue(newUser);
 
-        const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
-
         render(<UserManagementPage />);
 
         await waitFor(() => {
@@ -427,17 +459,14 @@ describe('UserManagementPage', () => {
 
         await waitFor(() => {
           expect(mockCreate).toHaveBeenCalled();
-          expect(alertSpy).toHaveBeenCalledWith(expect.stringMatching(/criado.*sucesso/i));
+          expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringMatching(/criado.*sucesso/i));
         });
-
-        alertSpy.mockRestore();
       });
 
       it('should show error alert when creation fails', async () => {
         mockFindAll.mockResolvedValue([]);
         mockCreate.mockRejectedValue(new Error('Creation failed'));
 
-        const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
         render(<UserManagementPage />);
@@ -456,10 +485,9 @@ describe('UserManagementPage', () => {
         fireEvent.click(screen.getByTestId('submit-modal'));
 
         await waitFor(() => {
-          expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Creation failed'));
+          expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Creation failed'));
         });
 
-        alertSpy.mockRestore();
         consoleSpy.mockRestore();
       });
     });
@@ -469,9 +497,6 @@ describe('UserManagementPage', () => {
         const user = createTestUser({ id: 'user-1', role: UserRole.Member });
         mockFindAll.mockResolvedValue([user]);
         mockUpdateRole.mockResolvedValue(undefined);
-
-        const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
-        const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
 
         render(<UserManagementPage />);
 
@@ -499,21 +524,17 @@ describe('UserManagementPage', () => {
           fireEvent.change(roleChangeSelect, { target: { value: 'admin' } });
 
           await waitFor(() => {
-            expect(confirmSpy).toHaveBeenCalled();
+            expect(mockConfirmDialogConfirm).toHaveBeenCalled();
             expect(mockUpdateRole).toHaveBeenCalledWith('user-1', 'admin', 'admin@example.com');
-            expect(alertSpy).toHaveBeenCalledWith(expect.stringMatching(/Fun.*o.*atualizada.*sucesso/i));
+            expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringMatching(/Fun.*o.*atualizada.*sucesso/i));
           });
         }
-
-        confirmSpy.mockRestore();
-        alertSpy.mockRestore();
       });
 
       it('should not update role when confirmation is cancelled', async () => {
         const user = createTestUser({ id: 'user-1', role: UserRole.Member });
         mockFindAll.mockResolvedValue([user]);
-
-        const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(false);
+        mockConfirmDialogConfirm.mockResolvedValueOnce(false);
 
         render(<UserManagementPage />);
 
@@ -534,7 +555,6 @@ describe('UserManagementPage', () => {
 
         expect(mockUpdateRole).not.toHaveBeenCalled();
 
-        confirmSpy.mockRestore();
       });
 
       it('should disable role change for current user', async () => {
@@ -567,9 +587,6 @@ describe('UserManagementPage', () => {
         mockFindAll.mockResolvedValue([user]);
         mockApproveUser.mockResolvedValue(undefined);
 
-        const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
-        const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
-
         render(<UserManagementPage />);
 
         await waitFor(() => {
@@ -581,23 +598,16 @@ describe('UserManagementPage', () => {
         fireEvent.click(activateButton);
 
         await waitFor(() => {
-          expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining('ativar'));
+          expect(mockConfirmDialogConfirm).toHaveBeenCalled();
           expect(mockApproveUser).toHaveBeenCalledWith('user-1', 'admin@example.com');
-          // Source uses template: `Usuário ${action}do` where action='ativar' => "ativardo"
-          expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('ativardo'));
+          expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringContaining('ativardo'));
         });
-
-        confirmSpy.mockRestore();
-        alertSpy.mockRestore();
       });
 
       it('should deactivate active user', async () => {
         const user = createTestUser({ id: 'user-1', status: UserStatus.Approved });
         mockFindAll.mockResolvedValue([user]);
         mockSuspendUser.mockResolvedValue(undefined);
-
-        const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
-        const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
 
         render(<UserManagementPage />);
 
@@ -610,21 +620,17 @@ describe('UserManagementPage', () => {
         fireEvent.click(deactivateButton);
 
         await waitFor(() => {
-          expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining('desativar'));
+          expect(mockConfirmDialogConfirm).toHaveBeenCalled();
           expect(mockSuspendUser).toHaveBeenCalledWith('user-1', 'admin@example.com', expect.any(String));
-          // Source uses template: `Usuário ${action}do` where action='desativar' => "desativardo"
-          expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('desativardo'));
+          expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringContaining('desativardo'));
         });
-
-        confirmSpy.mockRestore();
-        alertSpy.mockRestore();
       });
 
       it('should not toggle status when confirmation is cancelled', async () => {
         const user = createTestUser({ id: 'user-1', status: UserStatus.Approved });
         mockFindAll.mockResolvedValue([user]);
 
-        const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(false);
+        mockConfirmDialogConfirm.mockResolvedValueOnce(false);
 
         render(<UserManagementPage />);
 
@@ -636,7 +642,6 @@ describe('UserManagementPage', () => {
 
         expect(mockSuspendUser).not.toHaveBeenCalled();
 
-        confirmSpy.mockRestore();
       });
     });
 
@@ -646,11 +651,10 @@ describe('UserManagementPage', () => {
         mockFindAll.mockResolvedValue([user]);
         mockDelete.mockResolvedValue(undefined);
 
-        const confirmSpy = jest.spyOn(window, 'confirm')
-          .mockReturnValueOnce(true)  // First confirmation
-          .mockReturnValueOnce(true); // Second confirmation
-        const promptSpy = jest.spyOn(window, 'prompt').mockReturnValue('DELETAR');
-        const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+        mockConfirmDialogConfirm
+          .mockResolvedValueOnce(true)
+          .mockResolvedValueOnce(true);
+        mockConfirmDialogPrompt.mockResolvedValueOnce('DELETAR');
 
         render(<UserManagementPage />);
 
@@ -663,22 +667,18 @@ describe('UserManagementPage', () => {
         fireEvent.click(deleteButton);
 
         await waitFor(() => {
-          expect(confirmSpy).toHaveBeenCalledTimes(2);
-          expect(promptSpy).toHaveBeenCalled();
+          expect(mockConfirmDialogConfirm).toHaveBeenCalledTimes(2);
+          expect(mockConfirmDialogPrompt).toHaveBeenCalled();
           expect(mockDelete).toHaveBeenCalledWith('user-1');
-          expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('deletado permanentemente'));
+          expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringContaining('deletado permanentemente'));
         });
-
-        confirmSpy.mockRestore();
-        promptSpy.mockRestore();
-        alertSpy.mockRestore();
       });
 
       it('should not delete when first confirmation is cancelled', async () => {
         const user = createTestUser({ id: 'user-1' });
         mockFindAll.mockResolvedValue([user]);
 
-        const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(false);
+        mockConfirmDialogConfirm.mockResolvedValueOnce(false);
 
         render(<UserManagementPage />);
 
@@ -690,16 +690,16 @@ describe('UserManagementPage', () => {
 
         expect(mockDelete).not.toHaveBeenCalled();
 
-        confirmSpy.mockRestore();
       });
 
       it('should not delete when typing wrong confirmation text', async () => {
         const user = createTestUser({ id: 'user-1' });
         mockFindAll.mockResolvedValue([user]);
 
-        const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
-        const promptSpy = jest.spyOn(window, 'prompt').mockReturnValue('wrong text');
-        const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+        mockConfirmDialogConfirm
+          .mockResolvedValueOnce(true)
+          .mockResolvedValueOnce(true);
+        mockConfirmDialogPrompt.mockResolvedValueOnce('wrong text');
 
         render(<UserManagementPage />);
 
@@ -711,12 +711,8 @@ describe('UserManagementPage', () => {
 
         await waitFor(() => {
           expect(mockDelete).not.toHaveBeenCalled();
-          expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('incorreto'));
+          expect(mockToast).toHaveBeenCalledWith(expect.stringContaining('incorreto'));
         });
-
-        confirmSpy.mockRestore();
-        promptSpy.mockRestore();
-        alertSpy.mockRestore();
       });
 
       it('should not allow deleting own account', async () => {
@@ -763,8 +759,6 @@ describe('UserManagementPage', () => {
       mockFindAll.mockResolvedValue([user]);
       mockUpdateRole.mockRejectedValue(new Error('Update failed'));
 
-      const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
-      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
       render(<UserManagementPage />);
@@ -792,12 +786,10 @@ describe('UserManagementPage', () => {
         fireEvent.change(roleChangeSelect, { target: { value: 'admin' } });
 
         await waitFor(() => {
-          expect(alertSpy).toHaveBeenCalledWith(expect.stringMatching(/Erro.*atualizar/i));
+          expect(mockToastError).toHaveBeenCalledWith(expect.stringMatching(/Erro.*atualizar/i));
         });
       }
 
-      confirmSpy.mockRestore();
-      alertSpy.mockRestore();
       consoleSpy.mockRestore();
     });
 
@@ -806,8 +798,6 @@ describe('UserManagementPage', () => {
       mockFindAll.mockResolvedValue([user]);
       mockSuspendUser.mockRejectedValue(new Error('Suspend failed'));
 
-      const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
-      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
       render(<UserManagementPage />);
@@ -819,11 +809,9 @@ describe('UserManagementPage', () => {
       fireEvent.click(screen.getByText('Desativar'));
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Erro ao desativar'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Erro ao desativar'));
       });
 
-      confirmSpy.mockRestore();
-      alertSpy.mockRestore();
       consoleSpy.mockRestore();
     });
 
@@ -832,9 +820,10 @@ describe('UserManagementPage', () => {
       mockFindAll.mockResolvedValue([user]);
       mockDelete.mockRejectedValue(new Error('Delete failed'));
 
-      const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
-      const promptSpy = jest.spyOn(window, 'prompt').mockReturnValue('DELETAR');
-      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+      mockConfirmDialogConfirm
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(true);
+      mockConfirmDialogPrompt.mockResolvedValueOnce('DELETAR');
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
       render(<UserManagementPage />);
@@ -846,12 +835,9 @@ describe('UserManagementPage', () => {
       fireEvent.click(screen.getByText(/Deletar/));
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Erro ao deletar'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Erro ao deletar'));
       });
 
-      confirmSpy.mockRestore();
-      promptSpy.mockRestore();
-      alertSpy.mockRestore();
       consoleSpy.mockRestore();
     });
 

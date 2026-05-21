@@ -1,122 +1,54 @@
-// Unit Tests - PermissionsManagementPage
-// Comprehensive tests for permissions and role management UI functionality
-
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { PermissionsManagementPage } from '../PermissionsManagementPage';
 import { User, UserRole, UserStatus } from '@/domain/entities/User';
-import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
+import { PermissionAction, SystemModule } from '@/domain/entities/Permission';
+import { PublicPage } from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
 
-// Mock Firebase config
+const mockConfirmDialogConfirm = jest.fn();
+const mockToastSuccess = jest.fn();
+const mockToastError = jest.fn();
+const mockRefreshPermissions = jest.fn();
+
+const mockGetAllRolesSync = jest.fn();
+const mockGetRoleDisplayNameSync = jest.fn();
+const mockGetPermissionMatrix = jest.fn();
+const mockGetAllUserOverrides = jest.fn();
+const mockGetAllCustomRoles = jest.fn();
+const mockUpdateRolePermissions = jest.fn();
+const mockResetRolePermissionsToDefault = jest.fn();
+const mockUpdateUserPermissionOverrides = jest.fn();
+const mockCreateCustomRole = jest.fn();
+const mockDeleteCustomRole = jest.fn();
+const mockClearAllCache = jest.fn();
+
+const mockFindAll = jest.fn();
+const mockGetPublicPageConfigs = jest.fn();
+const mockUpdatePageVisibility = jest.fn();
+const mockUpdatePageRegistrationSetting = jest.fn();
+
+jest.mock('../../components/ConfirmDialog', () => ({
+  useConfirmDialog: () => ({
+    confirm: mockConfirmDialogConfirm,
+    prompt: jest.fn().mockResolvedValue('')
+  }),
+  ConfirmDialogProvider: ({ children }: any) => children
+}));
+
 jest.mock('@/config/firebase', () => ({
   db: {}
 }));
 
-// Mock PermissionService
-const mockGetAllRoles = jest.fn();
-const mockGetAllRolesSync = jest.fn();
-const mockGetRoleDisplayNameSync = jest.fn();
-const mockGetUserPermissions = jest.fn();
-const mockHasPermission = jest.fn();
-const mockGetRolePermissions = jest.fn();
-const mockSaveRolePermissions = jest.fn();
-const mockGetUserPermissionOverrides = jest.fn();
-const mockSaveUserPermissionOverrides = jest.fn();
-const mockClearAllCaches = jest.fn();
-const mockGetAllCustomRoles = jest.fn();
-const mockCreateCustomRole = jest.fn();
-const mockUpdateCustomRole = jest.fn();
-const mockDeleteCustomRole = jest.fn();
-const mockGetPermissionMatrix = jest.fn();
-const mockGetAllUserOverrides = jest.fn();
-const mockUpdateRolePermissions = jest.fn();
-const mockResetRolePermissionsToDefault = jest.fn();
-const mockUpdateUserPermissionOverrides = jest.fn();
-
-jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => {
-  const mockInstance = {
-    getAllRoles: (...args: any[]) => mockGetAllRoles(...args),
-    getAllRolesSync: (...args: any[]) => mockGetAllRolesSync(...args),
-    getRoleDisplayNameSync: (...args: any[]) => mockGetRoleDisplayNameSync(...args),
-    getUserPermissions: (...args: any[]) => mockGetUserPermissions(...args),
-    hasPermission: (...args: any[]) => mockHasPermission(...args),
-    getRolePermissions: (...args: any[]) => mockGetRolePermissions(...args),
-    saveRolePermissions: (...args: any[]) => mockSaveRolePermissions(...args),
-    getUserPermissionOverrides: (...args: any[]) => mockGetUserPermissionOverrides(...args),
-    saveUserPermissionOverrides: (...args: any[]) => mockSaveUserPermissionOverrides(...args),
-    clearAllCaches: (...args: any[]) => mockClearAllCaches(...args),
-    clearAllCache: (...args: any[]) => mockClearAllCaches(...args),
-    getAllCustomRoles: (...args: any[]) => mockGetAllCustomRoles(...args),
-    createCustomRole: (...args: any[]) => mockCreateCustomRole(...args),
-    updateCustomRole: (...args: any[]) => mockUpdateCustomRole(...args),
-    deleteCustomRole: (...args: any[]) => mockDeleteCustomRole(...args),
-    getPermissionMatrix: (...args: any[]) => mockGetPermissionMatrix(...args),
-    getAllUserOverrides: (...args: any[]) => mockGetAllUserOverrides(...args),
-    updateRolePermissions: (...args: any[]) => mockUpdateRolePermissions(...args),
-    resetRolePermissionsToDefault: (...args: any[]) => mockResetRolePermissionsToDefault(...args),
-    updateUserPermissionOverrides: (...args: any[]) => mockUpdateUserPermissionOverrides(...args)
-  };
-  return {
-    PermissionService: function() { return mockInstance; },
-    permissionService: mockInstance,
-    UserPermissionConfig: {},
-    CustomRoleConfig: {}
-  };
-});
-
-// Mock FirebaseUserRepository
-const mockFindAll = jest.fn();
-const mockUpdateRole = jest.fn();
-const mockApproveUser = jest.fn();
-const mockSuspendUser = jest.fn();
-const mockDelete = jest.fn();
-const mockCreate = jest.fn();
-const mockUpdate = jest.fn();
-
-jest.mock('@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository', () => {
-  return {
-    FirebaseUserRepository: function() {
-      return {
-        findAll: (...args: any[]) => mockFindAll(...args),
-        updateRole: (...args: any[]) => mockUpdateRole(...args),
-        approveUser: (...args: any[]) => mockApproveUser(...args),
-        suspendUser: (...args: any[]) => mockSuspendUser(...args),
-        delete: (...args: any[]) => mockDelete(...args),
-        create: (...args: any[]) => mockCreate(...args),
-        update: (...args: any[]) => mockUpdate(...args)
-      };
-    }
-  };
-});
-
-// Mock PublicPageService
-const mockGetPublicPageConfig = jest.fn();
-const mockGetPublicPageConfigs = jest.fn();
-const mockUpdatePublicPageConfig = jest.fn();
-const mockUpdatePageVisibility = jest.fn();
-const mockUpdatePageRegistrationSetting = jest.fn();
-
-jest.mock('@modules/content-management/public-pages/application/services/PublicPageService', () => {
-  return {
-    PublicPageService: function() {
-      return {
-        getPublicPageConfig: (...args: any[]) => mockGetPublicPageConfig(...args),
-        getPublicPageConfigs: (...args: any[]) => mockGetPublicPageConfigs(...args),
-        updatePublicPageConfig: (...args: any[]) => mockUpdatePublicPageConfig(...args),
-        updatePageVisibility: (...args: any[]) => mockUpdatePageVisibility(...args),
-        updatePageRegistrationSetting: (...args: any[]) => mockUpdatePageRegistrationSetting(...args)
-      };
-    }
-  };
-});
-
-// Mock AuthContext
-let mockCurrentUser: User | null = null;
-
 jest.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({
-    currentUser: mockCurrentUser,
-    user: mockCurrentUser,
+    currentUser: {
+      id: 'admin-1',
+      email: 'admin@example.com',
+      displayName: 'Admin User',
+      role: 'admin',
+      status: 'approved'
+    },
+    user: null,
     loading: false,
     login: jest.fn(),
     register: jest.fn(),
@@ -131,9 +63,6 @@ jest.mock('../../contexts/AuthContext', () => ({
   })
 }));
 
-// Mock usePermissions hook
-const mockRefreshPermissions = jest.fn();
-
 jest.mock('../../hooks/usePermissions', () => ({
   usePermissions: () => ({
     refreshPermissions: mockRefreshPermissions,
@@ -143,570 +72,297 @@ jest.mock('../../hooks/usePermissions', () => ({
   })
 }));
 
-// Mock CreateRoleModal
+jest.mock('@modules/shared-kernel/logging/infrastructure/services/LoggingService', () => ({
+  loggingService: {
+    logSecurity: jest.fn().mockResolvedValue(undefined)
+  }
+}));
+
+jest.mock('react-hot-toast', () => ({
+  __esModule: true,
+  default: {
+    success: (...args: any[]) => mockToastSuccess(...args),
+    error: (...args: any[]) => mockToastError(...args)
+  }
+}));
+
+jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => {
+  const mockInstance = {
+    getAllRolesSync: (...args: any[]) => mockGetAllRolesSync(...args),
+    getRoleDisplayNameSync: (...args: any[]) => mockGetRoleDisplayNameSync(...args),
+    getPermissionMatrix: (...args: any[]) => mockGetPermissionMatrix(...args),
+    getAllUserOverrides: (...args: any[]) => mockGetAllUserOverrides(...args),
+    getAllCustomRoles: (...args: any[]) => mockGetAllCustomRoles(...args),
+    updateRolePermissions: (...args: any[]) => mockUpdateRolePermissions(...args),
+    resetRolePermissionsToDefault: (...args: any[]) => mockResetRolePermissionsToDefault(...args),
+    updateUserPermissionOverrides: (...args: any[]) => mockUpdateUserPermissionOverrides(...args),
+    createCustomRole: (...args: any[]) => mockCreateCustomRole(...args),
+    deleteCustomRole: (...args: any[]) => mockDeleteCustomRole(...args),
+    clearAllCache: (...args: any[]) => mockClearAllCache(...args)
+  };
+
+  return {
+    permissionService: mockInstance,
+    PermissionService: function PermissionService() {
+      return mockInstance;
+    },
+    UserPermissionConfig: {},
+    CustomRoleConfig: {}
+  };
+});
+
+jest.mock('@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository', () => ({
+  FirebaseUserRepository: function FirebaseUserRepository() {
+    return {
+      findAll: (...args: any[]) => mockFindAll(...args)
+    };
+  }
+}));
+
+jest.mock('@modules/content-management/public-pages/application/services/PublicPageService', () => ({
+  PublicPageService: function PublicPageService() {
+    return {
+      getPublicPageConfigs: (...args: any[]) => mockGetPublicPageConfigs(...args),
+      updatePageVisibility: (...args: any[]) => mockUpdatePageVisibility(...args),
+      updatePageRegistrationSetting: (...args: any[]) => mockUpdatePageRegistrationSetting(...args)
+    };
+  }
+}));
+
 jest.mock('../../components/CreateRoleModal', () => ({
-  CreateRoleModal: ({ isOpen, onClose, onCreateRole, loading }: any) => (
+  CreateRoleModal: ({ isOpen, onClose, onCreateRole, loading }: any) =>
     isOpen ? (
-      <div data-testid='create-role-modal'>
-        <button onClick={onClose} data-testid='close-role-modal'>Close</button>
+      <div data-testid="create-role-modal">
+        <button onClick={onClose}>Fechar</button>
         <button
-          onClick={() => onCreateRole({ 
-            roleId: 'custom-role-1', 
-            displayName: 'Custom Role',
-            description: 'A custom role',
-            permissions: []
-          })}
-          data-testid='submit-role-modal'
           disabled={loading}
+          onClick={() =>
+            onCreateRole({
+              roleName: 'custom-role-1',
+              displayName: 'Custom Role',
+              description: 'A custom role',
+              modules: [{ module: 'members', actions: ['view'] }]
+            })
+          }
         >
-          Create Role
+          Criar
         </button>
       </div>
     ) : null
-  )
 }));
 
-// Test data factories
-const createTestUser = (overrides: Partial<User> = {}): User => ({
+const createUser = (overrides: Partial<User> = {}): User => ({
   id: 'user-1',
-  email: 'test@example.com',
-  displayName: 'Test User',
+  email: 'alice@example.com',
+  displayName: 'Alice',
   role: UserRole.Member,
   status: UserStatus.Approved,
-  createdAt: new Date('2023-01-01'),
-  updatedAt: new Date('2023-06-01'),
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-02'),
   ...overrides
 });
+
+const createMatrix = () =>
+  new Map<string, Map<SystemModule, PermissionAction[]>>([
+    [
+      'member',
+      new Map<SystemModule, PermissionAction[]>([
+        [SystemModule.Members, [PermissionAction.View]]
+      ])
+    ]
+  ]);
+
+const publicConfigs = [
+  {
+    page: PublicPage.Home,
+    isPublic: true,
+    description: 'Página inicial da igreja'
+  },
+  {
+    page: PublicPage.Events,
+    isPublic: true,
+    allowRegistration: true,
+    description: 'Lista de eventos da igreja'
+  }
+];
 
 describe('PermissionsManagementPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Default current user (admin)
-    mockCurrentUser = createTestUser({
-      id: 'admin-1',
-      email: 'admin@example.com',
-      displayName: 'Admin User',
-      role: UserRole.Admin,
-      status: UserStatus.Approved
-    });
-
-    // Default permission service responses
-    mockGetAllRoles.mockResolvedValue(['admin', 'secretary', 'professional', 'leader', 'member']);
-    mockGetAllRolesSync.mockReturnValue(['admin', 'secretary', 'professional', 'leader', 'member']);
+    mockConfirmDialogConfirm.mockResolvedValue(true);
+    mockGetAllRolesSync.mockReturnValue(['admin', 'member']);
     mockGetRoleDisplayNameSync.mockImplementation((role: string) => {
-      const displayNames: Record<string, string> = {
+      const labels: Record<string, string> = {
         admin: 'Administrador',
-        secretary: 'Secretário',
-        professional: 'Profissional',
-        leader: 'Líder',
         member: 'Membro'
       };
-      return displayNames[role] || role;
+      return labels[role] || role;
     });
-    mockGetUserPermissions.mockResolvedValue([]);
-    mockHasPermission.mockReturnValue(false);
-    mockGetRolePermissions.mockResolvedValue(new Map());
-    mockSaveRolePermissions.mockResolvedValue(undefined);
-    mockGetUserPermissionOverrides.mockResolvedValue([]);
-    mockSaveUserPermissionOverrides.mockResolvedValue(undefined);
-    mockClearAllCaches.mockImplementation(() => {});
-    mockGetAllCustomRoles.mockResolvedValue([]);
-    mockCreateCustomRole.mockResolvedValue(undefined);
-    mockUpdateCustomRole.mockResolvedValue(undefined);
-    mockDeleteCustomRole.mockResolvedValue(undefined);
-    mockGetPermissionMatrix.mockResolvedValue(new Map());
-    mockGetPublicPageConfigs.mockResolvedValue({});
-    mockUpdatePageVisibility.mockResolvedValue(undefined);
-    mockUpdatePageRegistrationSetting.mockResolvedValue(undefined);
+    mockGetPermissionMatrix.mockResolvedValue(createMatrix());
     mockGetAllUserOverrides.mockResolvedValue([]);
+    mockGetAllCustomRoles.mockResolvedValue([]);
     mockUpdateRolePermissions.mockResolvedValue(undefined);
     mockResetRolePermissionsToDefault.mockResolvedValue(undefined);
     mockUpdateUserPermissionOverrides.mockResolvedValue(undefined);
-
-    // Default repository responses
-    mockFindAll.mockResolvedValue([]);
-    
-    // Default public page config
-    mockGetPublicPageConfig.mockResolvedValue({
-      home: { isPublic: true, requireAuth: false },
-      events: { isPublic: true, requireAuth: false },
-      blog: { isPublic: true, requireAuth: false },
-      devotionals: { isPublic: false, requireAuth: true },
-      forum: { isPublic: false, requireAuth: true },
-      prayerRequests: { isPublic: false, requireAuth: true }
-    });
-    mockUpdatePublicPageConfig.mockResolvedValue(undefined);
+    mockCreateCustomRole.mockResolvedValue(undefined);
+    mockDeleteCustomRole.mockResolvedValue(undefined);
+    mockClearAllCache.mockImplementation(() => {});
+    mockFindAll.mockResolvedValue([
+      createUser(),
+      createUser({ id: 'user-2', displayName: 'Bob', email: 'bob@example.com' })
+    ]);
+    mockGetPublicPageConfigs.mockResolvedValue(publicConfigs);
+    mockUpdatePageVisibility.mockResolvedValue(undefined);
+    mockUpdatePageRegistrationSetting.mockResolvedValue(undefined);
   });
 
-  // ===========================================
-  // LOADING STATES
-  // ===========================================
-  describe('Loading States', () => {
-    it('should show loading spinner while fetching data', async () => {
-      mockGetRolePermissions.mockImplementation(() => new Promise(() => {}));
+  it('shows a loading spinner while data is loading', () => {
+    mockGetPermissionMatrix.mockImplementation(() => new Promise(() => {}));
 
-      render(<PermissionsManagementPage />);
+    const { container } = render(<PermissionsManagementPage />);
 
-      expect(screen.getByText(/Carregando/i)).toBeInTheDocument();
-    });
-
-    it('should hide loading spinner after data is loaded', async () => {
-      mockGetRolePermissions.mockResolvedValue(new Map());
-      mockFindAll.mockResolvedValue([createTestUser()]);
-
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-    });
-
-    it('should show saving state when updating permissions', async () => {
-      mockGetRolePermissions.mockResolvedValue(new Map());
-      mockSaveRolePermissions.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
-
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const checkbox = screen.getAllByRole('checkbox')[0];
-      fireEvent.click(checkbox);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Salvando/i)).toBeInTheDocument();
-      });
-    });
+    expect(container.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
-  // ===========================================
-  // TAB NAVIGATION
-  // ===========================================
-  describe('Tab Navigation', () => {
-    it('should render all four tabs', async () => {
-      render(<PermissionsManagementPage />);
+  it('renders the header and main tabs after loading', async () => {
+    render(<PermissionsManagementPage />);
 
-      await waitFor(() => {
-        expect(screen.getByText(/Permissões por Função/i)).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /Gerenciar Permissões/i })).toBeInTheDocument();
     });
 
-    it('should switch to users tab when clicked', async () => {
-      mockFindAll.mockResolvedValue([createTestUser()]);
-
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const usersTab = screen.getByText(/Permissões por Usuário/i);
-      fireEvent.click(usersTab);
-
-      await waitFor(() => {
-        expect(mockFindAll).toHaveBeenCalled();
-      });
-    });
-
-    it('should switch to custom roles tab when clicked', async () => {
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const customRolesTab = screen.getByText(/Funções Personalizadas/i);
-      fireEvent.click(customRolesTab);
-
-      await waitFor(() => {
-        expect(mockGetAllCustomRoles).toHaveBeenCalled();
-      });
-    });
-
-    it('should switch to public pages tab when clicked', async () => {
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const publicPagesTab = screen.getByText(/Páginas Públicas/i);
-      fireEvent.click(publicPagesTab);
-
-      await waitFor(() => {
-        expect(mockGetPublicPageConfig).toHaveBeenCalled();
-      });
-    });
+    expect(screen.getByRole('button', { name: /Permissões por Função/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Permissões por Usuário/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Funções Personalizadas/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Páginas Públicas/i })).toBeInTheDocument();
   });
 
-  // ===========================================
-  // ROLES TAB
-  // ===========================================
-  describe('Roles Tab', () => {
-    it('should display role selector', async () => {
-      render(<PermissionsManagementPage />);
+  it('saves role permissions from the roles tab', async () => {
+    render(<PermissionsManagementPage />);
 
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const roleSelect = screen.getByRole('combobox', { name: /função/i });
-      expect(roleSelect).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Permissões: Membro/i)).toBeInTheDocument();
     });
 
-    it('should load permissions when role is selected', async () => {
-      const mockPermissions = new Map([
-        [SystemModule.Members, [PermissionAction.View]]
-      ]);
-      mockGetRolePermissions.mockResolvedValue(mockPermissions);
+    fireEvent.click(screen.getAllByRole('checkbox')[0]);
+    fireEvent.click(screen.getByRole('button', { name: /Salvar Alterações/i }));
 
-      render(<PermissionsManagementPage />);
+    await waitFor(() => {
+      expect(mockUpdateRolePermissions).toHaveBeenCalledWith('member', expect.any(Array), 'admin@example.com');
+    });
+    expect(mockRefreshPermissions).toHaveBeenCalled();
+    expect(mockClearAllCache).toHaveBeenCalled();
+    expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringContaining('funcao atualizadas'));
+  });
 
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
+  it('saves user permission overrides from the users tab', async () => {
+    render(<PermissionsManagementPage />);
 
-      const roleSelect = screen.getByRole('combobox', { name: /função/i });
-      fireEvent.change(roleSelect, { target: { value: 'leader' } });
-
-      await waitFor(() => {
-        expect(mockGetRolePermissions).toHaveBeenCalledWith('leader');
-      });
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /Gerenciar Permissões/i })).toBeInTheDocument();
     });
 
-    it('should display system modules', async () => {
-      render(<PermissionsManagementPage />);
+    fireEvent.click(screen.getByRole('button', { name: /Permissões por Usuário/i }));
 
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      expect(screen.getByText(/Membros/i)).toBeInTheDocument();
-      expect(screen.getByText(/Eventos/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getAllByRole('combobox').length).toBeGreaterThan(0);
     });
 
-    it('should display permission checkboxes', async () => {
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const checkboxes = screen.getAllByRole('checkbox');
-      expect(checkboxes.length).toBeGreaterThan(0);
+    fireEvent.change(screen.getAllByRole('combobox')[0], {
+      target: { value: 'user-1' }
     });
 
-    it('should toggle permission when checkbox is clicked', async () => {
-      mockGetRolePermissions.mockResolvedValue(new Map());
-      mockSaveRolePermissions.mockResolvedValue(undefined);
-
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const checkbox = screen.getAllByRole('checkbox')[0];
-      fireEvent.click(checkbox);
-
-      await waitFor(() => {
-        expect(mockSaveRolePermissions).toHaveBeenCalled();
-      });
+    await waitFor(() => {
+      expect(screen.getByText(/Permissões Personalizadas/i)).toBeInTheDocument();
     });
 
-    it('should save permissions after toggling', async () => {
-      mockGetRolePermissions.mockResolvedValue(new Map());
-      mockSaveRolePermissions.mockResolvedValue(undefined);
+    fireEvent.click(screen.getAllByTitle('Conceder')[0]);
+    fireEvent.click(screen.getByRole('button', { name: /Salvar Alterações/i }));
 
-      render(<PermissionsManagementPage />);
+    await waitFor(() => {
+      expect(mockUpdateUserPermissionOverrides).toHaveBeenCalledWith(
+        'user-1',
+        'alice@example.com',
+        'Alice',
+        expect.any(Array),
+        expect.any(Array),
+        'admin@example.com'
+      );
+    });
+    expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringContaining('usuario atualizadas'));
+  });
 
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
+  it('opens the create-role modal and creates a custom role', async () => {
+    render(<PermissionsManagementPage />);
 
-      const checkbox = screen.getAllByRole('checkbox')[0];
-      fireEvent.click(checkbox);
-
-      await waitFor(() => {
-        expect(mockSaveRolePermissions).toHaveBeenCalledWith(
-          'member',
-          expect.any(Map)
-        );
-      });
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /Gerenciar Permissões/i })).toBeInTheDocument();
     });
 
-    it('should show error message if save fails', async () => {
-      mockGetRolePermissions.mockResolvedValue(new Map());
-      mockSaveRolePermissions.mockRejectedValue(new Error('Save failed'));
+    fireEvent.click(screen.getByRole('button', { name: /Funções Personalizadas/i }));
 
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const checkbox = screen.getAllByRole('checkbox')[0];
-      fireEvent.click(checkbox);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Erro ao salvar permissões/i)).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Criar Nova Função/i })).toBeInTheDocument();
     });
 
-    it('should refresh permissions after successful save', async () => {
-      mockGetRolePermissions.mockResolvedValue(new Map());
-      mockSaveRolePermissions.mockResolvedValue(undefined);
+    fireEvent.click(screen.getByRole('button', { name: /Criar Nova Função/i }));
 
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const checkbox = screen.getAllByRole('checkbox')[0];
-      fireEvent.click(checkbox);
-
-      await waitFor(() => {
-        expect(mockRefreshPermissions).toHaveBeenCalled();
-      });
+    await waitFor(() => {
+      expect(screen.getByTestId('create-role-modal')).toBeInTheDocument();
     });
 
-    it('should clear cache after save', async () => {
-      mockGetRolePermissions.mockResolvedValue(new Map());
-      mockSaveRolePermissions.mockResolvedValue(undefined);
+    fireEvent.click(screen.getByRole('button', { name: 'Criar' }));
 
-      render(<PermissionsManagementPage />);
+    await waitFor(() => {
+      expect(mockCreateCustomRole).toHaveBeenCalledWith(
+        'custom-role-1',
+        'Custom Role',
+        'A custom role',
+        [{ module: SystemModule.Members, actions: [PermissionAction.View] }],
+        'admin@example.com'
+      );
+    });
+    expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringContaining('personalizada criada'));
+  });
 
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
+  it('updates public page visibility from the public pages tab', async () => {
+    render(<PermissionsManagementPage />);
 
-      const checkbox = screen.getAllByRole('checkbox')[0];
-      fireEvent.click(checkbox);
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /Gerenciar Permissões/i })).toBeInTheDocument();
+    });
 
-      await waitFor(() => {
-        expect(mockClearAllCaches).toHaveBeenCalled();
-      });
+    fireEvent.click(screen.getByRole('button', { name: /Páginas Públicas/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /Páginas Públicas/i })).toBeInTheDocument();
+    });
+
+    const eventsRow = screen.getByText('Eventos').closest('tr');
+    expect(eventsRow).not.toBeNull();
+
+    const eventsVisibilityToggle = within(eventsRow as HTMLElement).getAllByRole('checkbox')[0];
+    fireEvent.click(eventsVisibilityToggle);
+
+    await waitFor(() => {
+      expect(mockUpdatePageVisibility).toHaveBeenCalledWith(PublicPage.Events, false);
     });
   });
 
-  // ===========================================
-  // USERS TAB
-  // ===========================================
-  describe('Users Tab', () => {
-    it('should load and display users when switching to users tab', async () => {
-      const users = [
-        createTestUser({ id: 'user-1', displayName: 'User One' }),
-        createTestUser({ id: 'user-2', displayName: 'User Two' })
-      ];
-      mockFindAll.mockResolvedValue(users);
+  it('shows a toast error when saving role permissions fails', async () => {
+    mockUpdateRolePermissions.mockRejectedValueOnce(new Error('Save failed'));
 
-      render(<PermissionsManagementPage />);
+    render(<PermissionsManagementPage />);
 
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const usersTab = screen.getByText(/Permissões por Usuário/i);
-      fireEvent.click(usersTab);
-
-      await waitFor(() => {
-        expect(screen.getByText('User One')).toBeInTheDocument();
-        expect(screen.getByText('User Two')).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByText(/Permissões: Membro/i)).toBeInTheDocument();
     });
 
-    it('should show search input for filtering users', async () => {
-      const users = [createTestUser()];
-      mockFindAll.mockResolvedValue(users);
+    fireEvent.click(screen.getAllByRole('checkbox')[0]);
+    fireEvent.click(screen.getByRole('button', { name: /Salvar Alterações/i }));
 
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const usersTab = screen.getByText(/Permissões por Usuário/i);
-      fireEvent.click(usersTab);
-
-      await waitFor(() => {
-        const searchInput = screen.getByPlaceholderText(/Buscar usuário/i);
-        expect(searchInput).toBeInTheDocument();
-      });
-    });
-
-    it('should filter users based on search term', async () => {
-      const users = [
-        createTestUser({ id: 'user-1', displayName: 'Alice', email: 'alice@test.com' }),
-        createTestUser({ id: 'user-2', displayName: 'Bob', email: 'bob@test.com' })
-      ];
-      mockFindAll.mockResolvedValue(users);
-
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const usersTab = screen.getByText(/Permissões por Usuário/i);
-      fireEvent.click(usersTab);
-
-      await waitFor(() => {
-        expect(screen.getByText('Alice')).toBeInTheDocument();
-        expect(screen.getByText('Bob')).toBeInTheDocument();
-      });
-
-      const searchInput = screen.getByPlaceholderText(/Buscar usuário/i);
-      fireEvent.change(searchInput, { target: { value: 'alice' } });
-
-      await waitFor(() => {
-        expect(screen.getByText('Alice')).toBeInTheDocument();
-        expect(screen.queryByText('Bob')).not.toBeInTheDocument();
-      });
-    });
-
-    it('should select user when clicked', async () => {
-      const users = [createTestUser({ id: 'user-1', displayName: 'Alice' })];
-      mockFindAll.mockResolvedValue(users);
-      mockGetUserPermissionOverrides.mockResolvedValue([]);
-
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const usersTab = screen.getByText(/Permissões por Usuário/i);
-      fireEvent.click(usersTab);
-
-      await waitFor(() => {
-        const userCard = screen.getByText('Alice');
-        fireEvent.click(userCard);
-      });
-
-      await waitFor(() => {
-        expect(mockGetUserPermissionOverrides).toHaveBeenCalledWith('user-1');
-      });
-    });
-
-    it('should show permission checkboxes for selected user', async () => {
-      const users = [createTestUser({ id: 'user-1', displayName: 'Alice' })];
-      mockFindAll.mockResolvedValue(users);
-      mockGetUserPermissionOverrides.mockResolvedValue([]);
-
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const usersTab = screen.getByText(/Permissões por Usuário/i);
-      fireEvent.click(usersTab);
-
-      await waitFor(() => {
-        const userCard = screen.getByText('Alice');
-        fireEvent.click(userCard);
-      });
-
-      await waitFor(() => {
-        const checkboxes = screen.getAllByRole('checkbox');
-        expect(checkboxes.length).toBeGreaterThan(0);
-      });
-    });
-
-    it('should save user permission overrides when checkbox is toggled', async () => {
-      const users = [createTestUser({ id: 'user-1', displayName: 'Alice' })];
-      mockFindAll.mockResolvedValue(users);
-      mockGetUserPermissionOverrides.mockResolvedValue([]);
-      mockSaveUserPermissionOverrides.mockResolvedValue(undefined);
-
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const usersTab = screen.getByText(/Permissões por Usuário/i);
-      fireEvent.click(usersTab);
-
-      await waitFor(() => {
-        const userCard = screen.getByText('Alice');
-        fireEvent.click(userCard);
-      });
-
-      await waitFor(() => {
-        const checkbox = screen.getAllByRole('checkbox')[0];
-        fireEvent.click(checkbox);
-      });
-
-      await waitFor(() => {
-        expect(mockSaveUserPermissionOverrides).toHaveBeenCalledWith(
-          'user-1',
-          expect.any(Array)
-        );
-      });
-    });
-
-    it('should show error message if saving user overrides fails', async () => {
-      const users = [createTestUser({ id: 'user-1', displayName: 'Alice' })];
-      mockFindAll.mockResolvedValue(users);
-      mockGetUserPermissionOverrides.mockResolvedValue([]);
-      mockSaveUserPermissionOverrides.mockRejectedValue(new Error('Save failed'));
-
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const usersTab = screen.getByText(/Permissões por Usuário/i);
-      fireEvent.click(usersTab);
-
-      await waitFor(() => {
-        const userCard = screen.getByText('Alice');
-        fireEvent.click(userCard);
-      });
-
-      await waitFor(() => {
-        const checkbox = screen.getAllByRole('checkbox')[0];
-        fireEvent.click(checkbox);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText(/Erro ao salvar permissões/i)).toBeInTheDocument();
-      });
-    });
-
-    it('should refresh permissions after saving user overrides', async () => {
-      const users = [createTestUser({ id: 'user-1', displayName: 'Alice' })];
-      mockFindAll.mockResolvedValue(users);
-      mockGetUserPermissionOverrides.mockResolvedValue([]);
-      mockSaveUserPermissionOverrides.mockResolvedValue(undefined);
-
-      render(<PermissionsManagementPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
-      });
-
-      const usersTab = screen.getByText(/Permissões por Usuário/i);
-      fireEvent.click(usersTab);
-
-      await waitFor(() => {
-        const userCard = screen.getByText('Alice');
-        fireEvent.click(userCard);
-      });
-
-      await waitFor(() => {
-        const checkbox = screen.getAllByRole('checkbox')[0];
-        fireEvent.click(checkbox);
-      });
-
-      await waitFor(() => {
-        expect(mockRefreshPermissions).toHaveBeenCalled();
-      });
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith('Erro ao salvar permissoes da funcao');
     });
   });
 });

@@ -12,3 +12,10 @@ global.confirm = jest.fn(() => true);
 
 // Mock window.prompt if needed
 global.prompt = jest.fn();
+
+// grpc-js expects setImmediate in some async teardown paths.
+if (typeof global.setImmediate === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (global as any).setImmediate = (callback: (...args: any[]) => void, ...args: any[]) =>
+    setTimeout(callback, 0, ...args);
+}

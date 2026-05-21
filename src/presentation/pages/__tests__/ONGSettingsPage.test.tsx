@@ -6,6 +6,9 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ONGSettingsPage from '../ONGSettingsPage';
 import { ONGInfo } from '@modules/ong-management/settings/domain/entities/ONG';
 
+const mockToastSuccess = jest.fn();
+const mockToastError = jest.fn();
+
 // Mock Firebase config
 jest.mock('@/config/firebase', () => ({
   db: {},
@@ -65,12 +68,28 @@ jest.mock('@modules/ong-management/settings/infrastructure/repositories/Firebase
   };
 });
 
-// Mock window.alert and window.history
-const mockAlert = jest.fn();
+jest.mock('@modules/shared-kernel/logging/infrastructure/services/LoggingService', () => ({
+  loggingService: {
+    logApi: jest.fn(),
+    logUserAction: jest.fn(),
+    logSystem: jest.fn(),
+    logSecurity: jest.fn(),
+    logError: jest.fn()
+  }
+}));
+
+jest.mock('react-hot-toast', () => ({
+  __esModule: true,
+  default: {
+    success: (...args: any[]) => mockToastSuccess(...args),
+    error: (...args: any[]) => mockToastError(...args)
+  }
+}));
+
+// Mock window.history
 const mockHistoryBack = jest.fn();
 
 beforeAll(() => {
-  window.alert = mockAlert;
   Object.defineProperty(window, 'history', {
     value: { back: mockHistoryBack },
     writable: true
@@ -334,8 +353,7 @@ describe('ONGSettingsPage', () => {
       fireEvent.change(fileInput!, { target: { files: [largeFile] } });
 
       await waitFor(() => {
-        // Source alerts: "❌ A imagem deve ter no máximo 5MB"
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('5MB'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('5MB'));
       });
     });
   });
@@ -584,7 +602,7 @@ describe('ONGSettingsPage', () => {
       });
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Nome da ONG'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Nome da ONG'));
       });
     });
 
@@ -601,7 +619,7 @@ describe('ONGSettingsPage', () => {
       });
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Email'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Email'));
       });
     });
 
@@ -618,7 +636,7 @@ describe('ONGSettingsPage', () => {
       });
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Telefone'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Telefone'));
       });
     });
 
@@ -636,7 +654,7 @@ describe('ONGSettingsPage', () => {
       });
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('CNPJ'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('CNPJ'));
       });
     });
   });
@@ -670,7 +688,7 @@ describe('ONGSettingsPage', () => {
 
       await waitFor(() => {
         expect(mockUpdateONGInfo).toHaveBeenCalled();
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('atualizadas com sucesso'));
+        expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringContaining('atualizadas com sucesso'));
       });
     });
 
@@ -713,8 +731,7 @@ describe('ONGSettingsPage', () => {
       render(<ONGSettingsPage />);
 
       await waitFor(() => {
-        // Source alerts: `❌ ${error.message}` => "❌ Network error"
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Network error'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Network error'));
       });
 
       consoleSpy.mockRestore();
@@ -734,8 +751,7 @@ describe('ONGSettingsPage', () => {
       fireEvent.click(screen.getByText(/Salvar Altera/));
 
       await waitFor(() => {
-        // Source alerts: `❌ ${error.message}` => "❌ Save failed"
-        expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Save failed'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Save failed'));
       });
 
       consoleSpy.mockRestore();

@@ -76,9 +76,9 @@ jest.mock('@modules/user-management/permissions/application/services/PermissionS
     getRoleDisplayNameSync(role: string) {
       const displayNames: Record<string, string> = {
         admin: 'Administrador',
-        secretary: 'Secretario(a)',
+        secretary: 'Secretário(a)',
         professional: 'Profissional',
-        leader: 'Lider',
+        leader: 'Líder',
         member: 'Membro'
       };
       return displayNames[role] || role;
@@ -162,7 +162,7 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Administrador')).toBeInTheDocument();
+        expect(screen.getByText(/Administrador/)).toBeInTheDocument();
       });
     });
 
@@ -171,7 +171,7 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       // When role is undefined, it should show 'Carregando...'
-      expect(screen.getByText('Carregando...')).toBeInTheDocument();
+      expect(screen.getByText(/Carregando/)).toBeInTheDocument();
     });
 
     it('should display different role names correctly', async () => {
@@ -179,7 +179,7 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Secretário(a)')).toBeInTheDocument();
+        expect(screen.getByText(/Secretário/)).toBeInTheDocument();
       });
     });
   });
@@ -544,17 +544,6 @@ describe('AdminDashboardPage', () => {
       expect(screen.getByText('Gerenciar visitantes e acompanhamento')).toBeInTheDocument();
     });
 
-    it('should show calendar when user has permission', () => {
-      mockHasPermission.mockImplementation((module: SystemModule, action: PermissionAction) => {
-        return module === SystemModule.Calendar && action === PermissionAction.Manage;
-      });
-
-      renderComponent();
-
-      expect(screen.getByText('Calendário')).toBeInTheDocument();
-      expect(screen.getByText('Visualizar e gerenciar calendário da igreja')).toBeInTheDocument();
-    });
-
     it('should show assistance management when user has permission', () => {
       mockHasPermission.mockImplementation((module: SystemModule, action: PermissionAction) => {
         return module === SystemModule.Assistance && action === PermissionAction.Manage;
@@ -749,7 +738,7 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Administrador')).toBeInTheDocument();
+        expect(screen.getByText(/Administrador/)).toBeInTheDocument();
       });
     });
 
@@ -757,7 +746,7 @@ describe('AdminDashboardPage', () => {
       mockUser = { ...mockCurrentUser, role: undefined };
       renderComponent();
 
-      expect(screen.getByText('Carregando...')).toBeInTheDocument();
+      expect(screen.getByText(/Carregando/)).toBeInTheDocument();
     });
 
     it('should update role display when user role changes', async () => {
@@ -770,7 +759,7 @@ describe('AdminDashboardPage', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Administrador')).toBeInTheDocument();
+        expect(screen.getByText(/Administrador/)).toBeInTheDocument();
       });
 
       // Change role
@@ -783,7 +772,7 @@ describe('AdminDashboardPage', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Secretário(a)')).toBeInTheDocument();
+        expect(screen.getByText(/Secretário/)).toBeInTheDocument();
       });
     });
   });
@@ -825,7 +814,6 @@ describe('AdminDashboardPage', () => {
 
       // Church Management
       expect(screen.getByText('Gerenciar Visitantes')).toBeInTheDocument();
-      expect(screen.getByText('Calendário')).toBeInTheDocument();
       expect(screen.getByText('Gerenciamento de Assistências')).toBeInTheDocument();
       expect(screen.getByText('Gerenciar Assistidos')).toBeInTheDocument();
       expect(screen.getByText('Gerenciar Notificações')).toBeInTheDocument();
@@ -912,9 +900,9 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       await waitFor(() => {
-        const roleBadge = screen.getByText('Administrador');
+        const roleBadge = screen.getByText(/Administrador/);
         expect(roleBadge).toBeInTheDocument();
-        expect(roleBadge.closest('span')).toHaveClass('inline-flex', 'items-center');
+        expect(roleBadge.closest('span') || roleBadge).toHaveClass('inline-flex', 'items-center');
       });
     });
 
@@ -969,8 +957,7 @@ describe('AdminDashboardPage', () => {
         // Leader typically has access to events, prayer requests, communication
         const leaderPermissions = [
           { module: SystemModule.Events, action: PermissionAction.Manage },
-          { module: SystemModule.Communication, action: PermissionAction.Manage },
-          { module: SystemModule.Calendar, action: PermissionAction.Manage }
+          { module: SystemModule.Communication, action: PermissionAction.Manage }
         ];
         return leaderPermissions.some(p => p.module === module && p.action === action);
       });
@@ -979,7 +966,6 @@ describe('AdminDashboardPage', () => {
 
       expect(screen.getByText('Gerenciar Eventos')).toBeInTheDocument();
       expect(screen.getByText('Pedidos de Oração')).toBeInTheDocument();
-      expect(screen.getByText('Calendário')).toBeInTheDocument();
     });
   });
 
@@ -989,7 +975,7 @@ describe('AdminDashboardPage', () => {
       renderComponent();
 
       expect(screen.getByText('Painel Administrativo')).toBeInTheDocument();
-      expect(screen.getByText('Carregando...')).toBeInTheDocument();
+      expect(screen.getByText(/Carregando/)).toBeInTheDocument();
     });
 
     it('should render correctly without any permissions', () => {

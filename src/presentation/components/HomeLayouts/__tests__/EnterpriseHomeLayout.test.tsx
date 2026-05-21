@@ -120,8 +120,8 @@ describe('EnterpriseHomeLayout Component', () => {
     it('should render hero section when enabled', () => {
       renderComponent();
 
-      expect(screen.getByText('SEJA BEM-VINDO')).toBeInTheDocument();
-      expect(screen.getByText('Test Church')).toBeInTheDocument();
+      expect(screen.getByText(/SEJA BEM-VINDO/)).toBeInTheDocument();
+      expect(screen.getByText(/Test Church/i)).toBeInTheDocument();
     });
 
     it('should display formatted date', () => {
@@ -141,7 +141,7 @@ describe('EnterpriseHomeLayout Component', () => {
 
       renderComponent();
 
-      expect(screen.getByText('NOSSA IGREJA')).toBeInTheDocument();
+      expect(screen.getByText(/NOSSA IGREJA/)).toBeInTheDocument();
     });
 
     it('should not render hero section when disabled', () => {
@@ -149,7 +149,7 @@ describe('EnterpriseHomeLayout Component', () => {
         sections: { ...defaultSections, hero: false }
       });
 
-      expect(screen.queryByText('SEJA BEM-VINDO')).not.toBeInTheDocument();
+      expect(screen.queryByText(/SEJA BEM-VINDO/)).not.toBeInTheDocument();
     });
 
     it('should navigate to events on button click', () => {
@@ -537,7 +537,7 @@ describe('EnterpriseHomeLayout Component', () => {
 
       renderComponent();
 
-      expect(screen.getByText('Custom Church Name')).toBeInTheDocument();
+      expect(screen.getByText(/Custom Church Name/)).toBeInTheDocument();
     });
 
     it('should handle undefined settings gracefully', () => {
@@ -549,7 +549,7 @@ describe('EnterpriseHomeLayout Component', () => {
       renderComponent();
 
       // Should render with fallback values
-      expect(screen.getByText('NOSSA IGREJA')).toBeInTheDocument();
+      expect(screen.getByText(/NOSSA IGREJA/)).toBeInTheDocument();
     });
   });
 

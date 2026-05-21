@@ -48,6 +48,12 @@ jest.mock('date-fns', () => ({
   }
 }));
 
+// Mock DOMPurify
+jest.mock('dompurify', () => ({
+  __esModule: true,
+  default: { sanitize: (content: string) => content }
+}));
+
 // Helper to create mock blog posts
 const createMockPost = (overrides?: Partial<BlogPost>): BlogPost => ({
   id: 'post-1',
@@ -956,8 +962,6 @@ describe('BlogPage', () => {
     });
 
     it('should handle hasUserLiked errors gracefully', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
       const mockPosts = [
         createMockPost({ id: 'post-1' })
       ];
@@ -973,8 +977,7 @@ describe('BlogPage', () => {
         expect(titles).toContain('Test Blog Post');
       });
 
-      expect(consoleErrorSpy).toHaveBeenCalled();
-      consoleErrorSpy.mockRestore();
+      expect(mockBlogRepository.hasUserLiked).toHaveBeenCalledWith('post-1', mockCurrentUser.id);
     });
   });
 

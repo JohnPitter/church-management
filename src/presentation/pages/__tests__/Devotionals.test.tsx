@@ -224,6 +224,17 @@ jest.mock('date-fns/locale', () => ({
   ptBR: {}
 }));
 
+// Mock react-hot-toast
+const mockToastError = jest.fn();
+const mockToastSuccess = jest.fn();
+jest.mock('react-hot-toast', () => ({
+  __esModule: true,
+  default: Object.assign(jest.fn(), {
+    error: (...args: any[]) => mockToastError(...args),
+    success: (...args: any[]) => mockToastSuccess(...args)
+  })
+}));
+
 // Mock window methods
 const mockAlert = jest.fn();
 window.alert = mockAlert;
@@ -679,7 +690,7 @@ describe('Devotionals Page', () => {
         fireEvent.click(likeButton);
 
         await waitFor(() => {
-          expect(mockAlert).toHaveBeenCalledWith('Você precisa estar logado para curtir');
+          expect(mockToastError).toHaveBeenCalledWith('Você precisa estar logado para curtir');
         });
         expect(mockToggleLike).not.toHaveBeenCalled();
       }
@@ -758,7 +769,7 @@ describe('Devotionals Page', () => {
       fireEvent.click(bookmarkButtons[0]);
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith('Você precisa estar logado para favoritar');
+        expect(mockToastError).toHaveBeenCalledWith('Você precisa estar logado para favoritar');
       });
       expect(mockToggleBookmark).not.toHaveBeenCalled();
     });
@@ -995,7 +1006,7 @@ describe('Devotionals Page', () => {
       fireEvent.click(screen.getByRole('button', { name: /Marcar como Lido/i }));
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith('Devocional marcado como lido!');
+        expect(mockToastSuccess).toHaveBeenCalledWith('Devocional marcado como lido!');
       });
     });
 
@@ -1039,7 +1050,7 @@ describe('Devotionals Page', () => {
       fireEvent.click(screen.getByRole('button', { name: /Marcar como Lido/i }));
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith('Erro ao marcar como lido. Tente novamente.');
+        expect(mockToastError).toHaveBeenCalledWith('Erro ao marcar como lido. Tente novamente.');
       });
     });
   });

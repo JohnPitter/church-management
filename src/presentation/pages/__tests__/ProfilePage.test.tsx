@@ -68,8 +68,21 @@ jest.mock('firebase/firestore', () => ({
 // Mock logging service
 jest.mock('@modules/shared-kernel/logging/infrastructure/services/LoggingService', () => ({
   loggingService: {
-    logSystem: jest.fn().mockResolvedValue(undefined)
+    logSystem: jest.fn().mockResolvedValue(undefined),
+    logUserAction: jest.fn().mockResolvedValue(undefined),
+    logSecurity: jest.fn().mockResolvedValue(undefined)
   }
+}));
+
+// Mock react-hot-toast
+const mockToastError = jest.fn();
+const mockToastSuccess = jest.fn();
+jest.mock('react-hot-toast', () => ({
+  __esModule: true,
+  default: Object.assign(jest.fn(), {
+    error: (...args: any[]) => mockToastError(...args),
+    success: (...args: any[]) => mockToastSuccess(...args)
+  })
 }));
 
 // Mock date-fns format
@@ -100,15 +113,10 @@ jest.mock('@modules/user-management/users/infrastructure/repositories/FirebaseUs
 // Mock PermissionService
 const mockGetRoleDisplayNameSync = jest.fn();
 
-jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => {
-  const mockInstance = {
-    getRoleDisplayNameSync: mockGetRoleDisplayNameSync
-  };
-  return {
-    PermissionService: function() { return mockInstance; },
-    permissionService: mockInstance
-  };
-});
+jest.mock('@modules/user-management/permissions/application/services/PermissionService', () => ({
+  PermissionService: function() { return { getRoleDisplayNameSync: (...args: any[]) => mockGetRoleDisplayNameSync(...args) }; },
+  permissionService: { getRoleDisplayNameSync: (...args: any[]) => mockGetRoleDisplayNameSync(...args) }
+}));
 
 // Mock AuthContext
 const mockCurrentUser = {
@@ -479,7 +487,7 @@ describe('ProfilePage', () => {
       const file = new File(['photo content'], 'photo.jpg', { type: 'image/jpeg' });
       fireEvent.change(fileInput, { target: { files: [file] } });
       await waitFor(() => {
-        expect(window.alert).toHaveBeenCalledWith('Foto atualizada com sucesso!');
+        expect(mockToastSuccess).toHaveBeenCalledWith('Foto atualizada com sucesso!');
       });
     });
 
@@ -494,7 +502,7 @@ describe('ProfilePage', () => {
         fireEvent.change(fileInput, { target: { files: [file] } });
       });
       await waitFor(() => {
-        expect(window.alert).toHaveBeenCalledWith('Por favor, selecione apenas arquivos de imagem.');
+        expect(mockToastError).toHaveBeenCalledWith('Por favor, selecione apenas arquivos de imagem.');
       });
       expect(mockUploadBytesResumable).not.toHaveBeenCalled();
     });
@@ -511,7 +519,7 @@ describe('ProfilePage', () => {
         fireEvent.change(fileInput, { target: { files: [largeFile] } });
       });
       await waitFor(() => {
-        expect(window.alert).toHaveBeenCalledWith('A imagem deve ter no máximo 5MB.');
+        expect(mockToastError).toHaveBeenCalledWith('A imagem deve ter no máximo 5MB.');
       });
       expect(mockUploadBytesResumable).not.toHaveBeenCalled();
     });
@@ -564,7 +572,7 @@ describe('ProfilePage', () => {
       const file = new File(['photo content'], 'photo.jpg', { type: 'image/jpeg' });
       fireEvent.change(fileInput, { target: { files: [file] } });
       await waitFor(() => {
-        expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('não tem permissão'));
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('não tem permissão'));
       });
     });
 
@@ -628,7 +636,7 @@ describe('ProfilePage', () => {
         fireEvent.click(removeBtn);
       });
       await waitFor(() => {
-        expect(window.alert).toHaveBeenCalledWith('Foto removida com sucesso!');
+        expect(mockToastSuccess).toHaveBeenCalledWith('Foto removida com sucesso!');
       });
     });
 
@@ -643,7 +651,7 @@ describe('ProfilePage', () => {
         fireEvent.click(removeBtn);
       });
       await waitFor(() => {
-        expect(window.alert).toHaveBeenCalledWith('Erro ao remover foto.');
+        expect(mockToastError).toHaveBeenCalledWith('Erro ao remover foto.');
       });
     });
   });
@@ -790,7 +798,7 @@ describe('ProfilePage', () => {
         fireEvent.click(saveBtn);
       });
       await waitFor(() => {
-        expect(window.alert).toHaveBeenCalledWith('Perfil atualizado com sucesso!');
+        expect(mockToastSuccess).toHaveBeenCalledWith('Perfil atualizado com sucesso!');
       });
     });
 
@@ -858,7 +866,7 @@ describe('ProfilePage', () => {
         fireEvent.click(saveBtn);
       });
       await waitFor(() => {
-        expect(window.alert).toHaveBeenCalledWith('Erro ao atualizar perfil.');
+        expect(mockToastError).toHaveBeenCalledWith('Erro ao atualizar perfil.');
       });
     });
   });

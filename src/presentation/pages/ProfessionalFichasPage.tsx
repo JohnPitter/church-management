@@ -2763,14 +2763,12 @@ const ProfessionalFichasPage: React.FC = () => {
 
   const loadData = async () => {
     if (!currentUser?.email) return;
-    
+
     try {
       setLoading(true);
-      // Find the professional by email directly
       const profissional = await profissionalService.getProfissionalByEmail(currentUser.email);
-      
+
       if (profissional) {
-        // Get patient records for this specific professional
         const fichasProfissional = await fichaRepository.getFichasByProfissional(profissional.id);
         setFichas(fichasProfissional);
       } else {
