@@ -7,6 +7,8 @@ import {
 } from '../AssistenciaService';
 import { FirebaseProfissionalAssistenciaRepository } from '@modules/assistance/professional/infrastructure/repositories/FirebaseProfissionalAssistenciaRepository';
 import { FirebaseAgendamentoAssistenciaRepository } from '@modules/assistance/agendamento/infrastructure/repositories/FirebaseAgendamentoAssistenciaRepository';
+import { FichaAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
+import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 import {
@@ -998,6 +1000,42 @@ describe('AgendamentoAssistenciaService', () => {
       await service.confirmarAgendamento('agend-1', 'admin');
 
       expect(mockAgendamentoRepository.confirmarAgendamento).toHaveBeenCalledWith('agend-1', 'admin');
+    });
+  });
+
+  describe('syncFichasForProfissionalAgenda', () => {
+    it('should create missing ficha for due appointment using appointment date as start date', async () => {
+      const appointmentDate = new Date('2024-01-15T10:00:00');
+      const agendamento = createTestAgendamento({
+        id: 'agend-due',
+        dataHoraAgendamento: appointmentDate,
+        status: StatusAgendamento.Agendado
+      });
+      const createFichaSpy = jest
+        .spyOn(FirebaseFichaAcompanhamentoRepository.prototype, 'createFicha')
+        .mockImplementation(async ficha => ({ ...ficha, id: 'ficha-created' } as FichaAcompanhamento));
+
+      jest
+        .spyOn(FirebaseFichaAcompanhamentoRepository.prototype, 'getFichasByPaciente')
+        .mockResolvedValue([]);
+      mockAgendamentoRepository.findByProfissional.mockResolvedValue([agendamento]);
+      mockAgendamentoRepository.findById.mockResolvedValue(agendamento);
+      mockProfissionalRepository.findById.mockResolvedValue({ id: 'prof-1', nome: 'Dr. João' } as ProfissionalAssistencia);
+
+      const createdCount = await service.syncFichasForProfissionalAgenda(
+        'prof-1',
+        'pro@example.com',
+        new Date('2024-01-15T12:00:00')
+      );
+
+      expect(createdCount).toBe(1);
+      expect(createFichaSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pacienteId: 'pac-1',
+          profissionalId: 'prof-1',
+          dataInicio: appointmentDate
+        })
+      );
     });
   });
 

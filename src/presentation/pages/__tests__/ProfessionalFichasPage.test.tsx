@@ -1,12 +1,13 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ProfessionalFichasPage from '../ProfessionalFichasPage';
-import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
+import { AgendamentoAssistenciaService, ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 
 const mockConfirm = jest.fn();
 const mockGetProfissionalByEmail = jest.fn();
 const mockGetFichasByProfissional = jest.fn();
+const mockSyncFichasForProfissionalAgenda = jest.fn();
 const mockUpdateFicha = jest.fn();
 const authValue = { currentUser: { id: 'user-1', email: 'pro@example.com' } };
 
@@ -69,10 +70,14 @@ describe('ProfessionalFichasPage', () => {
     jest.spyOn(FirebaseFichaAcompanhamentoRepository.prototype, 'getFichasByProfissional').mockImplementation((...args: any[]) =>
       mockGetFichasByProfissional(...args)
     );
+    jest.spyOn(AgendamentoAssistenciaService.prototype, 'syncFichasForProfissionalAgenda').mockImplementation((...args: any[]) =>
+      mockSyncFichasForProfissionalAgenda(...args)
+    );
     jest.spyOn(FirebaseFichaAcompanhamentoRepository.prototype, 'updateFicha').mockImplementation((...args: any[]) =>
       mockUpdateFicha(...args)
     );
     mockGetProfissionalByEmail.mockResolvedValue({ id: 'prof-1' });
+    mockSyncFichasForProfissionalAgenda.mockResolvedValue(0);
     mockGetFichasByProfissional.mockResolvedValue([
       createFicha(),
       createFicha({
@@ -93,6 +98,7 @@ describe('ProfessionalFichasPage', () => {
     render(<ProfessionalFichasPage />);
 
     await waitFor(() => {
+      expect(mockSyncFichasForProfissionalAgenda).toHaveBeenCalledWith('prof-1', 'pro@example.com');
       expect(screen.getByText('Maria da Silva')).toBeInTheDocument();
       expect(screen.getByText('Carlos Souza')).toBeInTheDocument();
     });

@@ -7,6 +7,8 @@ import {
 } from '@modules/assistance/assistencia/domain/services/IAssistenciaService';
 import { FirebaseProfissionalAssistenciaRepository } from '@modules/assistance/professional/infrastructure/repositories/FirebaseProfissionalAssistenciaRepository';
 import { FirebaseAgendamentoAssistenciaRepository } from '@modules/assistance/agendamento/infrastructure/repositories/FirebaseAgendamentoAssistenciaRepository';
+import { FichaAcompanhamentoEntity } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
+import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
 import { httpsCallable } from 'firebase/functions';
@@ -25,6 +27,15 @@ import {
   ProfissionalFilters,
   AgendamentoFilters
 } from '@modules/assistance/assistencia/domain/repositories/IAssistenciaRepository';
+
+const ACTIVE_FICHA_STATUSES = new Set(['em_tratamento', 'ativo', 'pausado']);
+const SYNCABLE_FICHA_AGENDAMENTO_STATUSES = new Set<StatusAgendamento>([
+  StatusAgendamento.Agendado,
+  StatusAgendamento.Confirmado,
+  StatusAgendamento.EmAndamento,
+  StatusAgendamento.Remarcado
+]);
+const AUTO_FICHA_OBJECTIVE_PREFIX = 'Acompanhamento iniciado automaticamente a partir do agendamento de';
 
 export class ProfissionalAssistenciaService implements IProfissionalAssistenciaService {
   private profissionalRepository = new FirebaseProfissionalAssistenciaRepository();
@@ -859,45 +870,69 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
       await this.agendamentoRepository.confirmarAgendamento(id, responsavel);
       
       // Then create a patient record automatically
-      await this.createFichaFromAgendamento(id, responsavel);
+      await this.ensureFichaFromAgendamento(id, responsavel);
     } catch (error) {
       console.error('Error confirming agendamento:', error);
       throw error;
     }
   }
 
-  private async createFichaFromAgendamento(agendamentoId: string, responsavel: string): Promise<void> {
+  async syncFichasForProfissionalAgenda(profissionalId: string, responsavel: string, referenceDate: Date = new Date()): Promise<number> {
+    try {
+      const agendamentos = await this.agendamentoRepository.findByProfissional(profissionalId);
+      const endOfReferenceDay = new Date(
+        referenceDate.getFullYear(),
+        referenceDate.getMonth(),
+        referenceDate.getDate() + 1
+      );
+      let createdCount = 0;
+
+      for (const agendamento of agendamentos) {
+        const dataAgendamento = new Date(agendamento.dataHoraAgendamento);
+        const shouldSync =
+          dataAgendamento < endOfReferenceDay &&
+          SYNCABLE_FICHA_AGENDAMENTO_STATUSES.has(agendamento.status);
+
+        if (shouldSync && await this.ensureFichaFromAgendamento(agendamento.id, responsavel)) {
+          createdCount += 1;
+        }
+      }
+
+      return createdCount;
+    } catch (error) {
+      console.error('Error syncing fichas for professional agenda:', error);
+      return 0;
+    }
+  }
+
+  async ensureFichaFromAgendamento(agendamentoId: string, responsavel: string): Promise<boolean> {
     try {
       // Get the appointment details
       const agendamento = await this.agendamentoRepository.findById(agendamentoId);
       if (!agendamento) {
         console.warn('Appointment not found, cannot create ficha:', agendamentoId);
-        return;
+        return false;
       }
 
-      // Import the ficha repository and entity
-      const { FirebaseFichaAcompanhamentoRepository } = await import('@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository');
-      const { FichaAcompanhamentoEntity } = await import('@modules/assistance/fichas/domain/entities/FichaAcompanhamento');
-      
       const fichaRepository = new FirebaseFichaAcompanhamentoRepository();
 
       // Check if a ficha already exists for this patient and professional
       const fichasExistentes = await fichaRepository.getFichasByPaciente(agendamento.pacienteId);
       const fichaExistente = fichasExistentes.find(f => 
         f.profissionalId === agendamento.profissionalId && 
-        ['ativo', 'pausado'].includes(f.status)
+        ACTIVE_FICHA_STATUSES.has(f.status)
       );
 
       if (fichaExistente) {
         console.log('Patient already has an active record with this professional, skipping creation');
-        return;
+        return false;
       }
 
       // Get professional details
       const profissional = await this.profissionalRepository.findById(agendamento.profissionalId);
       if (!profissional) {
         console.warn('Professional not found, cannot create ficha:', agendamento.profissionalId);
-        return;
+        return false;
       }
 
       // Prepare specialized data from agendamento if available
@@ -1135,9 +1170,9 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
         profissionalId: agendamento.profissionalId,
         profissionalNome: agendamento.profissionalNome,
         tipoAssistencia: agendamento.tipoAssistencia,
-        dataInicio: new Date(),
+        dataInicio: new Date(agendamento.dataHoraAgendamento),
         status: 'em_tratamento',
-        objetivo: `Acompanhamento iniciado automaticamente a partir do agendamento confirmado em ${new Date(agendamento.dataHoraAgendamento).toLocaleDateString('pt-BR')}`,
+        objetivo: `${AUTO_FICHA_OBJECTIVE_PREFIX} ${new Date(agendamento.dataHoraAgendamento).toLocaleDateString('pt-BR')}`,
         diagnosticoInicial: agendamento.motivo || 'Não informado',
         observacoes: agendamento.observacoesPaciente || '',
         dadosEspecializados: Object.keys(dadosEspecializados).length > 0 ? dadosEspecializados : undefined,
@@ -1149,10 +1184,12 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
 
       await fichaRepository.createFicha(novaFicha);
       console.log(`✅ Ficha de acompanhamento criada automaticamente para ${agendamento.pacienteNome}`);
+      return true;
     } catch (error: any) {
       console.error('Error creating ficha from agendamento:', error);
       // Don't throw the error to avoid breaking the appointment confirmation
       // The appointment should still be confirmed even if ficha creation fails
+      return false;
     }
   }
 

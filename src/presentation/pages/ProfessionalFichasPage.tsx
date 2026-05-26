@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
+import { AgendamentoAssistenciaService, ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
 import toast from 'react-hot-toast';
@@ -2749,6 +2749,7 @@ const ProfessionalFichasPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const profissionalService = new ProfissionalAssistenciaService();
+  const agendamentoService = new AgendamentoAssistenciaService();
   const fichaRepository = new FirebaseFichaAcompanhamentoRepository();
 
   useEffect(() => {
@@ -2769,6 +2770,7 @@ const ProfessionalFichasPage: React.FC = () => {
       const profissional = await profissionalService.getProfissionalByEmail(currentUser.email);
 
       if (profissional) {
+        await agendamentoService.syncFichasForProfissionalAgenda(profissional.id, currentUser.email);
         const fichasProfissional = await fichaRepository.getFichasByProfissional(profissional.id);
         setFichas(fichasProfissional);
       } else {
