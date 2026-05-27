@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { AgendamentoAssistenciaService, ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
+import { AgendamentoAssistencia } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
@@ -2743,8 +2744,9 @@ const ProfessionalFichasPage: React.FC = () => {
   const [fichas, setFichas] = useState<FichaAcompanhamento[]>([]);
   const [fichasFiltradas, setFichasFiltradas] = useState<FichaAcompanhamento[]>([]);
   const { paginatedItems: paginatedFichas, currentPage: fichasCurrentPage, totalPages: fichasTotalPages, totalItems: fichasTotalItems, pageSize: fichasPageSize, setCurrentPage: fichasSetCurrentPage, setPageSize: fichasSetPageSize } = usePagination(fichasFiltradas);
-  const [filter, setFilter] = useState<'todas' | 'em_tratamento' | 'alta' | 'pausado' | 'cancelado'>('todas');
+  const [filter, setFilter] = useState<'todas' | 'atendimento_hoje' | 'em_tratamento' | 'alta' | 'pausado' | 'cancelado'>('todas');
   const [searchTerm, setSearchTerm] = useState('');
+  const [agendamentosHoje, setAgendamentosHoje] = useState<AgendamentoAssistencia[]>([]);
   const [selectedFicha, setSelectedFicha] = useState<FichaAcompanhamento | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -2760,7 +2762,7 @@ const ProfessionalFichasPage: React.FC = () => {
   useEffect(() => {
     filterFichas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fichas, searchTerm, filter]);
+  }, [fichas, searchTerm, filter, agendamentosHoje]);
 
   const loadData = async () => {
     if (!currentUser?.email) return;
@@ -2771,8 +2773,21 @@ const ProfessionalFichasPage: React.FC = () => {
 
       if (profissional) {
         await agendamentoService.syncFichasForProfissionalAgenda(profissional.id, currentUser.email);
-        const fichasProfissional = await fichaRepository.getFichasByProfissional(profissional.id);
+        const [fichasProfissional, agendamentosProfissional] = await Promise.all([
+          fichaRepository.getFichasByProfissional(profissional.id),
+          agendamentoService.getAgendamentosByProfissional(profissional.id)
+        ]);
         setFichas(fichasProfissional);
+
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        const amanha = new Date(hoje);
+        amanha.setDate(amanha.getDate() + 1);
+        const agHoje = agendamentosProfissional.filter(ag => {
+          const dataAg = ag.dataHoraAgendamento instanceof Date ? ag.dataHoraAgendamento : new Date(ag.dataHoraAgendamento);
+          return dataAg >= hoje && dataAg < amanha && ag.status !== 'cancelado' && ag.status !== 'faltou';
+        });
+        setAgendamentosHoje(agHoje);
       } else {
         console.warn('Professional profile not found for email:', currentUser.email);
         setFichas([]);
@@ -2797,7 +2812,10 @@ const ProfessionalFichasPage: React.FC = () => {
       );
     }
 
-    if (filter !== 'todas') {
+    if (filter === 'atendimento_hoje') {
+      const pacientesHoje = new Set(agendamentosHoje.map(ag => ag.pacienteId));
+      filtered = filtered.filter(ficha => pacientesHoje.has(ficha.pacienteId));
+    } else if (filter !== 'todas') {
       filtered = filtered.filter(ficha => {
         const status = ficha.status as string;
         if (filter === 'em_tratamento') return status === 'em_tratamento' || status === 'ativo';
@@ -2886,8 +2904,10 @@ const ProfessionalFichasPage: React.FC = () => {
   };
 
   
+  const pacientesHojeSet = new Set(agendamentosHoje.map(ag => ag.pacienteId));
   const counts = {
     todas: fichas.length,
+    atendimento_hoje: fichas.filter(f => pacientesHojeSet.has(f.pacienteId)).length,
     em_tratamento: fichas.filter(f => f.status === 'em_tratamento' || f.status === ('ativo' as any)).length,
     alta: fichas.filter(f => f.status === 'alta' || f.status === ('concluido' as any)).length,
     pausado: fichas.filter(f => f.status === 'pausado').length,
@@ -2935,6 +2955,7 @@ const ProfessionalFichasPage: React.FC = () => {
           <div className="flex flex-wrap gap-2">
             {[
               { key: 'todas', label: 'Todas', count: counts.todas },
+              { key: 'atendimento_hoje', label: 'Atendimento Hoje', count: counts.atendimento_hoje },
               { key: 'em_tratamento', label: 'Em Tratamento', count: counts.em_tratamento },
               { key: 'alta', label: 'Alta', count: counts.alta },
               { key: 'pausado', label: 'Pausadas', count: counts.pausado },
@@ -2945,8 +2966,8 @@ const ProfessionalFichasPage: React.FC = () => {
                 onClick={() => setFilter(filterOption.key as any)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === filterOption.key
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    ? filterOption.key === 'atendimento_hoje' ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'
+                    : filterOption.key === 'atendimento_hoje' ? 'bg-white text-green-700 border border-green-300 hover:bg-green-50' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 {filterOption.label} ({filterOption.count})
@@ -2975,6 +2996,7 @@ const ProfessionalFichasPage: React.FC = () => {
               <div className="p-6 text-center">
                 <p className="text-gray-500">
                   {filter === 'todas' ? 'Nenhuma ficha encontrada.' :
+                   filter === 'atendimento_hoje' ? 'Nenhum atendimento agendado para hoje.' :
                    filter === 'em_tratamento' ? 'Nenhuma ficha em tratamento.' :
                    filter === 'alta' ? 'Nenhuma ficha com alta.' :
                    filter === 'pausado' ? 'Nenhuma ficha pausada.' :
@@ -2996,6 +3018,19 @@ const ProfessionalFichasPage: React.FC = () => {
                           </span>
                         </div>
                         
+                        {filter === 'atendimento_hoje' && (() => {
+                          const ag = agendamentosHoje.find(a => a.pacienteId === ficha.pacienteId);
+                          if (!ag) return null;
+                          const dataAg = ag.dataHoraAgendamento instanceof Date ? ag.dataHoraAgendamento : new Date(ag.dataHoraAgendamento);
+                          const horario = dataAg.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                          return (
+                            <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded-md flex items-center gap-2 text-sm text-green-800">
+                              <span>&#128339;</span>
+                              <span className="font-medium">Horário do atendimento:</span> {horario}
+                              <span className="ml-2 text-green-600">({ag.modalidade === 'presencial' ? 'Presencial' : ag.modalidade === 'online' ? 'Online' : ag.modalidade})</span>
+                            </div>
+                          );
+                        })()}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-600 mb-3">
                           <div className="flex items-center">
                             <span className="font-medium mr-2">📅 Início:</span>
