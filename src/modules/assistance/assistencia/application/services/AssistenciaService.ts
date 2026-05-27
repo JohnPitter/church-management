@@ -35,7 +35,7 @@ const SYNCABLE_FICHA_AGENDAMENTO_STATUSES = new Set<StatusAgendamento>([
   StatusAgendamento.EmAndamento,
   StatusAgendamento.Remarcado
 ]);
-const AUTO_FICHA_OBJECTIVE_PREFIX = 'Acompanhamento iniciado automaticamente a partir do agendamento de';
+const AUTO_FICHA_OBJECTIVE_PREFIX = 'Acompanhamento iniciado automaticamente a partir do agendamento confirmado';
 
 export class ProfissionalAssistenciaService implements IProfissionalAssistenciaService {
   private profissionalRepository = new FirebaseProfissionalAssistenciaRepository();
@@ -1172,7 +1172,7 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
         tipoAssistencia: agendamento.tipoAssistencia,
         dataInicio: new Date(agendamento.dataHoraAgendamento),
         status: 'em_tratamento',
-        objetivo: `${AUTO_FICHA_OBJECTIVE_PREFIX} ${new Date(agendamento.dataHoraAgendamento).toLocaleDateString('pt-BR')}`,
+        objetivo: AUTO_FICHA_OBJECTIVE_PREFIX,
         diagnosticoInicial: agendamento.motivo || 'Não informado',
         observacoes: agendamento.observacoesPaciente || '',
         dadosEspecializados: Object.keys(dadosEspecializados).length > 0 ? dadosEspecializados : undefined,
