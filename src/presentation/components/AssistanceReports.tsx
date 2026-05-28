@@ -147,26 +147,28 @@ const AssistanceReports: React.FC<AssistanceReportsProps> = () => {
 
       setRelatorioGeral(relatorioGeralData);
 
-      // Carregar relatórios por profissional
-      const relatoriosProfissionaisData: RelatorioProfissional[] = [];
-      
-      for (const profissional of profissionais) {
-        try {
-          const estatisticas = await fichaService.getEstatisticasProfissional(profissional.id);
-          const agendamentosRecentes = agendamentosData
-            .filter(a => a.profissionalId === profissional.id)
-            .sort((a, b) => new Date(b.dataHoraAgendamento).getTime() - new Date(a.dataHoraAgendamento).getTime())
-            .slice(0, 5);
+      // Calcular relatórios por profissional a partir dos dados já carregados
+      const relatoriosProfissionaisData: RelatorioProfissional[] = profissionais.map(profissional => {
+        const fichasProfissional = fichas.filter(f => f.profissionalId === profissional.id);
+        const fichasAtivas = fichasProfissional.filter(f => f.status === 'em_tratamento' || (f.status as string) === 'ativo');
+        const fichasConcluidas = fichasProfissional.filter(f => f.status === 'alta' || (f.status as string) === 'concluido');
+        const agendamentosRecentes = agendamentosData
+          .filter(a => a.profissionalId === profissional.id)
+          .sort((a, b) => new Date(b.dataHoraAgendamento).getTime() - new Date(a.dataHoraAgendamento).getTime())
+          .slice(0, 5);
 
-          relatoriosProfissionaisData.push({
-            profissional,
-            estatisticas,
-            agendamentosRecentes
-          });
-        } catch (error) {
-          console.error(`Error loading stats for professional ${profissional.nome}:`, error);
-        }
-      }
+        return {
+          profissional,
+          estatisticas: {
+            totalFichas: fichasProfissional.length,
+            fichasAtivas: fichasAtivas.length,
+            fichasConcluidas: fichasConcluidas.length,
+            totalSessoes: 0,
+            mediaSessoesPorFicha: 0
+          },
+          agendamentosRecentes
+        };
+      });
 
       setRelatoriosProfissionais(relatoriosProfissionaisData);
 
