@@ -209,6 +209,13 @@ const AssistenciaManagementPage: React.FC = () => {
       filtered = filtered.filter(agendamento => agendamento.tipoAssistencia === tipoFilter);
     }
 
+    // Ordena por data do agendamento (mais recentes primeiro)
+    filtered = [...filtered].sort((a, b) => {
+      const dateA = new Date(a.dataHoraAgendamento).getTime();
+      const dateB = new Date(b.dataHoraAgendamento).getTime();
+      return dateB - dateA;
+    });
+
     setAgendamentosFiltrados(filtered);
   };
 

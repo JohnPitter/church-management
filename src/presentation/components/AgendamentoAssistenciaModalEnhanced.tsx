@@ -489,15 +489,6 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
 
   const isReadOnly = mode === 'view';
 
-  const _applyEmailValidation = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const _applyNameValidation = (name: string): boolean => {
-    return name.trim().length >= 2 && /^[a-zA-ZÀ-ÿ\s]+$/.test(name);
-  };
-
   // Campos obrigatórios para anamnese psicológica
   const requiredPsychologyFields = [
     'psico_nome',
@@ -507,7 +498,7 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
     'psico_classificacao'
   ];
 
-  // Validação de campos obrigatórios da anamnese psicológica
+  // Validação de campos obrigatórios da anamnese psicológica - mantido para uso futuro
   const _validatePsychologyFields = (): { [key: string]: boolean } => {
     const errors: { [key: string]: boolean } = {};
 
@@ -1416,12 +1407,12 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">
+        <div className="flex justify-between items-center p-4 sm:p-6 border-b border-gray-200">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
               {mode === 'create' && '📅 Novo Agendamento'}
               {mode === 'edit' && '✏️ Editar Agendamento'}
               {mode === 'view' && '👁️ Visualizar Agendamento'}
@@ -1434,7 +1425,7 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors ml-2 flex-shrink-0"
             disabled={isLoading}
           >
             <span className="text-2xl">×</span>
@@ -1448,7 +1439,7 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(index)}
-                className={`py-3 px-6 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                className={`py-3 px-3 sm:px-6 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                   activeTab === index
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -1462,7 +1453,7 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
         </div>
 
         {/* Content */}
-        <div className="p-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
           {/* Tab 1: Dados do Paciente */}
           {activeTab === 0 && (
             <div className="space-y-6">
@@ -1777,8 +1768,8 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
                   </div>
 
                   {formData.recorrenciaAtiva && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 space-y-4">
+                      <div className="grid grid-cols-1 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Frequência
@@ -3261,20 +3252,20 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-200">
+        <div className="p-4 sm:p-6 border-t border-gray-200 flex-shrink-0">
           {/* Mensagem de validação */}
           {mode !== 'view' && !isFormValid && (
             <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-              <p className="text-sm text-yellow-800">
+              <p className="text-xs sm:text-sm text-yellow-800">
                 ⚠️ Preencha todos os campos obrigatórios (marcados com <span className="text-red-600 font-bold">*</span>) para habilitar o agendamento.
               </p>
             </div>
           )}
 
-          <div className="flex justify-end space-x-4">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-4">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors text-sm sm:text-base"
               disabled={isLoading}
             >
               {mode === 'view' ? 'Fechar' : 'Cancelar'}
@@ -3283,7 +3274,7 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
               <button
                 onClick={handleSave}
                 disabled={isLoading || !isFormValid}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 title={!isFormValid ? 'Preencha todos os campos obrigatórios' : ''}
               >
                 {isLoading ? '⏳ Salvando...' : (mode === 'edit' ? '✅ Atualizar' : '📅 Agendar')}

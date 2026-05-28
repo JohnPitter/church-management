@@ -253,10 +253,10 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciar Assistidos</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Gerenciar Assistidos</h1>
               <p className="mt-1 text-sm text-gray-600">
                 Administre pessoas assistidas pela igreja e suas famílias
               </p>
@@ -264,7 +264,7 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
             {activeTab === 'assistidos' && (
               <button
                 onClick={handleCreateAssistido}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:opacity-90 transition-opacity"
+                className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:opacity-90 transition-opacity w-full sm:w-auto"
                 style={{ backgroundColor: settings?.primaryColor || '#3B82F6' }}
               >
                 <HiPlus className="w-5 h-5 mr-2" />
@@ -278,39 +278,39 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
       
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Navigation Tabs */}
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
+        <div className="border-b border-gray-200 mb-6 sm:mb-8">
+          <nav className="-mb-px flex overflow-x-auto space-x-4 sm:space-x-8">
             <button
               onClick={() => setActiveTab('assistidos')}
-              className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === 'assistidos'
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <HiUsers className="w-5 h-5 mr-2" />
+              <HiUsers className="w-5 h-5 mr-1 sm:mr-2" />
               Assistidos
             </button>
             <button
               onClick={() => setActiveTab('atendimentos')}
-              className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === 'atendimentos'
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <HiClipboardDocumentList className="w-5 h-5 mr-2" />
+              <HiClipboardDocumentList className="w-5 h-5 mr-1 sm:mr-2" />
               Atendimentos
             </button>
             <button
               onClick={() => setActiveTab('relatorios')}
-              className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === 'relatorios'
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <HiChartBar className="w-5 h-5 mr-2" />
+              <HiChartBar className="w-5 h-5 mr-1 sm:mr-2" />
               Relatórios
             </button>
           </nav>
@@ -321,51 +321,51 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
           <>
         {/* Statistics Cards */}
         {statistics && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+            <div className="bg-white rounded-lg shadow p-3 sm:p-6">
               <div className="flex items-center">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <HiCheckCircle className="w-7 h-7 text-green-600" />
+                <div className="p-2 sm:p-3 bg-green-100 rounded-lg">
+                  <HiCheckCircle className="w-5 h-5 sm:w-7 sm:h-7 text-green-600" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Ativos</p>
-                  <p className="text-2xl font-semibold text-gray-900">{statistics.totalAtivos}</p>
+                <div className="ml-2 sm:ml-4 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Ativos</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-gray-900">{statistics.totalAtivos}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-3 sm:p-6">
               <div className="flex items-center">
-                <div className="p-3 bg-gray-100 rounded-lg">
-                  <HiMinusCircle className="w-7 h-7 text-gray-600" />
+                <div className="p-2 sm:p-3 bg-gray-100 rounded-lg">
+                  <HiMinusCircle className="w-5 h-5 sm:w-7 sm:h-7 text-gray-600" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Inativos</p>
-                  <p className="text-2xl font-semibold text-gray-900">{statistics.totalInativos}</p>
+                <div className="ml-2 sm:ml-4 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Inativos</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-gray-900">{statistics.totalInativos}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-3 sm:p-6">
               <div className="flex items-center">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <HiDocumentText className="w-7 h-7 text-blue-600" />
+                <div className="p-2 sm:p-3 bg-blue-100 rounded-lg">
+                  <HiDocumentText className="w-5 h-5 sm:w-7 sm:h-7 text-blue-600" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Atendimentos (30d)</p>
-                  <p className="text-2xl font-semibold text-gray-900">{statistics.atendimentosUltimos30Dias}</p>
+                <div className="ml-2 sm:ml-4 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Atend. (30d)</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-gray-900">{statistics.atendimentosUltimos30Dias}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-3 sm:p-6">
               <div className="flex items-center">
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <HiUserGroup className="w-7 h-7 text-purple-600" />
+                <div className="p-2 sm:p-3 bg-purple-100 rounded-lg">
+                  <HiUserGroup className="w-5 h-5 sm:w-7 sm:h-7 text-purple-600" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Famílias</p>
-                  <p className="text-2xl font-semibold text-gray-900">{statistics.familiasTotais}</p>
+                <div className="ml-2 sm:ml-4 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Famílias</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-gray-900">{statistics.familiasTotais}</p>
                 </div>
               </div>
             </div>
@@ -522,31 +522,31 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
                       : 'Nenhum'
                     }
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex flex-wrap gap-1 sm:gap-2">
                       <button
                         onClick={() => handleViewAssistido(assistido)}
                         className="inline-flex items-center text-blue-600 hover:text-blue-900"
                         title="Visualizar dados"
                       >
-                        <HiEye className="w-4 h-4 mr-1" />
-                        Ver
+                        <HiEye className="w-4 h-4" />
+                        <span className="hidden lg:inline ml-1">Ver</span>
                       </button>
                       <button
                         onClick={() => handleEditAssistido(assistido)}
                         className="inline-flex items-center text-indigo-600 hover:text-indigo-900"
                         title="Editar dados"
                       >
-                        <HiPencil className="w-4 h-4 mr-1" />
-                        Editar
+                        <HiPencil className="w-4 h-4" />
+                        <span className="hidden lg:inline ml-1">Editar</span>
                       </button>
                       <button
                         onClick={() => handleAddAtendimento(assistido)}
                         className="inline-flex items-center text-green-600 hover:text-green-900"
                         title="Registrar atendimento"
                       >
-                        <HiHeart className="w-4 h-4 mr-1" />
-                        Atender
+                        <HiHeart className="w-4 h-4" />
+                        <span className="hidden lg:inline ml-1">Atender</span>
                       </button>
                       {assistido.status === StatusAssistido.Ativo ? (
                         <button
@@ -554,8 +554,8 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
                           className="inline-flex items-center text-red-600 hover:text-red-900"
                           title="Inativar assistido"
                         >
-                          <HiNoSymbol className="w-4 h-4 mr-1" />
-                          Inativar
+                          <HiNoSymbol className="w-4 h-4" />
+                          <span className="hidden lg:inline ml-1">Inativar</span>
                         </button>
                       ) : (
                         <button
@@ -563,8 +563,8 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
                           className="inline-flex items-center text-green-600 hover:text-green-900"
                           title="Ativar assistido"
                         >
-                          <HiCheckCircle className="w-4 h-4 mr-1" />
-                          Ativar
+                          <HiCheckCircle className="w-4 h-4" />
+                          <span className="hidden lg:inline ml-1">Ativar</span>
                         </button>
                       )}
                       <button
@@ -572,8 +572,8 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
                         className="inline-flex items-center text-red-700 hover:text-red-900 font-medium"
                         title="Excluir permanentemente"
                       >
-                        <HiTrash className="w-4 h-4 mr-1" />
-                        Excluir
+                        <HiTrash className="w-4 h-4" />
+                        <span className="hidden lg:inline ml-1">Excluir</span>
                       </button>
                     </div>
                   </td>
@@ -599,40 +599,41 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
 
           {/* Pagination Controls */}
           {filteredAssistidos.length > 0 && (
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                {/* Items per page selector */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700">Mostrar</span>
-                  <select
-                    value={itemsPerPage}
-                    onChange={(e) => {
-                      setItemsPerPage(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                  <span className="text-sm text-gray-700">por página</span>
-                </div>
+            <div className="px-3 sm:px-6 py-4 border-t border-gray-200 bg-gray-50">
+              <div className="flex flex-col items-center gap-3">
+                {/* Page info + items per page */}
+                <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs sm:text-sm text-gray-700">Mostrar</span>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <span className="text-xs sm:text-sm text-gray-700">por página</span>
+                  </div>
 
-                {/* Page info */}
-                <div className="text-sm text-gray-700">
-                  Mostrando <span className="font-medium">{startIndex + 1}</span> a{' '}
-                  <span className="font-medium">{Math.min(endIndex, filteredAssistidos.length)}</span> de{' '}
-                  <span className="font-medium">{filteredAssistidos.length}</span> resultados
+                  <div className="text-xs sm:text-sm text-gray-700">
+                    Mostrando <span className="font-medium">{startIndex + 1}</span> a{' '}
+                    <span className="font-medium">{Math.min(endIndex, filteredAssistidos.length)}</span> de{' '}
+                    <span className="font-medium">{filteredAssistidos.length}</span> resultados
+                  </div>
                 </div>
 
                 {/* Pagination buttons */}
-                <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center justify-center gap-1">
                   <button
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
-                    className="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="hidden sm:inline-flex px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Primeira página"
                   >
                     Primeira
@@ -643,7 +644,7 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
                     className="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Página anterior"
                   >
-                    ← Anterior
+                    ←
                   </button>
 
                   {/* Page numbers */}
@@ -682,12 +683,12 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
                     className="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Próxima página"
                   >
-                    Próxima →
+                    →
                   </button>
                   <button
                     onClick={() => setCurrentPage(totalPages)}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="hidden sm:inline-flex px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Última página"
                   >
                     Última
@@ -1083,33 +1084,33 @@ const RelatoriosView: React.FC<{
 
         {/* Seletor de tipo de relatório */}
         <div className="bg-white p-4 rounded-lg shadow mb-6">
-          <div className="flex space-x-4">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setReportType('geral')}
-              className={`inline-flex items-center px-4 py-2 rounded ${reportType === 'geral' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+              className={`inline-flex items-center px-3 sm:px-4 py-2 rounded text-sm ${reportType === 'geral' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
             >
-              <HiChartBar className="w-4 h-4 mr-2" />
-              Relatório Geral
+              <HiChartBar className="w-4 h-4 mr-1 sm:mr-2" />
+              Geral
             </button>
             <button
               onClick={() => setReportType('necessidades')}
-              className={`inline-flex items-center px-4 py-2 rounded ${reportType === 'necessidades' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+              className={`inline-flex items-center px-3 sm:px-4 py-2 rounded text-sm ${reportType === 'necessidades' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
             >
-              <HiHeart className="w-4 h-4 mr-2" />
-              Por Necessidades
+              <HiHeart className="w-4 h-4 mr-1 sm:mr-2" />
+              Necessidades
             </button>
             <button
               onClick={() => setReportType('atendimentos')}
-              className={`inline-flex items-center px-4 py-2 rounded ${reportType === 'atendimentos' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+              className={`inline-flex items-center px-3 sm:px-4 py-2 rounded text-sm ${reportType === 'atendimentos' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
             >
-              <HiClipboardDocumentList className="w-4 h-4 mr-2" />
+              <HiClipboardDocumentList className="w-4 h-4 mr-1 sm:mr-2" />
               Atendimentos
             </button>
             <button
               onClick={() => setReportType('financeiro')}
-              className={`inline-flex items-center px-4 py-2 rounded ${reportType === 'financeiro' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+              className={`inline-flex items-center px-3 sm:px-4 py-2 rounded text-sm ${reportType === 'financeiro' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
             >
-              <HiCurrencyDollar className="w-4 h-4 mr-2" />
+              <HiCurrencyDollar className="w-4 h-4 mr-1 sm:mr-2" />
               Financeiro
             </button>
           </div>

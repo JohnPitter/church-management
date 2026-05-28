@@ -86,6 +86,7 @@ const AboutPage = lazyWithRetry(() => import('./presentation/pages/AboutPage').t
 const DonatePage = lazyWithRetry(() => import('./presentation/pages/DonatePage').then(module => ({ default: module.DonatePage })));
 const PrayerPage = lazyWithRetry(() => import('./presentation/pages/PrayerPage').then(module => ({ default: module.PrayerPage })));
 const ContactPage = lazyWithRetry(() => import('./presentation/pages/ContactPage').then(module => ({ default: module.ContactPage })));
+const VisitorSelfRegistrationPage = lazyWithRetry(() => import('./presentation/pages/VisitorSelfRegistrationPage').then(module => ({ default: module.VisitorSelfRegistrationPage })));
 
 const ROUTE_PREFETCH_DELAY_MS = 3000;
 const ROUTE_PREFETCH_INTERVAL_MS = 250;
@@ -161,6 +162,7 @@ const router = createBrowserRouter([
       { path: 'donate', element: <DonatePage /> },
       { path: 'prayer', element: <PrayerPage /> },
       { path: 'contact', element: <ContactPage /> },
+      { path: 'cadastro-visitante', element: <VisitorSelfRegistrationPage /> },
       {
         path: 'painel',
         element: (

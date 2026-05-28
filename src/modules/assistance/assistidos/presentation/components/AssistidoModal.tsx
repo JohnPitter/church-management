@@ -467,25 +467,25 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
   const isSaveDisabled = isLoading || pendingFieldCount > 0;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-0">
+      <div className="bg-white rounded-lg max-w-4xl w-full mx-0 sm:mx-4 max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-bold text-gray-900">{modalTitle}</h2>
+        <div className="flex justify-between items-center p-4 sm:p-6 border-b flex-shrink-0">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{modalTitle}</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
+            className="text-gray-400 hover:text-gray-600 text-2xl ml-2 flex-shrink-0"
           >
             ✕
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
-          <nav className="flex px-6">
+        <div className="border-b border-gray-200 flex-shrink-0">
+          <nav className="flex overflow-x-auto px-4 sm:px-6">
             <button
               onClick={() => setActiveTab('dados')}
-              className={`py-3 px-4 text-sm font-medium border-b-2 ${
+              className={`py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium border-b-2 whitespace-nowrap ${
                 activeTab === 'dados'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -495,7 +495,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
             </button>
             <button
               onClick={() => setActiveTab('familia')}
-              className={`py-3 px-4 text-sm font-medium border-b-2 ${
+              className={`py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium border-b-2 whitespace-nowrap ${
                 activeTab === 'familia'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -505,7 +505,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
             </button>
             <button
               onClick={() => setActiveTab('atendimentos')}
-              className={`py-3 px-4 text-sm font-medium border-b-2 ${
+              className={`py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium border-b-2 whitespace-nowrap ${
                 activeTab === 'atendimentos'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -517,7 +517,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
           {/* Aba Dados Pessoais */}
           {activeTab === 'dados' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1360,7 +1360,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
 
         {/* Footer */}
         {!isReadOnly && (
-          <div className="flex flex-col gap-3 p-6 border-t bg-gray-50 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 p-4 sm:p-6 border-t bg-gray-50 sm:flex-row sm:items-center sm:justify-between flex-shrink-0">
             {pendingFieldCount > 0 ? (
               <div className="text-sm font-medium text-red-700">
                 <p>
@@ -1393,7 +1393,7 @@ const AssistidoModal: React.FC<AssistidoModalProps> = ({
         )}
 
         {isReadOnly && (
-          <div className="flex justify-end p-6 border-t bg-gray-50">
+          <div className="flex justify-end p-4 sm:p-6 border-t bg-gray-50 flex-shrink-0">
             <button
               onClick={onClose}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
