@@ -21,7 +21,8 @@ import {
   StatusProfissional,
   EstatisticasAssistencia,
   HorarioFuncionamento,
-  AssistenciaEntity
+  AssistenciaEntity,
+  FrequenciaRecorrencia
 } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import {
   ProfissionalFilters,
@@ -764,6 +765,66 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
       console.error('Error creating agendamento:', error);
       throw error;
     }
+  }
+
+  async createAgendamentoRecorrente(
+    agendamentoBase: Omit<AgendamentoAssistencia, 'id' | 'createdAt' | 'updatedAt'>,
+    frequencia: FrequenciaRecorrencia,
+    opcaoLimite: { quantidade?: number; dataFim?: Date }
+  ): Promise<AgendamentoAssistencia[]> {
+    const incrementoSemanas = frequencia === FrequenciaRecorrencia.Semanal ? 1
+      : frequencia === FrequenciaRecorrencia.Quinzenal ? 2 : 4;
+
+    // Criar o primeiro agendamento
+    const primeiro = await this.createAgendamento({
+      ...agendamentoBase,
+      recorrencia: { frequencia, ...opcaoLimite }
+    });
+
+    const criados: AgendamentoAssistencia[] = [primeiro];
+    const duracaoMs = new Date(agendamentoBase.dataHoraFim).getTime() - new Date(agendamentoBase.dataHoraAgendamento).getTime();
+    const maxOcorrencias = opcaoLimite.quantidade ?? 52; // safety cap de 1 ano semanal
+    const dataLimite = opcaoLimite.dataFim ? new Date(opcaoLimite.dataFim) : undefined;
+
+    let dataAtual = new Date(agendamentoBase.dataHoraAgendamento);
+
+    for (let i = 1; i < maxOcorrencias; i++) {
+      dataAtual = new Date(dataAtual);
+      dataAtual.setDate(dataAtual.getDate() + incrementoSemanas * 7);
+
+      if (dataLimite && dataAtual > dataLimite) break;
+
+      const dataHoraFim = new Date(dataAtual.getTime() + duracaoMs);
+
+      const isAvailable = await this.verificarDisponibilidade(
+        agendamentoBase.profissionalId,
+        dataAtual,
+        duracaoMs
+      );
+
+      if (!isAvailable) {
+        console.warn(`Horário indisponível em ${dataAtual.toISOString()}, pulando ocorrência`);
+        continue;
+      }
+
+      try {
+        const novoAgendamento = await this.createAgendamento({
+          ...agendamentoBase,
+          dataHoraAgendamento: new Date(dataAtual),
+          dataHoraFim,
+          recorrencia: {
+            frequencia,
+            ...opcaoLimite,
+            agendamentoOrigemId: primeiro.id
+          }
+        });
+        criados.push(novoAgendamento);
+      } catch (error) {
+        console.warn(`Falha ao criar ocorrência ${i + 1}:`, error);
+      }
+    }
+
+    return criados;
   }
 
   async updateAgendamento(id: string, data: Partial<AgendamentoAssistencia>): Promise<AgendamentoAssistencia> {

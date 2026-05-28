@@ -42,6 +42,21 @@ export enum PrioridadeAtendimento {
   Emergencial = 'emergencial'
 }
 
+export enum FrequenciaRecorrencia {
+  Semanal = 'semanal',
+  Quinzenal = 'quinzenal',
+  Mensal = 'mensal'
+}
+
+export interface RecorrenciaAgendamento {
+  frequencia: FrequenciaRecorrencia;
+  /** Limitar por quantidade de sessões OU por data final */
+  quantidade?: number;
+  dataFim?: Date;
+  /** ID do agendamento original que gerou esta série */
+  agendamentoOrigemId?: string;
+}
+
 export interface EnderecoConsultorio {
   logradouro: string;
   numero: string;
@@ -136,6 +151,7 @@ export interface AgendamentoAssistencia {
   historico: HistoricoAgendamento[];
   avaliacaoServico?: AvaliacaoServico;
   dadosEspecificos?: Record<string, any>; // Dados específicos por tipo de assistência
+  recorrencia?: RecorrenciaAgendamento;
   createdAt: Date;
   updatedAt: Date;
   createdBy: string;
@@ -257,6 +273,15 @@ export class AssistenciaEntity {
       [PrioridadeAtendimento.Emergencial]: 'Emergencial'
     };
     return prioridades[prioridade];
+  }
+
+  static formatarFrequenciaRecorrencia(frequencia: FrequenciaRecorrencia): string {
+    const frequencias: Record<FrequenciaRecorrencia, string> = {
+      [FrequenciaRecorrencia.Semanal]: 'Semanal',
+      [FrequenciaRecorrencia.Quinzenal]: 'Quinzenal',
+      [FrequenciaRecorrencia.Mensal]: 'Mensal'
+    };
+    return frequencias[frequencia];
   }
 
   static calcularIdadePaciente(dataNascimento: Date): number {

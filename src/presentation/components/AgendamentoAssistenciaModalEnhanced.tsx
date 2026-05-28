@@ -8,7 +8,8 @@ import {
   PrioridadeAtendimento,
   AssistenciaEntity,
   ProfissionalAssistencia,
-  AgendamentoAssistencia
+  AgendamentoAssistencia,
+  FrequenciaRecorrencia
 } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import { ProfissionalAssistenciaService, AgendamentoAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { useAuth } from '../contexts/AuthContext';
@@ -43,7 +44,14 @@ interface FormData {
   prioridade: PrioridadeAtendimento;
   motivo: string;
   observacoesPaciente: string;
-  
+
+  // Recurrence data
+  recorrenciaAtiva: boolean;
+  recorrenciaFrequencia: string;
+  recorrenciaTipoLimite: 'quantidade' | 'dataFim';
+  recorrenciaQuantidade: number;
+  recorrenciaDataFim: string;
+
   // Fisioterapia specific fields
   fisio_habitosVida: string;
   fisio_hma: string; // História Médica Atual
@@ -276,7 +284,14 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
     prioridade: PrioridadeAtendimento.Normal,
     motivo: '',
     observacoesPaciente: '',
-    
+
+    // Recurrence defaults
+    recorrenciaAtiva: false,
+    recorrenciaFrequencia: FrequenciaRecorrencia.Semanal,
+    recorrenciaTipoLimite: 'quantidade',
+    recorrenciaQuantidade: 4,
+    recorrenciaDataFim: '',
+
     // Fisioterapia fields
     fisio_habitosVida: '',
     fisio_hma: '',
@@ -576,7 +591,12 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
         modalidade: agendamento.modalidade || ModalidadeAtendimento.Presencial,
         prioridade: agendamento.prioridade || PrioridadeAtendimento.Normal,
         motivo: agendamento.motivo || '',
-        observacoesPaciente: agendamento.observacoesPaciente || ''
+        observacoesPaciente: agendamento.observacoesPaciente || '',
+        recorrenciaAtiva: !!agendamento.recorrencia,
+        recorrenciaFrequencia: agendamento.recorrencia?.frequencia || FrequenciaRecorrencia.Semanal,
+        recorrenciaTipoLimite: agendamento.recorrencia?.dataFim ? 'dataFim' : 'quantidade',
+        recorrenciaQuantidade: agendamento.recorrencia?.quantidade || 4,
+        recorrenciaDataFim: agendamento.recorrencia?.dataFim ? toLocalDateString(agendamento.recorrencia.dataFim) : ''
       }));
     }
     setActiveTab(0);
@@ -1360,9 +1380,24 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
       }
 
       if (mode === 'create') {
-        const novoAgendamento = await agendamentoService.createAgendamento(agendamentoData);
-        onSave(novoAgendamento);
-        toast.success(`Agendamento para ${formData.pacienteNome} foi criado com sucesso!`);
+        if (formData.recorrenciaAtiva) {
+          const frequencia = formData.recorrenciaFrequencia as FrequenciaRecorrencia;
+          const opcaoLimite = formData.recorrenciaTipoLimite === 'quantidade'
+            ? { quantidade: formData.recorrenciaQuantidade }
+            : { dataFim: new Date(formData.recorrenciaDataFim + 'T23:59:59') };
+
+          const criados = await agendamentoService.createAgendamentoRecorrente(
+            agendamentoData,
+            frequencia,
+            opcaoLimite
+          );
+          if (criados.length > 0) onSave(criados[0]);
+          toast.success(`${criados.length} agendamento(s) recorrente(s) criado(s) para ${formData.pacienteNome}!`);
+        } else {
+          const novoAgendamento = await agendamentoService.createAgendamento(agendamentoData);
+          onSave(novoAgendamento);
+          toast.success(`Agendamento para ${formData.pacienteNome} foi criado com sucesso!`);
+        }
       } else if (mode === 'edit' && agendamento) {
         const agendamentoAtualizado = await agendamentoService.updateAgendamento(agendamento.id, agendamentoData);
         onSave(agendamentoAtualizado);
@@ -1723,6 +1758,100 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
                   </select>
                 </div>
               </div>
+
+              {/* Recorrência */}
+              {mode === 'create' && (
+                <div className="mt-6 border-t border-gray-200 pt-4">
+                  <div className="flex items-center gap-3 mb-4">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.recorrenciaAtiva}
+                        onChange={(e) => handleInputChange('recorrenciaAtiva', e.target.checked)}
+                        disabled={isReadOnly || isLoading}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                    <span className="text-sm font-medium text-gray-700">Agendamento Recorrente</span>
+                  </div>
+
+                  {formData.recorrenciaAtiva && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Frequência
+                          </label>
+                          <select
+                            value={formData.recorrenciaFrequencia}
+                            onChange={(e) => handleInputChange('recorrenciaFrequencia', e.target.value)}
+                            disabled={isLoading}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            {Object.values(FrequenciaRecorrencia).map((freq) => (
+                              <option key={freq} value={freq}>
+                                {AssistenciaEntity.formatarFrequenciaRecorrencia(freq)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Limitar por
+                          </label>
+                          <select
+                            value={formData.recorrenciaTipoLimite}
+                            onChange={(e) => handleInputChange('recorrenciaTipoLimite', e.target.value)}
+                            disabled={isLoading}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="quantidade">Quantidade de sessões</option>
+                            <option value="dataFim">Data final</option>
+                          </select>
+                        </div>
+
+                        {formData.recorrenciaTipoLimite === 'quantidade' ? (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Número de sessões
+                            </label>
+                            <input
+                              type="number"
+                              min={2}
+                              max={52}
+                              value={formData.recorrenciaQuantidade}
+                              onChange={(e) => handleInputChange('recorrenciaQuantidade', parseInt(e.target.value) || 2)}
+                              disabled={isLoading}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        ) : (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Data final
+                            </label>
+                            <input
+                              type="date"
+                              value={formData.recorrenciaDataFim}
+                              onChange={(e) => handleInputChange('recorrenciaDataFim', e.target.value)}
+                              min={formData.dataAgendamento || todayLocalString()}
+                              disabled={isLoading}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-blue-700">
+                        Os agendamentos recorrentes serão criados no mesmo dia da semana e horário.
+                        Horários indisponíveis serão automaticamente pulados.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
