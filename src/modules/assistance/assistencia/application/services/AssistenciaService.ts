@@ -7,7 +7,7 @@ import {
 } from '@modules/assistance/assistencia/domain/services/IAssistenciaService';
 import { FirebaseProfissionalAssistenciaRepository } from '@modules/assistance/professional/infrastructure/repositories/FirebaseProfissionalAssistenciaRepository';
 import { FirebaseAgendamentoAssistenciaRepository } from '@modules/assistance/agendamento/infrastructure/repositories/FirebaseAgendamentoAssistenciaRepository';
-import { FichaAcompanhamentoEntity } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
+import { FichaAcompanhamento, FichaAcompanhamentoEntity } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
 import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/fichas/infrastructure/repositories/FirebaseFichaAcompanhamentoRepository';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { NotificationService } from '@modules/shared-kernel/notifications/infrastructure/services/NotificationService';
@@ -30,10 +30,8 @@ import {
 
 const ACTIVE_FICHA_STATUSES = new Set(['em_tratamento', 'ativo', 'pausado']);
 const SYNCABLE_FICHA_AGENDAMENTO_STATUSES = new Set<StatusAgendamento>([
-  StatusAgendamento.Agendado,
   StatusAgendamento.Confirmado,
-  StatusAgendamento.EmAndamento,
-  StatusAgendamento.Remarcado
+  StatusAgendamento.EmAndamento
 ]);
 const AUTO_FICHA_OBJECTIVE_PREFIX = 'Acompanhamento iniciado automaticamente a partir do agendamento confirmado';
 
@@ -886,15 +884,21 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
         referenceDate.getDate() + 1
       );
       let createdCount = 0;
+      const pacientesProcessados = new Set<string>();
 
       for (const agendamento of agendamentos) {
+        if (pacientesProcessados.has(agendamento.pacienteId)) continue;
+
         const dataAgendamento = new Date(agendamento.dataHoraAgendamento);
         const shouldSync =
           dataAgendamento < endOfReferenceDay &&
           SYNCABLE_FICHA_AGENDAMENTO_STATUSES.has(agendamento.status);
 
-        if (shouldSync && await this.ensureFichaFromAgendamento(agendamento.id, responsavel)) {
-          createdCount += 1;
+        if (shouldSync) {
+          pacientesProcessados.add(agendamento.pacienteId);
+          if (await this.ensureFichaFromAgendamento(agendamento.id, responsavel)) {
+            createdCount += 1;
+          }
         }
       }
 
@@ -917,9 +921,16 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
       const fichaRepository = new FirebaseFichaAcompanhamentoRepository();
 
       // Check if a ficha already exists for this patient and professional
-      const fichasExistentes = await fichaRepository.getFichasByPaciente(agendamento.pacienteId);
-      const fichaExistente = fichasExistentes.find(f => 
-        f.profissionalId === agendamento.profissionalId && 
+      let fichasExistentes: FichaAcompanhamento[];
+      try {
+        fichasExistentes = await fichaRepository.getFichasByPaciente(agendamento.pacienteId);
+      } catch (error) {
+        console.error('Failed to check existing fichas, skipping creation to avoid duplicates:', error);
+        return false;
+      }
+
+      const fichaExistente = fichasExistentes.find(f =>
+        f.profissionalId === agendamento.profissionalId &&
         ACTIVE_FICHA_STATUSES.has(f.status)
       );
 

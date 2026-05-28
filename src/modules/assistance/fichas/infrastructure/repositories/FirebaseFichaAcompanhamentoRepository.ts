@@ -215,7 +215,7 @@ export class FirebaseFichaAcompanhamentoRepository {
       });
     } catch (error) {
       console.error('Error getting fichas by patient:', error);
-      return [];
+      throw error;
     }
   }
 
