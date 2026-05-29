@@ -10,7 +10,7 @@
 [![Tailwind](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![License](https://img.shields.io/badge/License-Private-red?style=flat-square)](#)
 
-[Funcionalidades](#-funcionalidades) · [Arquitetura](#-arquitetura) · [Fluxo de Permissoes](#-fluxo-de-permissoes) · [Quick Start](#-quick-start) · [Tech Stack](#-tech-stack)
+[Funcionalidades](#-funcionalidades) · [App Movel](#aplicativo-movel) · [Arquitetura](#-arquitetura) · [Fluxo de Permissoes](#-fluxo-de-permissoes) · [Roadmap](#roadmap) · [Quick Start](#-quick-start) · [Tech Stack](#-tech-stack)
 
 </div>
 
@@ -21,6 +21,23 @@
 Church Management e um **sistema web completo** para administracao de igrejas e ONGs. Centraliza o gerenciamento de membros, eventos, financas, assistencia social, conteudo e permissoes em uma unica plataforma. Construido com **React 19**, **TypeScript** e **Firebase**, seguindo **Clean Architecture** e **Domain-Driven Design**.
 
 Funciona tanto para **igrejas** quanto para **ONGs** — basta escolher o tipo de organizacao no setup inicial. Cada tipo habilita modulos especificos: igrejas tem dizimos, devocionais e batismo; ONGs tem voluntarios, atividades e financas separadas.
+
+---
+
+## Aplicativo Movel
+
+Existe um **aplicativo movel** companion para os **membros**, construido com **Kotlin Multiplatform + Compose Multiplatform** e reaproveitando 100% deste mesmo backend Firebase (Auth, Firestore, Cloud Functions).
+
+> Repositorio: **[JohnPitter/church-member-app](https://github.com/JohnPitter/church-member-app)**
+
+| Recurso | Descricao |
+|---|---|
+| **Telas do membro** | Inicio, Eventos, Devocionais, Avisos, Perfil, Blog, Forum (criar/responder topicos), Projetos, Transmissoes, Lideranca, Pedidos de Oracao |
+| **Experiencia** | Splash + boas-vindas, icone proprio, skeleton loading, tema e nome dinamicos da organizacao (collection `settings`) |
+| **Compartilhamento** | Botoes para compartilhar eventos, devocionais, posts e projetos |
+| **Offline** | Banner de conexao + cache do Firestore |
+| **Notificacoes push (FCM)** | Cloud Function `onNotificationCreated` envia push quando um aviso e gerado; chega ao membro mesmo com o app fechado |
+| **Plataformas** | Android disponivel; **iOS no roadmap** (codigo ja preparado, build no macOS) |
 
 ---
 
@@ -397,6 +414,17 @@ church-management/
 | **Cloud Functions** | Operacoes sensiveis (criar/deletar usuario) executam server-side |
 | **Dados Sensiveis** | Tokens e credenciais nunca expostos na API de resposta |
 | **Rate Limiting** | Protecao contra brute force em endpoints de autenticacao |
+
+---
+
+## Roadmap
+
+| Item | Status |
+|---|---|
+| Aplicativo movel para membros (Android) | ✅ Disponivel — [church-member-app](https://github.com/JohnPitter/church-member-app) |
+| Notificacoes push (FCM) para avisos | ✅ Disponivel |
+| **Aplicativo iOS** | 🔜 Planejado — codigo Kotlin Multiplatform ja preparado; falta configurar o projeto Xcode + CocoaPods (Firebase) e gerar a build no **macOS** (ou via CI com runner macOS). Publicacao na App Store apos isso. |
+| Painel de criacao de topicos/avisos direto pelo app (membros) | 🔜 Em avaliacao |
 
 ---
 

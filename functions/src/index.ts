@@ -17,6 +17,9 @@ export { uploadStreamThumbnail } from './uploadStreamThumbnail';
 // Export upload profile photo function
 export { uploadProfilePhoto } from './uploadProfilePhoto';
 
+// Export push notification trigger (FCM) for new notifications
+export { onNotificationCreated } from './onNotificationCreated';
+
 /**
  * Create User Account
  *

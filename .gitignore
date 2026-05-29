@@ -40,6 +40,9 @@ serviceAccountKey.json
 .claude/
 CLAUDE.md
 
+# Mobile app — repositório próprio (github.com/JohnPitter/church-member-app)
+/mobile/
+
 # Scripts
 /scripts/
 
