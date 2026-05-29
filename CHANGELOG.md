@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Public page configuration for `/cadastro-visitante`.
+
+### Fixed
+- Visitor self-registration route now uses public-page access control and remains available when stored public-page settings are missing newer defaults.
+- Anonymous visitor self-registration can create constrained `visitors` records through Firestore rules.
+
 ## [1.3.0] - 2026-02-07
 
 ### Added

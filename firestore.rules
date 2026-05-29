@@ -33,6 +33,78 @@ service cloud.firestore {
       return isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
+    function isVisitorSelfRegistrationCreate() {
+      return !isAuthenticated()
+        && request.resource.data.keys().hasOnly([
+          'name',
+          'phone',
+          'status',
+          'followUpStatus',
+          'firstVisitDate',
+          'totalVisits',
+          'contactAttempts',
+          'interests',
+          'isMember',
+          'createdBy',
+          'createdAt',
+          'updatedAt',
+          'howDidYouKnow',
+          'observations',
+          'selfRegistration',
+          'jaCristao',
+          'primeiraVez',
+          'receberComunicacoes',
+          'tipoQuemTrouxe',
+          'nomeQuemTrouxe'
+        ])
+        && request.resource.data.keys().hasAll([
+          'name',
+          'phone',
+          'status',
+          'followUpStatus',
+          'firstVisitDate',
+          'totalVisits',
+          'contactAttempts',
+          'interests',
+          'isMember',
+          'createdBy',
+          'createdAt',
+          'updatedAt',
+          'howDidYouKnow',
+          'observations',
+          'selfRegistration',
+          'jaCristao',
+          'primeiraVez',
+          'receberComunicacoes',
+          'tipoQuemTrouxe',
+          'nomeQuemTrouxe'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() >= 10
+        && request.resource.data.status == 'active'
+        && request.resource.data.followUpStatus == 'pending'
+        && request.resource.data.firstVisitDate is timestamp
+        && request.resource.data.totalVisits == 1
+        && request.resource.data.contactAttempts is list
+        && request.resource.data.contactAttempts.size() == 0
+        && request.resource.data.interests is list
+        && request.resource.data.interests.size() == 0
+        && request.resource.data.isMember == false
+        && request.resource.data.createdBy == 'self-registration'
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp
+        && request.resource.data.howDidYouKnow is string
+        && request.resource.data.observations is string
+        && request.resource.data.selfRegistration == true
+        && request.resource.data.jaCristao is bool
+        && request.resource.data.primeiraVez is bool
+        && request.resource.data.receberComunicacoes is bool
+        && request.resource.data.tipoQuemTrouxe is string
+        && request.resource.data.nomeQuemTrouxe is string;
+    }
+
     // ========================================
     // USERS
     // ========================================
@@ -181,7 +253,8 @@ service cloud.firestore {
     }
 
     match /visitors/{docId} {
-      allow read, write: if isApproved();
+      allow read, update, delete: if isApproved();
+      allow create: if isApproved() || isVisitorSelfRegistrationCreate();
     }
 
     match /voluntarios/{docId} {

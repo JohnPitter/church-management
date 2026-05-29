@@ -14,6 +14,23 @@ export class PublicPageService {
   private readonly collectionName = 'publicPageSettings';
   private readonly docId = 'config';
 
+  private cloneConfig(config: PublicPageConfig): PublicPageConfig {
+    return { ...config };
+  }
+
+  private getDefaultConfigs(): PublicPageConfig[] {
+    return DEFAULT_PUBLIC_PAGES.map(config => this.cloneConfig(config));
+  }
+
+  private mergeWithDefaultConfigs(configs: PublicPageConfig[]): PublicPageConfig[] {
+    return [
+      ...configs.map(config => this.cloneConfig(config)),
+      ...DEFAULT_PUBLIC_PAGES.filter(
+        defaultConfig => !configs.some(config => config.page === defaultConfig.page)
+      ).map(config => this.cloneConfig(config))
+    ];
+  }
+
   async getPublicPageConfigs(): Promise<PublicPageConfig[]> {
     try {
       const docRef = doc(db, this.collectionName, this.docId);
@@ -21,16 +38,19 @@ export class PublicPageService {
 
       if (docSnap.exists()) {
         const data = docSnap.data();
-        return data.pages || DEFAULT_PUBLIC_PAGES;
+        return Array.isArray(data.pages)
+          ? this.mergeWithDefaultConfigs(data.pages)
+          : this.getDefaultConfigs();
       } else {
         // If no config exists, create default and return it
-        await this.savePublicPageConfigs(DEFAULT_PUBLIC_PAGES);
-        return DEFAULT_PUBLIC_PAGES;
+        const defaultConfigs = this.getDefaultConfigs();
+        await this.savePublicPageConfigs(defaultConfigs);
+        return defaultConfigs;
       }
     } catch (error) {
       console.error('Error getting public page configs:', error);
       // Return default configs if there's an error
-      return DEFAULT_PUBLIC_PAGES;
+      return this.getDefaultConfigs();
     }
   }
 

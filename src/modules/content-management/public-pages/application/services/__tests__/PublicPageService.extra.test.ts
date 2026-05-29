@@ -1,5 +1,9 @@
 import { PublicPageService } from '../PublicPageService';
-import { DEFAULT_PUBLIC_PAGES, PublicPage } from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
+import {
+  DEFAULT_PUBLIC_PAGES,
+  PublicPage,
+  PublicPageConfig
+} from '@modules/content-management/public-pages/domain/entities/PublicPageSettings';
 
 jest.mock('@/config/firebase', () => ({
   db: {}
@@ -20,6 +24,13 @@ const mockGetDoc = firestore.getDoc as jest.Mock;
 const mockSetDoc = firestore.setDoc as jest.Mock;
 const mockTimestampNow = firestore.Timestamp.now as jest.Mock;
 
+const mergeWithDefaults = (configs: PublicPageConfig[]): PublicPageConfig[] => [
+  ...configs,
+  ...DEFAULT_PUBLIC_PAGES.filter(
+    defaultConfig => !configs.some(config => config.page === defaultConfig.page)
+  )
+];
+
 describe('PublicPageService additional coverage', () => {
   let service: PublicPageService;
 
@@ -37,7 +48,7 @@ describe('PublicPageService additional coverage', () => {
       data: () => ({ pages: configs })
     });
 
-    await expect(service.getPublicPageConfigs()).resolves.toEqual(configs);
+    await expect(service.getPublicPageConfigs()).resolves.toEqual(mergeWithDefaults(configs));
   });
 
   it('creates default config when missing and falls back to defaults on read error', async () => {

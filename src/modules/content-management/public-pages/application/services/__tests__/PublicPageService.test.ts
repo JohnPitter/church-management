@@ -37,6 +37,13 @@ describe('PublicPageService', () => {
     ...overrides
   });
 
+  const mergeWithDefaults = (configs: PublicPageConfig[]): PublicPageConfig[] => [
+    ...configs,
+    ...DEFAULT_PUBLIC_PAGES.filter(
+      defaultConfig => !configs.some(config => config.page === defaultConfig.page)
+    )
+  ];
+
   beforeEach(() => {
     service = new PublicPageService();
     mockDocRef = { id: 'config' };
@@ -67,9 +74,36 @@ describe('PublicPageService', () => {
 
       const result = await service.getPublicPageConfigs();
 
-      expect(result).toEqual(testConfigs);
+      expect(result).toEqual(mergeWithDefaults(testConfigs));
       expect(mockDoc).toHaveBeenCalledWith({}, 'publicPageSettings', 'config');
       expect(mockGetDoc).toHaveBeenCalledWith(mockDocRef);
+    });
+
+    it('should merge stored configs with new default public pages', async () => {
+      const storedConfigs: PublicPageConfig[] = [
+        createTestConfig({ page: PublicPage.Home, isPublic: true })
+      ];
+
+      mockGetDoc.mockResolvedValue({
+        exists: () => true,
+        data: () => ({ pages: storedConfigs })
+      });
+
+      const result = await service.getPublicPageConfigs();
+
+      expect(result).toEqual([
+        storedConfigs[0],
+        ...DEFAULT_PUBLIC_PAGES.filter(config => config.page !== PublicPage.Home)
+      ]);
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            page: PublicPage.VisitorRegistration,
+            isPublic: true,
+            allowRegistration: true
+          })
+        ])
+      );
     });
 
     it('should create and return default configs when document does not exist', async () => {
@@ -194,14 +228,30 @@ describe('PublicPageService', () => {
       expect(mockSetDoc).toHaveBeenCalledWith(
         mockDocRef,
         {
-          pages: [
+          pages: mergeWithDefaults([
             { ...existingConfigs[0], isPublic: true },
             existingConfigs[1]
-          ],
+          ]),
           updatedAt: mockTimestamp
         },
         { merge: true }
       );
+    });
+
+    it('should not mutate default public page configs when updating visibility', async () => {
+      const defaultBlogConfig = DEFAULT_PUBLIC_PAGES.find(c => c.page === PublicPage.Blog);
+      const originalBlogVisibility = defaultBlogConfig?.isPublic;
+
+      mockGetDoc.mockResolvedValue({
+        exists: () => true,
+        data: () => ({ pages: [] })
+      });
+
+      mockSetDoc.mockResolvedValue(undefined);
+
+      await service.updatePageVisibility(PublicPage.Blog, true);
+
+      expect(defaultBlogConfig?.isPublic).toBe(originalBlogVisibility);
     });
 
     it('should add new config when page does not exist', async () => {
@@ -219,15 +269,15 @@ describe('PublicPageService', () => {
       await service.updatePageVisibility(PublicPage.Home, false);
 
       // Find the default config for Home
-      const defaultHomeConfig = DEFAULT_PUBLIC_PAGES.find(c => c.page === PublicPage.Home);
+      const defaultHomeConfig = DEFAULT_PUBLIC_PAGES.find(c => c.page === PublicPage.Home)!;
 
       expect(mockSetDoc).toHaveBeenCalledWith(
         mockDocRef,
         {
-          pages: [
+          pages: mergeWithDefaults([
             existingConfigs[0],
             { ...defaultHomeConfig, isPublic: false }
-          ],
+          ]),
           updatedAt: mockTimestamp
         },
         { merge: true }
@@ -270,12 +320,14 @@ describe('PublicPageService', () => {
       // Use a valid page that exists in defaults
       await service.updatePageVisibility(PublicPage.Blog, true);
 
-      const defaultBlogConfig = DEFAULT_PUBLIC_PAGES.find(c => c.page === PublicPage.Blog);
+      const defaultBlogConfig = DEFAULT_PUBLIC_PAGES.find(c => c.page === PublicPage.Blog)!;
 
       expect(mockSetDoc).toHaveBeenCalledWith(
         mockDocRef,
         {
-          pages: [{ ...defaultBlogConfig, isPublic: true }],
+          pages: DEFAULT_PUBLIC_PAGES.map(config =>
+            config.page === PublicPage.Blog ? { ...config, isPublic: true } : config
+          ),
           updatedAt: mockTimestamp
         },
         { merge: true }
@@ -295,11 +347,11 @@ describe('PublicPageService', () => {
       // Use an invalid page value that doesn't exist in defaults
       await service.updatePageVisibility('nonexistent' as PublicPage, true);
 
-      // Should save empty configs since page wasn't found in defaults
+      // Should keep default configs and not add the invalid page
       expect(mockSetDoc).toHaveBeenCalledWith(
         mockDocRef,
         {
-          pages: [],
+          pages: DEFAULT_PUBLIC_PAGES,
           updatedAt: mockTimestamp
         },
         { merge: true }
@@ -329,9 +381,9 @@ describe('PublicPageService', () => {
       expect(mockSetDoc).toHaveBeenCalledWith(
         mockDocRef,
         {
-          pages: [
+          pages: mergeWithDefaults([
             { ...existingConfigs[0], allowRegistration: true }
-          ],
+          ]),
           updatedAt: mockTimestamp
         },
         { merge: true }
@@ -350,12 +402,14 @@ describe('PublicPageService', () => {
 
       await service.updatePageRegistrationSetting(PublicPage.Events, true);
 
-      const defaultEventsConfig = DEFAULT_PUBLIC_PAGES.find(c => c.page === PublicPage.Events);
+      const defaultEventsConfig = DEFAULT_PUBLIC_PAGES.find(c => c.page === PublicPage.Events)!;
 
       expect(mockSetDoc).toHaveBeenCalledWith(
         mockDocRef,
         {
-          pages: [{ ...defaultEventsConfig, allowRegistration: true }],
+          pages: DEFAULT_PUBLIC_PAGES.map(config =>
+            config.page === PublicPage.Events ? { ...config, allowRegistration: true } : config
+          ),
           updatedAt: mockTimestamp
         },
         { merge: true }
@@ -406,9 +460,9 @@ describe('PublicPageService', () => {
       expect(mockSetDoc).toHaveBeenCalledWith(
         mockDocRef,
         {
-          pages: [
+          pages: mergeWithDefaults([
             { ...existingConfigs[0], allowRegistration: false }
-          ],
+          ]),
           updatedAt: mockTimestamp
         },
         { merge: true }
@@ -428,11 +482,11 @@ describe('PublicPageService', () => {
       // Use an invalid page value that doesn't exist in defaults
       await service.updatePageRegistrationSetting('nonexistent' as PublicPage, true);
 
-      // Should save empty configs since page wasn't found in defaults
+      // Should keep default configs and not add the invalid page
       expect(mockSetDoc).toHaveBeenCalledWith(
         mockDocRef,
         {
-          pages: [],
+          pages: DEFAULT_PUBLIC_PAGES,
           updatedAt: mockTimestamp
         },
         { merge: true }
@@ -471,7 +525,7 @@ describe('PublicPageService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false when page config does not exist', async () => {
+    it('should use default visibility when page config does not exist in stored data', async () => {
       const testConfigs: PublicPageConfig[] = [];
 
       mockGetDoc.mockResolvedValue({
@@ -481,7 +535,8 @@ describe('PublicPageService', () => {
 
       const result = await service.isPagePublic(PublicPage.Events);
 
-      expect(result).toBe(false);
+      const defaultEventsConfig = DEFAULT_PUBLIC_PAGES.find(c => c.page === PublicPage.Events);
+      expect(result).toBe(defaultEventsConfig?.isPublic ?? false);
     });
 
     it('should return false when an error occurs', async () => {
@@ -522,30 +577,16 @@ describe('PublicPageService', () => {
       expect(result).toBe(false);
     });
 
-    it('should catch and handle errors from configs.find()', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      // Mock configs with a getter that throws
-      const testConfigs = {
-        find: () => {
-          throw new Error('Find error');
-        }
-      };
-
+    it('should use default visibility when stored pages field is not an array', async () => {
       mockGetDoc.mockResolvedValue({
         exists: () => true,
-        data: () => ({ pages: testConfigs })
+        data: () => ({ pages: { invalid: true } })
       });
 
       const result = await service.isPagePublic(PublicPage.Home);
 
-      expect(result).toBe(false);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error checking if page is public:',
-        expect.any(Error)
-      );
-
-      consoleErrorSpy.mockRestore();
+      const defaultHomeConfig = DEFAULT_PUBLIC_PAGES.find(c => c.page === PublicPage.Home);
+      expect(result).toBe(defaultHomeConfig?.isPublic ?? false);
     });
   });
 
@@ -607,7 +648,7 @@ describe('PublicPageService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false when page config does not exist', async () => {
+    it('should use default registration setting when page config does not exist in stored data', async () => {
       const testConfigs: PublicPageConfig[] = [];
 
       mockGetDoc.mockResolvedValue({
@@ -617,7 +658,10 @@ describe('PublicPageService', () => {
 
       const result = await service.canRegisterAnonymously(PublicPage.Events);
 
-      expect(result).toBe(false);
+      const defaultEventsConfig = DEFAULT_PUBLIC_PAGES.find(c => c.page === PublicPage.Events);
+      expect(result).toBe(
+        defaultEventsConfig?.isPublic === true && defaultEventsConfig?.allowRegistration === true
+      );
     });
 
     it('should return false when an error occurs', async () => {
@@ -682,30 +726,18 @@ describe('PublicPageService', () => {
       expect(result).toBe(false);
     });
 
-    it('should catch and handle errors from configs.find()', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      // Mock configs with a getter that throws
-      const testConfigs = {
-        find: () => {
-          throw new Error('Find error');
-        }
-      };
-
+    it('should use default registration setting when stored pages field is not an array', async () => {
       mockGetDoc.mockResolvedValue({
         exists: () => true,
-        data: () => ({ pages: testConfigs })
+        data: () => ({ pages: { invalid: true } })
       });
 
       const result = await service.canRegisterAnonymously(PublicPage.Events);
 
-      expect(result).toBe(false);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error checking anonymous registration:',
-        expect.any(Error)
+      const defaultEventsConfig = DEFAULT_PUBLIC_PAGES.find(c => c.page === PublicPage.Events);
+      expect(result).toBe(
+        defaultEventsConfig?.isPublic === true && defaultEventsConfig?.allowRegistration === true
       );
-
-      consoleErrorSpy.mockRestore();
     });
   });
 
@@ -788,7 +820,7 @@ describe('PublicPageService', () => {
   });
 
   describe('Edge cases', () => {
-    it('should handle empty pages array in document', async () => {
+    it('should use default configs when pages array is empty', async () => {
       mockGetDoc.mockResolvedValue({
         exists: () => true,
         data: () => ({ pages: [] })
@@ -796,7 +828,7 @@ describe('PublicPageService', () => {
 
       const result = await service.getPublicPageConfigs();
 
-      expect(result).toEqual([]);
+      expect(result).toEqual(DEFAULT_PUBLIC_PAGES);
     });
 
     it('should handle null pages field in document', async () => {

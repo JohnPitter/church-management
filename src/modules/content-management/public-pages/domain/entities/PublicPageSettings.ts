@@ -3,6 +3,7 @@
 
 export enum PublicPage {
   Home = 'home',
+  VisitorRegistration = 'visitor-registration',
   Events = 'events',
   Blog = 'blog',
   Projects = 'projects',
@@ -23,6 +24,12 @@ export const DEFAULT_PUBLIC_PAGES: PublicPageConfig[] = [
     page: PublicPage.Home,
     isPublic: true,
     description: 'Página inicial da igreja'
+  },
+  {
+    page: PublicPage.VisitorRegistration,
+    isPublic: true,
+    allowRegistration: true,
+    description: 'Cadastro público de visitantes'
   },
   {
     page: PublicPage.Events,
@@ -63,6 +70,7 @@ export class PublicPageManager {
   static getPageLabel(page: PublicPage): string {
     const labels: Record<PublicPage, string> = {
       [PublicPage.Home]: 'Página Inicial',
+      [PublicPage.VisitorRegistration]: 'Cadastro de Visitante',
       [PublicPage.Events]: 'Eventos',
       [PublicPage.Blog]: 'Blog',
       [PublicPage.Projects]: 'Projetos',
@@ -76,6 +84,7 @@ export class PublicPageManager {
   static getPageRoute(page: PublicPage): string {
     const routes: Record<PublicPage, string> = {
       [PublicPage.Home]: '/',
+      [PublicPage.VisitorRegistration]: '/cadastro-visitante',
       [PublicPage.Events]: '/events',
       [PublicPage.Blog]: '/blog',
       [PublicPage.Projects]: '/projects',

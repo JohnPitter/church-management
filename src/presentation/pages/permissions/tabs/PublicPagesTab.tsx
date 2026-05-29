@@ -14,6 +14,7 @@ interface PublicPagesTabProps {
 
 const PAGE_ICONS: Partial<Record<PublicPage, string>> = {
   [PublicPage.Home]: '🏠',
+  [PublicPage.VisitorRegistration]: '📝',
   [PublicPage.Events]: '📅',
   [PublicPage.Blog]: '📝',
   [PublicPage.Projects]: '🎯',

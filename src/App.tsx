@@ -162,7 +162,14 @@ const router = createBrowserRouter([
       { path: 'donate', element: <DonatePage /> },
       { path: 'prayer', element: <PrayerPage /> },
       { path: 'contact', element: <ContactPage /> },
-      { path: 'cadastro-visitante', element: <VisitorSelfRegistrationPage /> },
+      {
+        path: 'cadastro-visitante',
+        element: (
+          <PublicRoute publicPage={PublicPage.VisitorRegistration}>
+            <VisitorSelfRegistrationPage />
+          </PublicRoute>
+        )
+      },
       {
         path: 'painel',
         element: (
