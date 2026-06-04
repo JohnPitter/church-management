@@ -168,6 +168,19 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Layouts Server-Driven UI do app móvel (KMP). Leitura pública (membros renderizam),
+    // escrita só por admin (um layout malformado afeta todos os apps).
+    match /appScreens/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Shell server-driven do app móvel (abas/navegação). Leitura pública, escrita só admin.
+    match /appConfig/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /homeSettings/{docId} {
       allow read: if true;
       allow write: if isAdmin() || hasRole('secretary');
