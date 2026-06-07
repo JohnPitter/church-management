@@ -177,7 +177,7 @@ export const EnterpriseHomeLayout: React.FC<EnterpriseHomeLayoutProps> = ({ sect
                 </p>
               </div>
               <button
-                onClick={() => navigate('/painel')}
+                onClick={() => navigate(currentUser?.role === 'professional' ? '/professional' : '/painel')}
                 className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-lg"
               >
                 Acessar Painel

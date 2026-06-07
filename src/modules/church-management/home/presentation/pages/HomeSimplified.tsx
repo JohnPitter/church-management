@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from 'presentation/contexts/AuthContext';
 import { usePermissions } from 'presentation/hooks/usePermissions';
 import { SystemModule, PermissionAction } from 'domain/entities/Permission';
 import { HomeSettingsService } from '@modules/content-management/home-settings/application/services/HomeSettingsService';
@@ -17,6 +18,7 @@ import { EnterpriseHomeLayout } from 'presentation/components/HomeLayouts/Enterp
 import { BibleVerse, getVerseOfTheDay } from 'data/verses';
 
 const HomeSimplified: React.FC = () => {
+  const { currentUser } = useAuth();
   const { hasPermission } = usePermissions();
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -68,11 +70,10 @@ const HomeSimplified: React.FC = () => {
 
   // Redirect professionals to their panel
   useEffect(() => {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     if (currentUser?.role === 'professional' && hasPermission(SystemModule.Assistance, PermissionAction.View)) {
       navigate('/professional');
     }
-  }, [hasPermission, navigate]);
+  }, [currentUser, hasPermission, navigate]);
 
   if (!homeSettings) {
     return (
