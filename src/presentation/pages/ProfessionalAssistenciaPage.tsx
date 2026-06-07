@@ -62,6 +62,12 @@ const ProfessionalAssistenciaPage: React.FC = () => {
     }
   };
 
+  const sortDesc = (list: AgendamentoAssistencia[]) =>
+    [...list].sort((a, b) => new Date(b.dataHoraAgendamento).getTime() - new Date(a.dataHoraAgendamento).getTime());
+
+  const sortAsc = (list: AgendamentoAssistencia[]) =>
+    [...list].sort((a, b) => new Date(a.dataHoraAgendamento).getTime() - new Date(b.dataHoraAgendamento).getTime());
+
   const getFilteredAgendamentos = () => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -70,19 +76,19 @@ const ProfessionalAssistenciaPage: React.FC = () => {
 
     switch (filter) {
       case 'hoje':
-        return agendamentos.filter(a => {
+        return sortAsc(agendamentos.filter(a => {
           const agendamentoDate = new Date(a.dataHoraAgendamento);
           return agendamentoDate >= today && agendamentoDate < tomorrow;
-        });
+        }));
       case 'proximos':
-        return agendamentos.filter(a => {
+        return sortAsc(agendamentos.filter(a => {
           const agendamentoDate = new Date(a.dataHoraAgendamento);
           return agendamentoDate >= now && ![StatusAgendamento.Concluido, StatusAgendamento.Cancelado].includes(a.status);
-        });
+        }));
       case 'concluidos':
-        return agendamentos.filter(a => a.status === StatusAgendamento.Concluido);
+        return sortDesc(agendamentos.filter(a => a.status === StatusAgendamento.Concluido));
       default:
-        return agendamentos;
+        return sortDesc(agendamentos);
     }
   };
 
