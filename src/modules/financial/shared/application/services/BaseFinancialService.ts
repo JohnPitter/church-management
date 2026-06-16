@@ -258,6 +258,21 @@ export abstract class BaseFinancialService {
     }
   }
 
+  async updateCategory(
+    id: string,
+    updates: Partial<Omit<FinancialCategory, 'id' | 'createdAt' | 'updatedAt'>>
+  ): Promise<void> {
+    try {
+      await updateDoc(doc(db, this.collections.categories, id), {
+        ...updates,
+        updatedAt: Timestamp.fromDate(new Date())
+      });
+    } catch (error) {
+      console.error(`Error updating ${this.logContext} category:`, error);
+      throw new Error(`Erro ao atualizar categoria${this.errorContext}`);
+    }
+  }
+
   async getCategories(type?: TransactionType): Promise<FinancialCategory[]> {
     try {
       const snapshot = await getDocs(this.buildCategoryQuery(type));
