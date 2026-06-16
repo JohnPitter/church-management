@@ -12,7 +12,8 @@ import { financialService } from '@modules/financial/church-finance/application/
 // Mock the financial service
 jest.mock('@modules/financial/church-finance/application/services/FinancialService', () => ({
   financialService: {
-    createCategory: jest.fn()
+    createCategory: jest.fn(),
+    updateCategory: jest.fn()
   }
 }));
 
@@ -111,7 +112,7 @@ describe('CreateCategoryModal', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
       const nameInput = screen.getByPlaceholderText('Nome da categoria');
-      await userEvent.type(nameInput, 'AB');
+      userEvent.type(nameInput, 'AB');
 
       const submitButton = screen.getByRole('button', { name: /Criar Categoria/i });
       fireEvent.click(submitButton);
@@ -132,7 +133,7 @@ describe('CreateCategoryModal', () => {
       });
 
       const nameInput = screen.getByPlaceholderText('Nome da categoria');
-      await userEvent.type(nameInput, 'A');
+      userEvent.type(nameInput, 'A');
 
       await waitFor(() => {
         expect(screen.queryByText('Nome da categoria é obrigatório')).not.toBeInTheDocument();
@@ -164,8 +165,8 @@ describe('CreateCategoryModal', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
       const customIconInput = screen.getByPlaceholderText('Ou digite um emoji personalizado');
-      await userEvent.clear(customIconInput);
-      await userEvent.type(customIconInput, '🎉');
+      userEvent.clear(customIconInput);
+      userEvent.type(customIconInput, '🎉');
 
       expect(customIconInput).toHaveValue('🎉');
     });
@@ -217,7 +218,7 @@ describe('CreateCategoryModal', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
       const nameInput = screen.getByPlaceholderText('Nome da categoria');
-      await userEvent.type(nameInput, 'Alimentação');
+      userEvent.type(nameInput, 'Alimentação');
 
       // The preview should show the entered name
       const previewSection = screen.getByText('Visualização').closest('div');
@@ -228,7 +229,7 @@ describe('CreateCategoryModal', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
       const descriptionInput = screen.getByPlaceholderText('Descrição da categoria...');
-      await userEvent.type(descriptionInput, 'Gastos com alimentação');
+      userEvent.type(descriptionInput, 'Gastos com alimentação');
 
       const previewSection = screen.getByText('Visualização').closest('div');
       expect(previewSection).toHaveTextContent('Gastos com alimentação');
@@ -242,10 +243,10 @@ describe('CreateCategoryModal', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
       const nameInput = screen.getByPlaceholderText('Nome da categoria');
-      await userEvent.type(nameInput, 'Alimentação');
+      userEvent.type(nameInput, 'Alimentação');
 
       const descriptionInput = screen.getByPlaceholderText('Descrição da categoria...');
-      await userEvent.type(descriptionInput, 'Gastos com alimentação');
+      userEvent.type(descriptionInput, 'Gastos com alimentação');
 
       const submitButton = screen.getByRole('button', { name: /Criar Categoria/i });
       fireEvent.click(submitButton);
@@ -271,7 +272,7 @@ describe('CreateCategoryModal', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
       const nameInput = screen.getByPlaceholderText('Nome da categoria');
-      await userEvent.type(nameInput, 'Alimentação');
+      userEvent.type(nameInput, 'Alimentação');
 
       const submitButton = screen.getByRole('button', { name: /Criar Categoria/i });
       fireEvent.click(submitButton);
@@ -287,7 +288,7 @@ describe('CreateCategoryModal', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
       const nameInput = screen.getByPlaceholderText('Nome da categoria');
-      await userEvent.type(nameInput, 'Alimentação');
+      userEvent.type(nameInput, 'Alimentação');
 
       const submitButton = screen.getByRole('button', { name: /Criar Categoria/i });
       fireEvent.click(submitButton);
@@ -304,7 +305,7 @@ describe('CreateCategoryModal', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
       const nameInput = screen.getByPlaceholderText('Nome da categoria');
-      await userEvent.type(nameInput, 'Alimentação');
+      userEvent.type(nameInput, 'Alimentação');
 
       const submitButton = screen.getByRole('button', { name: /Criar Categoria/i });
       fireEvent.click(submitButton);
@@ -322,7 +323,7 @@ describe('CreateCategoryModal', () => {
       render(<CreateCategoryModal {...defaultProps} currentUser={null} />);
 
       const nameInput = screen.getByPlaceholderText('Nome da categoria');
-      await userEvent.type(nameInput, 'Alimentação');
+      userEvent.type(nameInput, 'Alimentação');
 
       const submitButton = screen.getByRole('button', { name: /Criar Categoria/i });
       fireEvent.click(submitButton);
@@ -378,7 +379,7 @@ describe('CreateCategoryModal', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
       const nameInput = screen.getByPlaceholderText('Nome da categoria');
-      await userEvent.type(nameInput, 'Alimentação');
+      userEvent.type(nameInput, 'Alimentação');
 
       const submitButton = screen.getByRole('button', { name: /Criar Categoria/i });
       fireEvent.click(submitButton);
@@ -396,7 +397,7 @@ describe('CreateCategoryModal', () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
       const nameInput = screen.getByPlaceholderText('Nome da categoria');
-      await userEvent.type(nameInput, 'Alimentação');
+      userEvent.type(nameInput, 'Alimentação');
 
       const submitButton = screen.getByRole('button', { name: /Criar Categoria/i });
       fireEvent.click(submitButton);
@@ -407,13 +408,61 @@ describe('CreateCategoryModal', () => {
     });
   });
 
+  describe('Edit mode', () => {
+    const existingCategory = {
+      id: 'cat-1',
+      name: 'Aluguel',
+      description: 'Despesas com aluguel',
+      type: TransactionType.EXPENSE,
+      color: '#EF4444',
+      icon: '🏠',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    it('should render edit title and prefill the form when a category is provided', () => {
+      render(<CreateCategoryModal {...defaultProps} category={existingCategory} />);
+
+      expect(screen.getByText('Editar Categoria Financeira')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Nome da categoria')).toHaveValue('Aluguel');
+      expect(screen.getByPlaceholderText('Descrição da categoria...')).toHaveValue('Despesas com aluguel');
+      expect(screen.getByRole('button', { name: /Salvar Alterações/i })).toBeInTheDocument();
+    });
+
+    it('should call updateCategory with the category id on submission', async () => {
+      (financialService.updateCategory as jest.Mock).mockResolvedValue(undefined);
+
+      render(<CreateCategoryModal {...defaultProps} category={existingCategory} />);
+
+      const nameInput = screen.getByPlaceholderText('Nome da categoria');
+      userEvent.clear(nameInput);
+      userEvent.type(nameInput, 'Aluguel da Sede');
+
+      fireEvent.click(screen.getByRole('button', { name: /Salvar Alterações/i }));
+
+      await waitFor(() => {
+        expect(financialService.updateCategory).toHaveBeenCalledWith(
+          'cat-1',
+          expect.objectContaining({
+            name: 'Aluguel da Sede',
+            type: TransactionType.EXPENSE,
+            color: '#EF4444',
+            icon: '🏠'
+          })
+        );
+      });
+      expect(financialService.createCategory).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Error display', () => {
     it('should display multiple validation errors', async () => {
       render(<CreateCategoryModal {...defaultProps} />);
 
       // Clear the default icon and color to trigger validation errors
       const iconInput = screen.getByPlaceholderText('Ou digite um emoji personalizado');
-      await userEvent.clear(iconInput);
+      userEvent.clear(iconInput);
 
       const submitButton = screen.getByRole('button', { name: /Criar Categoria/i });
       fireEvent.click(submitButton);

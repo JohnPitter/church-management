@@ -66,6 +66,7 @@ export const AdminFinancialPage: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<FinancialCategory | null>(null);
   const [selectedTab, setSelectedTab] = useState('overview');
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const { confirm } = useConfirmDialog();
@@ -284,6 +285,16 @@ export const AdminFinancialPage: React.FC = () => {
     loadData(); // Reload data after donation is created
     loggingService.logDatabase('info', 'Donation created',
       'New donation created via financial page', currentUser as any);
+  };
+
+  const handleEditCategory = (category: FinancialCategory) => {
+    setEditingCategory(category);
+    setShowCategoryModal(true);
+  };
+
+  const handleCloseCategoryModal = () => {
+    setShowCategoryModal(false);
+    setEditingCategory(null);
   };
 
   const loadChartData = async (startDate: Date, endDate: Date) => {
@@ -1145,13 +1156,21 @@ export const AdminFinancialPage: React.FC = () => {
                     .map(category => (
                       <div key={category.id} className="border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center mb-3">
-                          <div 
+                          <div
                             className="w-8 h-8 rounded-full flex items-center justify-center mr-3"
                             style={{ backgroundColor: category.color + '20', color: category.color }}
                           >
                             {category.icon}
                           </div>
-                          <h4 className="font-medium text-gray-900">{category.name}</h4>
+                          <h4 className="flex-1 font-medium text-gray-900">{category.name}</h4>
+                          {canManage && (
+                            <button
+                              onClick={() => handleEditCategory(category)}
+                              className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                            >
+                              Editar
+                            </button>
+                          )}
                         </div>
                         {category.description && (
                           <p className="text-sm text-gray-500 mb-3">{category.description}</p>
@@ -1190,13 +1209,21 @@ export const AdminFinancialPage: React.FC = () => {
                     .map(category => (
                       <div key={category.id} className="border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center mb-3">
-                          <div 
+                          <div
                             className="w-8 h-8 rounded-full flex items-center justify-center mr-3"
                             style={{ backgroundColor: category.color + '20', color: category.color }}
                           >
                             {category.icon}
                           </div>
-                          <h4 className="font-medium text-gray-900">{category.name}</h4>
+                          <h4 className="flex-1 font-medium text-gray-900">{category.name}</h4>
+                          {canManage && (
+                            <button
+                              onClick={() => handleEditCategory(category)}
+                              className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                            >
+                              Editar
+                            </button>
+                          )}
                         </div>
                         {category.description && (
                           <p className="text-sm text-gray-500 mb-3">{category.description}</p>
@@ -1929,9 +1956,10 @@ export const AdminFinancialPage: React.FC = () => {
       {/* Create Category Modal */}
       <CreateCategoryModal
         isOpen={showCategoryModal}
-        onClose={() => setShowCategoryModal(false)}
+        onClose={handleCloseCategoryModal}
         onCategoryCreated={loadData}
         currentUser={currentUser}
+        category={editingCategory}
       />
 
       {/* Create Department Modal */}

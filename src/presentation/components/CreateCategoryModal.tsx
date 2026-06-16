@@ -1,14 +1,16 @@
 // Presentation Component - Create Category Modal
 // Modal for creating new financial categories
 
-import React, { useState } from 'react';
-import { 
+import React, { useState, useEffect } from 'react';
+import {
+  FinancialCategory,
   TransactionType
 } from '@modules/financial/church-finance/domain/entities/Financial';
 import { financialService } from '@modules/financial/church-finance/application/services/FinancialService';
 
 interface FinancialServiceLike {
   createCategory(data: any): Promise<string>;
+  updateCategory(id: string, updates: any): Promise<void>;
 }
 
 interface CreateCategoryModalProps {
@@ -17,24 +19,44 @@ interface CreateCategoryModalProps {
   onCategoryCreated: () => void;
   currentUser: any;
   service?: FinancialServiceLike;
+  category?: FinancialCategory | null;
 }
+
+const EMPTY_FORM = {
+  name: '',
+  description: '',
+  type: TransactionType.EXPENSE,
+  color: '#6366F1',
+  icon: '📄'
+};
 
 export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
   isOpen,
   onClose,
   onCategoryCreated,
   currentUser,
-  service
+  service,
+  category
 }) => {
   const activeService = service || financialService;
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    type: TransactionType.EXPENSE,
-    color: '#6366F1',
-    icon: '📄'
-  });
-  
+  const isEditing = !!category;
+  const [formData, setFormData] = useState(EMPTY_FORM);
+
+  // Load category data into the form when editing
+  useEffect(() => {
+    if (category) {
+      setFormData({
+        name: category.name,
+        description: category.description || '',
+        type: category.type,
+        color: category.color,
+        icon: category.icon
+      });
+    } else {
+      setFormData(EMPTY_FORM);
+    }
+  }, [category]);
+
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -105,46 +127,41 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
     
     setLoading(true);
     try {
-      const categoryData = {
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        type: formData.type,
-        color: formData.color,
-        icon: formData.icon,
-        isActive: true,
-        createdBy: currentUser?.email || 'unknown'
-      };
-      
-      await activeService.createCategory(categoryData);
-      
-      // Reset form
-      setFormData({
-        name: '',
-        description: '',
-        type: TransactionType.EXPENSE,
-        color: '#6366F1',
-        icon: '📄'
-      });
-      
+      if (isEditing && category) {
+        await activeService.updateCategory(category.id, {
+          name: formData.name.trim(),
+          description: formData.description.trim(),
+          type: formData.type,
+          color: formData.color,
+          icon: formData.icon
+        });
+      } else {
+        await activeService.createCategory({
+          name: formData.name.trim(),
+          description: formData.description.trim(),
+          type: formData.type,
+          color: formData.color,
+          icon: formData.icon,
+          isActive: true,
+          createdBy: currentUser?.email || 'unknown'
+        });
+      }
+
+      setFormData(EMPTY_FORM);
+
       onCategoryCreated();
       onClose();
-      
+
     } catch (error) {
-      console.error('Error creating category:', error);
-      setErrors(['Erro ao criar categoria. Tente novamente.']);
+      console.error(`Error ${isEditing ? 'updating' : 'creating'} category:`, error);
+      setErrors([`Erro ao ${isEditing ? 'atualizar' : 'criar'} categoria. Tente novamente.`]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleClose = () => {
-    setFormData({
-      name: '',
-      description: '',
-      type: TransactionType.EXPENSE,
-      color: '#6366F1',
-      icon: '📄'
-    });
+    setFormData(EMPTY_FORM);
     setErrors([]);
     onClose();
   };
@@ -158,7 +175,7 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-medium text-gray-900">
-              Nova Categoria Financeira
+              {isEditing ? 'Editar Categoria Financeira' : 'Nova Categoria Financeira'}
             </h3>
             <button
               onClick={handleClose}
@@ -386,10 +403,10 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
                 {loading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Criando...
+                    {isEditing ? 'Salvando...' : 'Criando...'}
                   </div>
                 ) : (
-                  'Criar Categoria'
+                  isEditing ? 'Salvar Alterações' : 'Criar Categoria'
                 )}
               </button>
             </div>
