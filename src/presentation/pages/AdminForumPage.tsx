@@ -45,6 +45,7 @@ export const AdminForumPage: React.FC = () => {
   const [showCreateTopicModal, setShowCreateTopicModal] = useState(false);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
   const [_hasMore, setHasMore] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const { paginatedItems: paginatedTopics, currentPage: topicsCurrentPage, totalPages: topicsTotalPages, totalItems: topicsTotalItems, pageSize: topicsPageSize, setCurrentPage: setTopicsCurrentPage, setPageSize: setTopicsPageSize } = usePagination(topics);
 
@@ -261,6 +262,12 @@ export const AdminForumPage: React.FC = () => {
 
     return (
       <div className="space-y-4">
+        {openMenuId && (
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setOpenMenuId(null)}
+          />
+        )}
         {paginatedTopics.map(topic => (
           <div key={topic.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex justify-between items-start">
@@ -332,47 +339,55 @@ export const AdminForumPage: React.FC = () => {
                 )}
 
                 {(canManage || canDelete) && (
-                  <div className="relative group">
-                    <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                  <div className="relative">
+                    <button
+                      onClick={() => setOpenMenuId(openMenuId === topic.id ? null : topic.id)}
+                      className={`p-2 rounded-lg ${
+                        openMenuId === topic.id ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                      title="Ações"
+                    >
                       ⚙️
                     </button>
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 hidden group-hover:block z-10">
-                      <div className="py-1">
-                        {canManage && (
-                          <>
-                            <button
-                              onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.PUBLISHED)}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              ✅ Aprovar
-                            </button>
-                            <button
-                              onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.REJECTED)}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              ❌ Rejeitar
-                            </button>
-                            <button
-                              onClick={() => handleUpdateTopicStatus(topic.id, TopicStatus.ARCHIVED)}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              📦 Arquivar
-                            </button>
-                          </>
-                        )}
-                        {canDelete && (
-                          <>
-                            {canManage && <hr className="my-1" />}
-                            <button
-                              onClick={() => handleDeleteTopic(topic.id)}
-                              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                            >
-                              🗑️ Excluir
-                            </button>
-                          </>
-                        )}
+                    {openMenuId === topic.id && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-20">
+                        <div className="py-1">
+                          {canManage && (
+                            <>
+                              <button
+                                onClick={() => { setOpenMenuId(null); handleUpdateTopicStatus(topic.id, TopicStatus.PUBLISHED); }}
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                ✅ Aprovar
+                              </button>
+                              <button
+                                onClick={() => { setOpenMenuId(null); handleUpdateTopicStatus(topic.id, TopicStatus.REJECTED); }}
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                ❌ Rejeitar
+                              </button>
+                              <button
+                                onClick={() => { setOpenMenuId(null); handleUpdateTopicStatus(topic.id, TopicStatus.ARCHIVED); }}
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                📦 Arquivar
+                              </button>
+                            </>
+                          )}
+                          {canDelete && (
+                            <>
+                              {canManage && <hr className="my-1" />}
+                              <button
+                                onClick={() => { setOpenMenuId(null); handleDeleteTopic(topic.id); }}
+                                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                              >
+                                🗑️ Excluir
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>
