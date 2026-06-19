@@ -273,6 +273,15 @@ export abstract class BaseFinancialService {
     }
   }
 
+  async deleteCategory(id: string): Promise<void> {
+    try {
+      await deleteDoc(doc(db, this.collections.categories, id));
+    } catch (error) {
+      console.error(`Error deleting ${this.logContext} category:`, error);
+      throw new Error(`Erro ao excluir categoria${this.errorContext}`);
+    }
+  }
+
   async getCategories(type?: TransactionType): Promise<FinancialCategory[]> {
     try {
       const snapshot = await getDocs(this.buildCategoryQuery(type));

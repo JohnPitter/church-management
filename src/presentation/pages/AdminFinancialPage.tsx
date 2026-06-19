@@ -67,6 +67,7 @@ export const AdminFinancialPage: React.FC = () => {
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<FinancialCategory | null>(null);
+  const [openCategoryMenuId, setOpenCategoryMenuId] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState('overview');
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const { confirm } = useConfirmDialog();
@@ -290,6 +291,27 @@ export const AdminFinancialPage: React.FC = () => {
   const handleEditCategory = (category: FinancialCategory) => {
     setEditingCategory(category);
     setShowCategoryModal(true);
+  };
+
+  const handleDeleteCategory = async (category: FinancialCategory) => {
+    const ok = await confirm({
+      title: 'Excluir Categoria',
+      message: `Tem certeza que deseja excluir a categoria "${category.name}"? As transações já registradas com ela não serão alteradas.`,
+      variant: 'danger',
+      confirmText: 'Excluir',
+    });
+    if (!ok) return;
+    try {
+      await financialService.deleteCategory(category.id);
+      toast.success('Categoria excluída com sucesso');
+      loadData();
+      loggingService.logDatabase('warning', 'Financial category deleted',
+        `Category "${category.name}" (ID: ${category.id}) deleted`, currentUser as any);
+    } catch (error) {
+      toast.error('Erro ao excluir categoria');
+      loggingService.logDatabase('error', 'Failed to delete category',
+        `Category "${category.name}" (ID: ${category.id}), Error: ${error}`, currentUser as any);
+    }
   };
 
   const handleCloseCategoryModal = () => {
@@ -1139,6 +1161,12 @@ export const AdminFinancialPage: React.FC = () => {
         {/* Categories Tab */}
         {!loading && selectedTab === 'categories' && (
           <div className="space-y-6">
+            {openCategoryMenuId && (
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setOpenCategoryMenuId(null)}
+              />
+            )}
             {/* Income Categories */}
             <div className="bg-white shadow rounded-lg">
               <div className="px-6 py-4 border-b border-gray-200">
@@ -1163,13 +1191,42 @@ export const AdminFinancialPage: React.FC = () => {
                             {category.icon}
                           </div>
                           <h4 className="flex-1 font-medium text-gray-900">{category.name}</h4>
-                          {canManage && (
-                            <button
-                              onClick={() => handleEditCategory(category)}
-                              className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                            >
-                              Editar
-                            </button>
+                          {(canManage || canDelete) && (
+                            <div className="relative">
+                              <button
+                                onClick={() => setOpenCategoryMenuId(openCategoryMenuId === category.id ? null : category.id)}
+                                className={`p-1.5 rounded-lg ${
+                                  openCategoryMenuId === category.id ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-100'
+                                }`}
+                                title="Ações"
+                              >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                </svg>
+                              </button>
+                              {openCategoryMenuId === category.id && (
+                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-20">
+                                  <div className="py-1">
+                                    {canManage && (
+                                      <button
+                                        onClick={() => { setOpenCategoryMenuId(null); handleEditCategory(category); }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                      >
+                                        ✏️ Editar
+                                      </button>
+                                    )}
+                                    {(canDelete || canManage) && (
+                                      <button
+                                        onClick={() => { setOpenCategoryMenuId(null); handleDeleteCategory(category); }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                      >
+                                        🗑️ Excluir
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                         {category.description && (
@@ -1216,13 +1273,42 @@ export const AdminFinancialPage: React.FC = () => {
                             {category.icon}
                           </div>
                           <h4 className="flex-1 font-medium text-gray-900">{category.name}</h4>
-                          {canManage && (
-                            <button
-                              onClick={() => handleEditCategory(category)}
-                              className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                            >
-                              Editar
-                            </button>
+                          {(canManage || canDelete) && (
+                            <div className="relative">
+                              <button
+                                onClick={() => setOpenCategoryMenuId(openCategoryMenuId === category.id ? null : category.id)}
+                                className={`p-1.5 rounded-lg ${
+                                  openCategoryMenuId === category.id ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-100'
+                                }`}
+                                title="Ações"
+                              >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                </svg>
+                              </button>
+                              {openCategoryMenuId === category.id && (
+                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-20">
+                                  <div className="py-1">
+                                    {canManage && (
+                                      <button
+                                        onClick={() => { setOpenCategoryMenuId(null); handleEditCategory(category); }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                      >
+                                        ✏️ Editar
+                                      </button>
+                                    )}
+                                    {(canDelete || canManage) && (
+                                      <button
+                                        onClick={() => { setOpenCategoryMenuId(null); handleDeleteCategory(category); }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                      >
+                                        🗑️ Excluir
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                         {category.description && (
