@@ -77,6 +77,8 @@ export class ConfirmEventAttendanceUseCase {
         eventId: input.eventId,
         userId: currentUser.id,
         userName: currentUser.displayName,
+        userEmail: currentUser.email,
+        userPhone: currentUser.phoneNumber,
         status: input.status,
         notes: input.notes
       });
