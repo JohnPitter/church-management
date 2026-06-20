@@ -7,6 +7,7 @@ import {
   DevotionalCategory
 } from '../../domain/entities/Devotional';
 import { devotionalService } from '@modules/church-management/devotionals/application/services/DevotionalService';
+import { MediaUploadField } from '@/presentation/components/common/MediaUploadField';
 import { toLocalDateString } from '../../../../../utils/dateUtils';
 
 interface EditDevotionalModalProps {
@@ -376,32 +377,24 @@ export const EditDevotionalModal: React.FC<EditDevotionalModalProps> = ({
                 />
               </div>
 
-              {/* Media URLs */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  URL da Imagem (Opcional)
-                </label>
-                <input
-                  type="url"
-                  value={formData.imageUrl}
-                  onChange={(e) => handleInputChange('imageUrl', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="https://exemplo.com/imagem.jpg"
-                />
-              </div>
+              {/* Media (link ou upload) */}
+              <MediaUploadField
+                label="Imagem (link ou upload, opcional)"
+                value={formData.imageUrl}
+                onChange={(url) => handleInputChange('imageUrl', url)}
+                accept="image/*"
+                storageFolder="devotional-media"
+                placeholder="https://exemplo.com/imagem.jpg"
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  URL do Áudio (Opcional)
-                </label>
-                <input
-                  type="url"
-                  value={formData.audioUrl}
-                  onChange={(e) => handleInputChange('audioUrl', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="https://exemplo.com/audio.mp3"
-                />
-              </div>
+              <MediaUploadField
+                label="Áudio (link ou upload, opcional)"
+                value={formData.audioUrl}
+                onChange={(url) => handleInputChange('audioUrl', url)}
+                accept="audio/*"
+                storageFolder="devotional-media"
+                placeholder="https://exemplo.com/audio.mp3"
+              />
 
               {/* Publish Status */}
               <div className="md:col-span-2">

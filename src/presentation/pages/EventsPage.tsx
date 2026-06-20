@@ -11,6 +11,7 @@ import SocialShareButtons from '../components/SocialShareButtons';
 import { AnonymousRegistrationModal, AnonymousRegistration } from '../components/AnonymousRegistrationModal';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import { Linkify } from '../components/common/Linkify';
 
 export const EventsPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -548,7 +549,9 @@ export const EventsPage: React.FC = () => {
               {/* Event Description */}
               <div className="mb-6">
                 <h4 className="font-semibold text-gray-900 mb-2">Descrição</h4>
-                <p className="text-gray-600 leading-relaxed">{selectedEvent.description}</p>
+                <p className="text-gray-600 leading-relaxed">
+                  <Linkify text={selectedEvent.description} />
+                </p>
               </div>
 
               {/* Streaming Link */}

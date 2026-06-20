@@ -515,6 +515,13 @@ export const AdminEventsManagementPage: React.FC = () => {
     }
   };
 
+  // Builds a wa.me link from a Brazilian phone number (adds country code 55 when missing)
+  const buildWhatsAppLink = (phone: string): string => {
+    const digits = phone.replace(/\D/g, '');
+    const withCountry = digits.length <= 11 ? `55${digits}` : digits;
+    return `https://wa.me/${withCountry}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -873,7 +880,17 @@ export const AdminEventsManagementPage: React.FC = () => {
                               {confirmation.userEmail || '-'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {confirmation.userPhone || '-'}
+                              {confirmation.userPhone ? (
+                                <a
+                                  href={buildWhatsAppLink(confirmation.userPhone)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-green-600 hover:text-green-800"
+                                  title="Abrir conversa no WhatsApp"
+                                >
+                                  💬 {confirmation.userPhone}
+                                </a>
+                              ) : '-'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`px-2 py-1 text-xs font-medium rounded-full ${confirmation.isAnonymous ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
