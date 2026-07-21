@@ -17,6 +17,7 @@ import { RolesTab } from './permissions/tabs/RolesTab';
 import { UsersTab } from './permissions/tabs/UsersTab';
 import { CustomRolesTab } from './permissions/tabs/CustomRolesTab';
 import { PublicPagesTab } from './permissions/tabs/PublicPagesTab';
+import PageShell from '../components/common/PageShell';
 
 export const PermissionsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -112,21 +113,10 @@ export const PermissionsManagementPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciar Permissões</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Configure permissões de funções e usuários específicos
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Gerenciar Permissões"
+      subtitle="Configure permissões de funções e usuários específicos"
+    >
         <div className="border-b border-gray-200 mb-8">
           <nav className="-mb-px flex space-x-8">
             {TAB_CONFIG.map(tab => (
@@ -333,7 +323,6 @@ export const PermissionsManagementPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </PageShell>
   );
 };

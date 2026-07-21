@@ -71,8 +71,7 @@ const ProfessionalSessoesPage = lazyWithRetry(() => import('./presentation/pages
 const FichasManagementPage = lazyWithRetry(() => import('./presentation/pages/FichasManagementPage'));
 const ProfessionalHelpRequestsPage = lazyWithRetry(() => import('./presentation/pages/ProfessionalHelpRequestsPage').then(module => ({ default: module.ProfessionalHelpRequestsPage })));
 const SetupPage = lazyWithRetry(() => import('./presentation/pages/SetupPage'));
-const SetupPageAlternative = lazyWithRetry(() => import('./presentation/pages/SetupPageAlternative'));
-const SetupPageSimple = lazyWithRetry(() => import('./presentation/pages/SetupPageSimple'));
+const BirthdaysPage = lazyWithRetry(() => import('./presentation/pages/BirthdaysPage'));
 const WelcomePage = lazyWithRetry(() => import('./presentation/pages/WelcomePage'));
 const ONGSettingsPage = lazyWithRetry(() => import('./presentation/pages/ONGSettingsPage'));
 const ONGVolunteersPage = lazyWithRetry(() => import('./presentation/pages/ONGVolunteersPage'));
@@ -112,25 +111,6 @@ const PageFallback: React.FC = () => (
   </div>
 );
 
-// Placeholder component for pages not yet migrated
-const ComingSoon: React.FC<{ title: string }> = ({ title }) => (
-  <div className="min-h-screen bg-gray-50">
-    <div className="bg-white shadow">
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-        <p className="mt-1 text-sm text-gray-600">Em breve esta área estará disponível</p>
-      </div>
-    </div>
-    <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-      <div className="bg-white rounded-lg shadow p-10 text-center">
-        <div className="text-4xl mb-3">🚧</div>
-        <p className="text-gray-600">Esta página está sendo preparada para a nova arquitetura.</p>
-        <p className="text-gray-500 text-sm mt-2">Volte em breve!</p>
-      </div>
-    </div>
-  </div>
-);
-
 // Create router with future flags
 const router = createBrowserRouter([
   {
@@ -164,8 +144,6 @@ const router = createBrowserRouter([
       { path: 'register', element: <RegisterPage /> },
       { path: 'pending-approval', element: <PendingApprovalPage /> },
       { path: 'setup', element: <SetupPage /> },
-      { path: 'setup-redirect', element: <SetupPageAlternative /> },
-      { path: 'setup-simple', element: <SetupPageSimple /> },
       { path: 'welcome', element: <WelcomePage /> },
       { path: 'about', element: <AboutPage /> },
       { path: 'donate', element: <DonatePage /> },
@@ -351,7 +329,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Layout>
-              <ComingSoon title="Aniversariantes" />
+              <BirthdaysPage />
             </Layout>
           </ProtectedRoute>
         )

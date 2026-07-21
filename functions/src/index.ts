@@ -225,3 +225,75 @@ export const deleteUserAccount = functions
       );
     }
   });
+
+/**
+ * Bootstrap do primeiro admin (setup inicial).
+ * Só funciona se ainda não existir nenhum usuário com role admin.
+ * Usa Admin SDK (bypassa Firestore rules).
+ */
+export const bootstrapFirstAdmin = functions
+  .region('southamerica-east1')
+  .https.onCall(async (data: any, context: functions.https.CallableContext) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        'Usuário deve estar autenticado'
+      );
+    }
+
+    const adminsSnap = await admin
+      .firestore()
+      .collection('users')
+      .where('role', '==', 'admin')
+      .limit(1)
+      .get();
+
+    if (!adminsSnap.empty) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'Já existe um administrador no sistema. Use o fluxo normal de usuários.'
+      );
+    }
+
+    const uid = context.auth.uid;
+    const email = (context.auth.token.email || data?.email || '').toString().toLowerCase();
+    const displayName =
+      (data?.displayName as string) ||
+      (context.auth.token.name as string) ||
+      'Administrador';
+    const photoURL = (data?.photoURL as string) || (context.auth.token.picture as string) || null;
+
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    await admin.firestore().collection('users').doc(uid).set(
+      {
+        email,
+        displayName,
+        photoURL,
+        role: 'admin',
+        status: 'approved',
+        createdAt: now,
+        updatedAt: now,
+        approvedBy: 'system-bootstrap',
+        approvedAt: now,
+      },
+      { merge: true }
+    );
+
+    await admin.firestore().collection('settings').doc('system').set(
+      {
+        initialized: true,
+        firstAdminCreated: now,
+        version: '1.3.0',
+        bootstrapVia: 'bootstrapFirstAdmin',
+      },
+      { merge: true }
+    );
+
+    functions.logger.info('First admin bootstrapped', { uid, email });
+
+    return {
+      success: true,
+      userId: uid,
+      message: 'Administrador inicial criado com sucesso',
+    };
+  });

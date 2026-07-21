@@ -419,12 +419,39 @@ church-management/
 
 ## Roadmap
 
+### Entregue recentemente (P0 / P1)
+
 | Item | Status |
 |---|---|
-| Aplicativo movel para membros (Android) | ✅ Disponivel — [church-member-app](https://github.com/JohnPitter/church-member-app) |
-| Notificacoes push (FCM) para avisos | ✅ Disponivel |
-| **Aplicativo iOS** | 🔜 Planejado — codigo Kotlin Multiplatform ja preparado; falta configurar o projeto Xcode + CocoaPods (Firebase) e gerar a build no **macOS** (ou via CI com runner macOS). Publicacao na App Store apos isso. |
-| Painel de criacao de topicos/avisos direto pelo app (membros) | 🔜 Em avaliacao |
+| Firestore Rules por role (financas, membros, fichas, users) | ✅ |
+| Storage com role + contentType/size | ✅ |
+| Bootstrap do primeiro admin via Cloud Function | ✅ |
+| Aniversariantes no web (`/birthdays`) | ✅ |
+| PageShell em mais telas admin | ✅ (parcial; expandir) |
+| Remocao de `firebase-admin` / `firebase-functions` do package web | ✅ |
+| Setup unico (`/setup`; removidos setup-simple/redirect) | ✅ |
+
+### Proximo (P2 — produto e evolucao)
+
+| Item | Status | Notas |
+|---|---|---|
+| **Aplicativo iOS** | 🔜 Planejado | KMP ja preparado; Xcode + CocoaPods + build macOS/App Store |
+| **Celulas / pequenos grupos** | 🔜 Planejado | Lideranca, reunioes, membros por celula |
+| **Escalas de ministerio** | 🔜 Planejado | Louvor, recepcao, kids, rotatividade |
+| **Presenca em culto + check-in QR** | 🔜 Planejado | Alem de inscricao em eventos |
+| **Doacao online real** | 🔜 Em avaliacao | Gateway (alem de PIX/manual em DonatePage) |
+| **Multi-campus** | 🔜 Em avaliacao | Single-tenant hoje |
+| **Portal LGPD** | 🔜 Planejado | Exportar/apagar meus dados; consentimento clinico |
+| **Kids check-in / seguranca** | 🔜 Em avaliacao | |
+| **Quebrar god pages** | 🔜 Em andamento | AdminFinancial (~2k), Members (~1.4k), ProfessionalFichas |
+| **PageShell em 100% das paginas admin** | 🔜 Em andamento | |
+| **Testes de rules no Firebase Emulator** | 🔜 Planejado | Suite automatizada de RBAC |
+| **Query indexada de aniversarios** | 🔜 Planejado | Evitar full scan de `members` (web + mobile) |
+| Painel de topicos/avisos pelo app (membros) | 🔜 Em avaliacao | |
+| Aplicativo movel Android | ✅ | [church-member-app](https://github.com/JohnPitter/church-member-app) |
+| Notificacoes push (FCM) | ✅ | |
+
+> **Deploy das rules:** apos pull, rode `firebase deploy --only firestore:rules,storage,functions` (inclui `bootstrapFirstAdmin`).
 
 ---
 

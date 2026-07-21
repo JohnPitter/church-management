@@ -10,6 +10,7 @@ import { BackupInfo, DatabaseStats, backupService } from '@modules/analytics/bac
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import PageShell from '../components/common/PageShell';
 
 export const AdminBackupPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -284,30 +285,20 @@ export const AdminBackupPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Backup & Dados</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Gerencie backups e dados do sistema
-              </p>
-            </div>
-            {canCreate && (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                ➕ Novo Backup
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Backup & Dados"
+      subtitle="Gerencie backups e dados do sistema"
+      actions={
+        canCreate ? (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+          >
+            Novo Backup
+          </button>
+        ) : undefined
+      }
+    >
         {/* Database Statistics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="bg-white shadow rounded-lg p-6">
@@ -555,7 +546,6 @@ export const AdminBackupPage: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
 
       {/* Create Backup Modal */}
       {showCreateModal && (
@@ -602,6 +592,6 @@ export const AdminBackupPage: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </PageShell>
   );
 };
