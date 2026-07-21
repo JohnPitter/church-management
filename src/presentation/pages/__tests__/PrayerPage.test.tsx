@@ -76,7 +76,7 @@ describe('PrayerPage', () => {
   };
 
   describe('Initial Rendering', () => {
-    it('should render the prayer request page with hero section', () => {
+    it('should render the prayer request page header', () => {
       renderPrayerPage();
 
       expect(screen.getByText('Pedido de Oração')).toBeInTheDocument();
@@ -87,11 +87,11 @@ describe('PrayerPage', () => {
     it('should render the prayer request form', () => {
       renderPrayerPage();
 
-      expect(screen.getByText('Seu Nome *')).toBeInTheDocument();
+      expect(screen.getByText('Seu nome *')).toBeInTheDocument();
       expect(screen.getByText('E-mail (opcional)')).toBeInTheDocument();
       expect(screen.getByText('Telefone (opcional)')).toBeInTheDocument();
       expect(screen.getByText('Categoria')).toBeInTheDocument();
-      expect(screen.getByText('Seu Pedido de Oração *')).toBeInTheDocument();
+      expect(screen.getByText('Seu pedido de oração *')).toBeInTheDocument();
 
       expect(screen.getByPlaceholderText(/Como podemos te chamar/)).toBeInTheDocument();
       expect(screen.getByPlaceholderText('seu@email.com')).toBeInTheDocument();
@@ -122,31 +122,32 @@ describe('PrayerPage', () => {
     it('should render submit button', () => {
       renderPrayerPage();
 
-      expect(screen.getByRole('button', { name: /Enviar Pedido de Oração/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Enviar pedido de oração/ })).toBeInTheDocument();
     });
 
-    it('should render Bible verse section', () => {
+    it('should render Bible verse quote', () => {
       renderPrayerPage();
 
       expect(screen.getByText(/Não andem ansiosos por coisa alguma/)).toBeInTheDocument();
-      expect(screen.getByText('Filipenses 4:6')).toBeInTheDocument();
+      expect(screen.getByText(/Filipenses 4:6/)).toBeInTheDocument();
     });
 
-    it('should render back button linking to home', () => {
+    it('should render community and cancel links', () => {
       renderPrayerPage();
 
-      const backButtons = screen.getAllByText('Voltar ao Início');
-      expect(backButtons.length).toBeGreaterThan(0);
-      backButtons.forEach((button) => {
-        expect(button.closest('a')).toHaveAttribute('href', '/');
+      const communityLinks = screen.getAllByRole('link', { name: /comunidade/i });
+      expect(communityLinks.length).toBeGreaterThan(0);
+      communityLinks.forEach((link) => {
+        expect(link).toHaveAttribute('href', '/prayer-requests');
       });
+      expect(screen.getByRole('link', { name: /cancelar/i })).toHaveAttribute('href', '/prayer-requests');
     });
 
     it('should have health category selected by default', () => {
       renderPrayerPage();
 
       const healthButton = screen.getByText('Saúde').closest('button');
-      expect(healthButton).toHaveClass('border-purple-500', 'bg-purple-50');
+      expect(healthButton).toHaveClass('border-indigo-500', 'bg-indigo-50');
     });
   });
 
@@ -206,10 +207,10 @@ describe('PrayerPage', () => {
       renderPrayerPage();
 
       const familyButton = screen.getByText('Família').closest('button');
-      expect(familyButton).not.toHaveClass('border-purple-500');
+      expect(familyButton).not.toHaveClass('border-indigo-500');
 
       fireEvent.click(familyButton!);
-      expect(familyButton).toHaveClass('border-purple-500', 'bg-purple-50');
+      expect(familyButton).toHaveClass('border-indigo-500', 'bg-indigo-50');
     });
 
     it('should allow selecting each category', () => {
@@ -220,7 +221,7 @@ describe('PrayerPage', () => {
       for (const category of categories) {
         const categoryButton = screen.getByText(category).closest('button');
         fireEvent.click(categoryButton!);
-        expect(categoryButton).toHaveClass('border-purple-500', 'bg-purple-50');
+        expect(categoryButton).toHaveClass('border-indigo-500', 'bg-indigo-50');
       }
     });
 
@@ -230,20 +231,24 @@ describe('PrayerPage', () => {
       const healthButton = screen.getByText('Saúde').closest('button');
       const familyButton = screen.getByText('Família').closest('button');
 
-      expect(healthButton).toHaveClass('border-purple-500');
-      expect(familyButton).not.toHaveClass('border-purple-500');
+      expect(healthButton).toHaveClass('border-indigo-500');
+      expect(familyButton).not.toHaveClass('border-indigo-500');
 
       fireEvent.click(familyButton!);
-      expect(healthButton).not.toHaveClass('border-purple-500');
-      expect(familyButton).toHaveClass('border-purple-500');
+      expect(healthButton).not.toHaveClass('border-indigo-500');
+      expect(familyButton).toHaveClass('border-indigo-500');
     });
   });
 
   describe('Form Validation', () => {
-    it('should show error when submitting empty form', async () => {
+    it('should show error when submitting without prayer request text', async () => {
       renderPrayerPage();
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      // Nome/e-mail podem vir pré-preenchidos do usuário logado
+      const nameInput = screen.getByPlaceholderText(/Como podemos te chamar/) as HTMLInputElement;
+      fireEvent.change(nameInput, { target: { value: '' } });
+
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -257,7 +262,7 @@ describe('PrayerPage', () => {
       const nameInput = screen.getByPlaceholderText(/Como podemos te chamar/) as HTMLInputElement;
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -268,10 +273,12 @@ describe('PrayerPage', () => {
     it('should show error when submitting with only request', async () => {
       renderPrayerPage();
 
+      const nameInput = screen.getByPlaceholderText(/Como podemos te chamar/) as HTMLInputElement;
       const requestTextarea = screen.getByPlaceholderText(/Compartilhe seu pedido aqui/) as HTMLTextAreaElement;
+      fireEvent.change(nameInput, { target: { value: '' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -288,7 +295,7 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: '   ' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -305,7 +312,7 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: '   ' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -324,7 +331,7 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem pela minha família' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -332,8 +339,8 @@ describe('PrayerPage', () => {
           { _collectionPath: 'prayerRequests' },
           expect.objectContaining({
             name: 'João Silva',
-            email: '',
-            phone: '',
+            email: 'test@test.com',
+            phone: null,
             category: 'health',
             request: 'Por favor orem pela minha família',
             isPublic: false,
@@ -363,7 +370,7 @@ describe('PrayerPage', () => {
       const familyButton = screen.getByText('Família').closest('button');
       fireEvent.click(familyButton!);
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -395,7 +402,7 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -415,12 +422,12 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
         expect(submitButton).toBeDisabled();
-        expect(submitButton).toHaveClass('disabled:opacity-50', 'disabled:cursor-not-allowed');
+        expect(submitButton).toHaveClass('disabled:opacity-50');
       });
     });
 
@@ -433,13 +440,12 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Pedido Enviado!')).toBeInTheDocument();
+        expect(screen.getByText('Pedido enviado!')).toBeInTheDocument();
         expect(screen.getByText(/Recebemos seu pedido de oração/)).toBeInTheDocument();
-        expect(screen.getByText(/Que Deus abençoe sua vida/)).toBeInTheDocument();
       });
     });
 
@@ -452,22 +458,19 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Pedido Enviado!')).toBeInTheDocument();
+        expect(screen.getByText('Pedido enviado!')).toBeInTheDocument();
       });
 
-      // Click "Enviar Outro Pedido" button
-      const anotherRequestButton = screen.getByText('Enviar Outro Pedido');
+      const anotherRequestButton = screen.getByText('Enviar outro pedido');
       fireEvent.click(anotherRequestButton);
 
-      // Form should be reset
+      // Pedido limpo; nome/e-mail podem voltar com dados do usuário logado
       await waitFor(() => {
-        const nameInputAfterReset = screen.getByPlaceholderText(/Como podemos te chamar/) as HTMLInputElement;
         const requestTextareaAfterReset = screen.getByPlaceholderText(/Compartilhe seu pedido aqui/) as HTMLTextAreaElement;
-        expect(nameInputAfterReset).toHaveValue('');
         expect(requestTextareaAfterReset).toHaveValue('');
       });
     });
@@ -485,7 +488,7 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -504,7 +507,7 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -532,7 +535,7 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -553,7 +556,7 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -574,18 +577,21 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Pedido Enviado!')).toBeInTheDocument();
+        expect(screen.getByText('Pedido enviado!')).toBeInTheDocument();
         expect(screen.getByText(/Recebemos seu pedido de oração/)).toBeInTheDocument();
-        expect(screen.getByText('Enviar Outro Pedido')).toBeInTheDocument();
-        expect(screen.getByText('Voltar ao Início')).toBeInTheDocument();
+        expect(screen.getByText('Enviar outro pedido')).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /Ver pedidos da comunidade/i })).toHaveAttribute(
+          'href',
+          '/prayer-requests'
+        );
       });
     });
 
-    it('should return to form when clicking "Enviar Outro Pedido"', async () => {
+    it('should return to form when clicking "Enviar outro pedido"', async () => {
       renderPrayerPage();
 
       const nameInput = screen.getByPlaceholderText(/Como podemos te chamar/) as HTMLInputElement;
@@ -594,14 +600,14 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Pedido Enviado!')).toBeInTheDocument();
+        expect(screen.getByText('Pedido enviado!')).toBeInTheDocument();
       });
 
-      const anotherRequestButton = screen.getByText('Enviar Outro Pedido');
+      const anotherRequestButton = screen.getByText('Enviar outro pedido');
       fireEvent.click(anotherRequestButton);
 
       await waitFor(() => {
@@ -610,7 +616,7 @@ describe('PrayerPage', () => {
       });
     });
 
-    it('should have home link in success page', async () => {
+    it('should have community link in success page', async () => {
       renderPrayerPage();
 
       const nameInput = screen.getByPlaceholderText(/Como podemos te chamar/) as HTMLInputElement;
@@ -619,12 +625,12 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        const homeLink = screen.getByText('Voltar ao Início');
-        expect(homeLink.closest('a')).toHaveAttribute('href', '/');
+        const communityLink = screen.getByRole('link', { name: /Ver pedidos da comunidade/i });
+        expect(communityLink).toHaveAttribute('href', '/prayer-requests');
       });
     });
   });
@@ -669,16 +675,16 @@ describe('PrayerPage', () => {
     it('should have form labels visible', () => {
       renderPrayerPage();
 
-      expect(screen.getByText('Seu Nome *')).toBeInTheDocument();
+      expect(screen.getByText('Seu nome *')).toBeInTheDocument();
       expect(screen.getByText('E-mail (opcional)')).toBeInTheDocument();
       expect(screen.getByText('Telefone (opcional)')).toBeInTheDocument();
-      expect(screen.getByText('Seu Pedido de Oração *')).toBeInTheDocument();
+      expect(screen.getByText('Seu pedido de oração *')).toBeInTheDocument();
     });
 
     it('should have proper button roles', () => {
       renderPrayerPage();
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       expect(submitButton.tagName).toBe('BUTTON');
     });
 
@@ -692,8 +698,8 @@ describe('PrayerPage', () => {
     it('should show required field indicators', () => {
       renderPrayerPage();
 
-      expect(screen.getByText(/Seu Nome \*/)).toBeInTheDocument();
-      expect(screen.getByText(/Seu Pedido de Oração \*/)).toBeInTheDocument();
+      expect(screen.getByText(/Seu nome \*/)).toBeInTheDocument();
+      expect(screen.getByText(/Seu pedido de oração \*/)).toBeInTheDocument();
     });
 
     it('should have proper input types', () => {
@@ -713,7 +719,7 @@ describe('PrayerPage', () => {
     it('should prevent default form submission', async () => {
       renderPrayerPage();
 
-      const form = screen.getByRole('button', { name: /Enviar Pedido de Oração/ }).closest('form');
+      const form = screen.getByRole('button', { name: /Enviar pedido de oração/ }).closest('form');
       const submitHandler = jest.fn((e) => e.preventDefault());
       form!.addEventListener('submit', submitHandler);
 
@@ -723,7 +729,7 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -742,7 +748,7 @@ describe('PrayerPage', () => {
       fireEvent.change(nameInput, { target: { value: 'João Silva' } });
       fireEvent.change(requestTextarea, { target: { value: 'Por favor orem por mim' } });
 
-      const submitButton = screen.getByRole('button', { name: /Enviar Pedido de Oração/ });
+      const submitButton = screen.getByRole('button', { name: /Enviar pedido de oração/ });
 
       // Try to click multiple times rapidly
       fireEvent.click(submitButton);
@@ -756,3 +762,4 @@ describe('PrayerPage', () => {
     });
   });
 });
+

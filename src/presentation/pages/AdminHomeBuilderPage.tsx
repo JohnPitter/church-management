@@ -503,18 +503,20 @@ export const AdminHomeBuilderPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Bar */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-gray-900">🏗️ Construtor da Home</h1>
-              {currentLayout && (
-                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
-                  {currentLayout.name}
-                  {currentLayout.isActive && ' ✓ Ativo'}
-                </span>
-              )}
+      {/* Top Bar — alinhado ao header padrão do painel */}
+      <div className="bg-white shadow sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="min-w-0">
+                <h1 className="text-3xl font-bold text-gray-900">Construtor da Home</h1>
+                {currentLayout && (
+                  <p className="mt-1 text-sm text-gray-600 truncate">
+                    Layout: {currentLayout.name}
+                    {currentLayout.isActive ? ' (ativo)' : ''}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-3">

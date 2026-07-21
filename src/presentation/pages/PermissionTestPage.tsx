@@ -144,16 +144,22 @@ export const PermissionTestPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">🧪 Teste de Permissões</h1>
-          <p className="text-gray-600 mt-2">Validação completa do sistema de permissões</p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Teste de Permissões</h1>
+              <p className="mt-1 text-sm text-gray-600">Validação completa do sistema de permissões</p>
+            </div>
+          </div>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Current User Info */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">👤 Usuário Atual</h2>
+          <h2 className="text-xl font-semibold mb-4">Usuário Atual</h2>
           {currentUser ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>

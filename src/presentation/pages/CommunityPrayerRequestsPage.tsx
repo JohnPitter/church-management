@@ -7,6 +7,7 @@ import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
+import { PageShell } from '../components/common/PageShell';
 import { PrayerRequestService } from '@modules/church-management/prayer-requests/application/services/PrayerRequestService';
 import {
   PrayerRequest,
@@ -90,28 +91,18 @@ export const CommunityPrayerRequestsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header — mesmo padrão de Eventos / Fórum / Projetos */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Pedidos de Oração</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Pedidos dos últimos {DAYS_WINDOW} dias. Marque que você orou — como uma curtida de intercessão.
-              </p>
-            </div>
-            <Link
-              to="/prayer"
-              className="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 flex-shrink-0"
-            >
-              Enviar pedido
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Pedidos de Oração"
+      subtitle={`Pedidos dos últimos ${DAYS_WINDOW} dias. Marque que você orou — como uma curtida de intercessão.`}
+      actions={
+        <Link
+          to="/prayer"
+          className="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+        >
+          Enviar pedido
+        </Link>
+      }
+    >
         {loading ? (
           <div className="bg-white rounded-lg shadow p-10 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto" />
@@ -220,8 +211,7 @@ export const CommunityPrayerRequestsPage: React.FC = () => {
             })}
           </div>
         )}
-      </div>
-    </div>
+    </PageShell>
   );
 };
 

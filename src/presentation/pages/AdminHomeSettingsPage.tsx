@@ -107,20 +107,23 @@ export const AdminHomeSettingsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            ⚙️ Configurações da Home Page
-          </h1>
-          <p className="text-lg text-gray-600">
-            Escolha o estilo visual e configure quais seções aparecem na página inicial
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Configurações da Home Page</h1>
+              <p className="mt-1 text-sm text-gray-600">
+                Escolha o estilo visual e configure quais seções aparecem na página inicial
+              </p>
+            </div>
+          </div>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Layout Style Selection */}
-        <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               1️⃣ Escolha o Estilo Visual

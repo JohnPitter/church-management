@@ -253,10 +253,10 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Gerenciar Assistidos</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Gerenciar Assistidos</h1>
               <p className="mt-1 text-sm text-gray-600">
                 Administre pessoas assistidas pela igreja e suas famílias
               </p>

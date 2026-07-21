@@ -114,11 +114,19 @@ const PageFallback: React.FC = () => (
 
 // Placeholder component for pages not yet migrated
 const ComingSoon: React.FC<{ title: string }> = ({ title }) => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-100">
-    <div className="text-center">
-      <h1 className="text-3xl font-bold text-gray-900 mb-4">{title}</h1>
-      <p className="text-gray-600">Esta página está sendo migrada para a nova arquitetura.</p>
-      <p className="text-gray-600 mt-2">Em breve estará disponível!</p>
+  <div className="min-h-screen bg-gray-50">
+    <div className="bg-white shadow">
+      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+        <p className="mt-1 text-sm text-gray-600">Em breve esta área estará disponível</p>
+      </div>
+    </div>
+    <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+      <div className="bg-white rounded-lg shadow p-10 text-center">
+        <div className="text-4xl mb-3">🚧</div>
+        <p className="text-gray-600">Esta página está sendo preparada para a nova arquitetura.</p>
+        <p className="text-gray-500 text-sm mt-2">Volte em breve!</p>
+      </div>
     </div>
   </div>
 );
@@ -161,7 +169,16 @@ const router = createBrowserRouter([
       { path: 'welcome', element: <WelcomePage /> },
       { path: 'about', element: <AboutPage /> },
       { path: 'donate', element: <DonatePage /> },
-      { path: 'prayer', element: <PrayerPage /> },
+      {
+        path: 'prayer',
+        element: (
+          <ProtectedRoute>
+            <Layout>
+              <PrayerPage />
+            </Layout>
+          </ProtectedRoute>
+        )
+      },
       { path: 'contact', element: <ContactPage /> },
       {
         path: 'cadastro-visitante',

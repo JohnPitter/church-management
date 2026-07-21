@@ -354,7 +354,7 @@ export const AdminLeadershipPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">👥 Gerenciar Liderança</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Gerenciar Liderança</h1>
               <p className="mt-1 text-sm text-gray-600">
                 Gerencie os líderes e equipe pastoral da igreja
               </p>
