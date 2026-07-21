@@ -44,6 +44,7 @@ const AdminProjectsManagementPage = lazyWithRetry(() => import('./presentation/p
 const AdminEventsManagementPage = lazyWithRetry(() => import('./presentation/pages/AdminEventsManagementPage').then(module => ({ default: module.AdminEventsManagementPage })));
 const AdminSettingsPage = lazyWithRetry(() => import('./presentation/pages/AdminSettingsPage').then(module => ({ default: module.AdminSettingsPage })));
 const PrayerRequests = lazyWithRetry(() => import('./presentation/pages/PrayerRequests'));
+const CommunityPrayerRequestsPage = lazyWithRetry(() => import('./presentation/pages/CommunityPrayerRequestsPage').then(module => ({ default: module.CommunityPrayerRequestsPage })));
 const AdminVisitorsPage = lazyWithRetry(() => import('./presentation/pages/AdminVisitorsPage').then(module => ({ default: module.AdminVisitorsPage })));
 const VisitorsPage = lazyWithRetry(() => import('./presentation/pages/VisitorsPage').then(module => ({ default: module.VisitorsPage })));
 const AdminReportsPage = lazyWithRetry(() => import('./presentation/pages/AdminReportsPage').then(module => ({ default: module.AdminReportsPage })));
@@ -311,6 +312,19 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <Layout>
               <NotificationsPage />
+            </Layout>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'prayer-requests',
+        element: (
+          <ProtectedRoute
+            requireModule={SystemModule.Dashboard}
+            requireAction={PermissionAction.View}
+          >
+            <Layout>
+              <CommunityPrayerRequestsPage />
             </Layout>
           </ProtectedRoute>
         )

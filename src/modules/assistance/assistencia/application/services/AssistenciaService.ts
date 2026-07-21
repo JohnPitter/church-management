@@ -704,9 +704,13 @@ export class ProfissionalAssistenciaService implements IProfissionalAssistenciaS
 export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaService {
   private agendamentoRepository = new FirebaseAgendamentoAssistenciaRepository();
   private profissionalRepository = new FirebaseProfissionalAssistenciaRepository();
+  private userRepository = new FirebaseUserRepository();
   private notificationService = new NotificationService();
 
-  async createAgendamento(agendamento: Omit<AgendamentoAssistencia, 'id' | 'createdAt' | 'updatedAt'>): Promise<AgendamentoAssistencia> {
+  async createAgendamento(
+    agendamento: Omit<AgendamentoAssistencia, 'id' | 'createdAt' | 'updatedAt'>,
+    options?: { notifyProfissional?: boolean }
+  ): Promise<AgendamentoAssistencia> {
     try {
       // Validate required fields
       const validationErrors = await this.validateAgendamentoData(agendamento);
@@ -725,9 +729,14 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
         throw new Error('Horário não disponível para este profissional');
       }
 
+      const pacienteUserId =
+        agendamento.pacienteUserId ||
+        (await this.resolvePacienteUserId(agendamento));
+
       // Format data
       const formattedAgendamento: any = {
         ...agendamento,
+        ...(pacienteUserId ? { pacienteUserId } : {}),
         status: StatusAgendamento.Agendado,
         historico: [{
           id: `hist_${Date.now()}`,
@@ -750,15 +759,10 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
 
       const novoAgendamento = await this.agendamentoRepository.create(formattedAgendamento);
 
-      // Send notification for new appointment
-      await this.notificationService.createCustomNotification(
-        'Novo Agendamento',
-        `${novoAgendamento.pacienteNome} agendou ${AssistenciaEntity.formatarTipoAssistencia(novoAgendamento.tipoAssistencia)} com ${novoAgendamento.profissionalNome}`,
-        'roles',
-        {
-          roles: ['admin', 'secretaria']
-        }
-      );
+      // Lado profissional: notificado quando alguém agenda com ele
+      if (options?.notifyProfissional !== false) {
+        await this.notifyProfissionalNovoAgendamento(novoAgendamento);
+      }
 
       return novoAgendamento;
     } catch (error) {
@@ -808,16 +812,19 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
       }
 
       try {
-        const novoAgendamento = await this.createAgendamento({
-          ...agendamentoBase,
-          dataHoraAgendamento: new Date(dataAtual),
-          dataHoraFim,
-          recorrencia: {
-            frequencia,
-            ...opcaoLimite,
-            agendamentoOrigemId: primeiro.id
-          }
-        });
+        const novoAgendamento = await this.createAgendamento(
+          {
+            ...agendamentoBase,
+            dataHoraAgendamento: new Date(dataAtual),
+            dataHoraFim,
+            recorrencia: {
+              frequencia,
+              ...opcaoLimite,
+              agendamentoOrigemId: primeiro.id
+            }
+          },
+          { notifyProfissional: false }
+        );
         criados.push(novoAgendamento);
       } catch (error) {
         console.warn(`Falha ao criar ocorrência ${i + 1}:`, error);
@@ -925,15 +932,149 @@ export class AgendamentoAssistenciaService implements IAgendamentoAssistenciaSer
 
   async confirmarAgendamento(id: string, responsavel: string): Promise<void> {
     try {
-      // First confirm the appointment
       await this.agendamentoRepository.confirmarAgendamento(id, responsavel);
-      
-      // Then create a patient record automatically
+
+      const agendamento = await this.agendamentoRepository.findById(id);
+      if (agendamento) {
+        // Lado paciente/assistido: notificado quando o profissional (ou admin) aceita/confirma
+        await this.notifyPacienteAgendamentoConfirmado(agendamento);
+      }
+
       await this.ensureFichaFromAgendamento(id, responsavel);
     } catch (error) {
       console.error('Error confirming agendamento:', error);
       throw error;
     }
+  }
+
+  /** Profissional: novo atendimento agendado com ele. */
+  private async notifyProfissionalNovoAgendamento(agendamento: AgendamentoAssistencia): Promise<void> {
+    try {
+      const profissional = await this.profissionalRepository.findById(agendamento.profissionalId);
+      const recipientUserId = profissional?.userId;
+
+      if (!recipientUserId) {
+        console.warn(
+          `Profissional ${agendamento.profissionalNome} (${agendamento.profissionalId}) sem userId — notificação não enviada`
+        );
+        return;
+      }
+
+      const dataFormatada = new Date(agendamento.dataHoraAgendamento).toLocaleString('pt-BR');
+      await this.notifyUserOnly(
+        recipientUserId,
+        'Novo Agendamento',
+        `${agendamento.pacienteNome} agendou ${AssistenciaEntity.formatarTipoAssistencia(agendamento.tipoAssistencia)} com você em ${dataFormatada}`,
+        '/professional/assistencias',
+        'Ver agenda'
+      );
+    } catch (notificationError) {
+      console.warn('Failed to notify professional about new appointment (non-critical):', notificationError);
+    }
+  }
+
+  /** Paciente/assistido: agendamento aceito/confirmado. */
+  private async notifyPacienteAgendamentoConfirmado(agendamento: AgendamentoAssistencia): Promise<void> {
+    try {
+      const recipientUserId =
+        agendamento.pacienteUserId ||
+        (await this.resolvePacienteUserId(agendamento));
+
+      if (!recipientUserId) {
+        console.warn(
+          `Paciente ${agendamento.pacienteNome} sem conta de usuário vinculada (email/userId) — notificação de confirmação não enviada`
+        );
+        return;
+      }
+
+      // Persist link if missing, so re-confirmations and app stay consistent
+      if (!agendamento.pacienteUserId) {
+        try {
+          await this.agendamentoRepository.update(agendamento.id, { pacienteUserId: recipientUserId });
+        } catch (updateError) {
+          console.warn('Could not persist pacienteUserId on agendamento:', updateError);
+        }
+      }
+
+      const dataFormatada = new Date(agendamento.dataHoraAgendamento).toLocaleString('pt-BR');
+      await this.notifyUserOnly(
+        recipientUserId,
+        'Agendamento Confirmado',
+        `Seu atendimento de ${AssistenciaEntity.formatarTipoAssistencia(agendamento.tipoAssistencia)} com ${agendamento.profissionalNome} em ${dataFormatada} foi confirmado`,
+        '/notifications',
+        'Ver notificação'
+      );
+    } catch (notificationError) {
+      console.warn('Failed to notify patient about confirmed appointment (non-critical):', notificationError);
+    }
+  }
+
+  /**
+   * Resolve a conta do paciente para notificação no site/app.
+   * Ordem: pacienteUserId → email do agendamento → userId se pacienteId for conta → assistido.email.
+   */
+  private async resolvePacienteUserId(
+    agendamento: Pick<AgendamentoAssistencia, 'pacienteId' | 'pacienteEmail' | 'pacienteUserId'>
+  ): Promise<string | null> {
+    if (agendamento.pacienteUserId?.trim()) {
+      return agendamento.pacienteUserId.trim();
+    }
+
+    if (agendamento.pacienteEmail?.trim()) {
+      try {
+        const userByEmail = await this.userRepository.findByEmail(agendamento.pacienteEmail.trim());
+        if (userByEmail?.id) {
+          return userByEmail.id;
+        }
+      } catch (error) {
+        console.warn('Error resolving patient user by email:', error);
+      }
+    }
+
+    const pacienteId = agendamento.pacienteId?.trim();
+    if (pacienteId && !pacienteId.startsWith('temp_')) {
+      try {
+        const userById = await this.userRepository.findById(pacienteId);
+        if (userById?.id) {
+          return userById.id;
+        }
+      } catch {
+        // not a user id — try assistido next
+      }
+
+      try {
+        const { FirebaseAssistidoRepository } = await import(
+          '@modules/assistance/assistidos/infrastructure/repositories/FirebaseAssistidoRepository'
+        );
+        const assistidoRepository = new FirebaseAssistidoRepository();
+        const assistido = await assistidoRepository.findById(pacienteId);
+        if (assistido?.email?.trim()) {
+          const userFromAssistido = await this.userRepository.findByEmail(assistido.email.trim());
+          if (userFromAssistido?.id) {
+            return userFromAssistido.id;
+          }
+        }
+      } catch (error) {
+        console.warn('Error resolving patient user via assistido:', error);
+      }
+    }
+
+    return null;
+  }
+
+  /** Cria notificação para um único userId — nunca broadcast. */
+  private async notifyUserOnly(
+    userId: string,
+    title: string,
+    message: string,
+    actionUrl: string,
+    actionText: string
+  ): Promise<void> {
+    await this.notificationService.createCustomNotification(title, message, 'specific', {
+      userIds: [userId],
+      actionUrl,
+      actionText
+    });
   }
 
   async syncFichasForProfissionalAgenda(profissionalId: string, responsavel: string, referenceDate: Date = new Date()): Promise<number> {

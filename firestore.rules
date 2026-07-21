@@ -282,11 +282,16 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
 
+    // Notificações são pessoais: só o destinatário (userId) pode ler/atualizar.
+    // Broadcast = 1 documento por usuário com userId preenchido (nunca doc global).
     match /notifications/{docId} {
-      allow read: if isAuthenticated() && (isDocOwner() || isApproved());
-      allow create: if isApproved();
+      allow read: if isDocOwner();
+      allow create: if isApproved()
+        && request.resource.data.keys().hasAll(['userId', 'title', 'message', 'type', 'status'])
+        && request.resource.data.userId is string
+        && request.resource.data.userId.size() > 0;
       allow update: if isDocOwner();
-      allow delete: if isApproved();
+      allow delete: if isDocOwner() || isAdmin();
     }
 
     match /prayerRequests/{docId} {

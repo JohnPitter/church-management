@@ -127,6 +127,8 @@ export interface AgendamentoAssistencia {
   pacienteNome: string;
   pacienteTelefone: string;
   pacienteEmail?: string;
+  /** Conta de usuário do paciente (quando resolvida) — destinatário da notificação de confirmação */
+  pacienteUserId?: string;
   profissionalId: string;
   profissionalNome: string;
   tipoAssistencia: TipoAssistencia;

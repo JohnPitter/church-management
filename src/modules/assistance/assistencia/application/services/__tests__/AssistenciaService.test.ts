@@ -798,6 +798,7 @@ describe('AgendamentoAssistenciaService', () => {
   let mockAgendamentoRepository: jest.Mocked<FirebaseAgendamentoAssistenciaRepository>;
   let mockProfissionalRepository: jest.Mocked<FirebaseProfissionalAssistenciaRepository>;
   let mockNotificationService: jest.Mocked<NotificationService>;
+  let mockUserRepository: { findByEmail: jest.Mock; findById: jest.Mock };
 
   const createTestAgendamento = (overrides: Partial<AgendamentoAssistencia> = {}): AgendamentoAssistencia => ({
     id: 'agend-1',
@@ -834,12 +835,17 @@ describe('AgendamentoAssistenciaService', () => {
     mockAgendamentoRepository = new FirebaseAgendamentoAssistenciaRepository() as jest.Mocked<FirebaseAgendamentoAssistenciaRepository>;
     mockProfissionalRepository = new FirebaseProfissionalAssistenciaRepository() as jest.Mocked<FirebaseProfissionalAssistenciaRepository>;
     mockNotificationService = new NotificationService() as jest.Mocked<NotificationService>;
+    mockUserRepository = {
+      findByEmail: jest.fn().mockResolvedValue(null),
+      findById: jest.fn().mockResolvedValue(null)
+    };
 
     service = new AgendamentoAssistenciaService();
 
     (service as any).agendamentoRepository = mockAgendamentoRepository;
     (service as any).profissionalRepository = mockProfissionalRepository;
     (service as any).notificationService = mockNotificationService;
+    (service as any).userRepository = mockUserRepository;
   });
 
   describe('createAgendamento', () => {
@@ -867,13 +873,83 @@ describe('AgendamentoAssistenciaService', () => {
 
       mockAgendamentoRepository.findByProfissionalAndDateRange.mockResolvedValue([]);
       mockAgendamentoRepository.create.mockResolvedValue(createdAgendamento);
-      mockNotificationService.createCustomNotification.mockResolvedValue(0);
+      mockProfissionalRepository.findById.mockResolvedValue({
+        id: 'prof-1',
+        nome: 'Dr. João',
+        userId: 'user-prof-1'
+      } as any);
+      mockNotificationService.createCustomNotification.mockResolvedValue(1);
 
       const result = await service.createAgendamento(validAgendamentoData);
 
       expect(result).toEqual(createdAgendamento);
       expect(mockAgendamentoRepository.create).toHaveBeenCalled();
-      expect(mockNotificationService.createCustomNotification).toHaveBeenCalled();
+      expect(mockNotificationService.createCustomNotification).toHaveBeenCalledWith(
+        'Novo Agendamento',
+        expect.stringContaining('Maria Silva'),
+        'specific',
+        expect.objectContaining({
+          userIds: ['user-prof-1'],
+          actionUrl: '/professional/assistencias'
+        })
+      );
+    });
+
+    it('should not broadcast appointment notification by roles', async () => {
+      const createdAgendamento = createTestAgendamento();
+
+      mockAgendamentoRepository.findByProfissionalAndDateRange.mockResolvedValue([]);
+      mockAgendamentoRepository.create.mockResolvedValue(createdAgendamento);
+      mockProfissionalRepository.findById.mockResolvedValue({
+        id: 'prof-1',
+        userId: 'user-prof-1'
+      } as any);
+      mockNotificationService.createCustomNotification.mockResolvedValue(1);
+
+      await service.createAgendamento(validAgendamentoData);
+
+      expect(mockNotificationService.createCustomNotification).not.toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        'roles',
+        expect.anything()
+      );
+      expect(mockNotificationService.createCustomNotification).not.toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        'all',
+        expect.anything()
+      );
+    });
+
+    it('should skip notification when professional has no user account', async () => {
+      const createdAgendamento = createTestAgendamento();
+
+      mockAgendamentoRepository.findByProfissionalAndDateRange.mockResolvedValue([]);
+      mockAgendamentoRepository.create.mockResolvedValue(createdAgendamento);
+      mockProfissionalRepository.findById.mockResolvedValue({
+        id: 'prof-1',
+        nome: 'Dr. João'
+      } as any);
+
+      const result = await service.createAgendamento(validAgendamentoData);
+
+      expect(result).toEqual(createdAgendamento);
+      expect(mockNotificationService.createCustomNotification).not.toHaveBeenCalled();
+    });
+
+    it('should not fail creation if notification fails', async () => {
+      const createdAgendamento = createTestAgendamento();
+
+      mockAgendamentoRepository.findByProfissionalAndDateRange.mockResolvedValue([]);
+      mockAgendamentoRepository.create.mockResolvedValue(createdAgendamento);
+      mockProfissionalRepository.findById.mockResolvedValue({
+        id: 'prof-1',
+        userId: 'user-prof-1'
+      } as any);
+      mockNotificationService.createCustomNotification.mockRejectedValue(new Error('Notification failed'));
+
+      await expect(service.createAgendamento(validAgendamentoData)).resolves.toEqual(createdAgendamento);
     });
 
     it('should throw error if time slot not available', async () => {
@@ -898,13 +974,86 @@ describe('AgendamentoAssistenciaService', () => {
 
       mockAgendamentoRepository.findByProfissionalAndDateRange.mockResolvedValue([]);
       mockAgendamentoRepository.create.mockResolvedValue(createdAgendamento);
-      mockNotificationService.createCustomNotification.mockResolvedValue(0);
+      mockProfissionalRepository.findById.mockResolvedValue({
+        id: 'prof-1',
+        userId: 'user-prof-1'
+      } as any);
+      mockNotificationService.createCustomNotification.mockResolvedValue(1);
 
       (AssistenciaEntity.calcularValorFinalConsulta as jest.Mock).mockReturnValue(80);
 
       await service.createAgendamento(dataWithDiscount);
 
       expect(AssistenciaEntity.calcularValorFinalConsulta).toHaveBeenCalledWith(100, 20);
+    });
+  });
+
+  describe('confirmarAgendamento', () => {
+    it('should notify only the patient when appointment is confirmed', async () => {
+      const agendamento = createTestAgendamento({
+        status: StatusAgendamento.Confirmado,
+        pacienteEmail: 'maria@example.com'
+      });
+      mockAgendamentoRepository.confirmarAgendamento.mockResolvedValue(undefined);
+      mockAgendamentoRepository.findById.mockResolvedValue(agendamento);
+      mockAgendamentoRepository.update.mockResolvedValue(agendamento);
+      mockUserRepository.findByEmail.mockResolvedValue({ id: 'user-paciente-1', email: 'maria@example.com' });
+      mockNotificationService.createCustomNotification.mockResolvedValue(1);
+
+      jest.spyOn(service, 'ensureFichaFromAgendamento').mockResolvedValue(false);
+
+      await service.confirmarAgendamento('agend-1', 'admin@test.com');
+
+      expect(mockAgendamentoRepository.confirmarAgendamento).toHaveBeenCalledWith('agend-1', 'admin@test.com');
+      expect(mockNotificationService.createCustomNotification).toHaveBeenCalledWith(
+        'Agendamento Confirmado',
+        expect.stringContaining('Dr. João'),
+        'specific',
+        expect.objectContaining({
+          userIds: ['user-paciente-1'],
+          actionUrl: '/notifications'
+        })
+      );
+      expect(mockNotificationService.createCustomNotification).not.toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        'specific',
+        expect.objectContaining({ userIds: ['user-prof-1'] })
+      );
+    });
+
+    it('should notify patient via pacienteUserId without email lookup', async () => {
+      const agendamento = createTestAgendamento({
+        pacienteUserId: 'user-paciente-direct',
+        pacienteEmail: undefined
+      });
+      mockAgendamentoRepository.confirmarAgendamento.mockResolvedValue(undefined);
+      mockAgendamentoRepository.findById.mockResolvedValue(agendamento);
+      mockNotificationService.createCustomNotification.mockResolvedValue(1);
+      jest.spyOn(service, 'ensureFichaFromAgendamento').mockResolvedValue(false);
+
+      await service.confirmarAgendamento('agend-1', 'admin@test.com');
+
+      expect(mockUserRepository.findByEmail).not.toHaveBeenCalled();
+      expect(mockNotificationService.createCustomNotification).toHaveBeenCalledWith(
+        'Agendamento Confirmado',
+        expect.any(String),
+        'specific',
+        expect.objectContaining({ userIds: ['user-paciente-direct'] })
+      );
+    });
+
+    it('should skip patient notification when no linked user account', async () => {
+      const agendamento = createTestAgendamento({ pacienteEmail: 'semconta@example.com' });
+      mockAgendamentoRepository.confirmarAgendamento.mockResolvedValue(undefined);
+      mockAgendamentoRepository.findById.mockResolvedValue(agendamento);
+      mockUserRepository.findByEmail.mockResolvedValue(null);
+      mockUserRepository.findById.mockResolvedValue(null);
+      jest.spyOn(service, 'ensureFichaFromAgendamento').mockResolvedValue(false);
+
+      await service.confirmarAgendamento('agend-1', 'admin@test.com');
+
+      expect(mockNotificationService.createCustomNotification).not.toHaveBeenCalled();
     });
   });
 

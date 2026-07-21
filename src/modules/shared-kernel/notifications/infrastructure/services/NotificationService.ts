@@ -119,18 +119,29 @@ export class NotificationService implements INotificationService {
           }
           return await this.notificationRepository.createForUsersByRole(notification, options.roles);
           
-        case 'specific':
+        case 'specific': {
           if (!options?.userIds || options.userIds.length === 0) {
             throw new Error('IDs dos usuários devem ser especificados para este tipo de notificação');
           }
-          
-          const notifications = options.userIds.map(userId => ({
+
+          const uniqueUserIds = [...new Set(
+            options.userIds
+              .filter((id): id is string => typeof id === 'string' && id.trim().length > 0)
+              .map((id) => id.trim())
+          )];
+
+          if (uniqueUserIds.length === 0) {
+            throw new Error('IDs dos usuários devem ser especificados para este tipo de notificação');
+          }
+
+          const notifications = uniqueUserIds.map(userId => ({
             ...notification,
             userId
           }));
-          
+
           await this.notificationRepository.createBulk(notifications);
           return notifications.length;
+        }
           
         default:
           throw new Error('Tipo de target inválido');
@@ -144,9 +155,9 @@ export class NotificationService implements INotificationService {
   async getUserNotifications(userId: string, limit?: number): Promise<Notification[]> {
     try {
       const notifications = await this.notificationRepository.findByUserId(userId, limit);
-      // Filter out expired notifications
-      return notifications.filter(notification => 
-        NotificationEntity.canDisplay(notification)
+      // Apenas do próprio usuário + não expiradas (defesa além da query/regras)
+      return notifications.filter(notification =>
+        notification.userId === userId && NotificationEntity.canDisplay(notification)
       );
     } catch (error) {
       console.error('Error getting user notifications:', error);
@@ -157,9 +168,8 @@ export class NotificationService implements INotificationService {
   async getUnreadNotifications(userId: string): Promise<Notification[]> {
     try {
       const notifications = await this.notificationRepository.findUnreadByUserId(userId);
-      // Filter out expired notifications
-      return notifications.filter(notification => 
-        NotificationEntity.canDisplay(notification)
+      return notifications.filter(notification =>
+        notification.userId === userId && NotificationEntity.canDisplay(notification)
       );
     } catch (error) {
       console.error('Error getting unread notifications:', error);

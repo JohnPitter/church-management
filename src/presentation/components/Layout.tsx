@@ -96,6 +96,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       items: [
         { name: 'Eventos', href: '/events', show: hasPermission(SystemModule.Events, PermissionAction.View) },
         { name: 'Fórum', href: '/forum', show: hasPermission(SystemModule.Forum, PermissionAction.View) },
+        { name: 'Pedidos de Oração', href: '/prayer-requests', show: hasPermission(SystemModule.Dashboard, PermissionAction.View) },
         { name: 'Liderança', href: '/leadership', show: hasPermission(SystemModule.Leadership, PermissionAction.View) },
       ]
     },

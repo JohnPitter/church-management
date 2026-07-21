@@ -61,6 +61,7 @@ export class FirebasePrayerRequestRepository {
         return {
           id: docSnap.id,
           ...data,
+          prayedBy: data.prayedBy || [],
           createdAt: data.createdAt?.toDate() || new Date(),
           updatedAt: data.updatedAt?.toDate() || new Date()
         } as PrayerRequest;
@@ -89,6 +90,7 @@ export class FirebasePrayerRequestRepository {
         prayerRequests.push({
           id: doc.id,
           ...data,
+          prayedBy: data.prayedBy || [],
           createdAt: data.createdAt?.toDate() || new Date(),
           updatedAt: data.updatedAt?.toDate() || new Date()
         } as PrayerRequest);
@@ -118,6 +120,7 @@ export class FirebasePrayerRequestRepository {
         prayerRequests.push({
           id: doc.id,
           ...data,
+          prayedBy: data.prayedBy || [],
           createdAt: data.createdAt?.toDate() || new Date(),
           updatedAt: data.updatedAt?.toDate() || new Date()
         } as PrayerRequest);
@@ -150,7 +153,7 @@ export class FirebasePrayerRequestRepository {
         throw new Error('Pedido de oração não encontrado');
       }
 
-      const updatedPrayedBy = [...prayerRequest.prayedBy];
+      const updatedPrayedBy = [...(prayerRequest.prayedBy || [])];
       if (!updatedPrayedBy.includes(userEmail)) {
         updatedPrayedBy.push(userEmail);
       }
@@ -163,6 +166,86 @@ export class FirebasePrayerRequestRepository {
     } catch (error) {
       console.error('Error adding prayed by:', error);
       throw new Error('Erro ao registrar oração');
+    }
+  }
+
+  async removePrayedBy(id: string, userEmail: string): Promise<void> {
+    try {
+      const prayerRequest = await this.getById(id);
+      if (!prayerRequest) {
+        throw new Error('Pedido de oração não encontrado');
+      }
+
+      const updatedPrayedBy = (prayerRequest.prayedBy || []).filter(
+        (email) => email !== userEmail
+      );
+
+      const docRef = doc(db, this.collectionName, id);
+      await updateDoc(docRef, {
+        prayedBy: updatedPrayedBy,
+        updatedAt: Timestamp.fromDate(new Date())
+      });
+    } catch (error) {
+      console.error('Error removing prayed by:', error);
+      throw new Error('Erro ao remover registro de oração');
+    }
+  }
+
+  /**
+   * Pedidos visíveis à comunidade nos últimos N dias (exclui rejeitados).
+   */
+  async getRecentForCommunity(days = 7, limitCount = 100): Promise<PrayerRequest[]> {
+    try {
+      const since = new Date();
+      since.setDate(since.getDate() - days);
+      since.setHours(0, 0, 0, 0);
+
+      // Busca recentes e filtra no cliente (evita índice composto status+createdAt se status variar)
+      const q = query(
+        collection(db, this.collectionName),
+        where('createdAt', '>=', Timestamp.fromDate(since)),
+        orderBy('createdAt', 'desc'),
+        limit(limitCount)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const prayerRequests: PrayerRequest[] = [];
+
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const status = data.status as PrayerRequestStatus;
+        if (status === PrayerRequestStatus.Rejected) {
+          return;
+        }
+
+        prayerRequests.push({
+          id: docSnap.id,
+          ...data,
+          prayedBy: data.prayedBy || [],
+          createdAt: data.createdAt?.toDate() || new Date(),
+          updatedAt: data.updatedAt?.toDate() || new Date()
+        } as PrayerRequest);
+      });
+
+      return prayerRequests;
+    } catch (error: any) {
+      console.error('Error getting community prayer requests:', error);
+
+      // Fallback sem índice: getAll + filtro local
+      if (error?.code === 'failed-precondition' || error?.message?.includes('index')) {
+        const all = await this.getAll(limitCount);
+        const since = new Date();
+        since.setDate(since.getDate() - days);
+        since.setHours(0, 0, 0, 0);
+
+        return all.filter(
+          (req) =>
+            req.status !== PrayerRequestStatus.Rejected &&
+            new Date(req.createdAt).getTime() >= since.getTime()
+        );
+      }
+
+      throw new Error('Erro ao buscar pedidos de oração da comunidade');
     }
   }
 

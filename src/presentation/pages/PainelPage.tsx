@@ -71,6 +71,13 @@ export const PainelPage: React.FC = () => {
       icon: '💬',
       href: '/forum',
       color: 'bg-indigo-500'
+    },
+    {
+      title: 'Pedidos de Oração',
+      description: 'Ore pelos pedidos dos últimos 7 dias',
+      icon: '🙏',
+      href: '/prayer-requests',
+      color: 'bg-rose-500'
     }
   ];
 

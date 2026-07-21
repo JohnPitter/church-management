@@ -495,6 +495,44 @@ describe('PrayerRequestService', () => {
     });
   });
 
+  describe('togglePrayedBy', () => {
+    it('should add prayer when user has not prayed yet', async () => {
+      mockRepository.getById.mockResolvedValue({ ...mockPrayerRequest, prayedBy: [] });
+      mockRepository.addPrayedBy.mockResolvedValue();
+
+      const result = await service.togglePrayedBy('prayer-123', 'user@example.com');
+
+      expect(result).toBe(true);
+      expect(mockRepository.addPrayedBy).toHaveBeenCalledWith('prayer-123', 'user@example.com');
+      expect(mockRepository.removePrayedBy).not.toHaveBeenCalled();
+    });
+
+    it('should remove prayer when user already prayed', async () => {
+      mockRepository.getById.mockResolvedValue({
+        ...mockPrayerRequest,
+        prayedBy: ['user@example.com']
+      });
+      mockRepository.removePrayedBy.mockResolvedValue();
+
+      const result = await service.togglePrayedBy('prayer-123', 'user@example.com');
+
+      expect(result).toBe(false);
+      expect(mockRepository.removePrayedBy).toHaveBeenCalledWith('prayer-123', 'user@example.com');
+      expect(mockRepository.addPrayedBy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getCommunityPrayerRequests', () => {
+    it('should load community prayer requests for default window', async () => {
+      mockRepository.getRecentForCommunity.mockResolvedValue([mockPrayerRequest]);
+
+      const result = await service.getCommunityPrayerRequests();
+
+      expect(result).toEqual([mockPrayerRequest]);
+      expect(mockRepository.getRecentForCommunity).toHaveBeenCalledWith(7);
+    });
+  });
+
   describe('deletePrayerRequest', () => {
     it('should delete a prayer request successfully', async () => {
       // Arrange

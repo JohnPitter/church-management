@@ -323,6 +323,7 @@ describe('Layout Component', () => {
       // Should show dropdown items
       expect(screen.getByText('Eventos')).toBeInTheDocument();
       expect(screen.getByText('Fórum')).toBeInTheDocument();
+      expect(screen.getByText('Pedidos de Oração')).toBeInTheDocument();
       expect(screen.getByText('Liderança')).toBeInTheDocument();
     });
 

@@ -102,6 +102,48 @@ export class PrayerRequestService {
     }
   }
 
+  async removePrayedBy(id: string, userEmail: string): Promise<void> {
+    try {
+      await this.repository.removePrayedBy(id, userEmail);
+    } catch (error) {
+      console.error('Error removing prayed by:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Alterna o "orei por este pedido" (curtida de oração) para o usuário.
+   * Retorna true se passou a orar, false se removeu.
+   */
+  async togglePrayedBy(id: string, userEmail: string): Promise<boolean> {
+    if (!userEmail?.trim()) {
+      throw new Error('Usuário não identificado para registrar oração');
+    }
+
+    const request = await this.repository.getById(id);
+    if (!request) {
+      throw new Error('Pedido de oração não encontrado');
+    }
+
+    const alreadyPrayed = (request.prayedBy || []).includes(userEmail);
+    if (alreadyPrayed) {
+      await this.repository.removePrayedBy(id, userEmail);
+      return false;
+    }
+
+    await this.repository.addPrayedBy(id, userEmail);
+    return true;
+  }
+
+  async getCommunityPrayerRequests(days = 7): Promise<PrayerRequest[]> {
+    try {
+      return await this.repository.getRecentForCommunity(days);
+    } catch (error) {
+      console.error('Error getting community prayer requests:', error);
+      throw error;
+    }
+  }
+
   async deletePrayerRequest(id: string): Promise<void> {
     try {
       await this.repository.delete(id);

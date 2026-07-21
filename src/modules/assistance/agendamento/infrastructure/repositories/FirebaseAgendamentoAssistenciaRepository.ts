@@ -544,6 +544,7 @@ export class FirebaseAgendamentoAssistenciaRepository implements IAgendamentoAss
       pacienteNome: data.pacienteNome,
       pacienteTelefone: data.pacienteTelefone,
       pacienteEmail: data.pacienteEmail,
+      pacienteUserId: data.pacienteUserId,
       profissionalId: data.profissionalId,
       profissionalNome: data.profissionalNome,
       tipoAssistencia: data.tipoAssistencia,

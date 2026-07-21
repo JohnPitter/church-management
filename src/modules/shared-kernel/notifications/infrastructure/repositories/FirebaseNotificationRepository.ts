@@ -40,11 +40,16 @@ export class FirebaseNotificationRepository implements INotificationRepository {
 
   async create(notification: Omit<Notification, 'id' | 'createdAt'>): Promise<Notification> {
     try {
+      if (!notification.userId || typeof notification.userId !== 'string' || !notification.userId.trim()) {
+        throw new Error('Notificação deve ter userId do destinatário');
+      }
+
       // Remove undefined fields for Firestore compatibility
       const cleanNotification = this.removeUndefinedFields(notification);
       
       const notificationData = {
         ...cleanNotification,
+        userId: notification.userId.trim(),
         createdAt: Timestamp.now(),
         readAt: cleanNotification.readAt ? Timestamp.fromDate(cleanNotification.readAt) : null,
         expiresAt: cleanNotification.expiresAt ? Timestamp.fromDate(cleanNotification.expiresAt) : null
@@ -55,6 +60,7 @@ export class FirebaseNotificationRepository implements INotificationRepository {
       return {
         id: docRef.id,
         ...notification,
+        userId: notificationData.userId,
         createdAt: new Date()
       };
     } catch (error) {
@@ -219,21 +225,37 @@ export class FirebaseNotificationRepository implements INotificationRepository {
         return [];
       }
 
+      const validNotifications = notifications.filter(
+        (n) => typeof n.userId === 'string' && n.userId.trim().length > 0
+      );
+
+      if (validNotifications.length === 0) {
+        throw new Error('Nenhuma notificação com userId de destinatário válido');
+      }
+
+      if (validNotifications.length !== notifications.length) {
+        console.warn(
+          `createBulk: ${notifications.length - validNotifications.length} notificação(ões) sem userId foram ignoradas`
+        );
+      }
+
       const createdNotifications: Notification[] = [];
       const now = Timestamp.now();
       
       // Process in batches of 500 (Firestore limit)
       const batchSize = 500;
       
-      for (let i = 0; i < notifications.length; i += batchSize) {
+      for (let i = 0; i < validNotifications.length; i += batchSize) {
         const batch = writeBatch(db);
-        const batchNotifications = notifications.slice(i, i + batchSize);
+        const batchNotifications = validNotifications.slice(i, i + batchSize);
         
         for (const notification of batchNotifications) {
           const cleanNotification = this.removeUndefinedFields(notification);
+          const recipientUserId = notification.userId.trim();
           const docRef = doc(collection(db, this.notificationsCollection));
           const notificationData = {
             ...cleanNotification,
+            userId: recipientUserId,
             createdAt: now,
             readAt: cleanNotification.readAt ? Timestamp.fromDate(cleanNotification.readAt) : null,
             expiresAt: cleanNotification.expiresAt ? Timestamp.fromDate(cleanNotification.expiresAt) : null
@@ -244,6 +266,7 @@ export class FirebaseNotificationRepository implements INotificationRepository {
           createdNotifications.push({
             id: docRef.id,
             ...notification,
+            userId: recipientUserId,
             createdAt: new Date()
           });
         }
