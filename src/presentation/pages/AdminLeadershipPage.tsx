@@ -17,6 +17,7 @@ import { applyPhoneMask } from '../../utils/inputMasks';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
+import PageShell from '../components/common/PageShell';
 
 interface LeaderModalProps {
   isOpen: boolean;
@@ -348,30 +349,20 @@ export const AdminLeadershipPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciar Liderança</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Gerencie os líderes e equipe pastoral da igreja
-              </p>
-            </div>
-            {canCreate && (
-              <button
-                onClick={handleCreate}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-              >
-                <span>➕</span> Novo Líder
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Gerenciar Liderança"
+      subtitle="Gerencie os líderes e equipe pastoral da igreja"
+      actions={
+        canCreate ? (
+          <button
+            onClick={handleCreate}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+          >
+            Novo Líder
+          </button>
+        ) : undefined
+      }
+    >
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
@@ -476,7 +467,6 @@ export const AdminLeadershipPage: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
 
       {/* Modal */}
       <LeaderModal
@@ -486,7 +476,7 @@ export const AdminLeadershipPage: React.FC = () => {
         leader={selectedLeader}
         mode={modalMode}
       />
-    </div>
+    </PageShell>
   );
 };
 

@@ -23,10 +23,6 @@ service firebase.storage {
       return hasRole('admin') || hasRole('secretary');
     }
 
-    function isAdmin() {
-      return hasRole('admin');
-    }
-
     function isImageOrPdf() {
       return request.resource != null
         && request.resource.size < 10 * 1024 * 1024

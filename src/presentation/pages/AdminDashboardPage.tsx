@@ -8,6 +8,7 @@ import { SystemModule, PermissionAction } from '../../domain/entities/Permission
 import { useAuth } from '../contexts/AuthContext';
 import { permissionService } from '@modules/user-management/permissions/application/services/PermissionService';
 import { AdminVerseOfTheDay } from '../components/AdminVerseOfTheDay';
+import PageShell from '../components/common/PageShell';
 
 export const AdminDashboardPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -247,27 +248,15 @@ export const AdminDashboardPage: React.FC = () => {
   const quickActions = allActions.filter(action => action.show !== false);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Painel Administrativo</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Visão geral do sistema e ações rápidas
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
-                🔑 {roleDisplayName || 'Carregando...'}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Painel Administrativo"
+      subtitle="Visão geral do sistema e ações rápidas"
+      actions={
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+          {roleDisplayName || 'Carregando...'}
+        </span>
+      }
+    >
         {/* Admin Verse of the Day */}
         <AdminVerseOfTheDay />
 
@@ -392,8 +381,6 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           </div>
         </div>
-
-      </div>
-    </div>
+    </PageShell>
   );
 };

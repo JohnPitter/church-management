@@ -7,6 +7,7 @@ import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction, DEFAULT_ROLE_PERMISSIONS } from '@/domain/entities/Permission';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { User } from '@/domain/entities/User';
+import PageShell from '../components/common/PageShell';
 
 interface TestResult {
   module: string;
@@ -144,19 +145,10 @@ export const PermissionTestPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Teste de Permissões</h1>
-              <p className="mt-1 text-sm text-gray-600">Validação completa do sistema de permissões</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Teste de Permissões"
+      subtitle="Validação completa do sistema de permissões"
+    >
         {/* Current User Info */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">Usuário Atual</h2>
@@ -407,7 +399,6 @@ export const PermissionTestPage: React.FC = () => {
             <li>Teste criar/editar/excluir em cada módulo conforme as permissões</li>
           </ol>
         </div>
-      </div>
-    </div>
+    </PageShell>
   );
 };

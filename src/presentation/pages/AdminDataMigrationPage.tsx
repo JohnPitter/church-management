@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { DataMigrationService } from '@modules/shared-kernel/migration/application/services/DataMigrationService';
 import { useSettings } from '../contexts/SettingsContext';
 import toast from 'react-hot-toast';
+import PageShell from '../components/common/PageShell';
 
 interface MigrationProgress {
   collection: string;
@@ -127,23 +128,10 @@ const AdminDataMigrationPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <span className="text-4xl">☁️</span>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Migração de Dados</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Importe dados da aplicação antiga (sgi-ibc-default-rtdb-export.json)
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Migração de Dados"
+      subtitle="Importe dados da aplicação antiga (sgi-ibc-default-rtdb-export.json)"
+    >
         {/* Upload Area */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Selecionar Arquivo de Dados</h2>
@@ -367,8 +355,7 @@ const AdminDataMigrationPage: React.FC = () => {
             </p>
           </div>
         </div>
-      </div>
-    </div>
+    </PageShell>
   );
 };
 
