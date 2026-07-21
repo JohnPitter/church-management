@@ -450,24 +450,29 @@ export const CreateDevotionalModal: React.FC<CreateDevotionalModalProps> = ({
                 />
               </div>
 
-              {/* Media (link ou upload) */}
-              <MediaUploadField
-                label="Imagem (link ou upload, opcional)"
-                value={formData.imageUrl}
-                onChange={(url) => handleInputChange('imageUrl', url)}
-                accept="image/*"
-                storageFolder="devotional-media"
-                placeholder="https://exemplo.com/imagem.jpg"
-              />
+              {/* Media (link ou upload) — largura total do grid */}
+              <div className="md:col-span-2">
+                <MediaUploadField
+                  label="Imagem de capa (link ou upload, opcional)"
+                  value={formData.imageUrl}
+                  onChange={(url) => handleInputChange('imageUrl', url)}
+                  accept="image/*"
+                  storageFolder="devotional-media"
+                  placeholder="https://exemplo.com/imagem.jpg"
+                  maxSizeMB={10}
+                />
+              </div>
 
-              <MediaUploadField
-                label="Áudio (link ou upload, opcional)"
-                value={formData.audioUrl}
-                onChange={(url) => handleInputChange('audioUrl', url)}
-                accept="audio/*"
-                storageFolder="devotional-media"
-                placeholder="https://exemplo.com/audio.mp3"
-              />
+              <div className="md:col-span-2">
+                <MediaUploadField
+                  label="Áudio (link ou upload, opcional)"
+                  value={formData.audioUrl}
+                  onChange={(url) => handleInputChange('audioUrl', url)}
+                  accept="audio/*"
+                  storageFolder="devotional-media"
+                  placeholder="https://exemplo.com/audio.mp3"
+                />
+              </div>
 
               {/* Publish Status */}
               <div className="md:col-span-2">

@@ -91,18 +91,19 @@ export const CommunityPrayerRequestsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header — mesmo padrão de Eventos / Fórum / Projetos */}
       <div className="bg-white shadow">
-        <div className="max-w-3xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Pedidos de Oração</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Pedidos de Oração</h1>
               <p className="mt-1 text-sm text-gray-600">
                 Pedidos dos últimos {DAYS_WINDOW} dias. Marque que você orou — como uma curtida de intercessão.
               </p>
             </div>
             <Link
               to="/prayer"
-              className="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 flex-shrink-0"
             >
               Enviar pedido
             </Link>
@@ -110,7 +111,7 @@ export const CommunityPrayerRequestsPage: React.FC = () => {
         </div>
       </div>
 
-      <main className="max-w-3xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {loading ? (
           <div className="bg-white rounded-lg shadow p-10 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto" />
@@ -131,7 +132,7 @@ export const CommunityPrayerRequestsPage: React.FC = () => {
             </Link>
           </div>
         ) : (
-          <ul className="space-y-4">
+          <div className="max-w-3xl space-y-4">
             {requests.map((request) => {
               const prayedBy = request.prayedBy || [];
               const iPrayed = !!userKey && prayedBy.includes(userKey);
@@ -139,10 +140,10 @@ export const CommunityPrayerRequestsPage: React.FC = () => {
               const displayName = request.isAnonymous ? 'Anônimo' : request.name || 'Irmão(ã)';
 
               return (
-                <li
+                <div
                   key={request.id}
-                  className={`bg-white rounded-xl shadow-sm border overflow-hidden ${
-                    request.isUrgent ? 'border-red-200 ring-1 ring-red-100' : 'border-gray-100'
+                  className={`bg-white rounded-lg shadow overflow-hidden ${
+                    request.isUrgent ? 'ring-1 ring-red-200' : ''
                   }`}
                 >
                   <div className="p-5">
@@ -193,10 +194,10 @@ export const CommunityPrayerRequestsPage: React.FC = () => {
                         type="button"
                         disabled={processingId === request.id || !userKey}
                         onClick={() => handleTogglePray(request)}
-                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors disabled:opacity-50 ${
+                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 ${
                           iPrayed
                             ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                            : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200'
+                            : 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
                         }`}
                         title={iPrayed ? 'Remover seu “orei”' : 'Registrar que você orou'}
                       >
@@ -205,7 +206,7 @@ export const CommunityPrayerRequestsPage: React.FC = () => {
                         {count > 0 && (
                           <span
                             className={`min-w-[1.25rem] text-center text-xs ${
-                              iPrayed ? 'text-indigo-100' : 'text-indigo-500'
+                              iPrayed ? 'text-indigo-100' : 'text-gray-500'
                             }`}
                           >
                             {count}
@@ -214,12 +215,12 @@ export const CommunityPrayerRequestsPage: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                </li>
+                </div>
               );
             })}
-          </ul>
+          </div>
         )}
-      </main>
+      </div>
     </div>
   );
 };

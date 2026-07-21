@@ -28,47 +28,42 @@ export const LeadershipPage: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando liderança...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            👥 Nossa Liderança
-          </h1>
-          <p className="text-xl text-indigo-100 max-w-3xl mx-auto">
-            Conheça os líderes e pastores que servem nossa comunidade com amor e dedicação
-          </p>
+      {/* Header — mesmo padrão de Eventos / Fórum / Projetos */}
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Liderança</h1>
+              <p className="mt-1 text-sm text-gray-600">
+                Conheça os líderes e pastores que servem nossa comunidade
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        {leaders.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">👥</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Nenhum líder cadastrado</h3>
-            <p className="text-gray-500">Em breve você conhecerá nossa equipe pastoral.</p>
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        {loading ? (
+          <div className="bg-white rounded-lg shadow p-10 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto" />
+            <p className="mt-3 text-sm text-gray-500">Carregando liderança...</p>
+          </div>
+        ) : leaders.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-10 text-center">
+            <div className="text-4xl mb-3">👥</div>
+            <h3 className="text-lg font-medium text-gray-900 mb-1">Nenhum líder cadastrado</h3>
+            <p className="text-sm text-gray-500">Em breve você conhecerá nossa equipe pastoral.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {leaders.map((leader) => (
               <div
                 key={leader.id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                className="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow"
               >
-                {/* Photo */}
-                <div className="h-64 bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center">
+                <div className="h-56 bg-gray-100 flex items-center justify-center overflow-hidden">
                   {leader.foto ? (
                     <img
                       src={leader.foto}
@@ -76,22 +71,24 @@ export const LeadershipPage: React.FC = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="text-8xl text-white/50">👤</div>
+                    <div className="w-20 h-20 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-3xl font-semibold">
+                      {(leader.nome || '?').charAt(0).toUpperCase()}
+                    </div>
                   )}
                 </div>
 
-                {/* Info */}
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
                     {leader.nome}
                   </h3>
-                  <p className="text-indigo-600 font-medium mb-3">
+                  <p className="text-indigo-600 text-sm font-medium mb-3">
                     {leader.cargoPersonalizado || LEADER_ROLE_LABELS[leader.cargo]}
                   </p>
 
                   {leader.ministerio && (
-                    <p className="text-gray-600 text-sm mb-3">
-                      <span className="font-medium">Ministério:</span> {leader.ministerio}
+                    <p className="text-gray-600 text-sm mb-2">
+                      <span className="font-medium text-gray-700">Ministério:</span>{' '}
+                      {leader.ministerio}
                     </p>
                   )}
 
@@ -101,27 +98,28 @@ export const LeadershipPage: React.FC = () => {
                     </p>
                   )}
 
-                  {/* Contact */}
-                  <div className="mt-4 pt-4 border-t border-gray-100 flex gap-3">
-                    {leader.email && (
-                      <a
-                        href={`mailto:${leader.email}`}
-                        className="text-gray-400 hover:text-indigo-600 transition-colors"
-                        title="Enviar email"
-                      >
-                        <span className="text-xl">📧</span>
-                      </a>
-                    )}
-                    {leader.telefone && (
-                      <a
-                        href={`tel:${leader.telefone}`}
-                        className="text-gray-400 hover:text-indigo-600 transition-colors"
-                        title="Ligar"
-                      >
-                        <span className="text-xl">📞</span>
-                      </a>
-                    )}
-                  </div>
+                  {(leader.email || leader.telefone) && (
+                    <div className="mt-4 pt-4 border-t border-gray-100 flex gap-4">
+                      {leader.email && (
+                        <a
+                          href={`mailto:${leader.email}`}
+                          className="text-sm text-gray-500 hover:text-indigo-600 transition-colors"
+                          title="Enviar email"
+                        >
+                          📧 Contato
+                        </a>
+                      )}
+                      {leader.telefone && (
+                        <a
+                          href={`tel:${leader.telefone}`}
+                          className="text-sm text-gray-500 hover:text-indigo-600 transition-colors"
+                          title="Ligar"
+                        >
+                          📞 Telefone
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

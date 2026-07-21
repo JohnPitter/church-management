@@ -104,7 +104,7 @@ describe('LeadershipPage', () => {
       render(<LeadershipPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Nossa Liderança', { exact: false })).toBeInTheDocument();
+        expect(screen.getByText('Liderança')).toBeInTheDocument();
       });
     });
 

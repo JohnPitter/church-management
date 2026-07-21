@@ -81,7 +81,7 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
               Enviando...
             </>
           ) : (
-            <>📤 Upload</>
+            <>📤 Enviar arquivo</>
           )}
         </button>
         <input
@@ -94,9 +94,13 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
       </div>
 
       {value && (
-        <div className="mt-2 flex items-center gap-3">
+        <div className="mt-3 flex flex-col sm:flex-row sm:items-start gap-3">
           {isImage ? (
-            <img src={value} alt="Pré-visualização" className="h-16 w-16 object-cover rounded border border-gray-200" />
+            <img
+              src={value}
+              alt="Pré-visualização"
+              className="h-40 w-full sm:w-64 object-cover rounded-lg border border-gray-200 bg-gray-50"
+            />
           ) : (
             <audio controls src={value} className="h-8 max-w-full">
               Seu navegador não suporta áudio.
@@ -105,12 +109,17 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
           <button
             type="button"
             onClick={() => onChange('')}
-            className="text-sm text-red-600 hover:text-red-800"
+            className="text-sm text-red-600 hover:text-red-800 self-start"
           >
             Remover
           </button>
         </div>
       )}
+      <p className="mt-1 text-xs text-gray-500">
+        {isImage
+          ? `Cole um link ou envie um arquivo (máx. ${maxSizeMB}MB). Formatos: JPG, PNG, WebP, GIF.`
+          : `Cole um link ou envie um arquivo (máx. ${maxSizeMB}MB).`}
+      </p>
     </div>
   );
 };

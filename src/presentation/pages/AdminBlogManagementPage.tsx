@@ -15,6 +15,7 @@ import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
 import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
+import { MediaUploadField } from '../components/common/MediaUploadField';
 
 // Presentation interface that maps to domain entities
 interface PresentationBlogPost {
@@ -896,18 +897,15 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onSave, onCancel, loa
                   </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    URL da Imagem
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.imageURL}
-                    onChange={(e) => handleChange('imageURL', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
-                    placeholder="https://exemplo.com/imagem.jpg"
-                  />
-                </div>
+                <MediaUploadField
+                  label="Imagem de capa (link ou upload)"
+                  value={formData.imageURL}
+                  onChange={(url) => handleChange('imageURL', url)}
+                  accept="image/*"
+                  storageFolder="blog-images"
+                  placeholder="https://exemplo.com/imagem.jpg"
+                  maxSizeMB={10}
+                />
 
                 <div className="flex items-center">
                   <input
@@ -1083,18 +1081,15 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onSave, onCancel, l
                 </p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  URL da Imagem
-                </label>
-                <input
-                  type="url"
-                  value={formData.imageURL}
-                  onChange={(e) => handleChange('imageURL', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
-                  placeholder="https://exemplo.com/imagem.jpg"
-                />
-              </div>
+              <MediaUploadField
+                label="Imagem de capa (link ou upload)"
+                value={formData.imageURL}
+                onChange={(url) => handleChange('imageURL', url)}
+                accept="image/*"
+                storageFolder="blog-images"
+                placeholder="https://exemplo.com/imagem.jpg"
+                maxSizeMB={10}
+              />
 
               <div className="flex items-center">
                 <input
