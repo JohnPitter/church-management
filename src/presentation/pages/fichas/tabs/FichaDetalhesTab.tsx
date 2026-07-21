@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  FichaAcompanhamento,
-  SessaoAcompanhamento,
-} from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
-import { generateProntuarioPDF, generateProntuarioWord } from '../../../utils/prontuarioExport';
-
 import type { FichaTabProps } from './types';
-
 export const FichaDetalhesTab: React.FC<FichaTabProps> = (props) => {
   const {
     ficha,

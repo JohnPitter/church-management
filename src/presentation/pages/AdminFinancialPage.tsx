@@ -20,8 +20,7 @@ import {
   TransactionFilters
 } from '@modules/financial/church-finance/application/services/FinancialService';
 import {
-  Department,
-  DepartmentEntity
+  Department
 } from '@modules/church-management/departments/domain/entities/Department';
 import {
   departmentFinancialService

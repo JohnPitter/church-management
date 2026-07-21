@@ -6,7 +6,6 @@ import { FichaAcompanhamento } from '@modules/assistance/fichas/domain/entities/
 import { AgendamentoAssistencia } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
-import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
 import PageShell from '../components/common/PageShell';

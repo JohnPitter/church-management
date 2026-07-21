@@ -1,9 +1,8 @@
-import React from 'react';
-import {
+import type { Dispatch, SetStateAction } from 'react';
+import type {
   FichaAcompanhamento,
   SessaoAcompanhamento,
 } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
-import { generateProntuarioPDF, generateProntuarioWord } from '../../../utils/prontuarioExport';
 
 export type FichaTabProps = {
   ficha: FichaAcompanhamento;
@@ -16,7 +15,7 @@ export type FichaTabProps = {
     observacoes: string;
     evolucao: string;
   };
-  setNovaSessao: React.Dispatch<React.SetStateAction<any>>;
+  setNovaSessao: Dispatch<SetStateAction<any>>;
   editingSessao: SessaoAcompanhamento | null;
   isLoading: boolean;
   novoComentario: string;
@@ -24,7 +23,7 @@ export type FichaTabProps = {
   editandoDadosEspecializados: boolean;
   setEditandoDadosEspecializados: (v: boolean) => void;
   dadosEspecializadosForm: any;
-  setDadosEspecializadosForm: React.Dispatch<React.SetStateAction<any>>;
+  setDadosEspecializadosForm: Dispatch<SetStateAction<any>>;
   validationErrors: Record<string, string>;
   isFormValid: boolean;
   handleAddComentario: () => void | Promise<void>;

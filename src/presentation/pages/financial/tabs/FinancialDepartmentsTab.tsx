@@ -1,24 +1,7 @@
 import React from 'react';
-import {
-  Transaction,
-  FinancialCategory,
-  TransactionType,
-  TransactionStatus,
-  FinancialEntity
-} from '@modules/financial/church-finance/domain/entities/Financial';
-import type { FinancialSummary, TransactionFilters } from '@modules/financial/church-finance/application/services/FinancialService';
-import {
-  Department,
-  DepartmentEntity
-} from '@modules/church-management/departments/domain/entities/Department';
-import { Pagination } from '../../../components/common/Pagination';
+import { DepartmentEntity } from '@modules/church-management/departments/domain/entities/Department';
 import { DepartmentActionsMenu } from '../../../components/DepartmentActionsMenu';
-import { IncomeExpenseChart } from '../../../components/charts/IncomeExpenseChart';
-import { CategoryPieChart } from '../../../components/charts/CategoryPieChart';
-import { MonthlyComparisonChart } from '../../../components/charts/MonthlyComparisonChart';
-import { DonationDonutChart } from '../../../components/charts/DonationDonutChart';
 import type { FinancialTabProps } from './types';
-
 export const FinancialDepartmentsTab: React.FC<FinancialTabProps> = (props) => {
   const {
     summary,
