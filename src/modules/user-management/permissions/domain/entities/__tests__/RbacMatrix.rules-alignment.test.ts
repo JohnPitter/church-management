@@ -69,4 +69,25 @@ describe('RBAC matrix (rules alignment contract)', () => {
       expect(known).toContain(role);
     });
   });
+
+  it('firestore.rules declara helpers RBAC esperados (contrato estático)', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require('fs') as typeof import('fs');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const path = require('path') as typeof import('path');
+    const rulesPath = path.resolve(process.cwd(), 'firestore.rules');
+    const rules = fs.readFileSync(rulesPath, 'utf8');
+    for (const helper of [
+      'function isAdmin()',
+      'function isStaff()',
+      'function canWriteMembers()',
+      'function canAccessFinance()',
+      'function canAccessFichas()',
+      'function canAccessAssistance()',
+    ]) {
+      expect(rules).toContain(helper);
+    }
+    expect(rules).toMatch(/match \/members\/\{/);
+    expect(rules).toMatch(/match \/transactions\/\{/);
+  });
 });

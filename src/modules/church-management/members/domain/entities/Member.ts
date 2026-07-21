@@ -7,6 +7,10 @@ export interface Member {
   email: string;
   phone: string;
   birthDate: Date;
+  /** 1-12, denormalizado para query de aniversários (UTC) */
+  birthMonth?: number;
+  /** 1-31, denormalizado para ordenação de aniversários (UTC) */
+  birthDay?: number;
   address: Address;
   maritalStatus: MaritalStatus;
   memberType: MemberType; // Tipo: Membro ou Congregado

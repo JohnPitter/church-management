@@ -427,11 +427,22 @@ church-management/
 | Storage com role + contentType/size | ✅ |
 | Bootstrap do primeiro admin via Cloud Function | ✅ |
 | Aniversariantes no web (`/birthdays`) | ✅ |
-| PageShell em mais telas admin | ✅ (parcial; expandir) |
+| PageShell em 100% das paginas do painel | ✅ |
 | Remocao de `firebase-admin` / `firebase-functions` do package web | ✅ |
 | Setup unico (`/setup`; removidos setup-simple/redirect) | ✅ |
 
-### Proximo (P2 — produto e evolucao)
+### P2 — engenharia (em andamento / entregue)
+
+| Item | Status | Notas |
+|---|---|---|
+| **Quebrar god pages (Financial + Members)** | ✅ | Tabs em `presentation/pages/financial/tabs` e `members/tabs` |
+| **Query indexada de aniversarios (web)** | ✅ | `birthMonth`/`birthDay` denormalizados; `findBirthdays` + fallback legado |
+| **Contrato RBAC rules** | ✅ | `RbacMatrix.rules-alignment.test.ts` (+ helpers em `firestore.rules`) |
+| **Emulator de rules (suite end-to-end)** | 🔜 Planejado | Complementa o contrato estático |
+| **Quebrar ProfessionalFichas** | 🔜 Proximo | Ainda monolitica |
+| **Backfill birthMonth em membros legados** | 🔜 | Create/update ja gravam; docs antigos usam fallback |
+
+### Proximo (produto)
 
 | Item | Status | Notas |
 |---|---|---|
@@ -443,10 +454,6 @@ church-management/
 | **Multi-campus** | 🔜 Em avaliacao | Single-tenant hoje |
 | **Portal LGPD** | 🔜 Planejado | Exportar/apagar meus dados; consentimento clinico |
 | **Kids check-in / seguranca** | 🔜 Em avaliacao | |
-| **Quebrar god pages** | 🔜 Em andamento | AdminFinancial (~2k), Members (~1.4k), ProfessionalFichas |
-| **PageShell em 100% das paginas admin** | 🔜 Em andamento | |
-| **Testes de rules no Firebase Emulator** | 🔜 Planejado | Suite automatizada de RBAC |
-| **Query indexada de aniversarios** | 🔜 Planejado | Evitar full scan de `members` (web + mobile) |
 | Painel de topicos/avisos pelo app (membros) | 🔜 Em avaliacao | |
 | Aplicativo movel Android | ✅ | [church-member-app](https://github.com/JohnPitter/church-member-app) |
 | Notificacoes push (FCM) | ✅ | |

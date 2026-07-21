@@ -1,8 +1,8 @@
-// Presentation Page - Aniversariantes do mês (paridade com app mobile)
+// Presentation Page - Aniversariantes do mês (query indexada via repositório)
 import React, { useEffect, useMemo, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/config/firebase';
 import PageShell from '../components/common/PageShell';
+import { FirebaseMemberRepository } from '@modules/church-management/members/infrastructure/repositories/FirebaseMemberRepository';
+import { getBirthDateParts } from '@modules/church-management/members/domain/birthDateParts';
 
 interface BirthdayEntry {
   id: string;
@@ -13,27 +13,12 @@ interface BirthdayEntry {
   phone?: string;
 }
 
-function toDate(value: unknown): Date | null {
-  if (!value) return null;
-  if (value instanceof Date) return value;
-  if (typeof value === 'object' && value !== null && 'toDate' in value) {
-    try {
-      return (value as { toDate: () => Date }).toDate();
-    } catch {
-      return null;
-    }
-  }
-  if (typeof value === 'string' || typeof value === 'number') {
-    const d = new Date(value);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  return null;
-}
-
 const MONTHS_PT = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
+
+const memberRepository = new FirebaseMemberRepository();
 
 export const BirthdaysPage: React.FC = () => {
   const today = useMemo(() => new Date(), []);
@@ -48,30 +33,21 @@ export const BirthdaysPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const snap = await getDocs(collection(db, 'members'));
-        const list: BirthdayEntry[] = [];
-        snap.forEach((docSnap) => {
-          const data = docSnap.data();
-          const status = (data.status || '').toString().toLowerCase();
-          if (status === 'inactive' || status === 'transferred') return;
-          const name = (data.name || data.fullName || '').toString().trim();
-          if (!name) return;
-          const birth = toDate(data.birthDate) || toDate(data.dataNascimento);
-          if (!birth) return;
-          // Datas gravadas de forma inconsistente: usar UTC como no mobile
-          const m = birth.getUTCMonth() + 1;
-          const d = birth.getUTCDate();
-          if (m !== month) return;
-          list.push({
-            id: docSnap.id,
-            name,
-            day: d,
-            month: m,
-            photoURL: data.photoURL || data.photoUrl,
-            phone: data.phone || data.telefone,
-          });
+        const members = await memberRepository.findBirthdays(month);
+        const list: BirthdayEntry[] = members.map((m) => {
+          const parts =
+            m.birthMonth != null && m.birthDay != null
+              ? { birthMonth: m.birthMonth, birthDay: m.birthDay }
+              : getBirthDateParts(new Date(m.birthDate));
+          return {
+            id: m.id,
+            name: m.name,
+            day: parts.birthDay,
+            month: parts.birthMonth,
+            photoURL: m.photoURL,
+            phone: m.phone,
+          };
         });
-        list.sort((a, b) => a.day - b.day || a.name.localeCompare(b.name, 'pt-BR'));
         if (!cancelled) setItems(list);
       } catch (e) {
         console.error('Error loading birthdays:', e);
@@ -92,7 +68,7 @@ export const BirthdaysPage: React.FC = () => {
   return (
     <PageShell
       title="Aniversariantes"
-      subtitle={`Celebre com a família da igreja — ${MONTHS_PT[month - 1]}`}
+      subtitle={`Celebre com a família da igreja - ${MONTHS_PT[month - 1]}`}
       actions={
         <select
           className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"

@@ -17,6 +17,7 @@ import {
 import { db } from '@/config/firebase';
 import { IMemberRepository } from '../../domain/repositories/IMemberRepository';
 import { Member, MemberStatus, MemberType, Address } from '../../domain/entities/Member';
+import { getBirthDateParts, isInactiveMemberStatus } from '../../domain/birthDateParts';
 
 export class FirebaseMemberRepository implements IMemberRepository {
   private readonly collectionName = 'members';
@@ -112,16 +113,39 @@ export class FirebaseMemberRepository implements IMemberRepository {
 
   async findBirthdays(month: number): Promise<Member[]> {
     try {
-      // Note: This is a simplified approach. In production, you might want to use
-      // a more sophisticated query or index the birth month separately
-      const allMembers = await this.findAll();
-      
-      return allMembers.filter(member => {
-        if (!member.birthDate) {
-          return false;
+      // Query indexada por birthMonth (campo denormalizado em create/update).
+      // Fallback: full scan apenas para documentos legados sem birthMonth.
+      const indexed = query(
+        collection(db, this.collectionName),
+        where('birthMonth', '==', month)
+      );
+      const indexedSnap = await getDocs(indexed);
+      const byId = new Map<string, Member>();
+
+      indexedSnap.docs.forEach((d) => {
+        const m = this.mapToMember(d.id, d.data());
+        if (!isInactiveMemberStatus(m.status)) {
+          byId.set(m.id, m);
         }
-        const birthMonth = new Date(member.birthDate).getMonth() + 1; // getMonth() is 0-based
-        return birthMonth === month;
+      });
+
+      // Legacy docs without birthMonth — one scan only when needed
+      if (indexedSnap.size === 0 || indexedSnap.size < 5) {
+        const all = await this.findAll();
+        all.forEach((member) => {
+          if (!member.birthDate || isInactiveMemberStatus(member.status)) return;
+          if (member.birthMonth != null) return; // already covered by index
+          const parts = getBirthDateParts(new Date(member.birthDate));
+          if (parts.birthMonth === month) {
+            byId.set(member.id, member);
+          }
+        });
+      }
+
+      return Array.from(byId.values()).sort((a, b) => {
+        const dayA = a.birthDay ?? getBirthDateParts(new Date(a.birthDate)).birthDay;
+        const dayB = b.birthDay ?? getBirthDateParts(new Date(b.birthDate)).birthDay;
+        return dayA - dayB || a.name.localeCompare(b.name, 'pt-BR');
       });
     } catch (error) {
       console.error('Error finding birthdays:', error);
@@ -149,9 +173,12 @@ export class FirebaseMemberRepository implements IMemberRepository {
 
   async create(member: Omit<Member, 'id' | 'createdAt' | 'updatedAt'>): Promise<Member> {
     try {
+      const parts = getBirthDateParts(member.birthDate);
       const memberData = {
         ...member,
         birthDate: Timestamp.fromDate(member.birthDate),
+        birthMonth: parts.birthMonth,
+        birthDay: parts.birthDay,
         baptismDate: member.baptismDate ? Timestamp.fromDate(member.baptismDate) : null,
         conversionDate: member.conversionDate ? Timestamp.fromDate(member.conversionDate) : null,
         createdAt: Timestamp.now(),
@@ -179,9 +206,12 @@ export class FirebaseMemberRepository implements IMemberRepository {
         updatedAt: Timestamp.now()
       };
 
-      // Convert dates to Timestamps
+      // Convert dates to Timestamps + denormalize birthday index fields
       if (data.birthDate) {
         updateData.birthDate = Timestamp.fromDate(data.birthDate);
+        const parts = getBirthDateParts(data.birthDate);
+        updateData.birthMonth = parts.birthMonth;
+        updateData.birthDay = parts.birthDay;
       }
       if (data.baptismDate) {
         updateData.baptismDate = Timestamp.fromDate(data.baptismDate);
@@ -349,12 +379,27 @@ export class FirebaseMemberRepository implements IMemberRepository {
     const baptismDate = data.baptismDate?.toDate() || data.dadosBatismo?.data?.toDate();
     const conversionDate = data.conversionDate?.toDate();
 
+    const birthMonth =
+      typeof data.birthMonth === 'number'
+        ? data.birthMonth
+        : birthDate
+          ? getBirthDateParts(birthDate).birthMonth
+          : undefined;
+    const birthDay =
+      typeof data.birthDay === 'number'
+        ? data.birthDay
+        : birthDate
+          ? getBirthDateParts(birthDate).birthDay
+          : undefined;
+
     return {
       id,
       name: data.name || data.nome,
       email: data.email || '',
       phone: data.phone || data.telefone,
       birthDate,
+      birthMonth,
+      birthDay,
       address: data.address || data.endereco as Address,
       maritalStatus: data.maritalStatus || data.estadoCivil,
       baptismDate,

@@ -139,22 +139,37 @@ describe('FirebaseMemberRepository', () => {
       ministries: ['Infantil']
     });
     mockGetDocs
-      .mockResolvedValueOnce(createQuerySnapshot([maria, joao]))
-      .mockResolvedValueOnce(createQuerySnapshot([maria]))
-      .mockResolvedValueOnce(createQuerySnapshot([joao]));
-    jest.spyOn(repository, 'findAll').mockResolvedValueOnce([maria, joao]).mockResolvedValueOnce([maria, joao]);
+      .mockResolvedValueOnce(createQuerySnapshot([maria, joao])) // findAll
+      .mockResolvedValueOnce(createQuerySnapshot([maria])) // findByStatus
+      .mockResolvedValueOnce(createQuerySnapshot([joao])) // findByMinistry
+      // findBirthdays: query indexada por birthMonth (size >= 5 evita fallback legado)
+      .mockResolvedValueOnce(
+        createQuerySnapshot([
+          { ...maria, birthMonth: 5, birthDay: 1 },
+          { ...maria, id: 'm2', birthMonth: 5, birthDay: 2 },
+          { ...maria, id: 'm3', birthMonth: 5, birthDay: 3 },
+          { ...maria, id: 'm4', birthMonth: 5, birthDay: 4 },
+          { ...maria, id: 'm5', birthMonth: 5, birthDay: 5 },
+        ])
+      );
 
     await expect(repository.findAll()).resolves.toHaveLength(2);
     await expect(repository.findByStatus(MemberStatus.Active)).resolves.toEqual(
       expect.arrayContaining([expect.objectContaining({ id: 'maria' })])
     );
     await expect(repository.findByMinistry('Infantil')).resolves.toHaveLength(1);
-    await expect(repository.findBirthdays(5)).resolves.toEqual([expect.objectContaining({ id: 'maria' })]);
+    const birthdays = await repository.findBirthdays(5);
+    expect(birthdays.map((m) => m.id)).toEqual(
+      expect.arrayContaining(['maria', 'm2', 'm3', 'm4', 'm5'])
+    );
+
+    jest.spyOn(repository, 'findAll').mockResolvedValueOnce([maria, joao]);
     await expect(repository.search('joao')).resolves.toEqual([expect.objectContaining({ id: 'joao' })]);
 
     expect(mockOrderBy).toHaveBeenCalledWith('name', 'asc');
     expect(mockWhere).toHaveBeenCalledWith('status', '==', MemberStatus.Active);
     expect(mockWhere).toHaveBeenCalledWith('ministries', 'array-contains', 'Infantil');
+    expect(mockWhere).toHaveBeenCalledWith('birthMonth', '==', 5);
   });
 
   it('creates and updates members with date conversion and backward-compatible mapping', async () => {
@@ -214,6 +229,13 @@ describe('FirebaseMemberRepository', () => {
 
     expect(created).toEqual(expect.objectContaining({ id: 'member-created' }));
     expect(mockTimestampFromDate).toHaveBeenCalledWith(createMember().birthDate);
+    expect(mockAddDoc).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        birthMonth: expect.any(Number),
+        birthDay: expect.any(Number),
+      })
+    );
     expect(updated).toEqual(expect.objectContaining({ id: 'member-updated', name: 'Atualizado' }));
     expect(legacy).toEqual(expect.objectContaining({
       id: 'legacy',
