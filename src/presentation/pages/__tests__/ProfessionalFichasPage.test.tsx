@@ -8,6 +8,7 @@ const mockConfirm = jest.fn();
 const mockGetProfissionalByEmail = jest.fn();
 const mockGetFichasByProfissional = jest.fn();
 const mockSyncFichasForProfissionalAgenda = jest.fn();
+const mockGetAgendamentosByProfissional = jest.fn();
 const mockUpdateFicha = jest.fn();
 const authValue = { currentUser: { id: 'user-1', email: 'pro@example.com' } };
 
@@ -73,11 +74,15 @@ describe('ProfessionalFichasPage', () => {
     jest.spyOn(AgendamentoAssistenciaService.prototype, 'syncFichasForProfissionalAgenda').mockImplementation((...args: any[]) =>
       mockSyncFichasForProfissionalAgenda(...args)
     );
+    jest.spyOn(AgendamentoAssistenciaService.prototype, 'getAgendamentosByProfissional').mockImplementation((...args: any[]) =>
+      mockGetAgendamentosByProfissional(...args)
+    );
     jest.spyOn(FirebaseFichaAcompanhamentoRepository.prototype, 'updateFicha').mockImplementation((...args: any[]) =>
       mockUpdateFicha(...args)
     );
     mockGetProfissionalByEmail.mockResolvedValue({ id: 'prof-1' });
     mockSyncFichasForProfissionalAgenda.mockResolvedValue(0);
+    mockGetAgendamentosByProfissional.mockResolvedValue([]);
     mockGetFichasByProfissional.mockResolvedValue([
       createFicha(),
       createFicha({
@@ -147,6 +152,34 @@ describe('ProfessionalFichasPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Nenhuma ficha encontrada.')).toBeInTheDocument();
+    });
+  });
+
+  it('abre modal de ficha com abas extraídas (Detalhes, Dados, Sessões, Prontuário)', async () => {
+    const mockGetSessoes = jest.fn().mockResolvedValue([]);
+    jest
+      .spyOn(FirebaseFichaAcompanhamentoRepository.prototype, 'getSessoesByFicha')
+      .mockImplementation((...args: any[]) => mockGetSessoes(...args));
+
+    render(<ProfessionalFichasPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Maria da Silva')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Ver Detalhes/i })[0]);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Ficha: Maria da Silva/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Detalhes' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Dados Especializados' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Sessões' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Prontuário' })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sessões' }));
+    await waitFor(() => {
+      expect(screen.getByText(/Sessões Realizadas/i)).toBeInTheDocument();
     });
   });
 });

@@ -431,16 +431,16 @@ church-management/
 | Remocao de `firebase-admin` / `firebase-functions` do package web | ✅ |
 | Setup unico (`/setup`; removidos setup-simple/redirect) | ✅ |
 
-### P2 — engenharia (em andamento / entregue)
+### P2 — engenharia
 
 | Item | Status | Notas |
 |---|---|---|
 | **Quebrar god pages (Financial + Members)** | ✅ | Tabs em `presentation/pages/financial/tabs` e `members/tabs` |
+| **Quebrar ProfessionalFichas** | ✅ | Modal + tabs em `presentation/pages/fichas/` (page shell orquestra) |
 | **Query indexada de aniversarios (web)** | ✅ | `birthMonth`/`birthDay` denormalizados; `findBirthdays` + fallback legado |
-| **Contrato RBAC rules** | ✅ | `RbacMatrix.rules-alignment.test.ts` (+ helpers em `firestore.rules`) |
-| **Emulator de rules (suite end-to-end)** | 🔜 Planejado | Complementa o contrato estático |
-| **Quebrar ProfessionalFichas** | 🔜 Proximo | Ainda monolitica |
-| **Backfill birthMonth em membros legados** | 🔜 | Create/update ja gravam; docs antigos usam fallback |
+| **Backfill birthMonth em membros legados** | ✅ | `scripts/backfill-birth-date-parts.mjs` + `docs/backfill-birth-date-parts.md` (dry-run / `--apply`) |
+| **Contrato RBAC rules (estático ampliado)** | ✅ | `RbacMatrix.rules-alignment.test.ts` lê `firestore.rules` (helpers + members/finance/fichas) |
+| **Emulator de rules end-to-end** | ⏸ Deferido (P3) | `@firebase/rules-unit-testing` não está no package web; contrato estático cobre regressões de helpers/match |
 
 ### Proximo (produto)
 

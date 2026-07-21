@@ -41,8 +41,8 @@ firebase deploy --only firestore:rules,storage,functions
 
 ## Testes
 
-- Contrato TS: `src/modules/user-management/permissions/domain/entities/__tests__/RbacMatrix.rules-alignment.test.ts`
-- Emulator de rules (P2 no README)
+- Contrato TS ampliado (lê `firestore.rules` no disco): `src/modules/user-management/permissions/domain/entities/__tests__/RbacMatrix.rules-alignment.test.ts`
+- Emulator de rules (`@firebase/rules-unit-testing`): **deferido P3** — não está no package web; ver README P2
 
 ## Segredos
 
