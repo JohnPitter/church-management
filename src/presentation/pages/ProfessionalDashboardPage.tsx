@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AgendamentoAssistenciaService, ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { AgendamentoAssistencia, StatusAgendamento } from '@modules/assistance/assistencia/domain/entities/Assistencia';
+import PageShell from '../components/common/PageShell';
 
 const MAX_VISIBLE_DAY_APPOINTMENTS = 4;
 
@@ -195,21 +196,10 @@ export const ProfessionalDashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Painel Profissional</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Bem-vindo, {currentUser?.displayName}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Painel Profissional"
+      subtitle={<>Bem-vindo, {currentUser?.displayName}</>}
+    >
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
@@ -477,7 +467,7 @@ export const ProfessionalDashboardPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      
+    </PageShell>
   );
 };

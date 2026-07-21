@@ -4,6 +4,7 @@ import { AgendamentoAssistenciaService, ProfissionalAssistenciaService } from '@
 import { AgendamentoAssistencia, StatusAgendamento, TipoAssistencia, AssistenciaEntity } from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import PageShell from '../components/common/PageShell';
 
 const ProfessionalAssistenciaPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -320,21 +321,10 @@ const ProfessionalAssistenciaPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Minhas Assistencias</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Gerencie seus agendamentos e acompanhamentos
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Minhas Assistencias"
+      subtitle="Gerencie seus agendamentos e acompanhamentos"
+    >
         {/* Filtros */}
         <div className="mb-6">
           <div className="flex flex-wrap gap-2">
@@ -492,8 +482,8 @@ const ProfessionalAssistenciaPage: React.FC = () => {
             />
           )}
         </div>
-      </div>
-    </div>
+      
+    </PageShell>
   );
 };
 

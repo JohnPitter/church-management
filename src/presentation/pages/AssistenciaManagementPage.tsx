@@ -40,6 +40,7 @@ import {
   HiSparkles,
   HiScale
 } from 'react-icons/hi2';
+import PageShell from '../components/common/PageShell';
 
 const AssistenciaManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -479,42 +480,31 @@ const AssistenciaManagementPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <HiHeart className="w-8 h-8 text-red-500" />
-                Gerenciamento de Assistências
-              </h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Gerenciamento de assistência psicológica, social, jurídica e médica
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              <button
-                onClick={() => window.location.href = '/admin/fichas'}
-                className="bg-green-600 text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center text-sm sm:text-base"
-              >
-                <HiClipboardDocumentList className="w-5 h-5 sm:mr-2" />
-                <span className="hidden sm:inline ml-1">Ver Fichas</span>
-              </button>
-              <button
-                onClick={handleCreateAgendamento}
-                className="bg-blue-600 text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center text-sm sm:text-base"
-              >
-                <HiPlus className="w-5 h-5 sm:mr-2" />
-                <span className="hidden sm:inline ml-1">Novo Agendamento</span>
-                <span className="sm:hidden ml-1">Novo</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Gerenciamento de Assistências"
+      subtitle="Gerenciamento de assistência psicológica, social, jurídica e médica"
+      actions={
+        <>
+          <div className="flex flex-wrap gap-2 sm:gap-3">
+                        <button
+                          onClick={() => window.location.href = '/admin/fichas'}
+                          className="bg-green-600 text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center text-sm sm:text-base"
+                        >
+                          <HiClipboardDocumentList className="w-5 h-5 sm:mr-2" />
+                          <span className="hidden sm:inline ml-1">Ver Fichas</span>
+                        </button>
+                        <button
+                          onClick={handleCreateAgendamento}
+                          className="bg-blue-600 text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center text-sm sm:text-base"
+                        >
+                          <HiPlus className="w-5 h-5 sm:mr-2" />
+                          <span className="hidden sm:inline ml-1">Novo Agendamento</span>
+                          <span className="sm:hidden ml-1">Novo</span>
+                        </button>
+                      </div>
+        </>
+      }
+    >
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
@@ -1027,7 +1017,7 @@ const AssistenciaManagementPage: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
+      
 
       {/* Modals */}
       <AgendamentoAssistenciaModalEnhanced
@@ -1055,7 +1045,8 @@ const AssistenciaManagementPage: React.FC = () => {
         assistidoId={anamneseAssistidoId}
         assistidoNome={anamneseAssistidoNome}
       />
-    </div>
+    
+    </PageShell>
   );
 };
 

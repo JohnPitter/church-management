@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { db } from '@/config/firebase';
 import { doc, setDoc, deleteDoc, onSnapshot, collection, serverTimestamp } from 'firebase/firestore';
 import SocialShareButtons from '../components/SocialShareButtons';
+import PageShell from '../components/common/PageShell';
 
 // Optimized image component without flickering
 const ThumbnailWithOverlay: React.FC<{
@@ -513,25 +514,10 @@ export const LivePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <span className="mr-3">📺</span>
-                Transmissões
-              </h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Assista aos cultos ao vivo e acesse as gravações
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="📺 Transmissões"
+      subtitle="Assista aos cultos ao vivo e acesse as gravações"
+    >
         {/* Loading State */}
         {loading ? (
           <div className="space-y-8">
@@ -875,8 +861,8 @@ export const LivePage: React.FC = () => {
         )}
           </>
         )}
-      </div>
-    </div>
+      
+    </PageShell>
   );
 };
 

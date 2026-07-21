@@ -15,6 +15,7 @@ import { db, storage } from '@/config/firebase';
 import { onSnapshot, collection } from 'firebase/firestore';
 import { ref, uploadBytesResumable, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import PageShell from '../components/common/PageShell';
 
 // Optimized image component without flickering
 const ThumbnailWithOverlay: React.FC<{
@@ -459,29 +460,21 @@ export const AdminLiveManagementPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciar Transmissões</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Administre transmissões ao vivo e gravações
-              </p>
-            </div>
-            <button
-              onClick={handleCreateStream}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700"
-            >
-              <span className="mr-2">➕</span>
-              Nova Transmissão
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Gerenciar Transmissões"
+      subtitle="Administre transmissões ao vivo e gravações"
+      actions={
+        <>
+          <button
+                        onClick={handleCreateStream}
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700"
+                      >
+                        <span className="mr-2">➕</span>
+                        Nova Transmissão
+                      </button>
+        </>
+      }
+    >
         {/* Search and Filters */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -775,7 +768,7 @@ export const AdminLiveManagementPage: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      
 
       {/* Create Stream Modal */}
       {showCreateModal && (
@@ -795,7 +788,8 @@ export const AdminLiveManagementPage: React.FC = () => {
           loading={loading}
         />
       )}
-    </div>
+    
+    </PageShell>
   );
 };
 

@@ -16,6 +16,7 @@ import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import PageShell from '../components/common/PageShell';
 
 const ONGActivitiesPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -348,29 +349,20 @@ const ONGActivitiesPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Atividades</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Total de {filteredActivities.length} atividades
-              </p>
-            </div>
-            <button
-              onClick={() => handleOpenModal()}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
-            >
-              + Nova Atividade
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Gerenciamento de Atividades"
+      subtitle={<>Total de {filteredActivities.length} atividades</>}
+      actions={
+        <>
+          <button
+                        onClick={() => handleOpenModal()}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+                      >
+                        + Nova Atividade
+                      </button>
+        </>
+      }
+    >
         <div className="bg-white rounded-lg shadow p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
@@ -427,7 +419,7 @@ const ONGActivitiesPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      
 
       {/* Activities List */}
       <div className="max-w-7xl mx-auto px-4 pb-8 sm:px-6 lg:px-8">
@@ -1181,7 +1173,8 @@ const ONGActivitiesPage: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    
+    </PageShell>
   );
 };
 

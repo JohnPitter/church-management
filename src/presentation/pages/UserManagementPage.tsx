@@ -15,6 +15,7 @@ import { useConfirmDialog } from '../components/ConfirmDialog';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import PageShell from '../components/common/PageShell';
 
 // Presentation interface that maps to domain entities
 interface PresentationUser {
@@ -359,36 +360,28 @@ export const UserManagementPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciar Usuários</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Gerencie funções e permissões dos usuários do sistema
-              </p>
-            </div>
-            <PermissionGuard 
-              module={SystemModule.Users} 
-              action={PermissionAction.Create}
-            >
-              <button
-                onClick={() => setCreateModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <span>Criar Usuário</span>
-              </button>
-            </PermissionGuard>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Gerenciar Usuários"
+      subtitle="Gerencie funções e permissões dos usuários do sistema"
+      actions={
+        <>
+          <PermissionGuard 
+                        module={SystemModule.Users} 
+                        action={PermissionAction.Create}
+                      >
+                        <button
+                          onClick={() => setCreateModalOpen(true)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          <span>Criar Usuário</span>
+                        </button>
+                      </PermissionGuard>
+        </>
+      }
+    >
         {/* Search and Filters */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -621,7 +614,7 @@ export const UserManagementPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      
 
       {/* Create User Modal */}
       <CreateUserModal
@@ -631,6 +624,7 @@ export const UserManagementPage: React.FC = () => {
         loading={createLoading}
         availableRoles={roles.map(r => ({ value: r.value, label: r.label }))}
       />
-    </div>
+    
+    </PageShell>
   );
 };

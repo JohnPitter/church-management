@@ -31,6 +31,7 @@ import { Pagination } from '../components/common/Pagination';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import PageShell from '../components/common/PageShell';
 
 export const ONGFinancialPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -339,72 +340,65 @@ export const ONGFinancialPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Sistema Financeiro ONG</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Controle financeiro completo da organização
-              </p>
-            </div>
-            <div className="flex space-x-3">
-              <select
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-                disabled={loading}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                {periods.map(period => (
-                  <option key={period.value} value={period.value}>
-                    {period.label}
-                  </option>
-                ))}
-              </select>
-              {selectedPeriod === 'custom' && (
-                <>
-                  <input
-                    type="date"
-                    value={customStartDate}
-                    onChange={(e) => setCustomStartDate(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  />
-                  <input
-                    type="date"
-                    value={customEndDate}
-                    onChange={(e) => setCustomEndDate(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  />
-                </>
-              )}
-              {canManage && (
-                <button
-                  onClick={() => handleExportData('xlsx')}
-                  disabled={loading}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                  📊 Exportar Excel
-                </button>
-              )}
-              {canCreate && (
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Nova Transação
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+    <PageShell
+      title="Sistema Financeiro ONG"
+      subtitle="Controle financeiro completo da organização"
+      actions={
+        <>
+          <div className="flex space-x-3">
+                        <select
+                          value={selectedPeriod}
+                          onChange={(e) => setSelectedPeriod(e.target.value)}
+                          disabled={loading}
+                          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          {periods.map(period => (
+                            <option key={period.value} value={period.value}>
+                              {period.label}
+                            </option>
+                          ))}
+                        </select>
+                        {selectedPeriod === 'custom' && (
+                          <>
+                            <input
+                              type="date"
+                              value={customStartDate}
+                              onChange={(e) => setCustomStartDate(e.target.value)}
+                              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                            />
+                            <input
+                              type="date"
+                              value={customEndDate}
+                              onChange={(e) => setCustomEndDate(e.target.value)}
+                              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                            />
+                          </>
+                        )}
+                        {canManage && (
+                          <button
+                            onClick={() => handleExportData('xlsx')}
+                            disabled={loading}
+                            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            📊 Exportar Excel
+                          </button>
+                        )}
+                        {canCreate && (
+                          <button
+                            onClick={() => setShowCreateModal(true)}
+                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                          >
+                            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Nova Transação
+                          </button>
+                        )}
+                      </div>
+        </>
+      }
+    >
 
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Navigation Tabs */}
         <div className="border-b border-gray-200 mb-8">
           <nav className="-mb-px flex space-x-8">
@@ -1276,7 +1270,8 @@ export const ONGFinancialPage: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
+      
+
 
       {/* Create Transaction Modal */}
       <CreateTransactionModal
@@ -1305,7 +1300,8 @@ export const ONGFinancialPage: React.FC = () => {
         currentUser={currentUser}
         service={ongFinancialService}
       />
-    </div>
+    
+    </PageShell>
   );
 };
 

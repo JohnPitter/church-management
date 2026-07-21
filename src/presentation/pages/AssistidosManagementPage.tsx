@@ -36,6 +36,7 @@ import {
   HiPrinter,
   HiCurrencyDollar
 } from 'react-icons/hi2';
+import PageShell from '../components/common/PageShell';
 
 interface AssistidosManagementPageProps {}
 
@@ -250,33 +251,24 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciar Assistidos</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Administre pessoas assistidas pela igreja e suas famílias
-              </p>
-            </div>
-            {activeTab === 'assistidos' && (
-              <button
-                onClick={handleCreateAssistido}
-                className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:opacity-90 transition-opacity w-full sm:w-auto"
-                style={{ backgroundColor: settings?.primaryColor || '#3B82F6' }}
-              >
-                <HiPlus className="w-5 h-5 mr-2" />
-                Cadastrar Assistido
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Gerenciar Assistidos"
+      subtitle="Administre pessoas assistidas pela igreja e suas famílias"
+      actions={
+        <>
+          {activeTab === 'assistidos' && (
+                        <button
+                          onClick={handleCreateAssistido}
+                          className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:opacity-90 transition-opacity w-full sm:w-auto"
+                          style={{ backgroundColor: settings?.primaryColor || '#3B82F6' }}
+                        >
+                          <HiPlus className="w-5 h-5 mr-2" />
+                          Cadastrar Assistido
+                        </button>
+                      )}
+        </>
+      }
+    >
         {/* Navigation Tabs */}
         <div className="border-b border-gray-200 mb-6 sm:mb-8">
           <nav className="-mb-px flex overflow-x-auto space-x-4 sm:space-x-8">
@@ -731,8 +723,8 @@ const AssistidosManagementPage: React.FC<AssistidosManagementPageProps> = () => 
           assistido={selectedAssistido}
         />
       )}
-      </div>
-    </div>
+      
+    </PageShell>
   );
 };
 

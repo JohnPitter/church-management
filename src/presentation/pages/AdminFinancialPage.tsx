@@ -35,6 +35,7 @@ import { DepartmentReportModal } from '../components/DepartmentReportModal';
 import { DepartmentHistoryModal } from '../components/DepartmentHistoryModal';
 import { DepartmentActionsMenu } from '../components/DepartmentActionsMenu';
 import { Pagination } from '../components/common/Pagination';
+import PageShell from '../components/common/PageShell';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
@@ -520,73 +521,63 @@ export const AdminFinancialPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Sistema Financeiro</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Controle financeiro completo da igreja
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              <select
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-                disabled={loading}
-                className="px-3 py-2 sm:px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                {periods.map(period => (
-                  <option key={period.value} value={period.value}>
-                    {period.label}
-                  </option>
-                ))}
-              </select>
-              {selectedPeriod === 'custom' && (
-                <>
-                  <input
-                    type="date"
-                    value={customStartDate}
-                    onChange={(e) => setCustomStartDate(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    placeholder="Data inicial"
-                  />
-                  <input
-                    type="date"
-                    value={customEndDate}
-                    onChange={(e) => setCustomEndDate(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    placeholder="Data final"
-                  />
-                </>
-              )}
-              {canManage && (
-                <button
-                  onClick={() => handleExportData('xlsx')}
-                  disabled={loading}
-                  className="inline-flex items-center px-3 py-2 sm:px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                  📊 <span className="hidden sm:inline ml-1">Exportar Excel</span>
-                </button>
-              )}
-              {canCreate && (
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="inline-flex items-center px-3 py-2 sm:px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                >
-                  <span className="sm:mr-2">➕</span>
-                  <span className="hidden sm:inline">Nova Transação</span>
-                  <span className="sm:hidden ml-1">Nova</span>
-                </button>
-              )}
-            </div>
-          </div>
+    <PageShell
+      title="Sistema Financeiro"
+      subtitle="Controle financeiro completo da igreja"
+      actions={
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <select
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+            disabled={loading}
+            className="px-3 py-2 sm:px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+          >
+            {periods.map(period => (
+              <option key={period.value} value={period.value}>
+                {period.label}
+              </option>
+            ))}
+          </select>
+          {selectedPeriod === 'custom' && (
+            <>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                placeholder="Data inicial"
+              />
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                placeholder="Data final"
+              />
+            </>
+          )}
+          {canManage && (
+            <button
+              onClick={() => handleExportData('xlsx')}
+              disabled={loading}
+              className="inline-flex items-center px-3 py-2 sm:px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+            >
+              📊 <span className="hidden sm:inline ml-1">Exportar Excel</span>
+            </button>
+          )}
+          {canCreate && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center px-3 py-2 sm:px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+            >
+              <span className="sm:mr-2">➕</span>
+              <span className="hidden sm:inline">Nova Transação</span>
+              <span className="sm:hidden ml-1">Nova</span>
+            </button>
+          )}
         </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      }
+    >
         {/* Navigation Tabs */}
         <div className="border-b border-gray-200 mb-8">
           <nav className="-mb-px flex space-x-8">
@@ -2020,7 +2011,6 @@ export const AdminFinancialPage: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
 
       {/* Create Transaction Modal */}
       <CreateTransactionModal
@@ -2094,6 +2084,6 @@ export const AdminFinancialPage: React.FC = () => {
           department={selectedDepartment}
         />
       )}
-    </div>
+    </PageShell>
   );
 };

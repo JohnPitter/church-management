@@ -12,6 +12,7 @@ import { AnonymousRegistrationModal, AnonymousRegistration } from '../components
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
 import { Linkify } from '../components/common/Linkify';
+import PageShell from '../components/common/PageShell';
 
 export const EventsPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -238,44 +239,11 @@ export const EventsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Notification Toast */}
-      {showNotification && (
-        <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg ${
-          showNotification.type === 'success' 
-            ? 'bg-green-600 text-white' 
-            : 'bg-red-600 text-white'
-        }`}>
-          <div className="flex items-center">
-            <span className="mr-2">
-              {showNotification.type === 'success' ? '✅' : '❌'}
-            </span>
-            {showNotification.message}
-            <button 
-              onClick={() => setShowNotification(null)}
-              className="ml-4 text-white hover:text-gray-200"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
+    <PageShell
+      title="Eventos"
+      subtitle="Acompanhe os próximos eventos e participe da nossa comunidade"
+    >
 
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Eventos</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Acompanhe os próximos eventos e participe da nossa comunidade
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
 
         {/* Search and Filters */}
         <div className="mb-8">
@@ -460,7 +428,8 @@ export const EventsPage: React.FC = () => {
             )}
           </>
         )}
-      </div>
+      
+
 
       {/* Event Details Modal */}
       {showEventModal && selectedEvent && (
@@ -609,6 +578,7 @@ export const EventsPage: React.FC = () => {
           onRegister={handleAnonymousRegistration}
         />
       )}
-    </div>
+    
+    </PageShell>
   );
 };

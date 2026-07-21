@@ -10,6 +10,7 @@ import { loggingService } from '@modules/shared-kernel/logging/infrastructure/se
 import { generateProntuarioPDF, generateProntuarioWord } from '../utils/prontuarioExport';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import PageShell from '../components/common/PageShell';
 
 interface FichaModalProps {
   isOpen: boolean;
@@ -2926,21 +2927,10 @@ const ProfessionalFichasPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Fichas de Acompanhamento</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Gerencie as fichas de acompanhamento dos seus pacientes
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Fichas de Acompanhamento"
+      subtitle="Gerencie as fichas de acompanhamento dos seus pacientes"
+    >
         {/* Filtros */}
         <div className="mb-6">
           <div className="mb-4">
@@ -3121,7 +3111,7 @@ const ProfessionalFichasPage: React.FC = () => {
             />
           )}
         </div>
-      </div>
+      
 
       {/* Ficha Modal */}
       <ProfessionalFichaModal
@@ -3130,7 +3120,8 @@ const ProfessionalFichasPage: React.FC = () => {
         ficha={selectedFicha}
         onSave={handleSaveFicha}
       />
-    </div>
+    
+    </PageShell>
   );
 };
 

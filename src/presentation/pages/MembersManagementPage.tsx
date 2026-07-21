@@ -18,6 +18,7 @@ import { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } from
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import PageShell from '../components/common/PageShell';
 
 interface MembersManagementPageProps {}
 
@@ -844,31 +845,22 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciar Membros</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Administre os membros da igreja e suas informações
-              </p>
-            </div>
-            {canCreate && (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                ➕ Novo Membro
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Gerenciar Membros"
+      subtitle="Administre os membros da igreja e suas informações"
+      actions={
+        <>
+          {canCreate && (
+                        <button
+                          onClick={() => setShowCreateModal(true)}
+                          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                          ➕ Novo Membro
+                        </button>
+                      )}
+        </>
+      }
+    >
         {/* Navigation Tabs */}
         <div className="border-b border-gray-200 mb-8">
           <nav className="-mb-px flex space-x-8">
@@ -1750,7 +1742,7 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
             </div>
           </div>
         )}
-      </div>
+      
 
       {/* Create Member Modal */}
       <CreateMemberModal
@@ -1777,7 +1769,8 @@ const MembersManagementPage: React.FC<MembersManagementPageProps> = () => {
         }}
         member={selectedMember}
       />
-    </div>
+    
+    </PageShell>
   );
 };
 

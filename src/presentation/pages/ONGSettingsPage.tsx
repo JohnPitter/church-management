@@ -7,6 +7,7 @@ import { ONGInfo, ONGEntity } from '@modules/ong-management/settings/domain/enti
 import toast from 'react-hot-toast';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import { applyPhoneMask, applyCEPMask } from '../../utils/inputMasks';
+import PageShell from '../components/common/PageShell';
 
 const ONGSettingsPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -267,29 +268,21 @@ const ONGSettingsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">⚙️ Configurações da ONG</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Gerencie as informações da sua organização
-              </p>
-            </div>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {saving ? 'Salvando...' : '💾 Salvar Alterações'}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="⚙️ Configurações da ONG"
+      subtitle="Gerencie as informações da sua organização"
+      actions={
+        <>
+          <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {saving ? 'Salvando...' : '💾 Salvar Alterações'}
+                      </button>
+        </>
+      }
+    >
         <div className="bg-white rounded-lg shadow">
           {/* Tabs */}
           <div className="border-b border-gray-200">
@@ -805,8 +798,8 @@ const ONGSettingsPage: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
-    </div>
+      
+    </PageShell>
   );
 };
 

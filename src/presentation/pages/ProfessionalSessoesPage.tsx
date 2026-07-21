@@ -5,6 +5,7 @@ import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/ficha
 import { SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import PageShell from '../components/common/PageShell';
 
 interface SessaoComFicha extends SessaoAcompanhamento {
   pacienteNome: string;
@@ -221,21 +222,10 @@ const ProfessionalSessoesPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Minhas Sessões</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Histórico de todas as sessões realizadas com seus pacientes
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Minhas Sessões"
+      subtitle="Histórico de todas as sessões realizadas com seus pacientes"
+    >
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
@@ -425,8 +415,8 @@ const ProfessionalSessoesPage: React.FC = () => {
             />
           )}
         </div>
-      </div>
-    </div>
+      
+    </PageShell>
   );
 };
 

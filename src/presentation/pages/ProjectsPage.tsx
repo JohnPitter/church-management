@@ -12,6 +12,7 @@ import SocialShareButtons from '../components/SocialShareButtons';
 import toast from 'react-hot-toast';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import PageShell from '../components/common/PageShell';
 
 export const ProjectsPage: React.FC = () => {
   const { currentUser, canCreateContent: _canCreateContent } = useAuth();
@@ -184,22 +185,10 @@ export const ProjectsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Projetos</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Acompanhe e participe dos projetos da nossa comunidade
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Projetos"
+      subtitle="Acompanhe e participe dos projetos da nossa comunidade"
+    >
         {/* Search and Filters */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -467,7 +456,7 @@ export const ProjectsPage: React.FC = () => {
             </p>
           </div>
         )}
-      </div>
+      
 
       {/* Project Details Modal */}
       {showDetailsModal && selectedProject && (
@@ -629,6 +618,7 @@ export const ProjectsPage: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    
+    </PageShell>
   );
 };

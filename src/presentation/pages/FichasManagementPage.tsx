@@ -8,6 +8,7 @@ import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/f
 import { generateProntuarioPDF, generateProntuarioWord } from '../utils/prontuarioExport';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import PageShell from '../components/common/PageShell';
 
 interface FichaModalProps {
   isOpen: boolean;
@@ -1080,22 +1081,10 @@ const FichasManagementPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Fichas</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Gerencie todas as fichas de acompanhamento do sistema
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Gerenciamento de Fichas"
+      subtitle="Gerencie todas as fichas de acompanhamento do sistema"
+    >
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           {Object.entries(counts).map(([status, count]) => (
@@ -1253,7 +1242,7 @@ const FichasManagementPage: React.FC = () => {
             />
           )}
         </div>
-      </div>
+      
 
       {/* Modal */}
       <FichaModal
@@ -1263,7 +1252,8 @@ const FichasManagementPage: React.FC = () => {
         onSave={handleSaveFicha}
         onDelete={handleDeleteFicha}
       />
-    </div>
+    
+    </PageShell>
   );
 };
 

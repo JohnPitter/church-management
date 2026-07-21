@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { VerseOfTheDay } from '../components/VerseOfTheDay';
 import { EventsCalendar } from '@modules/church-management/events/presentation/components/EventsCalendar';
+import PageShell from '../components/common/PageShell';
 
 interface RecentActivity {
   id: string;
@@ -172,30 +173,18 @@ export const PainelPage: React.FC = () => {
   }, [projectRepository, blogRepository, eventRepository]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Painel Principal
-              </h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Bem-vindo, {currentUser?.displayName || 'Usuário'}!
-              </p>
-            </div>
-            <Link
-              to="/profile"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              Meu Perfil
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Painel Principal"
+      subtitle={`Bem-vindo, ${currentUser?.displayName || 'Usuário'}!`}
+      actions={
+        <Link
+          to="/profile"
+          className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+        >
+          Meu Perfil
+        </Link>
+      }
+    >
         {/* Verse of the Day */}
         <VerseOfTheDay />
 
@@ -301,7 +290,6 @@ export const PainelPage: React.FC = () => {
             )}
           </div>
         </div>
-      </main>
-    </div>
+    </PageShell>
   );
 };

@@ -372,6 +372,7 @@ export const AdminHomeSettingsPage: React.FC = () => {
               {saving ? '⏳ Salvando...' : '💾 Salvar Configurações'}
             </button>
           </div>
+        </div>
 
         {/* Last updated info */}
         {homeSettings && (

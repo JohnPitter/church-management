@@ -9,6 +9,7 @@ import { storage } from '@/config/firebase';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import PageShell from '../components/common/PageShell';
 
 interface AboutStatistic {
   value: string;
@@ -276,38 +277,30 @@ export const AdminSettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Configurações do Sistema</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Configure as preferências gerais do sistema
-              </p>
-            </div>
-            <div className="flex space-x-3">
-              <button
-                onClick={handleReset}
-                disabled={saving || contextLoading || !settings}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Restaurar Padrões
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving || contextLoading || !settings}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
-              >
-                {saving ? 'Salvando...' : 'Salvar Alterações'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Configurações do Sistema"
+      subtitle="Configure as preferências gerais do sistema"
+      actions={
+        <>
+          <div className="flex space-x-3">
+                        <button
+                          onClick={handleReset}
+                          disabled={saving || contextLoading || !settings}
+                          className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          Restaurar Padrões
+                        </button>
+                        <button
+                          onClick={handleSave}
+                          disabled={saving || contextLoading || !settings}
+                          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                        >
+                          {saving ? 'Salvando...' : 'Salvar Alterações'}
+                        </button>
+                      </div>
+        </>
+      }
+    >
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
           {/* Sidebar */}
           <div className="lg:col-span-3">
@@ -990,7 +983,7 @@ export const AdminSettingsPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      
+    </PageShell>
   );
 };

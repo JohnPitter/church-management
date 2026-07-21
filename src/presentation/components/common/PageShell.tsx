@@ -4,12 +4,16 @@
 import React from 'react';
 
 interface PageShellProps {
-  title: string;
-  subtitle?: string;
+  title: React.ReactNode;
+  subtitle?: React.ReactNode;
   actions?: React.ReactNode;
   children: React.ReactNode;
-  /** Conteúdo abaixo do header (ex.: stats); se false, children ocupam a área principal */
+  /** Extra classes on the content region under the header */
   contentClassName?: string;
+  /** Sticky header (ex.: home builder) */
+  stickyHeader?: boolean;
+  /** Full-bleed content (no max-w-7xl / vertical padding) for tools like home builder */
+  fullBleed?: boolean;
 }
 
 export const PageShell: React.FC<PageShellProps> = ({
@@ -17,16 +21,28 @@ export const PageShell: React.FC<PageShellProps> = ({
   subtitle,
   actions,
   children,
-  contentClassName = ''
+  contentClassName = '',
+  stickyHeader = false,
+  fullBleed = false,
 }) => {
+  const headerShell = stickyHeader
+    ? 'bg-white shadow sticky top-0 z-50'
+    : 'bg-white shadow';
+  const headerPad = stickyHeader
+    ? 'max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8'
+    : 'max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8';
+  const contentShell = fullBleed
+    ? contentClassName
+    : `max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 ${contentClassName}`;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+      <div className={headerShell}>
+        <div className={headerPad}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="min-w-0">
               <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-              {subtitle && (
+              {subtitle != null && subtitle !== false && (
                 <p className="mt-1 text-sm text-gray-600">{subtitle}</p>
               )}
             </div>
@@ -39,7 +55,7 @@ export const PageShell: React.FC<PageShellProps> = ({
         </div>
       </div>
 
-      <div className={`max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 ${contentClassName}`}>
+      <div className={contentShell} role="main">
         {children}
       </div>
     </div>

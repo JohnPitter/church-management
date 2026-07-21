@@ -24,6 +24,7 @@ import { Pagination } from '../components/common/Pagination';
 import { CreateTopicModal } from '../components/CreateTopicModal';
 import { CreateForumCategoryModal } from '@modules/content-management/forum/presentation/components/CreateForumCategoryModal';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import PageShell from '../components/common/PageShell';
 
 export const AdminForumPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -588,40 +589,33 @@ export const AdminForumPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciar Fórum</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Administre tópicos, categorias e modere discussões
-              </p>
-            </div>
-            <div className="flex space-x-3">
-              {canCreate && (
-                <button
-                  onClick={() => setShowCreateCategoryModal(true)}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  🏷️ Nova Categoria
-                </button>
-              )}
-              {canCreate && (
-                <button
-                  onClick={() => setShowCreateTopicModal(true)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors theme-primary hover:opacity-90"
-                >
-                  💬 Novo Tópico
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+    <PageShell
+      title="Gerenciar Fórum"
+      subtitle="Administre tópicos, categorias e modere discussões"
+      actions={
+        <>
+          <div className="flex space-x-3">
+                        {canCreate && (
+                          <button
+                            onClick={() => setShowCreateCategoryModal(true)}
+                            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                          >
+                            🏷️ Nova Categoria
+                          </button>
+                        )}
+                        {canCreate && (
+                          <button
+                            onClick={() => setShowCreateTopicModal(true)}
+                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors theme-primary hover:opacity-90"
+                          >
+                            💬 Novo Tópico
+                          </button>
+                        )}
+                      </div>
+        </>
+      }
+    >
 
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
 
         {/* Statistics Cards */}
         {renderStatsCards()}
@@ -656,7 +650,8 @@ export const AdminForumPage: React.FC = () => {
             {selectedTab === 'stats' && renderStats()}
           </div>
         </div>
-      </div>
+      
+
 
       {/* Modals */}
       {showCreateTopicModal && (
@@ -677,6 +672,7 @@ export const AdminForumPage: React.FC = () => {
           currentUser={currentUser}
         />
       )}
-    </div>
+    
+    </PageShell>
   );
 };

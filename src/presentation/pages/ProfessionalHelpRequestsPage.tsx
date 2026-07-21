@@ -15,6 +15,7 @@ import { TipoAssistencia } from '@modules/assistance/assistencia/domain/entities
 import { ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { ProfessionalHelpRequestService } from '@modules/assistance/professional/application/services/ProfessionalHelpRequestService';
 import toast from 'react-hot-toast';
+import PageShell from '../components/common/PageShell';
 
 export const ProfessionalHelpRequestsPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -152,28 +153,20 @@ export const ProfessionalHelpRequestsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Pedidos de Ajuda</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Solicitações de orientação e encaminhamento entre profissionais
-              </p>
-            </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              + Novo Pedido
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Pedidos de Ajuda"
+      subtitle="Solicitações de orientação e encaminhamento entre profissionais"
+      actions={
+        <>
+          <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        + Novo Pedido
+                      </button>
+        </>
+      }
+    >
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
@@ -392,7 +385,7 @@ export const ProfessionalHelpRequestsPage: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
+      
 
       {/* Request Details Modal */}
       {showModal && selectedRequest && (
@@ -510,7 +503,8 @@ export const ProfessionalHelpRequestsPage: React.FC = () => {
           }}
         />
       )}
-    </div>
+    
+    </PageShell>
   );
 };
 

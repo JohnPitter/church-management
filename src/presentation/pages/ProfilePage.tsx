@@ -13,6 +13,7 @@ import { deleteField } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
 import toast from 'react-hot-toast';
+import PageShell from '../components/common/PageShell';
 
 interface UserProfile {
   id: string;
@@ -474,51 +475,43 @@ export const ProfilePage: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Meu Perfil</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Gerencie suas informações pessoais e preferências
-              </p>
-            </div>
-            <div className="flex space-x-3">
-              {!isEditing ? (
-                <button
-                  onClick={handleEdit}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Editar Perfil
-                </button>
-              ) : (
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handleCancel}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                  >
-                    {saving ? 'Salvando...' : 'Salvar'}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Meu Perfil"
+      subtitle="Gerencie suas informações pessoais e preferências"
+      actions={
+        <>
+          <div className="flex space-x-3">
+                        {!isEditing ? (
+                          <button
+                            onClick={handleEdit}
+                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                          >
+                            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Editar Perfil
+                          </button>
+                        ) : (
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={handleCancel}
+                              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                            >
+                              Cancelar
+                            </button>
+                            <button
+                              onClick={handleSave}
+                              disabled={saving}
+                              className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                            >
+                              {saving ? 'Salvando...' : 'Salvar'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+        </>
+      }
+    >
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
           {/* Profile Photo and Basic Info */}
           <div className="lg:col-span-4">
@@ -1058,7 +1051,7 @@ export const ProfilePage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      
+    </PageShell>
   );
 };

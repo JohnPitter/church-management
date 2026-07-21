@@ -15,6 +15,7 @@ import { CreateVisitorModal } from '@modules/church-management/visitors/presenta
 import { VisitorDetailsModal } from '@modules/church-management/visitors/presentation/components/visitors/VisitorDetailsModal';
 import { ContactVisitorModal } from '@modules/church-management/visitors/presentation/components/visitors/ContactVisitorModal';
 import { RecordVisitModal } from '@modules/church-management/visitors/presentation/components/visitors/RecordVisitModal';
+import PageShell from '../components/common/PageShell';
 
 export const VisitorsPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -179,30 +180,23 @@ export const VisitorsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Visitantes</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Gerencie os visitantes da igreja e acompanhe o processo de integração
-              </p>
-            </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 flex-shrink-0"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Novo Visitante
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Visitantes"
+      subtitle="Gerencie os visitantes da igreja e acompanhe o processo de integração"
+      actions={
+        <>
+          <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 flex-shrink-0"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Novo Visitante
+                      </button>
+        </>
+      }
+    >
         {/* Statistics Cards */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -531,7 +525,7 @@ export const VisitorsPage: React.FC = () => {
             }}
           />
         )}
-      </div>
-    </div>
+      
+    </PageShell>
   );
 };

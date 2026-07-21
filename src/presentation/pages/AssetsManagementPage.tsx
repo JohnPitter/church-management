@@ -16,6 +16,7 @@ import { loggingService } from '@modules/shared-kernel/logging/infrastructure/se
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import PageShell from '../components/common/PageShell';
 
 const AssetsManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -296,19 +297,10 @@ const AssetsManagementPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Patrimônio</h1>
-              <p className="mt-1 text-sm text-gray-600">Gerencie os bens e ativos da igreja</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Gerenciamento de Patrimônio"
+      subtitle="Gerencie os bens e ativos da igreja"
+    >
         {/* Statistics */}
         {statistics && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -513,7 +505,7 @@ const AssetsManagementPage: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      
 
       {/* Create/Edit Modal */}
       {showModal && (
@@ -852,7 +844,8 @@ const AssetsManagementPage: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    
+    </PageShell>
   );
 };
 

@@ -21,6 +21,7 @@ import { ComponentSettings } from '../components/HomeBuilder/ComponentSettings';
 import { LayoutTemplateSelector } from '../components/HomeBuilder/LayoutTemplateSelector';
 import toast from 'react-hot-toast';
 import { useConfirmDialog } from '../components/ConfirmDialog';
+import PageShell from '../components/common/PageShell';
 
 export const AdminHomeBuilderPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -502,126 +503,111 @@ export const AdminHomeBuilderPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Bar — alinhado ao header padrão do painel */}
-      <div className="bg-white shadow sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="min-w-0">
-                <h1 className="text-3xl font-bold text-gray-900">Construtor da Home</h1>
-                {currentLayout && (
-                  <p className="mt-1 text-sm text-gray-600 truncate">
-                    Layout: {currentLayout.name}
-                    {currentLayout.isActive ? ' (ativo)' : ''}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* View Mode Toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('edit')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === 'edit'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  ✏️ Editar
-                </button>
-                <button
-                  onClick={() => setViewMode('split')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === 'split'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  ⚡ Split
-                </button>
-                <button
-                  onClick={() => setViewMode('preview')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === 'preview'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  👁️ Preview
-                </button>
-              </div>
-
-              {/* Device Preview Toggle */}
-              {(viewMode === 'preview' || viewMode === 'split') && (
-                <div className="flex bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => setPreviewDevice('desktop')}
-                    className={`px-3 py-2 rounded-md text-sm transition-colors ${
-                      previewDevice === 'desktop'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                    title="Desktop"
-                  >
-                    🖥️
-                  </button>
-                  <button
-                    onClick={() => setPreviewDevice('tablet')}
-                    className={`px-3 py-2 rounded-md text-sm transition-colors ${
-                      previewDevice === 'tablet'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                    title="Tablet"
-                  >
-                    📱
-                  </button>
-                  <button
-                    onClick={() => setPreviewDevice('mobile')}
-                    className={`px-3 py-2 rounded-md text-sm transition-colors ${
-                      previewDevice === 'mobile'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                    title="Mobile"
-                  >
-                    📱
-                  </button>
-                </div>
-              )}
-
-              {/* Layout Actions */}
-              <button
-                onClick={() => setShowPageSettings(true)}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-              >
-                🎨 Página
-              </button>
-
-              <button
-                onClick={() => setShowLayoutManager(true)}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-              >
-                📁 Layouts
-              </button>
-
-              {currentLayout && !currentLayout.isActive && (
-                <button
-                  onClick={handlePublishLayout}
-                  disabled={saving}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
-                >
-                  {saving ? '⏳ Publicando...' : '🚀 Publicar'}
-                </button>
-              )}
-            </div>
+    <PageShell
+      title="Construtor da Home"
+      subtitle={
+        currentLayout
+          ? `Layout: ${currentLayout.name}${currentLayout.isActive ? ' (ativo)' : ''}`
+          : undefined
+      }
+      stickyHeader
+      fullBleed
+      contentClassName=""
+      actions={
+        <div className="flex items-center gap-3 flex-wrap justify-end">
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('edit')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'edit'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Editar
+            </button>
+            <button
+              onClick={() => setViewMode('split')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'split'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Split
+            </button>
+            <button
+              onClick={() => setViewMode('preview')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'preview'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Preview
+            </button>
           </div>
+          {(viewMode === 'preview' || viewMode === 'split') && (
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setPreviewDevice('desktop')}
+                className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                  previewDevice === 'desktop'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                title="Desktop"
+              >
+                Desktop
+              </button>
+              <button
+                onClick={() => setPreviewDevice('tablet')}
+                className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                  previewDevice === 'tablet'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                title="Tablet"
+              >
+                Tablet
+              </button>
+              <button
+                onClick={() => setPreviewDevice('mobile')}
+                className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                  previewDevice === 'mobile'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                title="Mobile"
+              >
+                Mobile
+              </button>
+            </div>
+          )}
+          <button
+            onClick={() => setShowPageSettings(true)}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          >
+            Página
+          </button>
+          <button
+            onClick={() => setShowLayoutManager(true)}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          >
+            Layouts
+          </button>
+          {currentLayout && !currentLayout.isActive && (
+            <button
+              onClick={handlePublishLayout}
+              disabled={saving}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
+            >
+              {saving ? 'Publicando...' : 'Publicar'}
+            </button>
+          )}
         </div>
-      </div>
-
+      }
+    >
       {/* Main Content */}
       <div className="flex h-[calc(100vh-88px)]">
         {/* Left Sidebar - Component Palette */}
@@ -1199,7 +1185,7 @@ export const AdminHomeBuilderPage: React.FC = () => {
           onCancel={() => setShowTemplateSelector(false)}
         />
       )}
-    </div>
+    </PageShell>
   );
 };
 

@@ -11,6 +11,7 @@ import SocialShareButtons from '../components/SocialShareButtons';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import PageShell from '../components/common/PageShell';
 
 // Presentation interface for BlogPost
 interface PresentationBlogPost {
@@ -195,22 +196,10 @@ export const BlogPage: React.FC = () => {
   } = usePagination(regularPosts, { initialPageSize: 12 });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Blog</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Mensagens, reflexões e estudos para sua edificação
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Blog"
+      subtitle="Mensagens, reflexões e estudos para sua edificação"
+    >
         {/* Loading State */}
         {loading ? (
           <div className="space-y-8">
@@ -522,7 +511,7 @@ export const BlogPage: React.FC = () => {
             )}
           </>
         )}
-      </div>
-    </div>
+      
+    </PageShell>
   );
 };

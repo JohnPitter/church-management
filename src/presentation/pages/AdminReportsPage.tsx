@@ -7,6 +7,7 @@ import { usePermissions } from '../hooks/usePermissions';
 import { SystemModule, PermissionAction } from '@/domain/entities/Permission';
 import { ReportData, reportsService } from '@modules/ong-management/settings/application/services/ReportsService';
 import toast from 'react-hot-toast';
+import PageShell from '../components/common/PageShell';
 
 export const AdminReportsPage: React.FC = () => {
   const { currentUser: _currentUser } = useAuth();
@@ -129,54 +130,46 @@ export const AdminReportsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Relatórios</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Análises e relatórios do sistema
-              </p>
-            </div>
-            <div className="flex space-x-3">
-              <select
-                value={selectedPeriod}
-                onChange={(e) => handlePeriodChange(e.target.value)}
-                disabled={loading}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                {periods.map(period => (
-                  <option key={period.value} value={period.value}>
-                    {period.label}
-                  </option>
-                ))}
-              </select>
-              {canManage && (
-                <>
-                  <button
-                    onClick={() => handleExportReport('pdf')}
-                    disabled={loading}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    📄 Exportar PDF
-                  </button>
-                  <button
-                    onClick={() => handleExportReport('excel')}
-                    disabled={loading}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
-                  >
-                    📊 Exportar Excel
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Relatórios"
+      subtitle="Análises e relatórios do sistema"
+      actions={
+        <>
+          <div className="flex space-x-3">
+                        <select
+                          value={selectedPeriod}
+                          onChange={(e) => handlePeriodChange(e.target.value)}
+                          disabled={loading}
+                          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          {periods.map(period => (
+                            <option key={period.value} value={period.value}>
+                              {period.label}
+                            </option>
+                          ))}
+                        </select>
+                        {canManage && (
+                          <>
+                            <button
+                              onClick={() => handleExportReport('pdf')}
+                              disabled={loading}
+                              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                            >
+                              📄 Exportar PDF
+                            </button>
+                            <button
+                              onClick={() => handleExportReport('excel')}
+                              disabled={loading}
+                              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                            >
+                              📊 Exportar Excel
+                            </button>
+                          </>
+                        )}
+                      </div>
+        </>
+      }
+    >
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
           {/* Sidebar */}
           <div className="lg:col-span-3">
@@ -433,7 +426,7 @@ export const AdminReportsPage: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      
+    </PageShell>
   );
 };

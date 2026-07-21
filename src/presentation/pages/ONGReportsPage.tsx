@@ -11,6 +11,7 @@ import {
   ONGEntity
 } from '@modules/ong-management/settings/domain/entities/ONG';
 import toast from 'react-hot-toast';
+import PageShell from '../components/common/PageShell';
 
 const ONGReportsPage: React.FC = () => {
   const { hasPermission, loading: permissionsLoading } = usePermissions();
@@ -165,28 +166,20 @@ const ONGReportsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">📊 Relatórios da ONG</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Análise de {periodo.dataInicio.toLocaleDateString('pt-BR')} até {periodo.dataFim.toLocaleDateString('pt-BR')}
-              </p>
-            </div>
-            <button
-              onClick={loadReports}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
-            >
-              🔄 Atualizar Relatórios
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="📊 Relatórios da ONG"
+      subtitle={<>Análise de {periodo.dataInicio.toLocaleDateString('pt-BR')} até {periodo.dataFim.toLocaleDateString('pt-BR')}</>}
+      actions={
+        <>
+          <button
+                        onClick={loadReports}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+                      >
+                        🔄 Atualizar Relatórios
+                      </button>
+        </>
+      }
+    >
         {/* Period Selection */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h2 className="text-lg font-medium text-gray-900 mb-4">Período do Relatório</h2>
@@ -564,8 +557,8 @@ const ONGReportsPage: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
-    </div>
+      
+    </PageShell>
   );
 };
 

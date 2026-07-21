@@ -15,6 +15,7 @@ import { NotificationService } from '@modules/shared-kernel/notifications/infras
 import { useConfirmDialog } from '../components/ConfirmDialog';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import PageShell from '../components/common/PageShell';
 
 // Presentation interface that maps to domain entities
 interface PresentationProject {
@@ -461,31 +462,23 @@ export const AdminProjectsManagementPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciar Projetos</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Administre projetos da igreja e seus participantes
-              </p>
-            </div>
-            {canCreate && (
-              <button
-                onClick={handleCreateProject}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700"
-              >
-                <span className="mr-2">➕</span>
-                Novo Projeto
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageShell
+      title="Gerenciar Projetos"
+      subtitle="Administre projetos da igreja e seus participantes"
+      actions={
+        <>
+          {canCreate && (
+                        <button
+                          onClick={handleCreateProject}
+                          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700"
+                        >
+                          <span className="mr-2">➕</span>
+                          Novo Projeto
+                        </button>
+                      )}
+        </>
+      }
+    >
         {/* Search and Filters */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -783,7 +776,7 @@ export const AdminProjectsManagementPage: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      
 
       {/* Create Project Modal */}
       {showCreateModal && (
@@ -818,7 +811,8 @@ export const AdminProjectsManagementPage: React.FC = () => {
           onReject={handleRejectRegistration}
         />
       )}
-    </div>
+    
+    </PageShell>
   );
 };
 
