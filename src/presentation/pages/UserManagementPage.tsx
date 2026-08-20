@@ -120,6 +120,17 @@ export const UserManagementPage: React.FC = () => {
     return matchesSearch && matchesRole;
   });
 
+  const duplicateEmails = useMemo(() => {
+    const counts = new Map<string, number>();
+    users.forEach(user => {
+      const email = user.email.toLowerCase();
+      counts.set(email, (counts.get(email) || 0) + 1);
+    });
+    return new Set(
+      [...counts.entries()].filter(([, count]) => count > 1).map(([email]) => email)
+    );
+  }, [users]);
+
   const { paginatedItems: paginatedUsers, currentPage, totalPages, totalItems, pageSize, setCurrentPage, setPageSize } = usePagination(filteredUsers);
 
   // Load roles (including custom roles) on component mount
@@ -176,9 +187,15 @@ export const UserManagementPage: React.FC = () => {
   }, [userRepository]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
+    const targetUser = users.find(u => u.id === userId);
+    const isDuplicateEmail = targetUser
+      ? duplicateEmails.has(targetUser.email.toLowerCase())
+      : false;
     const confirmed = await confirm({
       title: 'Confirmacao',
-      message: 'Tem certeza que deseja alterar a funcao deste usuario?',
+      message: isDuplicateEmail
+        ? 'Este email existe em mais de uma conta. O login usa a conta do Authentication, que pode ser a outra linha. Tem certeza que deseja alterar a funcao desta conta?'
+        : 'Tem certeza que deseja alterar a funcao deste usuario?',
       variant: 'warning'
     });
 
@@ -189,7 +206,6 @@ export const UserManagementPage: React.FC = () => {
       // Pass the role directly without conversion to support custom roles
       await userRepository.updateRole(userId, newRole, currentUser?.email || 'Admin');
 
-      const targetUser = users.find(u => u.id === userId);
       const oldRole = targetUser?.role || 'unknown';
 
       // Update local state
@@ -467,6 +483,11 @@ export const UserManagementPage: React.FC = () => {
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900">{user.name}</div>
                               <div className="text-sm text-gray-500">{user.email}</div>
+                              {duplicateEmails.has(user.email.toLowerCase()) && (
+                                <div className="text-xs font-medium text-amber-700 mt-0.5">
+                                  Email duplicado — confira as duas contas antes de mudar a função
+                                </div>
+                              )}
                             </div>
                           </div>
                         </td>

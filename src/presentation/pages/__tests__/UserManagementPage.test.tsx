@@ -274,6 +274,19 @@ describe('UserManagementPage', () => {
       });
     });
 
+    it('should warn when the same email belongs to more than one account', async () => {
+      mockFindAll.mockResolvedValue([
+        createTestUser({ id: 'auth-user', displayName: 'Login Account', email: 'testee@gmail.com' }),
+        createTestUser({ id: 'orphan-user', displayName: 'Joao Pedro', email: 'testee@gmail.com' })
+      ]);
+
+      render(<UserManagementPage />);
+
+      await waitFor(() => {
+        expect(screen.getAllByText(/Email duplicado/i).length).toBeGreaterThan(0);
+      });
+    });
+
     it('should display role badges', async () => {
       mockFindAll.mockResolvedValue(testUsers);
 
