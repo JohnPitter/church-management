@@ -247,6 +247,24 @@ describe('PermissionManager', () => {
       expect(PermissionManager.hasPermission('educator', SystemModule.Pedagogy, PermissionAction.Manage)).toBe(false);
       expect(PermissionManager.canAccessAdminPanel('educator')).toBe(false);
     });
+
+    it('gives educator the same public content pages as professional', () => {
+      const publicModules = [
+        SystemModule.Events,
+        SystemModule.Blog,
+        SystemModule.Devotionals,
+        SystemModule.Transmissions,
+        SystemModule.Projects,
+        SystemModule.Forum,
+        SystemModule.Leadership
+      ];
+
+      publicModules.forEach(module => {
+        expect(PermissionManager.hasPermission('educator', module, PermissionAction.View)).toBe(true);
+        expect(PermissionManager.hasPermission('professional', module, PermissionAction.View)).toBe(true);
+      });
+      expect(PermissionManager.hasPermission('educator', SystemModule.Assistance, PermissionAction.View)).toBe(false);
+    });
   });
 });
 

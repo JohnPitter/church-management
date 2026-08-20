@@ -67,6 +67,17 @@ export interface UserPermissionOverride {
   revokedPermissions: Permission[];
 }
 
+// Páginas da comunidade/conteúdo (Eventos, Blog, Devocionais, Live, Projetos, Fórum, Liderança)
+const PUBLIC_PAGE_PERMISSIONS: { module: SystemModule; actions: PermissionAction[] }[] = [
+  { module: SystemModule.Events, actions: [PermissionAction.View] },
+  { module: SystemModule.Blog, actions: [PermissionAction.View] },
+  { module: SystemModule.Devotionals, actions: [PermissionAction.View] },
+  { module: SystemModule.Transmissions, actions: [PermissionAction.View] },
+  { module: SystemModule.Projects, actions: [PermissionAction.View] },
+  { module: SystemModule.Forum, actions: [PermissionAction.View, PermissionAction.Create] },
+  { module: SystemModule.Leadership, actions: [PermissionAction.View] }
+];
+
 // Default permissions by role
 export const DEFAULT_ROLE_PERMISSIONS: Record<string, { module: SystemModule; actions: PermissionAction[] }[]> = {
   admin: [
@@ -124,7 +135,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, { module: SystemModule; ac
     { module: SystemModule.Assistance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
     { module: SystemModule.Members, actions: [PermissionAction.View] },
     { module: SystemModule.Calendar, actions: [PermissionAction.View] },
-    { module: SystemModule.Reports, actions: [PermissionAction.View] }
+    { module: SystemModule.Reports, actions: [PermissionAction.View] },
+    ...PUBLIC_PAGE_PERMISSIONS
   ],
   
   leader: [
@@ -137,14 +149,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, { module: SystemModule; ac
   
   member: [
     { module: SystemModule.Dashboard, actions: [PermissionAction.View] },
-    { module: SystemModule.Events, actions: [PermissionAction.View] },
-    { module: SystemModule.Blog, actions: [PermissionAction.View] },
-    { module: SystemModule.Devotionals, actions: [PermissionAction.View] },
-    { module: SystemModule.Transmissions, actions: [PermissionAction.View] },
-    { module: SystemModule.Projects, actions: [PermissionAction.View] },
-    { module: SystemModule.Forum, actions: [PermissionAction.View, PermissionAction.Create] },
     { module: SystemModule.Calendar, actions: [PermissionAction.View] },
-    { module: SystemModule.Leadership, actions: [PermissionAction.View] }
+    ...PUBLIC_PAGE_PERMISSIONS
   ],
 
   finance: [
@@ -167,7 +173,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, { module: SystemModule; ac
   educator: [
     { module: SystemModule.Dashboard, actions: [PermissionAction.View] },
     { module: SystemModule.Pedagogy, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
-    { module: SystemModule.Calendar, actions: [PermissionAction.View] }
+    { module: SystemModule.Calendar, actions: [PermissionAction.View] },
+    ...PUBLIC_PAGE_PERMISSIONS
   ]
 };
 
