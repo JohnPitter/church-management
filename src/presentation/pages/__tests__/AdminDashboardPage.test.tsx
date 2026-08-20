@@ -544,15 +544,14 @@ describe('AdminDashboardPage', () => {
       expect(screen.getByText('Gerenciar visitantes e acompanhamento')).toBeInTheDocument();
     });
 
-    it('should show assistance management when user has permission', () => {
+    it('should show pedagogy management when user has permission', () => {
       mockHasPermission.mockImplementation((module: SystemModule, action: PermissionAction) => {
-        return module === SystemModule.Assistance && action === PermissionAction.Manage;
+        return module === SystemModule.Pedagogy && action === PermissionAction.Manage;
       });
 
       renderComponent();
 
-      expect(screen.getByText('Gerenciamento de Assistências')).toBeInTheDocument();
-      expect(screen.getByText('Gerenciar assistência psicológica, social, jurídica e médica')).toBeInTheDocument();
+      expect(screen.getByText('Coordenação Pedagógica')).toBeInTheDocument();
     });
 
     it('should show assistidos management when user has permission', () => {

@@ -211,6 +211,21 @@ describe('LoginPage', () => {
       });
     });
 
+    it('should navigate to /educator for art educator users', async () => {
+      const educatorUser = createMockUser({ role: 'educator' as UserRole });
+      mockLogin.mockResolvedValueOnce(educatorUser);
+
+      renderLoginPage();
+
+      await userEvent.type(screen.getByLabelText(/email/i), 'educator@example.com');
+      await userEvent.type(screen.getByLabelText(/senha/i), 'password123');
+      await userEvent.click(screen.getByRole('button', { name: /entrar/i }));
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/educator');
+      });
+    });
+
     it('should navigate to /painel for regular users', async () => {
       const regularUser = createMockUser({ role: UserRole.Member });
       mockLogin.mockResolvedValueOnce(regularUser);

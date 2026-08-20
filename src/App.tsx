@@ -70,6 +70,8 @@ const ProfessionalFichasPage = lazyWithRetry(() => import('./presentation/pages/
 const ProfessionalSessoesPage = lazyWithRetry(() => import('./presentation/pages/ProfessionalSessoesPage'));
 const FichasManagementPage = lazyWithRetry(() => import('./presentation/pages/FichasManagementPage'));
 const ProfessionalHelpRequestsPage = lazyWithRetry(() => import('./presentation/pages/ProfessionalHelpRequestsPage').then(module => ({ default: module.ProfessionalHelpRequestsPage })));
+const PedagogyManagementPage = lazyWithRetry(() => import('./presentation/pages/PedagogyManagementPage'));
+const EducatorPedagogyPage = lazyWithRetry(() => import('./presentation/pages/EducatorPedagogyPage'));
 const SetupPage = lazyWithRetry(() => import('./presentation/pages/SetupPage'));
 const BirthdaysPage = lazyWithRetry(() => import('./presentation/pages/BirthdaysPage'));
 const WelcomePage = lazyWithRetry(() => import('./presentation/pages/WelcomePage'));
@@ -364,7 +366,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute 
             requireModule={SystemModule.Users} 
-            requireAction={PermissionAction.Manage}
+            requireAction={PermissionAction.Update}
           >
             <Layout>
               <UserManagementPage />
@@ -377,7 +379,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute 
             requireModule={SystemModule.Transmissions} 
-            requireAction={PermissionAction.Manage}
+            requireAction={PermissionAction.Update}
           >
             <Layout>
               <AdminLiveManagementPage />
@@ -390,7 +392,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute 
             requireModule={SystemModule.Blog} 
-            requireAction={PermissionAction.Manage}
+            requireAction={PermissionAction.Update}
           >
             <Layout>
               <AdminBlogManagementPage />
@@ -416,7 +418,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute 
             requireModule={SystemModule.Projects} 
-            requireAction={PermissionAction.Manage}
+            requireAction={PermissionAction.Update}
           >
             <Layout>
               <AdminProjectsManagementPage />
@@ -429,7 +431,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute 
             requireModule={SystemModule.Events} 
-            requireAction={PermissionAction.Manage}
+            requireAction={PermissionAction.Update}
           >
             <Layout>
               <AdminEventsManagementPage />
@@ -455,7 +457,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute 
             requireModule={SystemModule.Visitors} 
-            requireAction={PermissionAction.Manage}
+            requireAction={PermissionAction.Update}
           >
             <Layout>
               <AdminVisitorsPage />
@@ -532,7 +534,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute
             requireModule={SystemModule.Devotionals}
-            requireAction={PermissionAction.Manage}
+            requireAction={PermissionAction.Update}
           >
             <Layout>
               <AdminDevotionalPage />
@@ -558,7 +560,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute 
             requireModule={SystemModule.Forum} 
-            requireAction={PermissionAction.Manage}
+            requireAction={PermissionAction.Update}
           >
             <Layout>
               <AdminForumPage />
@@ -570,7 +572,7 @@ const router = createBrowserRouter([
         path: 'admin/logs',
         element: (
           <ProtectedRoute 
-            requireModule={SystemModule.Audit} 
+            requireModule={SystemModule.Logs} 
             requireAction={PermissionAction.View}
           >
             <Layout>
@@ -584,7 +586,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute 
             requireModule={SystemModule.Notifications} 
-            requireAction={PermissionAction.Manage}
+            requireAction={PermissionAction.Create}
           >
             <Layout>
               <AdminNotificationsPage />
@@ -597,7 +599,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute 
             requireModule={SystemModule.Assistidos} 
-            requireAction={PermissionAction.Manage}
+            requireAction={PermissionAction.Update}
           >
             <Layout>
               <AssistidosManagementPage />
@@ -610,7 +612,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute 
             requireModule={SystemModule.Members} 
-            requireAction={PermissionAction.Manage}
+            requireAction={PermissionAction.Update}
           >
             <Layout>
               <MembersManagementPage />
@@ -654,6 +656,20 @@ const router = createBrowserRouter([
           >
             <Layout>
               <FichasManagementPage />
+            </Layout>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'admin/pedagogia',
+        element: (
+          <ProtectedRoute
+            requireModule={SystemModule.Pedagogy}
+            requireAction={PermissionAction.Manage}
+            allowAdminAccess={true}
+          >
+            <Layout>
+              <PedagogyManagementPage />
             </Layout>
           </ProtectedRoute>
         )
@@ -750,11 +766,26 @@ const router = createBrowserRouter([
         )
       },
       {
+        path: 'educator',
+        element: (
+          <ProtectedRoute
+            requireModule={SystemModule.Pedagogy}
+            requireAction={PermissionAction.View}
+          >
+            <Layout>
+              <EducatorPedagogyPage />
+            </Layout>
+          </ProtectedRoute>
+        )
+      },
+      {
         path: 'professional',
         element: (
-          <ProtectedRoute 
-            requireModule={SystemModule.Assistance} 
+          <ProtectedRoute
+            requireRoles={['professional']}
+            requireModule={SystemModule.Assistance}
             requireAction={PermissionAction.View}
+            allowAdminAccess
           >
             <Layout>
               <ProfessionalDashboardPage />
@@ -765,9 +796,11 @@ const router = createBrowserRouter([
       {
         path: 'professional/assistencias',
         element: (
-          <ProtectedRoute 
-            requireModule={SystemModule.Assistance} 
+          <ProtectedRoute
+            requireRoles={['professional']}
+            requireModule={SystemModule.Assistance}
             requireAction={PermissionAction.Create}
+            allowAdminAccess
           >
             <Layout>
               <ProfessionalAssistenciaPage />
@@ -779,8 +812,10 @@ const router = createBrowserRouter([
         path: 'professional/fichas',
         element: (
           <ProtectedRoute
+            requireRoles={['professional']}
             requireModule={SystemModule.Assistance}
             requireAction={PermissionAction.View}
+            allowAdminAccess
           >
             <Layout>
               <ProfessionalFichasPage />
@@ -792,8 +827,10 @@ const router = createBrowserRouter([
         path: 'professional/sessoes',
         element: (
           <ProtectedRoute
+            requireRoles={['professional']}
             requireModule={SystemModule.Assistance}
             requireAction={PermissionAction.View}
+            allowAdminAccess
           >
             <Layout>
               <ProfessionalSessoesPage />
@@ -805,8 +842,10 @@ const router = createBrowserRouter([
         path: 'professional/help-requests',
         element: (
           <ProtectedRoute
+            requireRoles={['professional']}
             requireModule={SystemModule.Assistance}
             requireAction={PermissionAction.View}
+            allowAdminAccess
           >
             <Layout>
               <ProfessionalHelpRequestsPage />

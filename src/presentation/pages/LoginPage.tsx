@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getRoleHomePath } from '../utils/roleHomePath';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -22,14 +23,7 @@ export const LoginPage: React.FC = () => {
 
     try {
       const user = await login(email, password);
-      // Redirect based on user role
-      if (user?.role === 'admin') {
-        navigate('/admin');
-      } else if (user?.role === 'professional') {
-        navigate('/professional');
-      } else {
-        navigate('/painel');
-      }
+      navigate(getRoleHomePath(user?.role));
     } catch (err: any) {
       setError(err.message || 'Erro ao fazer login');
     } finally {
@@ -43,14 +37,7 @@ export const LoginPage: React.FC = () => {
 
     try {
       const user = await signInWithGoogle();
-      // Redirect based on user role
-      if (user?.role === 'admin') {
-        navigate('/admin');
-      } else if (user?.role === 'professional') {
-        navigate('/professional');
-      } else {
-        navigate('/painel');
-      }
+      navigate(getRoleHomePath(user?.role));
     } catch (err: any) {
       setError(err.message || 'Erro ao fazer login com Google');
     } finally {

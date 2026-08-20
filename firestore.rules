@@ -46,6 +46,14 @@ service cloud.firestore {
       return hasRole('leader');
     }
 
+    function isEducator() {
+      return hasRole('educator');
+    }
+
+    function isPedagogicalCoordinator() {
+      return hasRole('pedagogical_coordinator');
+    }
+
     function isStaff() {
       return isAdmin() || isSecretary();
     }
@@ -101,6 +109,14 @@ service cloud.firestore {
     // ONG
     function canManageOng() {
       return isApproved() && isStaff();
+    }
+
+    function canAccessPedagogy() {
+      return isApproved() && (isStaff() || isPedagogicalCoordinator() || isEducator() || isAdmin());
+    }
+
+    function canManagePedagogy() {
+      return isApproved() && (isAdmin() || isPedagogicalCoordinator() || isSecretary());
     }
 
     // Notificações em massa
@@ -523,6 +539,31 @@ service cloud.firestore {
       match /sessoes/{sessaoId} {
         allow read, write: if canAccessFichas();
       }
+    }
+
+    match /pedagogicalGuidelines/{docId} {
+      allow read: if canAccessPedagogy();
+      allow write: if canManagePedagogy();
+    }
+    match /classSessionRecords/{docId} {
+      allow read: if canAccessPedagogy();
+      allow create, update: if canAccessPedagogy();
+      allow delete: if canManagePedagogy();
+    }
+    match /studentDifficultyRecords/{docId} {
+      allow read: if canAccessPedagogy();
+      allow create, update: if canAccessPedagogy();
+      allow delete: if canManagePedagogy();
+    }
+    match /guidelineApplications/{docId} {
+      allow read: if canAccessPedagogy();
+      allow create, update: if canAccessPedagogy();
+      allow delete: if canManagePedagogy();
+    }
+    match /pedagogicalFeedback/{docId} {
+      allow read: if canAccessPedagogy();
+      allow create: if canManagePedagogy();
+      allow update, delete: if canManagePedagogy();
     }
 
     // ========================================

@@ -96,6 +96,18 @@ export const PainelPage: React.FC = () => {
         }
       ];
     }
+    if (currentUser?.role === 'educator') {
+      return [
+        ...baseFeatures,
+        {
+          title: 'Coordenação Pedagógica',
+          description: 'Diretrizes, registros e orientações',
+          icon: '🎓',
+          href: '/educator',
+          color: 'bg-sky-500'
+        }
+      ];
+    }
     return baseFeatures;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.role]);

@@ -154,7 +154,10 @@ export class PermissionService {
 
   /**
    * Get all permissions for a user as a Map (used by usePermissions hook).
-   * Priority: rolePermissions (user doc) > rolePermissions (collection) > DEFAULT_ROLE_PERMISSIONS
+   * Built-in roles: current role (rolePermissions collection → DEFAULT_ROLE_PERMISSIONS).
+   * Stored users/{id}.rolePermissions is ignored for built-in roles so a previous
+   * function (ex.: professional) cannot leak Assistance after the role changes.
+   * Custom roles: users/{id}.rolePermissions copy.
    * Then applies: customPermissions.granted (adds) and customPermissions.revoked (removes)
    */
   public async getUserPermissionsMap(userId: string): Promise<Map<SystemModule, Set<PermissionAction>>> {
@@ -207,17 +210,23 @@ export class PermissionService {
       return new Map();
     }
 
-    // Resolve base permissions
-    // Priority: 1. rolePermissions in user document (custom roles)
-    //           2. rolePermissions Firestore collection (admin-customized)
-    //           3. DEFAULT_ROLE_PERMISSIONS (hardcoded defaults)
+    // Resolve base permissions from the CURRENT role. A denormalized copy on the
+    // user document is only used for custom roles — otherwise leftover modules
+    // from a previous function (Assistance after switching to educator) stay active.
     let permissions: Map<SystemModule, Set<PermissionAction>>;
+    const isBuiltInRole = this.getDefaultRoles().includes(userData.role);
 
-    if (userData.rolePermissions && Array.isArray(userData.rolePermissions) && userData.rolePermissions.length > 0) {
+    if (
+      !isBuiltInRole &&
+      userData.rolePermissions &&
+      Array.isArray(userData.rolePermissions) &&
+      userData.rolePermissions.length > 0
+    ) {
       permissions = new Map();
       userData.rolePermissions.forEach(config => {
         permissions.set(config.module, new Set(config.actions));
       });
+      this.mergeMissingDefaultModules(userData.role, permissions);
     } else {
       permissions = await this.getResolvedRolePermissions(userData.role);
     }
@@ -269,6 +278,7 @@ export class PermissionService {
           modules.forEach(config => {
             permissions.set(config.module, new Set(config.actions));
           });
+          this.mergeMissingDefaultModules(role, permissions);
           return permissions;
         }
       }
@@ -292,6 +302,22 @@ export class PermissionService {
     });
 
     return permissions;
+  }
+
+  /**
+   * Módulos novos no código não existem em rolePermissions gravadas no Firestore.
+   * Sem este merge, telas novas (ex.: Coordenação Pedagógica) somem para admin/secretário.
+   */
+  private mergeMissingDefaultModules(
+    role: string,
+    permissions: Map<SystemModule, Set<PermissionAction>>
+  ): void {
+    const defaults = this.getDefaultRolePermissions(role);
+    defaults.forEach((actions, module) => {
+      if (!permissions.has(module)) {
+        permissions.set(module, new Set(actions));
+      }
+    });
   }
 
   private getUserPermissionFromCache(userId: string): UserPermissionCacheEntry | null {
@@ -871,7 +897,7 @@ export class PermissionService {
   // ========== ROLE UTILITIES ==========
 
   private getDefaultRoles(): string[] {
-    return ['admin', 'secretary', 'professional', 'leader', 'member', 'finance'];
+    return ['admin', 'secretary', 'professional', 'leader', 'member', 'finance', 'pedagogical_coordinator', 'educator'];
   }
 
   async updateUserRolePermissions(userId: string, roleId: string): Promise<void> {
@@ -989,7 +1015,9 @@ export class PermissionService {
       professional: 'Profissional',
       leader: 'Líder',
       member: 'Membro',
-      finance: 'Finanças'
+      finance: 'Finanças',
+      pedagogical_coordinator: 'Coordenação Pedagógica',
+      educator: 'Arte-educador'
     };
 
     if (defaultNames[role]) {
@@ -1015,7 +1043,9 @@ export class PermissionService {
       professional: 'Profissional',
       leader: 'Líder',
       member: 'Membro',
-      finance: 'Finanças'
+      finance: 'Finanças',
+      pedagogical_coordinator: 'Coordenação Pedagógica',
+      educator: 'Arte-educador'
     };
 
     return defaultNames[role] || role;

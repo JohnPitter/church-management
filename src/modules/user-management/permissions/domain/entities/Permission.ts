@@ -21,6 +21,7 @@ export enum SystemModule {
   Calendar = 'calendar',
   Assistance = 'assistance',
   Assistidos = 'assistidos',
+  Pedagogy = 'pedagogy',
   Notifications = 'notifications',
   Communication = 'communication',
   ONG = 'ong',
@@ -84,6 +85,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, { module: SystemModule; ac
     { module: SystemModule.Calendar, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
     { module: SystemModule.Assistance, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
     { module: SystemModule.Assistidos, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Pedagogy, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
     { module: SystemModule.Notifications, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
     { module: SystemModule.Communication, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
     { module: SystemModule.ONG, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
@@ -101,18 +103,18 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, { module: SystemModule; ac
   
   secretary: [
     { module: SystemModule.Dashboard, actions: [PermissionAction.View] },
-    { module: SystemModule.Users, actions: [PermissionAction.View, PermissionAction.Update] },
-    { module: SystemModule.Members, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
-    { module: SystemModule.Blog, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
-    { module: SystemModule.Events, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
-    { module: SystemModule.Devotionals, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
-    { module: SystemModule.Transmissions, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
-    { module: SystemModule.Projects, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
-    { module: SystemModule.Forum, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
-    { module: SystemModule.Visitors, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
+    { module: SystemModule.Users, actions: [PermissionAction.View, PermissionAction.Update, PermissionAction.Manage] },
+    { module: SystemModule.Members, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
+    { module: SystemModule.Blog, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
+    { module: SystemModule.Events, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
+    { module: SystemModule.Devotionals, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
+    { module: SystemModule.Transmissions, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
+    { module: SystemModule.Projects, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
+    { module: SystemModule.Forum, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
+    { module: SystemModule.Visitors, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
     { module: SystemModule.Calendar, actions: [PermissionAction.View, PermissionAction.Manage] },
-    { module: SystemModule.Assistidos, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
-    { module: SystemModule.Notifications, actions: [PermissionAction.View, PermissionAction.Create] },
+    { module: SystemModule.Assistidos, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
+    { module: SystemModule.Notifications, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Manage] },
     { module: SystemModule.Reports, actions: [PermissionAction.View] },
     { module: SystemModule.Settings, actions: [PermissionAction.View] }
   ],
@@ -152,6 +154,20 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, { module: SystemModule; ac
     { module: SystemModule.Reports, actions: [PermissionAction.View] },
     { module: SystemModule.Members, actions: [PermissionAction.View] },
     { module: SystemModule.Calendar, actions: [PermissionAction.View] }
+  ],
+
+  pedagogical_coordinator: [
+    { module: SystemModule.Dashboard, actions: [PermissionAction.View] },
+    { module: SystemModule.Pedagogy, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
+    { module: SystemModule.Reports, actions: [PermissionAction.View] },
+    { module: SystemModule.Members, actions: [PermissionAction.View] },
+    { module: SystemModule.Calendar, actions: [PermissionAction.View] }
+  ],
+
+  educator: [
+    { module: SystemModule.Dashboard, actions: [PermissionAction.View] },
+    { module: SystemModule.Pedagogy, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update] },
+    { module: SystemModule.Calendar, actions: [PermissionAction.View] }
   ]
 };
 
@@ -187,6 +203,21 @@ export class PermissionManager {
     if (!modulePermission) return false;
     
     return modulePermission.actions.includes(action);
+  }
+
+  static canAccessManagementScreen(
+    userRole: string,
+    module: SystemModule,
+    overrides?: UserPermissionOverride
+  ): boolean {
+    return this.hasPermission(userRole, module, PermissionAction.Update, overrides)
+      || this.hasPermission(userRole, module, PermissionAction.Manage, overrides);
+  }
+
+  static canAccessAdminPanel(userRole: string, overrides?: UserPermissionOverride): boolean {
+    return this.getAllModules().some(module =>
+      this.hasPermission(userRole, module, PermissionAction.Manage, overrides)
+    );
   }
   
   static getRolePermissions(role: string): Permission[] {
@@ -233,6 +264,7 @@ export class PermissionManager {
       [SystemModule.Calendar]: 'Calendário',
       [SystemModule.Assistance]: 'Assistência',
       [SystemModule.Assistidos]: 'Assistidos',
+      [SystemModule.Pedagogy]: 'Coordenação Pedagógica',
       [SystemModule.Notifications]: 'Notificações',
       [SystemModule.Communication]: 'Comunicação',
       [SystemModule.ONG]: 'Gerenciamento ONG',

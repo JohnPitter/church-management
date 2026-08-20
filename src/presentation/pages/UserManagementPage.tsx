@@ -104,6 +104,8 @@ export const UserManagementPage: React.FC = () => {
       leader: 'bg-blue-100 text-blue-800',
       secretary: 'bg-green-100 text-green-800',
       finance: 'bg-yellow-100 text-yellow-800',
+      pedagogical_coordinator: 'bg-sky-100 text-sky-800',
+      educator: 'bg-orange-100 text-orange-800',
       admin: 'bg-red-100 text-red-800'
     };
     return colorMap[role] || 'bg-gray-100 text-gray-800';
@@ -354,6 +356,8 @@ export const UserManagementPage: React.FC = () => {
       leader: 'Pode gerenciar eventos e projetos',
       secretary: 'Pode gerenciar membros e conteúdo',
       finance: 'Acesso completo ao módulo financeiro',
+      pedagogical_coordinator: 'Publica diretrizes e acompanha arte-educadores',
+      educator: 'Registra encontros, dificuldades e aplicação das diretrizes',
       admin: 'Acesso total ao sistema'
     };
     return descriptions[role] || 'Função personalizada';

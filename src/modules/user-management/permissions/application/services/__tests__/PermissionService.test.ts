@@ -906,7 +906,9 @@ describe('PermissionService', () => {
       expect(roles).toContain('leader');
       expect(roles).toContain('professional');
       expect(roles).toContain('finance');
-      expect(roles).toHaveLength(6);
+      expect(roles).toContain('pedagogical_coordinator');
+      expect(roles).toContain('educator');
+      expect(roles).toHaveLength(8);
     });
   });
 
@@ -920,6 +922,8 @@ describe('PermissionService', () => {
       expect(roles).toContain('leader');
       expect(roles).toContain('professional');
       expect(roles).toContain('finance');
+      expect(roles).toContain('pedagogical_coordinator');
+      expect(roles).toContain('educator');
     });
   });
 
@@ -1005,7 +1009,7 @@ describe('PermissionService', () => {
       mockGetDocs.mockResolvedValueOnce({ docs: [] }); // No custom roles
 
       // Mock getRolePermissions for each default role
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < 8; i++) {
         mockGetDoc.mockResolvedValueOnce({ exists: () => false });
       }
 
@@ -1156,6 +1160,49 @@ describe('PermissionService', () => {
           rolePermissions: null
         })
       );
+    });
+  });
+
+  describe('getUserPermissionsMap', () => {
+    it('fills in new default modules from the current role, ignoring a stale user copy', async () => {
+      mockGetDoc
+        .mockResolvedValueOnce({
+          exists: () => true,
+          data: () => ({
+            status: 'approved',
+            role: 'admin',
+            rolePermissions: [
+              { module: SystemModule.Users, actions: [PermissionAction.View, PermissionAction.Manage] }
+            ]
+          })
+        })
+        .mockResolvedValueOnce({ exists: () => false });
+
+      const permissions = await service.getUserPermissionsMap('admin-user');
+
+      expect(permissions.get(SystemModule.Pedagogy)?.has(PermissionAction.Manage)).toBe(true);
+      expect(permissions.get(SystemModule.Users)?.has(PermissionAction.Manage)).toBe(true);
+    });
+
+    it('does not keep Assistance after the user role changes to educator', async () => {
+      mockGetDoc
+        .mockResolvedValueOnce({
+          exists: () => true,
+          data: () => ({
+            status: 'approved',
+            role: 'educator',
+            rolePermissions: [
+              { module: SystemModule.Dashboard, actions: [PermissionAction.View] },
+              { module: SystemModule.Assistance, actions: [PermissionAction.View, PermissionAction.Create] }
+            ]
+          })
+        })
+        .mockResolvedValueOnce({ exists: () => false });
+
+      const permissions = await service.getUserPermissionsMap('educator-user');
+
+      expect(permissions.has(SystemModule.Assistance)).toBe(false);
+      expect(permissions.get(SystemModule.Pedagogy)?.has(PermissionAction.View)).toBe(true);
     });
   });
 

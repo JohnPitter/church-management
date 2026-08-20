@@ -191,7 +191,7 @@ export const PermissionTestPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">📊 Usuários por Perfil</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {['admin', 'secretary', 'professional', 'leader', 'member', 'finance'].map(role => (
+            {['admin', 'secretary', 'professional', 'leader', 'member', 'finance', 'pedagogical_coordinator', 'educator'].map(role => (
               <div
                 key={role}
                 className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
@@ -358,7 +358,7 @@ export const PermissionTestPage: React.FC = () => {
                 {Object.values(SystemModule).slice(0, 15).map(module => (
                   <tr key={module}>
                     <td className="px-3 py-2 font-medium text-gray-900">{module}</td>
-                    {['admin', 'secretary', 'professional', 'leader', 'member', 'finance'].map(role => {
+                    {['admin', 'secretary', 'professional', 'leader', 'member', 'finance', 'pedagogical_coordinator', 'educator'].map(role => {
                       const rolePerms = DEFAULT_ROLE_PERMISSIONS[role] || [];
                       const modulePerms = rolePerms.find(p => p.module === module);
                       const hasView = modulePerms?.actions.includes(PermissionAction.View);

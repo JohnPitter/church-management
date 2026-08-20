@@ -260,6 +260,16 @@ describe('PainelPage', () => {
 
       expect(screen.queryByText('Profissionais')).not.toBeInTheDocument();
     });
+
+    it('should show pedagogy panel for art educators instead of professional panel', () => {
+      mockUser = { ...mockCurrentUser, role: 'educator' };
+      renderComponent();
+
+      expect(screen.queryByText('Profissionais')).not.toBeInTheDocument();
+      expect(screen.getByText('Coordenação Pedagógica')).toBeInTheDocument();
+      const pedagogyLink = screen.getByText('Coordenação Pedagógica').closest('a');
+      expect(pedagogyLink).toHaveAttribute('href', '/educator');
+    });
   });
 
   describe('Recent Activities', () => {

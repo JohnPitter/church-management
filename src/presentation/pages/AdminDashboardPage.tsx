@@ -14,7 +14,12 @@ export const AdminDashboardPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { hasPermission } = usePermissions();
   const [roleDisplayName, setRoleDisplayName] = useState<string>('');
-  // permissionService is now a singleton import
+  const canAccessManagementScreen = (module: SystemModule) =>
+    hasPermission(module, PermissionAction.Update)
+    || hasPermission(module, PermissionAction.Manage);
+  const canOperateNotifications =
+    hasPermission(SystemModule.Notifications, PermissionAction.Create)
+    || canAccessManagementScreen(SystemModule.Notifications);
 
   useEffect(() => {
     if (currentUser?.role) {
@@ -34,7 +39,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: '👥',
       color: 'bg-blue-500 hover:bg-blue-600',
       category: 'core',
-      show: hasPermission(SystemModule.Users, PermissionAction.Manage)
+      show: canAccessManagementScreen(SystemModule.Users)
     },
     {
       title: 'Gerenciar Membros',
@@ -43,7 +48,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: '👤',
       color: 'bg-blue-600 hover:bg-blue-700',
       category: 'core',
-      show: hasPermission(SystemModule.Members, PermissionAction.Manage)
+      show: canAccessManagementScreen(SystemModule.Members)
     },
     {
       title: 'Gerenciar Permissões',
@@ -63,7 +68,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: '✍️',
       color: 'bg-purple-500 hover:bg-purple-600',
       category: 'content',
-      show: hasPermission(SystemModule.Blog, PermissionAction.Manage)
+      show: canAccessManagementScreen(SystemModule.Blog)
     },
     {
       title: 'Gerenciar Eventos',
@@ -72,7 +77,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: '📅',
       color: 'bg-green-500 hover:bg-green-600',
       category: 'content',
-      show: hasPermission(SystemModule.Events, PermissionAction.Manage)
+      show: canAccessManagementScreen(SystemModule.Events)
     },
     {
       title: 'Gerenciar Devocionais',
@@ -81,7 +86,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: '📖',
       color: 'bg-violet-500 hover:bg-violet-600',
       category: 'content',
-      show: hasPermission(SystemModule.Devotionals, PermissionAction.Manage)
+      show: canAccessManagementScreen(SystemModule.Devotionals)
     },
     {
       title: 'Gerenciar Transmissões',
@@ -90,7 +95,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: '📺',
       color: 'bg-red-500 hover:bg-red-600',
       category: 'content',
-      show: hasPermission(SystemModule.Transmissions, PermissionAction.Manage)
+      show: canAccessManagementScreen(SystemModule.Transmissions)
     },
     {
       title: 'Gerenciar Projetos',
@@ -99,7 +104,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: '🎯',
       color: 'bg-orange-500 hover:bg-orange-600',
       category: 'content',
-      show: hasPermission(SystemModule.Projects, PermissionAction.Manage)
+      show: canAccessManagementScreen(SystemModule.Projects)
     },
     {
       title: 'Gerenciar Fórum',
@@ -108,7 +113,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: '💬',
       color: 'bg-teal-500 hover:bg-teal-600',
       category: 'content',
-      show: hasPermission(SystemModule.Forum, PermissionAction.Manage)
+      show: canAccessManagementScreen(SystemModule.Forum)
     },
     {
       title: 'Gerenciar Liderança',
@@ -128,7 +133,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: '🚪',
       color: 'bg-indigo-500 hover:bg-indigo-600',
       category: 'church',
-      show: hasPermission(SystemModule.Visitors, PermissionAction.Manage)
+      show: canAccessManagementScreen(SystemModule.Visitors)
     },
     {
       title: 'Gerenciamento de Assistências',
@@ -140,13 +145,24 @@ export const AdminDashboardPage: React.FC = () => {
       show: hasPermission(SystemModule.Assistance, PermissionAction.Manage)
     },
     {
+      title: 'Coordenação Pedagógica',
+      description: 'Diretrizes, registros dos arte-educadores, feedback e relatórios',
+      href: '/admin/pedagogia',
+      icon: '🎓',
+      color: 'bg-sky-500 hover:bg-sky-600',
+      category: 'church',
+      show: currentUser?.role === 'admin'
+        || hasPermission(SystemModule.Pedagogy, PermissionAction.Manage)
+        || canAccessManagementScreen(SystemModule.Pedagogy)
+    },
+    {
       title: 'Gerenciar Assistidos',
       description: 'Administrar pessoas assistidas pela igreja',
       href: '/admin/assistidos',
       icon: '🤝',
       color: 'bg-amber-500 hover:bg-amber-600',
       category: 'church',
-      show: hasPermission(SystemModule.Assistidos, PermissionAction.Manage)
+      show: canAccessManagementScreen(SystemModule.Assistidos)
     },
     {
       title: 'Gerenciar Notificações',
@@ -155,7 +171,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: '🔔',
       color: 'bg-pink-500 hover:bg-pink-600',
       category: 'church',
-      show: hasPermission(SystemModule.Notifications, PermissionAction.Manage)
+      show: canOperateNotifications
     },
     {
       title: 'Pedidos de Oração',

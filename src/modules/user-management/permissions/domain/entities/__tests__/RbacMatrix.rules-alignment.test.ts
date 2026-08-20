@@ -64,7 +64,7 @@ describe('RBAC matrix (rules alignment contract)', () => {
   });
 
   it('every role in DEFAULT_ROLE_PERMISSIONS is a known firestore role string', () => {
-    const known = ['admin', 'secretary', 'professional', 'leader', 'member', 'finance'];
+    const known = ['admin', 'secretary', 'professional', 'leader', 'member', 'finance', 'pedagogical_coordinator', 'educator'];
     Object.keys(DEFAULT_ROLE_PERMISSIONS).forEach((role) => {
       expect(known).toContain(role);
     });
@@ -84,6 +84,7 @@ describe('RBAC matrix (rules alignment contract)', () => {
       'function canAccessFinance()',
       'function canAccessFichas()',
       'function canAccessAssistance()',
+      'function canAccessPedagogy()',
     ]) {
       expect(rules).toContain(helper);
     }

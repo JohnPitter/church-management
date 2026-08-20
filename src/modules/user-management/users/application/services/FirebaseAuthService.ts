@@ -16,7 +16,7 @@ import {
   linkWithCredential,
   EmailAuthProvider
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, Timestamp } from 'firebase/firestore';
 
 export class FirebaseAuthService implements IAuthService {
   async signIn(credentials: { email: string; password: string }): Promise<User> {
@@ -144,30 +144,48 @@ export class FirebaseAuthService implements IAuthService {
   }
 
   onAuthStateChanged(callback: (user: User | null) => void): () => void {
-    return firebaseOnAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          const user = await this.getFullUserData(firebaseUser);
-          callback(user);
-        } catch (error: any) {
-          console.warn('Error fetching user data, but user is authenticated:', error);
-          // Don't logout the user just because we can't fetch their profile
-          // Instead, create a basic user object from Firebase data
-          const basicUser: User = {
-            id: firebaseUser.uid,
-            email: firebaseUser.email || '',
-            displayName: firebaseUser.displayName || 'Usuário',
-            role: UserRole.Member, // Default role - membro da igreja
-            status: UserStatus.Approved,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          };
-          callback(basicUser);
-        }
-      } else {
+    let unsubscribeUserDoc: (() => void) | undefined;
+
+    const unsubscribeAuth = firebaseOnAuthStateChanged(auth, (firebaseUser) => {
+      unsubscribeUserDoc?.();
+      unsubscribeUserDoc = undefined;
+
+      if (!firebaseUser) {
         callback(null);
+        return;
       }
+
+      unsubscribeUserDoc = onSnapshot(
+        doc(db, 'users', firebaseUser.uid),
+        async (userDoc) => {
+          try {
+            if (!userDoc.exists()) {
+              const user = await this.getFullUserData(firebaseUser);
+              callback(user);
+              return;
+            }
+            callback(this.mapFirestoreUser(firebaseUser.uid, userDoc.data()));
+          } catch (error: any) {
+            console.warn('Error fetching user data, but user is authenticated:', error);
+            callback(this.buildFallbackUser(firebaseUser));
+          }
+        },
+        async (error) => {
+          console.warn('Error subscribing to user profile:', error);
+          try {
+            const user = await this.getFullUserData(firebaseUser);
+            callback(user ?? this.buildFallbackUser(firebaseUser));
+          } catch {
+            callback(this.buildFallbackUser(firebaseUser));
+          }
+        }
+      );
     });
+
+    return () => {
+      unsubscribeUserDoc?.();
+      unsubscribeAuth();
+    };
   }
 
   async linkEmailPassword(password: string): Promise<void> {
@@ -247,22 +265,38 @@ export class FirebaseAuthService implements IAuthService {
       }
 
       const data = userDoc.data();
-      return {
-        id: firebaseUser.uid,
-        email: data.email,
-        displayName: data.displayName,
-        role: data.role as UserRole,
-        status: data.status as UserStatus,
-        createdAt: data.createdAt?.toDate() || new Date(),
-        updatedAt: data.updatedAt?.toDate() || new Date(),
-        photoURL: data.photoURL,
-        phoneNumber: data.phoneNumber,
-        biography: data.biography
-      };
+      return this.mapFirestoreUser(firebaseUser.uid, data);
     } catch (error) {
       // Silently fail and return null
       return null;
     }
+  }
+
+  private mapFirestoreUser(uid: string, data: any): User {
+    return {
+      id: uid,
+      email: data.email,
+      displayName: data.displayName,
+      role: data.role as UserRole,
+      status: data.status as UserStatus,
+      createdAt: data.createdAt?.toDate() || new Date(),
+      updatedAt: data.updatedAt?.toDate() || new Date(),
+      photoURL: data.photoURL,
+      phoneNumber: data.phoneNumber,
+      biography: data.biography
+    };
+  }
+
+  private buildFallbackUser(firebaseUser: FirebaseUser): User {
+    return {
+      id: firebaseUser.uid,
+      email: firebaseUser.email || '',
+      displayName: firebaseUser.displayName || 'Usuário',
+      role: UserRole.Member,
+      status: UserStatus.Approved,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
   }
 
   private getErrorMessage(errorCode: string): string {

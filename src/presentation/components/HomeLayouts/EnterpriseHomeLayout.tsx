@@ -8,6 +8,7 @@ import { HomeSectionVisibility } from '@modules/content-management/home-settings
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BibleVerse } from '@/data/verses';
+import { getRoleHomePath } from '../../utils/roleHomePath';
 
 function getChurchArticle(name?: string): string {
   if (!name) return 'À';
@@ -177,7 +178,7 @@ export const EnterpriseHomeLayout: React.FC<EnterpriseHomeLayoutProps> = ({ sect
                 </p>
               </div>
               <button
-                onClick={() => navigate(currentUser?.role === 'professional' ? '/professional' : '/painel')}
+                onClick={() => navigate(getRoleHomePath(currentUser?.role))}
                 className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-lg"
               >
                 Acessar Painel

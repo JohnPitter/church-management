@@ -4,8 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from 'presentation/contexts/AuthContext';
-import { usePermissions } from 'presentation/hooks/usePermissions';
-import { SystemModule, PermissionAction } from 'domain/entities/Permission';
+import { getStaffHomeRedirect } from 'presentation/utils/roleHomePath';
 import { HomeSettingsService } from '@modules/content-management/home-settings/application/services/HomeSettingsService';
 import {
   DEFAULT_HOME_SETTINGS,
@@ -19,7 +18,6 @@ import { BibleVerse, getVerseOfTheDay } from 'data/verses';
 
 const HomeSimplified: React.FC = () => {
   const { currentUser } = useAuth();
-  const { hasPermission } = usePermissions();
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [verseOfDay, setVerseOfDay] = useState<BibleVerse>(getVerseOfTheDay());
@@ -68,12 +66,13 @@ const HomeSimplified: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Redirect professionals to their panel
+  // Redirect professional / educator away from the public home
   useEffect(() => {
-    if (currentUser?.role === 'professional' && hasPermission(SystemModule.Assistance, PermissionAction.View)) {
-      navigate('/professional');
+    const staffHome = getStaffHomeRedirect(currentUser?.role);
+    if (staffHome) {
+      navigate(staffHome);
     }
-  }, [currentUser, hasPermission, navigate]);
+  }, [currentUser, navigate]);
 
   if (!homeSettings) {
     return (

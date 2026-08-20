@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { useSettings } from '../contexts/SettingsContext';
 import { SystemModule, PermissionAction, PermissionManager } from '../../domain/entities/Permission';
+import { getRoleHomePath } from '../utils/roleHomePath';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -19,6 +20,8 @@ interface ProtectedRouteProps {
   allowAdminAccess?: boolean;
   // Require at least one manage permission in any module
   requireAnyManagePermission?: boolean;
+  // Restrict to these roles even if leftover permissions from a previous function remain
+  requireRoles?: string[];
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
@@ -27,22 +30,17 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAction,
   requirePermissions,
   allowAdminAccess = false,
-  requireAnyManagePermission = false
+  requireAnyManagePermission = false,
+  requireRoles
 }) => {
   const { currentUser, loading, canAccessSystem } = useAuth();
   const { hasPermission, hasAnyPermission: _hasAnyPermission, loading: permissionsLoading } = usePermissions();
   const { settings } = useSettings();
 
-  // Helper to check if user has any manage permission
   const hasAnyManagePermission = () => {
-    const modules = [
-      SystemModule.Users, SystemModule.Members, SystemModule.Events,
-      SystemModule.Blog, SystemModule.Finance, SystemModule.Assistance,
-      SystemModule.Leadership, SystemModule.Transmissions, SystemModule.Projects,
-      SystemModule.Devotionals, SystemModule.Forum, SystemModule.Visitors,
-      SystemModule.Notifications, SystemModule.Settings, SystemModule.ONG
-    ];
-    return modules.some(module => hasPermission(module, PermissionAction.Manage));
+    return PermissionManager.getAllModules().some(module =>
+      hasPermission(module, PermissionAction.Manage)
+    );
   };
 
   if (loading || permissionsLoading) {
@@ -90,6 +88,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Special case: Admin always has access to certain pages
   if (allowAdminAccess && currentUser?.role === 'admin') {
     return <>{children}</>;
+  }
+
+  if (requireRoles && requireRoles.length > 0) {
+    const role = String(currentUser.role);
+    if (!requireRoles.includes(role)) {
+      return <Navigate to={getRoleHomePath(role)} replace />;
+    }
   }
 
   // All routes now use permission-based checks only

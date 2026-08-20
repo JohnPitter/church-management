@@ -3,9 +3,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from 'presentation/contexts/AuthContext';
-import { usePermissions } from 'presentation/hooks/usePermissions';
 import { useTheme } from 'presentation/hooks/useTheme';
-import { SystemModule, PermissionAction } from 'domain/entities/Permission';
+import { getStaffHomeRedirect } from 'presentation/utils/roleHomePath';
 import { useSettings } from 'presentation/contexts/SettingsContext';
 import { useNavigate } from 'react-router-dom';
 import { HomeBuilderService } from '@modules/content-management/home-builder/application/services/HomeBuilderService';
@@ -31,7 +30,6 @@ function getChurchArticle(name?: string): string {
 
 const Home: React.FC = () => {
   const { currentUser } = useAuth();
-  const { hasPermission } = usePermissions();
   const { settings, loading: settingsLoading } = useSettings();
   const { isDarkMode } = useTheme();
   const navigate = useNavigate();
@@ -167,11 +165,11 @@ const Home: React.FC = () => {
   }, []); // Remove dependency on currentUser since we want this to work for all users
 
   useEffect(() => {
-    // Redirect only professionals to their painel (not admins or secretaries)
-    if (currentUser && currentUser.role === 'professional' && hasPermission(SystemModule.Assistance, PermissionAction.View)) {
-      navigate('/professional');
+    const staffHome = getStaffHomeRedirect(currentUser?.role);
+    if (staffHome) {
+      navigate(staffHome);
     }
-  }, [currentUser, hasPermission, navigate]);
+  }, [currentUser, navigate]);
 
   // Helper to check if layout should use classic home - memoized to prevent repeated logging
   const shouldUseClassicHome = useMemo(() => {

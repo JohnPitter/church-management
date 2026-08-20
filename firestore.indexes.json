@@ -715,6 +715,46 @@
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "nome", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "classSessionRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "educatorId", "order": "ASCENDING" },
+        { "fieldPath": "sessionDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "studentDifficultyRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "educatorId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "guidelineApplications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "educatorId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pedagogicalFeedback",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "toEducatorId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pedagogicalFeedback",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isCollective", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

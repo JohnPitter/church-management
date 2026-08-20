@@ -904,4 +904,51 @@ describe('ProtectedRoute', () => {
       expect(screen.getByTestId('protected-content')).toBeInTheDocument();
     });
   });
+
+  describe('requireRoles', () => {
+    it('redirects educator away from professional routes even with leftover assistance permission', () => {
+      setupMocks({
+        currentUser: { id: '1', role: 'educator', status: UserStatus.Approved },
+        canAccessSystem: () => true,
+        hasPermission: () => true
+      });
+
+      render(
+        <MemoryRouter>
+          <ProtectedRoute
+            requireRoles={['professional']}
+            requireModule={SystemModule.Assistance}
+            requireAction={PermissionAction.View}
+          >
+            <TestChild />
+          </ProtectedRoute>
+        </MemoryRouter>
+      );
+
+      expect(screen.getByTestId('navigate')).toHaveTextContent('/educator');
+      expect(screen.queryByTestId('protected-content')).not.toBeInTheDocument();
+    });
+
+    it('allows the matching role through', () => {
+      setupMocks({
+        currentUser: { id: '1', role: 'professional', status: UserStatus.Approved },
+        canAccessSystem: () => true,
+        hasPermission: () => true
+      });
+
+      render(
+        <MemoryRouter>
+          <ProtectedRoute
+            requireRoles={['professional']}
+            requireModule={SystemModule.Assistance}
+            requireAction={PermissionAction.View}
+          >
+            <TestChild />
+          </ProtectedRoute>
+        </MemoryRouter>
+      );
+
+      expect(screen.getByTestId('protected-content')).toBeInTheDocument();
+    });
+  });
 });

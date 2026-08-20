@@ -293,6 +293,30 @@ describe('Layout Component', () => {
 
       const dashboardLinks = screen.getAllByText('Painel');
       expect(dashboardLinks.length).toBeGreaterThan(0);
+      expect(screen.getByTestId('link-/professional')).toBeInTheDocument();
+    });
+
+    it('should show educator dashboard link for art educator role', () => {
+      setupMocks({
+        auth: {
+          currentUser: {
+            ...defaultAuthValue.currentUser,
+            role: 'educator'
+          },
+          logout: defaultAuthValue.logout
+        }
+      });
+
+      render(
+        <MemoryRouter>
+          <Layout>
+            <TestChild />
+          </Layout>
+        </MemoryRouter>
+      );
+
+      expect(screen.getByTestId('link-/educator')).toBeInTheDocument();
+      expect(screen.queryByTestId('link-/professional')).not.toBeInTheDocument();
     });
 
     it('should show category dropdowns', () => {

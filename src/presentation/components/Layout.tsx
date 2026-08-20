@@ -6,9 +6,10 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { usePermissions } from '../hooks/usePermissions';
-import { SystemModule, PermissionAction } from '../../domain/entities/Permission';
+import { SystemModule, PermissionAction, PermissionManager } from '../../domain/entities/Permission';
 import { PublicLayout } from './PublicLayout';
 import { NotificationBell } from './NotificationBell';
+import { getRoleHomePath } from '../utils/roleHomePath';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -55,16 +56,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     setExpandedMobileCategory(null);
   }, [location.pathname]);
 
-  // Helper to check if user has any manage permission
   const hasAnyManagePermission = () => {
-    const modules = [
-      SystemModule.Users, SystemModule.Members, SystemModule.Events,
-      SystemModule.Blog, SystemModule.Finance, SystemModule.Assistance,
-      SystemModule.Leadership, SystemModule.Transmissions, SystemModule.Projects,
-      SystemModule.Devotionals, SystemModule.Forum, SystemModule.Visitors,
-      SystemModule.Notifications, SystemModule.Settings, SystemModule.ONG
-    ];
-    return modules.some(module => hasPermission(module, PermissionAction.Manage));
+    return PermissionManager.getAllModules().some(module =>
+      hasPermission(module, PermissionAction.Manage)
+    );
   };
 
   // If user is not logged in, use public layout
@@ -82,9 +77,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   // Dashboard item - always visible at top level
+  const homePath = getRoleHomePath(currentUser?.role);
+
   const dashboardItem: NavItem = {
     name: 'Painel',
-    href: currentUser?.role === 'professional' ? '/professional' : '/painel',
+    href: homePath,
     show: hasPermission(SystemModule.Dashboard, PermissionAction.View)
   };
 
@@ -131,6 +128,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isActive = (href: string) => {
     if (currentUser?.role === 'professional' && href === '/professional') {
       return location.pathname === '/professional';
+    }
+    if (currentUser?.role === 'educator' && href === '/educator') {
+      return location.pathname === '/educator';
     }
     return location.pathname === href;
   };

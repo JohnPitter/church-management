@@ -2,18 +2,16 @@ import { render, screen, waitFor } from '@testing-library/react';
 import HomeSimplified from '../HomeSimplified';
 
 const mockNavigate = jest.fn();
-const mockHasPermission = jest.fn();
 const mockGetSettings = jest.fn();
 const mockGetVerseOfTheDay = jest.fn();
+let mockCurrentUser: { role: string } | null = null;
 
 jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }));
 
-jest.mock('presentation/hooks/usePermissions', () => ({
-  usePermissions: () => ({
-    hasPermission: mockHasPermission,
-  }),
+jest.mock('presentation/contexts/AuthContext', () => ({
+  useAuth: () => ({ currentUser: mockCurrentUser }),
 }));
 
 jest.mock('@modules/content-management/home-settings/application/services/HomeSettingsService', () => ({
@@ -50,7 +48,7 @@ describe('HomeSimplified', () => {
       updatedAt: new Date(),
       updatedBy: '',
     });
-    mockHasPermission.mockReturnValue(false);
+    mockCurrentUser = null;
     localStorage.clear();
   });
 
@@ -74,8 +72,7 @@ describe('HomeSimplified', () => {
   });
 
   it('renderiza layouts alternativos e redireciona profissionais', async () => {
-    localStorage.setItem('currentUser', JSON.stringify({ role: 'professional' }));
-    mockHasPermission.mockReturnValue(true);
+    mockCurrentUser = { role: 'professional' };
 
     mockGetSettings.mockResolvedValueOnce({
       id: 'cfg1',
@@ -101,5 +98,13 @@ describe('HomeSimplified', () => {
     await waitFor(() => {
       expect(screen.getByText('Enterprise Layout')).toBeInTheDocument();
     });
+  });
+
+  it('redireciona arte-educador para /educator', async () => {
+    mockCurrentUser = { role: 'educator' };
+
+    render(<HomeSimplified />);
+    expect(await screen.findByText(/Canva Layout/)).toBeInTheDocument();
+    expect(mockNavigate).toHaveBeenCalledWith('/educator');
   });
 });

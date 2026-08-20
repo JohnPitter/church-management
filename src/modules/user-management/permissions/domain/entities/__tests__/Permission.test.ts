@@ -38,8 +38,8 @@ describe('PermissionManager', () => {
         expect(PermissionManager.hasPermission('secretary', SystemModule.Dashboard, PermissionAction.View)).toBe(true);
       });
 
-      it('should NOT have Manage permission on Users', () => {
-        expect(PermissionManager.hasPermission('secretary', SystemModule.Users, PermissionAction.Manage)).toBe(false);
+      it('should have Manage permission on Users to operate the management screen', () => {
+        expect(PermissionManager.hasPermission('secretary', SystemModule.Users, PermissionAction.Manage)).toBe(true);
       });
 
       it('should have Create permission on Members', () => {
@@ -216,6 +216,8 @@ describe('PermissionManager', () => {
       expect(DEFAULT_ROLE_PERMISSIONS['member']).toBeDefined();
       expect(DEFAULT_ROLE_PERMISSIONS['professional']).toBeDefined();
       expect(DEFAULT_ROLE_PERMISSIONS['finance']).toBeDefined();
+      expect(DEFAULT_ROLE_PERMISSIONS['pedagogical_coordinator']).toBeDefined();
+      expect(DEFAULT_ROLE_PERMISSIONS['educator']).toBeDefined();
     });
 
     it('should have admin with most permissions', () => {
@@ -223,6 +225,27 @@ describe('PermissionManager', () => {
       const memberModules = DEFAULT_ROLE_PERMISSIONS['member'].length;
 
       expect(adminModules).toBeGreaterThan(memberModules);
+    });
+  });
+
+  describe('canAccessAdminPanel / canAccessManagementScreen', () => {
+    it('lets secretary enter admin via manage on operational modules', () => {
+      expect(PermissionManager.canAccessAdminPanel('secretary')).toBe(true);
+      expect(PermissionManager.canAccessManagementScreen('secretary', SystemModule.Members)).toBe(true);
+    });
+
+    it('keeps members out of admin and keeps professionals off assistance admin screens', () => {
+      expect(PermissionManager.canAccessAdminPanel('member')).toBe(false);
+      expect(PermissionManager.canAccessAdminPanel('professional')).toBe(false);
+      expect(PermissionManager.canAccessManagementScreen('professional', SystemModule.Assistance)).toBe(true);
+    });
+
+    it('gives coordinator manage on pedagogy and educator only operational access', () => {
+      expect(PermissionManager.hasPermission('pedagogical_coordinator', SystemModule.Pedagogy, PermissionAction.Manage)).toBe(true);
+      expect(PermissionManager.canAccessAdminPanel('pedagogical_coordinator')).toBe(true);
+      expect(PermissionManager.hasPermission('educator', SystemModule.Pedagogy, PermissionAction.Create)).toBe(true);
+      expect(PermissionManager.hasPermission('educator', SystemModule.Pedagogy, PermissionAction.Manage)).toBe(false);
+      expect(PermissionManager.canAccessAdminPanel('educator')).toBe(false);
     });
   });
 });
@@ -235,6 +258,7 @@ describe('SystemModule', () => {
     expect(SystemModule.Finance).toBe('finance');
     expect(SystemModule.Settings).toBe('settings');
     expect(SystemModule.Permissions).toBe('permissions');
+    expect(SystemModule.Pedagogy).toBe('pedagogy');
   });
 });
 
