@@ -202,269 +202,369 @@ const EducatorPedagogyPage: React.FC = () => {
     { id: 'feedback', label: 'Orientações' }
   ];
 
+  const fieldClass = 'w-full min-w-0 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500';
+  const primaryButtonClass = 'bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-md text-sm font-medium';
+
   return (
     <PageShell
       title="Área do Arte-Educador"
       subtitle="Consulte as diretrizes, registre os encontros e acompanhe as orientações da coordenação"
     >
-      <div className="flex flex-wrap gap-2 mb-6">
-        {tabs.map(item => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setTab(item.id)}
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              tab === item.id ? 'bg-sky-600 text-white' : 'bg-white text-gray-700 border'
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-
-      {loading && <p className="text-gray-600">Carregando sua área pedagógica...</p>}
-
-      {!loading && tab === 'diretrizes' && (
-        <div className="space-y-4">
-          {guidelines.length === 0 && (
-            <p className="text-gray-600">Não há diretriz pedagógica vigente no momento.</p>
-          )}
-          {guidelines.map(item => (
-            <article key={item.id} className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold">{item.title}</h3>
-              <p className="text-xs text-gray-500 mt-1">
-                Vigência: {item.validFrom.toLocaleDateString('pt-BR')} a {item.validUntil.toLocaleDateString('pt-BR')}
-                {item.classGroup ? ` · Turma ${item.classGroup}` : ''}
-                {item.area ? ` · ${item.area}` : ''}
-              </p>
-              <p className="text-sm text-gray-700 mt-3 whitespace-pre-wrap">{item.content}</p>
-              {item.supportMaterials.length > 0 && (
-                <ul className="mt-4 space-y-1 text-sm">
-                  {item.supportMaterials.map(material => (
-                    <li key={`${material.title}-${material.url}`}>
-                      <a className="text-sky-700 underline" href={material.url} target="_blank" rel="noreferrer">
-                        {material.title || material.url}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </article>
-          ))}
-        </div>
-      )}
-
-      {!loading && tab === 'encontros' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <form onSubmit={handleSession} className="bg-white rounded-lg shadow p-6 space-y-3">
-            <h3 className="font-semibold">Registrar encontro</h3>
-            <input
-              className="w-full border rounded px-3 py-2"
-              placeholder="Turma"
-              value={sessionForm.classGroup}
-              onChange={event => setSessionForm({ ...sessionForm, classGroup: event.target.value })}
-            />
-            <input
-              type="date"
-              className="w-full border rounded px-3 py-2"
-              value={sessionForm.sessionDate}
-              onChange={event => setSessionForm({ ...sessionForm, sessionDate: event.target.value })}
-            />
-            <input
-              className="w-full border rounded px-3 py-2"
-              placeholder="Total de alunos na turma"
-              type="number"
-              min={0}
-              value={sessionForm.totalStudents}
-              onChange={event => setSessionForm({ ...sessionForm, totalStudents: event.target.value })}
-            />
-            <input
-              className="w-full border rounded px-3 py-2"
-              placeholder="Presentes no encontro"
-              type="number"
-              min={0}
-              value={sessionForm.presentCount}
-              onChange={event => setSessionForm({ ...sessionForm, presentCount: event.target.value })}
-            />
-            <input
-              className="w-full border rounded px-3 py-2"
-              placeholder="Alunos engajados"
-              type="number"
-              min={0}
-              value={sessionForm.engagedCount}
-              onChange={event => setSessionForm({ ...sessionForm, engagedCount: event.target.value })}
-            />
-            <input
-              className="w-full border rounded px-3 py-2"
-              placeholder="Alunos com baixo engajamento"
-              type="number"
-              min={0}
-              value={sessionForm.lowEngagementCount}
-              onChange={event => setSessionForm({ ...sessionForm, lowEngagementCount: event.target.value })}
-            />
-            <textarea
-              className="w-full border rounded px-3 py-2"
-              placeholder="Observações (opcional)"
-              value={sessionForm.notes}
-              onChange={event => setSessionForm({ ...sessionForm, notes: event.target.value })}
-            />
-            <button type="submit" className="bg-sky-600 text-white px-4 py-2 rounded">Salvar encontro</button>
-          </form>
-          <div className="space-y-3">
-            {sessions.map(item => (
-              <article key={item.id} className="bg-white rounded-lg shadow p-4">
-                <p className="font-medium">{item.classGroup} · {item.sessionDate.toLocaleDateString('pt-BR')}</p>
-                <p className="text-sm text-gray-600">
-                  Frequência {PedagogyEntity.attendanceRate(item)}% · Engajamento {PedagogyEntity.engagementRate(item)}%
-                </p>
-              </article>
+      <div className="bg-white rounded-lg shadow">
+        <div className="border-b border-gray-200 overflow-x-auto">
+          <nav className="-mb-px flex">
+            {tabs.map(item => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setTab(item.id)}
+                className={`py-3 px-4 sm:px-6 border-b-2 font-medium text-sm whitespace-nowrap ${
+                  tab === item.id
+                    ? 'border-sky-500 text-sky-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                {item.label}
+              </button>
             ))}
-          </div>
+          </nav>
         </div>
-      )}
 
-      {!loading && tab === 'dificuldades' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <form onSubmit={handleDifficulty} className="bg-white rounded-lg shadow p-6 space-y-3">
-            <h3 className="font-semibold">Identificar dificuldade</h3>
-            <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded p-3">
-              Registro de acompanhamento pedagógico, não diagnóstico.
-            </p>
-            <input
-              className="w-full border rounded px-3 py-2"
-              placeholder="Aluno"
-              value={difficultyForm.studentName}
-              onChange={event => setDifficultyForm({ ...difficultyForm, studentName: event.target.value })}
-            />
-            <div className="grid grid-cols-2 gap-2">
-              {Object.values(StudentDifficultyType).map(type => (
-                <label key={type} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={difficultyForm.difficulties.includes(type)}
-                    onChange={() => toggleDifficulty(type)}
-                  />
-                  {DIFFICULTY_LABELS[type]}
-                </label>
+        <div className="p-4 sm:p-6 space-y-8">
+          {loading && <p className="text-gray-600">Carregando sua área pedagógica...</p>}
+
+          {!loading && tab === 'diretrizes' && (
+            <div className="space-y-4">
+              {guidelines.length === 0 && (
+                <p className="text-gray-500">Não há diretriz pedagógica vigente no momento.</p>
+              )}
+              {guidelines.map(item => (
+                <article key={item.id} className="border border-gray-200 rounded-lg p-5">
+                  <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Vigência: {item.validFrom.toLocaleDateString('pt-BR')} a {item.validUntil.toLocaleDateString('pt-BR')}
+                    {item.classGroup ? ` · Turma ${item.classGroup}` : ''}
+                    {item.area ? ` · ${item.area}` : ''}
+                  </p>
+                  <p className="text-sm text-gray-700 mt-3 whitespace-pre-wrap">{item.content}</p>
+                  {item.supportMaterials.length > 0 && (
+                    <ul className="mt-4 space-y-1 text-sm">
+                      {item.supportMaterials.map(material => (
+                        <li key={`${material.title}-${material.url}`}>
+                          <a className="text-sky-700 underline" href={material.url} target="_blank" rel="noreferrer">
+                            {material.title || material.url}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </article>
               ))}
             </div>
-            {difficultyForm.difficulties.includes(StudentDifficultyType.Other) && (
-              <input
-                className="w-full border rounded px-3 py-2"
-                placeholder="Outros: descreva"
-                value={difficultyForm.otherDifficulty}
-                onChange={event => setDifficultyForm({ ...difficultyForm, otherDifficulty: event.target.value })}
-              />
-            )}
-            <textarea
-              className="w-full border rounded px-3 py-2 min-h-[100px]"
-              placeholder="Descrição breve da situação"
-              value={difficultyForm.description}
-              onChange={event => setDifficultyForm({ ...difficultyForm, description: event.target.value })}
-            />
-            <button type="submit" className="bg-sky-600 text-white px-4 py-2 rounded">Salvar registro</button>
-          </form>
-          <div className="space-y-3">
-            {difficulties.map(item => (
-              <article key={item.id} className="bg-white rounded-lg shadow p-4">
-                <p className="font-medium">{item.studentName}</p>
-                <p className="text-sm text-gray-600">
-                  {item.difficulties.map(type => DIFFICULTY_LABELS[type]).join(', ')}
-                </p>
-                <p className="text-sm mt-2">{item.description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {!loading && tab === 'aplicacao' && (
-        <form onSubmit={handleApplication} className="bg-white rounded-lg shadow p-6 space-y-3 max-w-3xl">
-          <h3 className="font-semibold">Como a diretriz está sendo aplicada</h3>
-          <select
-            className="w-full border rounded px-3 py-2"
-            value={applicationForm.guidelineId}
-            onChange={event => setApplicationForm({ ...applicationForm, guidelineId: event.target.value })}
-          >
-            <option value="">Selecione a diretriz</option>
-            {guidelines.map(item => (
-              <option key={item.id} value={item.id}>{item.title}</option>
-            ))}
-          </select>
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              type="number"
-              min={1}
-              max={12}
-              className="border rounded px-3 py-2"
-              value={applicationForm.month}
-              onChange={event => setApplicationForm({ ...applicationForm, month: Number(event.target.value) })}
-            />
-            <input
-              type="number"
-              className="border rounded px-3 py-2"
-              value={applicationForm.year}
-              onChange={event => setApplicationForm({ ...applicationForm, year: Number(event.target.value) })}
-            />
-          </div>
-          <textarea
-            className="w-full border rounded px-3 py-2"
-            placeholder="Quais dificuldades estão sendo encontradas na aplicação da Diretriz Pedagógica?"
-            value={applicationForm.applicationDifficulties}
-            onChange={event => setApplicationForm({ ...applicationForm, applicationDifficulties: event.target.value })}
-          />
-          <textarea
-            className="w-full border rounded px-3 py-2 min-h-[100px]"
-            placeholder="Descreva brevemente como ocorreu a aplicação durante o mês"
-            value={applicationForm.applicationNarrative}
-            onChange={event => setApplicationForm({ ...applicationForm, applicationNarrative: event.target.value })}
-          />
-          <textarea
-            className="w-full border rounded px-3 py-2"
-            placeholder="Quais estratégias foram utilizadas?"
-            value={applicationForm.strategies}
-            onChange={event => setApplicationForm({ ...applicationForm, strategies: event.target.value })}
-          />
-          <textarea
-            className="w-full border rounded px-3 py-2"
-            placeholder="Quais resultados foram observados?"
-            value={applicationForm.observedResults}
-            onChange={event => setApplicationForm({ ...applicationForm, observedResults: event.target.value })}
-          />
-          <button type="submit" className="bg-sky-600 text-white px-4 py-2 rounded">Registrar aplicação</button>
-          {applications.length > 0 && (
-            <p className="text-sm text-gray-500">{applications.length} relato(s) enviado(s).</p>
           )}
-        </form>
-      )}
 
-      {!loading && tab === 'feedback' && (
-        <div className="space-y-4">
-          {feedback.length === 0 && <p className="text-gray-600">Nenhuma orientação recebida ainda.</p>}
-          {feedback.map(item => (
-            <article key={item.id} className="bg-white rounded-lg shadow p-5">
-              <p className="text-xs text-gray-500">
-                {FEEDBACK_KIND_LABELS[item.kind]} · {item.fromUserName} · {item.createdAt.toLocaleDateString('pt-BR')}
-                {item.isCollective ? ' · Coletivo' : ''}
-              </p>
-              <p className="text-sm mt-2 whitespace-pre-wrap">{item.message}</p>
-              {item.materials.map(material => (
-                <a
-                  key={material.url}
-                  className="block text-sm text-sky-700 underline mt-2"
-                  href={material.url}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {material.title || material.url}
-                </a>
+          {!loading && tab === 'encontros' && (
+            <div className="space-y-8">
+              <form onSubmit={handleSession} className="space-y-5">
+                <h3 className="text-lg font-semibold text-gray-900">Registrar encontro</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Field label="Turma">
+                    <input
+                      className={fieldClass}
+                      placeholder="Ex.: Turma A"
+                      value={sessionForm.classGroup}
+                      onChange={event => setSessionForm({ ...sessionForm, classGroup: event.target.value })}
+                    />
+                  </Field>
+                  <Field label="Área (opcional)">
+                    <input
+                      className={fieldClass}
+                      placeholder="Música, teatro..."
+                      value={sessionForm.area}
+                      onChange={event => setSessionForm({ ...sessionForm, area: event.target.value })}
+                    />
+                  </Field>
+                  <Field label="Data do encontro">
+                    <input
+                      type="date"
+                      className={fieldClass}
+                      value={sessionForm.sessionDate}
+                      onChange={event => setSessionForm({ ...sessionForm, sessionDate: event.target.value })}
+                    />
+                  </Field>
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Field label="Total de alunos">
+                    <input
+                      className={fieldClass}
+                      type="number"
+                      min={0}
+                      value={sessionForm.totalStudents}
+                      onChange={event => setSessionForm({ ...sessionForm, totalStudents: event.target.value })}
+                    />
+                  </Field>
+                  <Field label="Presentes">
+                    <input
+                      className={fieldClass}
+                      type="number"
+                      min={0}
+                      value={sessionForm.presentCount}
+                      onChange={event => setSessionForm({ ...sessionForm, presentCount: event.target.value })}
+                    />
+                  </Field>
+                  <Field label="Engajados">
+                    <input
+                      className={fieldClass}
+                      type="number"
+                      min={0}
+                      value={sessionForm.engagedCount}
+                      onChange={event => setSessionForm({ ...sessionForm, engagedCount: event.target.value })}
+                    />
+                  </Field>
+                  <Field label="Baixo engajamento">
+                    <input
+                      className={fieldClass}
+                      type="number"
+                      min={0}
+                      value={sessionForm.lowEngagementCount}
+                      onChange={event => setSessionForm({ ...sessionForm, lowEngagementCount: event.target.value })}
+                    />
+                  </Field>
+                </div>
+                <Field label="Observações (opcional)">
+                  <textarea
+                    className={`${fieldClass} min-h-[100px]`}
+                    placeholder="Registre o que for relevante sobre o encontro"
+                    value={sessionForm.notes}
+                    onChange={event => setSessionForm({ ...sessionForm, notes: event.target.value })}
+                  />
+                </Field>
+                <div className="flex justify-end pt-2 border-t border-gray-100">
+                  <button type="submit" className={primaryButtonClass}>Salvar encontro</button>
+                </div>
+              </form>
+              <section>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Encontros registrados</h3>
+                {sessions.length === 0 ? (
+                  <p className="text-gray-500">Nenhum encontro registrado ainda.</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {sessions.map(item => (
+                      <article key={item.id} className="border border-gray-200 rounded-lg p-4">
+                        <p className="font-medium text-gray-900">
+                          {item.classGroup} · {item.sessionDate.toLocaleDateString('pt-BR')}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Frequência {PedagogyEntity.attendanceRate(item)}% · Engajamento {PedagogyEntity.engagementRate(item)}%
+                        </p>
+                        {item.notes && <p className="text-sm text-gray-600 mt-2">{item.notes}</p>}
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+
+          {!loading && tab === 'dificuldades' && (
+            <div className="space-y-8">
+              <form onSubmit={handleDifficulty} className="space-y-5">
+                <h3 className="text-lg font-semibold text-gray-900">Identificar dificuldade</h3>
+                <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-md p-3">
+                  Registro de acompanhamento pedagógico, não diagnóstico.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Aluno">
+                    <input
+                      className={fieldClass}
+                      placeholder="Nome do aluno"
+                      value={difficultyForm.studentName}
+                      onChange={event => setDifficultyForm({ ...difficultyForm, studentName: event.target.value })}
+                    />
+                  </Field>
+                  <Field label="Turma (opcional)">
+                    <input
+                      className={fieldClass}
+                      placeholder="Turma ou grupo"
+                      value={difficultyForm.classGroup}
+                      onChange={event => setDifficultyForm({ ...difficultyForm, classGroup: event.target.value })}
+                    />
+                  </Field>
+                </div>
+                <div>
+                  <p className="block text-sm font-medium text-gray-700 mb-2">Dificuldades observadas</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {Object.values(StudentDifficultyType).map(type => (
+                      <label key={type} className="flex items-center gap-2 text-sm text-gray-700 border border-gray-200 rounded-md px-3 py-2">
+                        <input
+                          type="checkbox"
+                          checked={difficultyForm.difficulties.includes(type)}
+                          onChange={() => toggleDifficulty(type)}
+                        />
+                        {DIFFICULTY_LABELS[type]}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                {difficultyForm.difficulties.includes(StudentDifficultyType.Other) && (
+                  <Field label="Outros: descreva">
+                    <input
+                      className={fieldClass}
+                      placeholder="Descreva a dificuldade"
+                      value={difficultyForm.otherDifficulty}
+                      onChange={event => setDifficultyForm({ ...difficultyForm, otherDifficulty: event.target.value })}
+                    />
+                  </Field>
+                )}
+                <Field label="Descrição breve da situação">
+                  <textarea
+                    className={`${fieldClass} min-h-[100px]`}
+                    placeholder="O que foi observado neste acompanhamento"
+                    value={difficultyForm.description}
+                    onChange={event => setDifficultyForm({ ...difficultyForm, description: event.target.value })}
+                  />
+                </Field>
+                <div className="flex justify-end pt-2 border-t border-gray-100">
+                  <button type="submit" className={primaryButtonClass}>Salvar registro</button>
+                </div>
+              </form>
+              <section>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Registros anteriores</h3>
+                {difficulties.length === 0 ? (
+                  <p className="text-gray-500">Nenhuma dificuldade registrada ainda.</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {difficulties.map(item => (
+                      <article key={item.id} className="border border-gray-200 rounded-lg p-4">
+                        <p className="font-medium text-gray-900">{item.studentName}</p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {item.difficulties.map(type => DIFFICULTY_LABELS[type]).join(', ')}
+                        </p>
+                        <p className="text-sm text-gray-700 mt-2">{item.description}</p>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+
+          {!loading && tab === 'aplicacao' && (
+            <div className="space-y-8">
+              <form onSubmit={handleApplication} className="space-y-5">
+                <h3 className="text-lg font-semibold text-gray-900">Como a diretriz está sendo aplicada</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Field label="Diretriz">
+                    <select
+                      className={fieldClass}
+                      value={applicationForm.guidelineId}
+                      onChange={event => setApplicationForm({ ...applicationForm, guidelineId: event.target.value })}
+                    >
+                      <option value="">Selecione a diretriz</option>
+                      {guidelines.map(item => (
+                        <option key={item.id} value={item.id}>{item.title}</option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Mês">
+                    <input
+                      type="number"
+                      min={1}
+                      max={12}
+                      className={fieldClass}
+                      value={applicationForm.month}
+                      onChange={event => setApplicationForm({ ...applicationForm, month: Number(event.target.value) })}
+                    />
+                  </Field>
+                  <Field label="Ano">
+                    <input
+                      type="number"
+                      className={fieldClass}
+                      value={applicationForm.year}
+                      onChange={event => setApplicationForm({ ...applicationForm, year: Number(event.target.value) })}
+                    />
+                  </Field>
+                </div>
+                <Field label="Dificuldades na aplicação">
+                  <textarea
+                    className={`${fieldClass} min-h-[90px]`}
+                    placeholder="Quais dificuldades estão sendo encontradas na aplicação da Diretriz Pedagógica?"
+                    value={applicationForm.applicationDifficulties}
+                    onChange={event => setApplicationForm({ ...applicationForm, applicationDifficulties: event.target.value })}
+                  />
+                </Field>
+                <Field label="Como ocorreu a aplicação">
+                  <textarea
+                    className={`${fieldClass} min-h-[120px]`}
+                    placeholder="Descreva brevemente como ocorreu a aplicação durante o mês"
+                    value={applicationForm.applicationNarrative}
+                    onChange={event => setApplicationForm({ ...applicationForm, applicationNarrative: event.target.value })}
+                  />
+                </Field>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Estratégias utilizadas">
+                    <textarea
+                      className={`${fieldClass} min-h-[90px]`}
+                      placeholder="Quais estratégias foram utilizadas?"
+                      value={applicationForm.strategies}
+                      onChange={event => setApplicationForm({ ...applicationForm, strategies: event.target.value })}
+                    />
+                  </Field>
+                  <Field label="Resultados observados">
+                    <textarea
+                      className={`${fieldClass} min-h-[90px]`}
+                      placeholder="Quais resultados foram observados?"
+                      value={applicationForm.observedResults}
+                      onChange={event => setApplicationForm({ ...applicationForm, observedResults: event.target.value })}
+                    />
+                  </Field>
+                </div>
+                <div className="flex justify-end pt-2 border-t border-gray-100">
+                  <button type="submit" className={primaryButtonClass}>Registrar aplicação</button>
+                </div>
+              </form>
+              {applications.length > 0 && (
+                <p className="text-sm text-gray-500">{applications.length} relato(s) enviado(s).</p>
+              )}
+            </div>
+          )}
+
+          {!loading && tab === 'feedback' && (
+            <div className="space-y-4">
+              {feedback.length === 0 && <p className="text-gray-500">Nenhuma orientação recebida ainda.</p>}
+              {feedback.map(item => (
+                <article key={item.id} className="border border-gray-200 rounded-lg p-5">
+                  <p className="text-xs text-gray-500">
+                    {FEEDBACK_KIND_LABELS[item.kind]} · {item.fromUserName} · {item.createdAt.toLocaleDateString('pt-BR')}
+                    {item.isCollective ? ' · Coletivo' : ''}
+                  </p>
+                  <p className="text-sm mt-2 whitespace-pre-wrap">{item.message}</p>
+                  {item.materials.map(material => (
+                    <a
+                      key={material.url}
+                      className="block text-sm text-sky-700 underline mt-2"
+                      href={material.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {material.title || material.url}
+                    </a>
+                  ))}
+                </article>
               ))}
-            </article>
-          ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </PageShell>
   );
 };
+
+const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+  <label className="block min-w-0">
+    <span className="block text-sm font-medium text-gray-700 mb-1">{label}</span>
+    {children}
+  </label>
+);
 
 export default EducatorPedagogyPage;
