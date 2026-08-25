@@ -1,6 +1,7 @@
 import React, { FormEvent, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import PageShell from '../components/common/PageShell';
+import PedagogyOrgSwitch from '../components/PedagogyOrgSwitch';
 import { useAuth } from '../contexts/AuthContext';
 import { pedagogyService } from '@modules/pedagogy/application/services/PedagogyService';
 import {
@@ -8,9 +9,11 @@ import {
   DIFFICULTY_LABELS,
   FEEDBACK_KIND_LABELS,
   GuidelineApplication,
+  PEDAGOGY_ORGANIZATION_LABELS,
   PedagogicalFeedback,
   PedagogicalGuideline,
   PedagogyEntity,
+  PedagogyOrganization,
   StudentDifficultyRecord,
   StudentDifficultyType
 } from '@modules/pedagogy/domain/entities/Pedagogy';
@@ -19,6 +22,7 @@ type TabId = 'diretrizes' | 'encontros' | 'dificuldades' | 'aplicacao' | 'feedba
 
 const EducatorPedagogyPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const [organization, setOrganization] = useState(PedagogyOrganization.Church);
   const [tab, setTab] = useState<TabId>('diretrizes');
   const [loading, setLoading] = useState(true);
   const [guidelines, setGuidelines] = useState<PedagogicalGuideline[]>([]);
@@ -59,7 +63,7 @@ const EducatorPedagogyPage: React.FC = () => {
   useEffect(() => {
     void loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser?.id]);
+  }, [currentUser?.id, organization]);
 
   const loadData = async () => {
     if (!currentUser?.id) {
@@ -68,11 +72,11 @@ const EducatorPedagogyPage: React.FC = () => {
     setLoading(true);
     try {
       const [guideList, sessionList, difficultyList, applicationList, feedbackList] = await Promise.all([
-        pedagogyService.listActiveGuidelines(),
-        pedagogyService.listSessions(currentUser.id),
-        pedagogyService.listDifficulties(currentUser.id),
-        pedagogyService.listApplications(currentUser.id),
-        pedagogyService.listFeedbackForEducator(currentUser.id)
+        pedagogyService.listActiveGuidelines(new Date(), organization),
+        pedagogyService.listSessions(currentUser.id, organization),
+        pedagogyService.listDifficulties(currentUser.id, organization),
+        pedagogyService.listApplications(currentUser.id, organization),
+        pedagogyService.listFeedbackForEducator(currentUser.id, organization)
       ]);
       setGuidelines(guideList);
       setSessions(sessionList);
@@ -94,6 +98,7 @@ const EducatorPedagogyPage: React.FC = () => {
     }
     try {
       await pedagogyService.createSession({
+        organization,
         educatorId: currentUser.id,
         educatorName: currentUser.displayName,
         classGroup: sessionForm.classGroup,
@@ -129,6 +134,7 @@ const EducatorPedagogyPage: React.FC = () => {
     }
     try {
       await pedagogyService.createDifficulty({
+        organization,
         educatorId: currentUser.id,
         educatorName: currentUser.displayName,
         studentName: difficultyForm.studentName,
@@ -157,9 +163,10 @@ const EducatorPedagogyPage: React.FC = () => {
       return;
     }
     const guideline = guidelines.find(item => item.id === applicationForm.guidelineId)
-      || (await pedagogyService.listGuidelines()).find(item => item.id === applicationForm.guidelineId);
+      || (await pedagogyService.listGuidelines(organization)).find(item => item.id === applicationForm.guidelineId);
     try {
       await pedagogyService.createApplication({
+        organization,
         educatorId: currentUser.id,
         educatorName: currentUser.displayName,
         guidelineId: applicationForm.guidelineId,
@@ -208,8 +215,11 @@ const EducatorPedagogyPage: React.FC = () => {
   return (
     <PageShell
       title="Área do Arte-Educador"
-      subtitle="Consulte as diretrizes, registre os encontros e acompanhe as orientações da coordenação"
+      subtitle={`Contexto: ${PEDAGOGY_ORGANIZATION_LABELS[organization]} — diretrizes, registros e orientações da coordenação`}
     >
+      <div className="mb-4">
+        <PedagogyOrgSwitch value={organization} onChange={setOrganization} />
+      </div>
       <div className="bg-white rounded-lg shadow">
         <div className="border-b border-gray-200 overflow-x-auto">
           <nav className="-mb-px flex">

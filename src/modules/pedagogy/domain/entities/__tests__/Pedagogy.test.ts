@@ -2,7 +2,10 @@ import {
   GuidelinePeriodType,
   GuidelineStatus,
   PedagogyEntity,
-  StudentDifficultyType
+  PedagogyOrganization,
+  StudentDifficultyType,
+  belongsToOrganization,
+  resolvePedagogyOrganization
 } from '../Pedagogy';
 
 describe('PedagogyEntity', () => {
@@ -16,6 +19,7 @@ describe('PedagogyEntity', () => {
   it('marks published guideline as active inside the validity window', () => {
     const active = PedagogyEntity.isGuidelineActive({
       id: '1',
+      organization: PedagogyOrganization.Church,
       title: 'Diretriz',
       content: 'Texto',
       periodType: GuidelinePeriodType.Semester,
@@ -54,5 +58,25 @@ describe('PedagogyEntity', () => {
       difficulties: [StudentDifficultyType.Other],
       description: 'Situação breve'
     })).toThrow('Descreva a dificuldade em "Outros"');
+  });
+
+  it('treats missing organization as church and keeps ONG distinct', () => {
+    expect(resolvePedagogyOrganization(undefined)).toBe(PedagogyOrganization.Church);
+    expect(belongsToOrganization(undefined, PedagogyOrganization.Church)).toBe(true);
+    expect(belongsToOrganization('ong', PedagogyOrganization.ONG)).toBe(true);
+    expect(belongsToOrganization('ong', PedagogyOrganization.Church)).toBe(false);
+  });
+
+  it('lists educators who have not registered a session', () => {
+    const pending = PedagogyEntity.educatorsWithoutSessionRecords(
+      [
+        { id: 'e1', name: 'Ana' },
+        { id: 'e2', name: 'Bruno' },
+        { id: 'e3', name: 'Carla' }
+      ],
+      [{ educatorId: 'e2' }]
+    );
+
+    expect(pending.map(item => item.id)).toEqual(['e1', 'e3']);
   });
 });

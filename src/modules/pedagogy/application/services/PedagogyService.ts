@@ -5,7 +5,9 @@ import {
   PedagogyEntity,
   PedagogicalFeedback,
   PedagogicalGuideline,
-  StudentDifficultyRecord
+  PedagogyOrganization,
+  StudentDifficultyRecord,
+  belongsToOrganization
 } from '../../domain/entities/Pedagogy';
 import { FirebasePedagogyRepository } from '../../infrastructure/repositories/FirebasePedagogyRepository';
 
@@ -27,7 +29,12 @@ export class PedagogyService {
   ): Promise<PedagogicalGuideline> {
     PedagogyEntity.validateGuideline(data);
     const now = new Date();
-    return this.repository.createGuideline({ ...data, createdAt: now, updatedAt: now });
+    return this.repository.createGuideline({
+      ...data,
+      organization: data.organization || PedagogyOrganization.Church,
+      createdAt: now,
+      updatedAt: now
+    });
   }
 
   async updateGuideline(
@@ -45,12 +52,15 @@ export class PedagogyService {
     await this.repository.deleteGuideline(id);
   }
 
-  async listGuidelines(): Promise<PedagogicalGuideline[]> {
-    return this.repository.listGuidelines();
+  async listGuidelines(organization?: PedagogyOrganization): Promise<PedagogicalGuideline[]> {
+    return this.filterByOrganization(await this.repository.listGuidelines(), organization);
   }
 
-  async listActiveGuidelines(referenceDate = new Date()): Promise<PedagogicalGuideline[]> {
-    const all = await this.repository.listGuidelines();
+  async listActiveGuidelines(
+    referenceDate = new Date(),
+    organization?: PedagogyOrganization
+  ): Promise<PedagogicalGuideline[]> {
+    const all = await this.listGuidelines(organization);
     return all.filter(item => PedagogyEntity.isGuidelineActive(item, referenceDate));
   }
 
@@ -59,11 +69,19 @@ export class PedagogyService {
   ): Promise<ClassSessionRecord> {
     PedagogyEntity.validateSessionRecord(data);
     const now = new Date();
-    return this.repository.createSession({ ...data, createdAt: now, updatedAt: now });
+    return this.repository.createSession({
+      ...data,
+      organization: data.organization || PedagogyOrganization.Church,
+      createdAt: now,
+      updatedAt: now
+    });
   }
 
-  async listSessions(educatorId?: string): Promise<ClassSessionRecord[]> {
-    return this.repository.listSessions(educatorId);
+  async listSessions(
+    educatorId?: string,
+    organization?: PedagogyOrganization
+  ): Promise<ClassSessionRecord[]> {
+    return this.filterByOrganization(await this.repository.listSessions(educatorId), organization);
   }
 
   async createDifficulty(
@@ -71,11 +89,19 @@ export class PedagogyService {
   ): Promise<StudentDifficultyRecord> {
     PedagogyEntity.validateDifficulty(data);
     const now = new Date();
-    return this.repository.createDifficulty({ ...data, createdAt: now, updatedAt: now });
+    return this.repository.createDifficulty({
+      ...data,
+      organization: data.organization || PedagogyOrganization.Church,
+      createdAt: now,
+      updatedAt: now
+    });
   }
 
-  async listDifficulties(educatorId?: string): Promise<StudentDifficultyRecord[]> {
-    return this.repository.listDifficulties(educatorId);
+  async listDifficulties(
+    educatorId?: string,
+    organization?: PedagogyOrganization
+  ): Promise<StudentDifficultyRecord[]> {
+    return this.filterByOrganization(await this.repository.listDifficulties(educatorId), organization);
   }
 
   async createApplication(
@@ -83,39 +109,58 @@ export class PedagogyService {
   ): Promise<GuidelineApplication> {
     PedagogyEntity.validateApplication(data);
     const now = new Date();
-    return this.repository.createApplication({ ...data, createdAt: now, updatedAt: now });
+    return this.repository.createApplication({
+      ...data,
+      organization: data.organization || PedagogyOrganization.Church,
+      createdAt: now,
+      updatedAt: now
+    });
   }
 
-  async listApplications(educatorId?: string): Promise<GuidelineApplication[]> {
-    return this.repository.listApplications(educatorId);
+  async listApplications(
+    educatorId?: string,
+    organization?: PedagogyOrganization
+  ): Promise<GuidelineApplication[]> {
+    return this.filterByOrganization(await this.repository.listApplications(educatorId), organization);
   }
 
   async createFeedback(
     data: Omit<PedagogicalFeedback, 'id' | 'createdAt'>
   ): Promise<PedagogicalFeedback> {
     PedagogyEntity.validateFeedback(data);
-    return this.repository.createFeedback({ ...data, createdAt: new Date() });
+    return this.repository.createFeedback({
+      ...data,
+      organization: data.organization || PedagogyOrganization.Church,
+      createdAt: new Date()
+    });
   }
 
-  async listFeedbackForEducator(educatorId: string): Promise<PedagogicalFeedback[]> {
+  async listFeedbackForEducator(
+    educatorId: string,
+    organization?: PedagogyOrganization
+  ): Promise<PedagogicalFeedback[]> {
     const [direct, collective] = await Promise.all([
       this.repository.listFeedback(educatorId),
       this.repository.listCollectiveFeedback()
     ]);
     const merged = [...direct, ...collective.filter(item => item.toEducatorId !== educatorId)];
-    return merged.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return this.filterByOrganization(merged, organization)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
-  async listAllFeedback(): Promise<PedagogicalFeedback[]> {
-    return this.repository.listFeedback();
+  async listAllFeedback(organization?: PedagogyOrganization): Promise<PedagogicalFeedback[]> {
+    return this.filterByOrganization(await this.repository.listFeedback(), organization);
   }
 
-  async getDashboardStats(educatorIds: string[]): Promise<PedagogyDashboardStats> {
+  async getDashboardStats(
+    educatorIds: string[],
+    organization?: PedagogyOrganization
+  ): Promise<PedagogyDashboardStats> {
     const [sessions, difficulties, applications, guidelines] = await Promise.all([
-      this.repository.listSessions(),
-      this.repository.listDifficulties(),
-      this.repository.listApplications(),
-      this.repository.listGuidelines()
+      this.listSessions(undefined, organization),
+      this.listDifficulties(undefined, organization),
+      this.listApplications(undefined, organization),
+      this.listGuidelines(organization)
     ]);
 
     const studentsServed = sessions.reduce((sum, item) => sum + item.totalStudents, 0);
@@ -127,9 +172,9 @@ export class PedagogyService {
       .map(item => PedagogyEntity.engagementRate(item));
 
     const recurringStudents = this.countRecurringDifficulties(difficulties);
-    const educatorsWithSession = new Set(sessions.map(item => item.educatorId));
-    const educatorsWithPendingRecords = educatorIds.filter(
-      id => !educatorsWithSession.has(id)
+    const educatorsWithPendingRecords = PedagogyEntity.educatorsWithoutSessionRecords(
+      educatorIds.map(id => ({ id })),
+      sessions
     ).length;
 
     const activeGuideline = guidelines.find(item => PedagogyEntity.isGuidelineActive(item));
@@ -173,6 +218,16 @@ export class PedagogyService {
       return 0;
     }
     return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+  }
+
+  private filterByOrganization<T extends { organization?: PedagogyOrganization }>(
+    items: T[],
+    organization?: PedagogyOrganization
+  ): T[] {
+    if (!organization) {
+      return items;
+    }
+    return items.filter(item => belongsToOrganization(item.organization, organization));
   }
 }
 

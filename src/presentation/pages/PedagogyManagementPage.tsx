@@ -1,6 +1,8 @@
 import React, { FormEvent, useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageShell from '../components/common/PageShell';
+import PedagogyOrgSwitch from '../components/PedagogyOrgSwitch';
 import { useAuth } from '../contexts/AuthContext';
 import {
   ClassSessionRecord,
@@ -10,8 +12,11 @@ import {
   GuidelineApplication,
   GuidelinePeriodType,
   GuidelineStatus,
+  PEDAGOGY_ORGANIZATION_LABELS,
   PedagogicalFeedback,
   PedagogicalGuideline,
+  PedagogyEntity,
+  PedagogyOrganization,
   StudentDifficultyRecord,
   SupportMaterial,
   SupportMaterialType
@@ -20,7 +25,8 @@ import { PedagogyDashboardStats, pedagogyService } from '@modules/pedagogy/appli
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { UserRole } from '@/domain/entities/User';
 
-type TabId = 'painel' | 'diretrizes' | 'encontros' | 'dificuldades' | 'aplicacao' | 'feedback' | 'relatorios';
+type TabId = 'painel' | 'pendentes' | 'diretrizes' | 'encontros' | 'dificuldades' | 'aplicacao' | 'feedback' | 'relatorios';
+type EducatorOption = { id: string; name: string; email?: string };
 
 const emptyMaterial = (): SupportMaterial => ({
   type: SupportMaterialType.Link,
@@ -30,6 +36,11 @@ const emptyMaterial = (): SupportMaterial => ({
 
 const PedagogyManagementPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const organization = location.pathname.startsWith('/admin/ong/')
+    ? PedagogyOrganization.ONG
+    : PedagogyOrganization.Church;
   const [tab, setTab] = useState<TabId>('painel');
   const [loading, setLoading] = useState(true);
   const [guidelines, setGuidelines] = useState<PedagogicalGuideline[]>([]);
@@ -38,7 +49,7 @@ const PedagogyManagementPage: React.FC = () => {
   const [applications, setApplications] = useState<GuidelineApplication[]>([]);
   const [feedback, setFeedback] = useState<PedagogicalFeedback[]>([]);
   const [stats, setStats] = useState<PedagogyDashboardStats | null>(null);
-  const [educators, setEducators] = useState<Array<{ id: string; name: string }>>([]);
+  const [educators, setEducators] = useState<EducatorOption[]>([]);
 
   const [guidelineForm, setGuidelineForm] = useState({
     title: '',
@@ -68,21 +79,25 @@ const PedagogyManagementPage: React.FC = () => {
   useEffect(() => {
     void loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [organization]);
 
   const loadData = async () => {
     setLoading(true);
     try {
       const users = await userRepository.findByRole('educator' as UserRole).catch(() => []);
-      const educatorList = users.map(user => ({ id: user.id, name: user.displayName }));
+      const educatorList = users.map(user => ({
+        id: user.id,
+        name: user.displayName,
+        email: user.email
+      }));
       setEducators(educatorList);
       const [guideList, sessionList, difficultyList, applicationList, feedbackList, dashboard] = await Promise.all([
-        pedagogyService.listGuidelines(),
-        pedagogyService.listSessions(),
-        pedagogyService.listDifficulties(),
-        pedagogyService.listApplications(),
-        pedagogyService.listAllFeedback(),
-        pedagogyService.getDashboardStats(educatorList.map(item => item.id))
+        pedagogyService.listGuidelines(organization),
+        pedagogyService.listSessions(undefined, organization),
+        pedagogyService.listDifficulties(undefined, organization),
+        pedagogyService.listApplications(undefined, organization),
+        pedagogyService.listAllFeedback(organization),
+        pedagogyService.getDashboardStats(educatorList.map(item => item.id), organization)
       ]);
       setGuidelines(guideList);
       setSessions(sessionList);
@@ -105,6 +120,7 @@ const PedagogyManagementPage: React.FC = () => {
     }
     try {
       await pedagogyService.createGuideline({
+        organization,
         title: guidelineForm.title,
         content: guidelineForm.content,
         periodType: guidelineForm.periodType,
@@ -142,6 +158,7 @@ const PedagogyManagementPage: React.FC = () => {
     try {
       const educator = educators.find(item => item.id === feedbackForm.toEducatorId);
       await pedagogyService.createFeedback({
+        organization,
         fromUserId: currentUser.id,
         fromUserName: currentUser.displayName,
         toEducatorId: feedbackForm.isCollective ? undefined : feedbackForm.toEducatorId,
@@ -168,8 +185,15 @@ const PedagogyManagementPage: React.FC = () => {
     }
   };
 
+  const handleOrganizationChange = (next: PedagogyOrganization) => {
+    navigate(next === PedagogyOrganization.ONG ? '/admin/ong/pedagogia' : '/admin/pedagogia');
+  };
+
+  const pendingEducators = PedagogyEntity.educatorsWithoutSessionRecords(educators, sessions);
+
   const tabs: Array<{ id: TabId; label: string }> = [
     { id: 'painel', label: 'Painel' },
+    { id: 'pendentes', label: pendingEducators.length > 0 ? `Pendentes (${pendingEducators.length})` : 'Pendentes' },
     { id: 'diretrizes', label: 'Diretrizes' },
     { id: 'encontros', label: 'Encontros' },
     { id: 'dificuldades', label: 'Dificuldades' },
@@ -180,13 +204,25 @@ const PedagogyManagementPage: React.FC = () => {
 
   const topDifficulties = pedagogyService.getTopDifficulties(difficulties);
 
+  const openFeedbackForEducator = (educatorId: string) => {
+    setFeedbackForm({
+      ...feedbackForm,
+      toEducatorId: educatorId,
+      isCollective: false
+    });
+    setTab('feedback');
+  };
+
   const fieldClass = 'w-full min-w-0 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500';
 
   return (
     <PageShell
       title="Coordenação Pedagógica"
-      subtitle="Organize, acompanhe e oriente as ações dos arte-educadores"
+      subtitle={`Contexto: ${PEDAGOGY_ORGANIZATION_LABELS[organization]} — diretrizes, registros e orientação dos arte-educadores`}
     >
+      <div className="mb-4">
+        <PedagogyOrgSwitch value={organization} onChange={handleOrganizationChange} />
+      </div>
       <div className="bg-white rounded-lg shadow">
         <div className="border-b border-gray-200 overflow-x-auto">
           <nav className="-mb-px flex">
@@ -216,12 +252,49 @@ const PedagogyManagementPage: React.FC = () => {
           <StatCard label="Frequência média" value={`${stats.averageAttendance}%`} />
           <StatCard label="Engajamento médio" value={`${stats.averageEngagement}%`} />
           <StatCard label="Alunos com maior acompanhamento" value={String(stats.studentsNeedingFollowup)} />
-          <StatCard label="Arte-educadores com registros pendentes" value={String(stats.educatorsWithPendingRecords)} />
+          <StatCard
+            label="Arte-educadores com registros pendentes"
+            value={String(stats.educatorsWithPendingRecords)}
+            onClick={() => setTab('pendentes')}
+          />
           <StatCard label="Diretriz vigente" value={stats.activeGuidelineTitle} />
           <StatCard
             label="Último relatório"
             value={stats.lastApplicationDate ? stats.lastApplicationDate.toLocaleDateString('pt-BR') : '—'}
           />
+        </div>
+      )}
+
+      {!loading && tab === 'pendentes' && (
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Arte-educadores com registros pendentes</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Sem registro de encontro neste contexto. Use a orientação para acompanhar quem ainda não registrou.
+            </p>
+          </div>
+          {pendingEducators.length === 0 && (
+            <p className="text-gray-500">Todos os arte-educadores já registraram encontros neste contexto.</p>
+          )}
+          {pendingEducators.map(item => (
+            <article
+              key={item.id}
+              className="border border-gray-200 rounded-lg p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+            >
+              <div>
+                <h4 className="font-semibold text-gray-900">{item.name}</h4>
+                {item.email && <p className="text-xs text-gray-500 mt-1">{item.email}</p>}
+                <p className="text-sm text-amber-800 mt-2">Sem registro de encontro</p>
+              </div>
+              <button
+                type="button"
+                className="self-start sm:self-auto bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                onClick={() => openFeedbackForEducator(item.id)}
+              >
+                Enviar orientação
+              </button>
+            </article>
+          ))}
         </div>
       )}
 
@@ -550,8 +623,25 @@ const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, 
   </label>
 );
 
-const StatCard: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div className="border border-gray-200 rounded-lg p-5 bg-gray-50">
+const StatCard: React.FC<{ label: string; value: string; onClick?: () => void }> = ({
+  label,
+  value,
+  onClick
+}) => (
+  <div
+    className={`border border-gray-200 rounded-lg p-5 bg-gray-50 ${
+      onClick ? 'cursor-pointer hover:border-sky-300 hover:bg-sky-50' : ''
+    }`}
+    onClick={onClick}
+    onKeyDown={onClick ? event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        onClick();
+      }
+    } : undefined}
+    role={onClick ? 'button' : undefined}
+    tabIndex={onClick ? 0 : undefined}
+  >
     <p className="text-sm text-gray-500">{label}</p>
     <p className="text-2xl font-semibold text-gray-900 mt-2 break-words">{value}</p>
   </div>

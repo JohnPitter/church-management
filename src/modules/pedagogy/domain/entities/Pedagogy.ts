@@ -1,3 +1,26 @@
+export enum PedagogyOrganization {
+  Church = 'church',
+  ONG = 'ong'
+}
+
+export const PEDAGOGY_ORGANIZATION_LABELS: Record<PedagogyOrganization, string> = {
+  [PedagogyOrganization.Church]: 'Igreja',
+  [PedagogyOrganization.ONG]: 'ONG'
+};
+
+export function resolvePedagogyOrganization(value: unknown): PedagogyOrganization {
+  return value === PedagogyOrganization.ONG
+    ? PedagogyOrganization.ONG
+    : PedagogyOrganization.Church;
+}
+
+export function belongsToOrganization(
+  value: unknown,
+  organization: PedagogyOrganization
+): boolean {
+  return resolvePedagogyOrganization(value) === organization;
+}
+
 export enum GuidelineStatus {
   Draft = 'draft',
   Published = 'published',
@@ -45,6 +68,7 @@ export interface SupportMaterial {
 
 export interface PedagogicalGuideline {
   id: string;
+  organization: PedagogyOrganization;
   title: string;
   content: string;
   periodType: GuidelinePeriodType;
@@ -64,6 +88,7 @@ export interface PedagogicalGuideline {
 
 export interface ClassSessionRecord {
   id: string;
+  organization: PedagogyOrganization;
   educatorId: string;
   educatorName: string;
   classGroup: string;
@@ -80,6 +105,7 @@ export interface ClassSessionRecord {
 
 export interface StudentDifficultyRecord {
   id: string;
+  organization: PedagogyOrganization;
   educatorId: string;
   educatorName: string;
   sessionRecordId?: string;
@@ -94,6 +120,7 @@ export interface StudentDifficultyRecord {
 
 export interface GuidelineApplication {
   id: string;
+  organization: PedagogyOrganization;
   educatorId: string;
   educatorName: string;
   guidelineId: string;
@@ -110,6 +137,7 @@ export interface GuidelineApplication {
 
 export interface PedagogicalFeedback {
   id: string;
+  organization: PedagogyOrganization;
   fromUserId: string;
   fromUserName: string;
   toEducatorId?: string;
@@ -204,6 +232,14 @@ export class PedagogyEntity {
       return 0;
     }
     return Math.round((record.engagedCount / record.presentCount) * 100);
+  }
+
+  static educatorsWithoutSessionRecords<T extends { id: string }>(
+    educators: T[],
+    sessions: Array<{ educatorId: string }>
+  ): T[] {
+    const withSession = new Set(sessions.map(item => item.educatorId));
+    return educators.filter(educator => !withSession.has(educator.id));
   }
 
   static validateDifficulty(data: Partial<StudentDifficultyRecord>): void {

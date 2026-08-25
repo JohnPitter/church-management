@@ -714,6 +714,20 @@ const router = createBrowserRouter([
         )
       },
       {
+        path: 'admin/ong/pedagogia',
+        element: (
+          <ProtectedRoute
+            requireModule={SystemModule.Pedagogy}
+            requireAction={PermissionAction.Manage}
+            allowAdminAccess={true}
+          >
+            <Layout>
+              <PedagogyManagementPage />
+            </Layout>
+          </ProtectedRoute>
+        )
+      },
+      {
         path: 'admin/ong/reports',
         element: (
           <ProtectedRoute

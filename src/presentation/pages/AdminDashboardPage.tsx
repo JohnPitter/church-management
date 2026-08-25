@@ -146,7 +146,7 @@ export const AdminDashboardPage: React.FC = () => {
     },
     {
       title: 'Coordenação Pedagógica',
-      description: 'Diretrizes, registros dos arte-educadores, feedback e relatórios',
+      description: 'Diretrizes e registros da igreja e da ONG',
       href: '/admin/pedagogia',
       icon: '🎓',
       color: 'bg-sky-500 hover:bg-sky-600',
@@ -359,6 +359,17 @@ export const AdminDashboardPage: React.FC = () => {
                   <h4 className="font-medium">Relatórios</h4>
                   <p className="text-xs opacity-90 mt-1">Análises e relatórios</p>
                 </Link>
+
+                {hasPermission(SystemModule.Pedagogy, PermissionAction.Manage) && (
+                  <Link
+                    to="/admin/ong/pedagogia"
+                    className="bg-sky-500 hover:bg-sky-600 text-white rounded-lg p-4 text-center transition-colors hover:shadow-lg transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">🎓</div>
+                    <h4 className="font-medium">Pedagogia</h4>
+                    <p className="text-xs opacity-90 mt-1">Diretrizes e registros da ONG</p>
+                  </Link>
+                )}
               </div>
             </div>
           </div>

@@ -729,6 +729,18 @@ describe('AdminDashboardPage', () => {
       );
       expect(ongReportsLink?.closest('a')).toHaveAttribute('href', '/admin/ong/reports');
     });
+
+    it('should have pedagogy link in ONG section when user can manage pedagogy', () => {
+      mockHasPermission.mockImplementation((module: SystemModule, action: PermissionAction) => {
+        return (module === SystemModule.ONG || module === SystemModule.Pedagogy)
+          && action === PermissionAction.Manage;
+      });
+
+      renderComponent();
+
+      const pedagogyLink = screen.getByText('Pedagogia').closest('a');
+      expect(pedagogyLink).toHaveAttribute('href', '/admin/ong/pedagogia');
+    });
   });
 
   describe('Permission Service Integration', () => {

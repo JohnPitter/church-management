@@ -17,6 +17,7 @@ import {
   GuidelineApplication,
   PedagogicalFeedback,
   PedagogicalGuideline,
+  resolvePedagogyOrganization,
   StudentDifficultyRecord
 } from '../../domain/entities/Pedagogy';
 
@@ -170,6 +171,7 @@ export class FirebasePedagogyRepository {
   private serializeGuideline(data: Partial<PedagogicalGuideline>): Record<string, unknown> {
     return omitUndefined({
       ...data,
+      organization: resolvePedagogyOrganization(data.organization),
       validFrom: data.validFrom ? Timestamp.fromDate(new Date(data.validFrom)) : undefined,
       validUntil: data.validUntil ? Timestamp.fromDate(new Date(data.validUntil)) : undefined,
       createdAt: data.createdAt ? Timestamp.fromDate(new Date(data.createdAt)) : undefined,
@@ -181,6 +183,7 @@ export class FirebasePedagogyRepository {
   private mapGuideline(id: string, data: Record<string, unknown>): PedagogicalGuideline {
     return {
       id,
+      organization: resolvePedagogyOrganization(data.organization),
       title: String(data.title || ''),
       content: String(data.content || ''),
       periodType: data.periodType as PedagogicalGuideline['periodType'],
@@ -202,6 +205,7 @@ export class FirebasePedagogyRepository {
   private serializeSession(data: Partial<ClassSessionRecord>): Record<string, unknown> {
     return omitUndefined({
       ...data,
+      organization: resolvePedagogyOrganization(data.organization),
       sessionDate: data.sessionDate ? Timestamp.fromDate(new Date(data.sessionDate)) : undefined,
       createdAt: data.createdAt ? Timestamp.fromDate(new Date(data.createdAt)) : undefined,
       updatedAt: data.updatedAt ? Timestamp.fromDate(new Date(data.updatedAt)) : undefined
@@ -211,6 +215,7 @@ export class FirebasePedagogyRepository {
   private mapSession(id: string, data: Record<string, unknown>): ClassSessionRecord {
     return {
       id,
+      organization: resolvePedagogyOrganization(data.organization),
       educatorId: String(data.educatorId || ''),
       educatorName: String(data.educatorName || ''),
       classGroup: String(data.classGroup || ''),
@@ -229,6 +234,7 @@ export class FirebasePedagogyRepository {
   private serializeDifficulty(data: Partial<StudentDifficultyRecord>): Record<string, unknown> {
     return omitUndefined({
       ...data,
+      organization: resolvePedagogyOrganization(data.organization),
       createdAt: data.createdAt ? Timestamp.fromDate(new Date(data.createdAt)) : undefined,
       updatedAt: data.updatedAt ? Timestamp.fromDate(new Date(data.updatedAt)) : undefined
     });
@@ -237,6 +243,7 @@ export class FirebasePedagogyRepository {
   private mapDifficulty(id: string, data: Record<string, unknown>): StudentDifficultyRecord {
     return {
       id,
+      organization: resolvePedagogyOrganization(data.organization),
       educatorId: String(data.educatorId || ''),
       educatorName: String(data.educatorName || ''),
       sessionRecordId: data.sessionRecordId as string | undefined,
@@ -253,6 +260,7 @@ export class FirebasePedagogyRepository {
   private serializeApplication(data: Partial<GuidelineApplication>): Record<string, unknown> {
     return omitUndefined({
       ...data,
+      organization: resolvePedagogyOrganization(data.organization),
       createdAt: data.createdAt ? Timestamp.fromDate(new Date(data.createdAt)) : undefined,
       updatedAt: data.updatedAt ? Timestamp.fromDate(new Date(data.updatedAt)) : undefined
     });
@@ -261,6 +269,7 @@ export class FirebasePedagogyRepository {
   private mapApplication(id: string, data: Record<string, unknown>): GuidelineApplication {
     return {
       id,
+      organization: resolvePedagogyOrganization(data.organization),
       educatorId: String(data.educatorId || ''),
       educatorName: String(data.educatorName || ''),
       guidelineId: String(data.guidelineId || ''),
@@ -279,6 +288,7 @@ export class FirebasePedagogyRepository {
   private serializeFeedback(data: Partial<PedagogicalFeedback>): Record<string, unknown> {
     return omitUndefined({
       ...data,
+      organization: resolvePedagogyOrganization(data.organization),
       createdAt: data.createdAt ? Timestamp.fromDate(new Date(data.createdAt)) : undefined,
       materials: data.materials || []
     });
@@ -287,6 +297,7 @@ export class FirebasePedagogyRepository {
   private mapFeedback(id: string, data: Record<string, unknown>): PedagogicalFeedback {
     return {
       id,
+      organization: resolvePedagogyOrganization(data.organization),
       fromUserId: String(data.fromUserId || ''),
       fromUserName: String(data.fromUserName || ''),
       toEducatorId: data.toEducatorId as string | undefined,
