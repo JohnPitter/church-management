@@ -415,6 +415,42 @@ describe('AssistenciaEntity', () => {
       expect(slotTimes).not.toContain('9:30');
       expect(slotTimes).not.toContain('10:30');
     });
+
+    it('does not offer the next working day when the range ends at midnight', () => {
+      const profissional: ProfissionalAssistencia = {
+        ...createMockProfissional(50),
+        horariosFuncionamento: [
+          { diaSemana: 3, horaInicio: '13:00', horaFim: '19:00' }
+        ]
+      };
+      const agora = new Date(2026, 8, 1, 8, 0, 0, 0);
+      const tuesday = new Date(2026, 8, 8, 0, 0, 0, 0);
+      const wednesdayMidnight = new Date(2026, 8, 9, 0, 0, 0, 0);
+      const thursdayMidnight = new Date(2026, 8, 10, 0, 0, 0, 0);
+
+      expect(tuesday.getDay()).toBe(2);
+      expect(wednesdayMidnight.getDay()).toBe(3);
+
+      const tuesdaySlots = AssistenciaEntity.obterProximosHorariosDisponiveis(
+        profissional,
+        tuesday,
+        wednesdayMidnight,
+        [],
+        agora
+      );
+      expect(tuesdaySlots).toEqual([]);
+
+      const wednesdaySlots = AssistenciaEntity.obterProximosHorariosDisponiveis(
+        profissional,
+        wednesdayMidnight,
+        thursdayMidnight,
+        [],
+        agora
+      );
+      expect(wednesdaySlots.length).toBeGreaterThan(0);
+      expect(wednesdaySlots.every(slot => slot.getDay() === 3)).toBe(true);
+      expect(wednesdaySlots[0].getHours()).toBe(13);
+    });
   });
 
   describe('calcularValorFinalConsulta', () => {

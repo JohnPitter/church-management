@@ -63,6 +63,7 @@ jest.mock('@modules/user-management/users/infrastructure/repositories/FirebaseUs
 }));
 
 const mockListSessions = jest.fn();
+const mockListAttendanceRolls = jest.fn();
 const mockGetDashboardStats = jest.fn();
 
 jest.mock('@modules/pedagogy/application/services/PedagogyService', () => ({
@@ -72,6 +73,8 @@ jest.mock('@modules/pedagogy/application/services/PedagogyService', () => ({
     listDifficulties: jest.fn().mockResolvedValue([]),
     listApplications: jest.fn().mockResolvedValue([]),
     listAllFeedback: jest.fn().mockResolvedValue([]),
+    listAttendanceRolls: (...args: unknown[]) => mockListAttendanceRolls(...args),
+    createAttendanceRoll: jest.fn(),
     getDashboardStats: (...args: unknown[]) => mockGetDashboardStats(...args),
     getTopDifficulties: jest.fn().mockReturnValue([])
   }
@@ -79,6 +82,7 @@ jest.mock('@modules/pedagogy/application/services/PedagogyService', () => ({
 
 describe('PedagogyManagementPage pending educators tab', () => {
   beforeEach(() => {
+    mockListAttendanceRolls.mockResolvedValue([]);
     mockListSessions.mockResolvedValue([
       {
         id: 's1',
@@ -137,5 +141,18 @@ describe('PedagogyManagementPage pending educators tab', () => {
 
     expect(await screen.findByText('Ana Educadora')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Enviar orientação' })).toBeInTheDocument();
+  });
+
+  it('opens the electronic attendance roll tab', async () => {
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Chamada' })).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Chamada' }));
+
+    expect(await screen.findByText('Caderneta de chamada')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salvar chamada' })).toBeInTheDocument();
   });
 });

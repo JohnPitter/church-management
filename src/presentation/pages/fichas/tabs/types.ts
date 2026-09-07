@@ -36,5 +36,6 @@ export type FichaTabProps = {
   handleUpdateSessao: () => void | Promise<void>;
   hasError: (fieldPath: string) => boolean;
   getInputClassName: (fieldPath: string, baseClassName?: string) => string;
+  prontuarioSessaoEm?: Date;
   [key: string]: any;
 };

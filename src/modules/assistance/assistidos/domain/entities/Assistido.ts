@@ -293,6 +293,36 @@ export class AssistidoEntity {
     return cpf;
   }
 
+  static formatarEndereco(endereco?: Partial<EnderecoAssistido> | null): string {
+    if (!endereco) {
+      return '';
+    }
+    const cidadeEstado = [endereco.cidade, endereco.estado].filter(Boolean).join('/');
+    return [
+      endereco.logradouro,
+      endereco.numero,
+      endereco.complemento,
+      endereco.bairro,
+      cidadeEstado,
+      endereco.cep
+    ].filter(part => part && String(part).trim()).join(', ');
+  }
+
+  static correspondeABusca(
+    assistido: Pick<Assistido, 'nome' | 'cpf' | 'telefone'>,
+    termo: string
+  ): boolean {
+    const query = termo.trim().toLowerCase();
+    if (query.length < 2) {
+      return false;
+    }
+    const digits = query.replace(/\D/g, '');
+    const nomeMatch = assistido.nome.toLowerCase().includes(query);
+    const cpfMatch = digits.length >= 3 && (assistido.cpf || '').replace(/\D/g, '').includes(digits);
+    const telefoneMatch = digits.length >= 3 && (assistido.telefone || '').replace(/\D/g, '').includes(digits);
+    return nomeMatch || cpfMatch || telefoneMatch;
+  }
+
   // Validações para novos campos
   static validarQuantidadeComodos(quantidade: number): boolean {
     return quantidade > 0 && quantidade <= 20 && Number.isInteger(quantidade);

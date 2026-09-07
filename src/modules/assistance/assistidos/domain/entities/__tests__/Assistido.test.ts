@@ -927,6 +927,37 @@ describe('AssistidoEntity', () => {
         expect(AssistidoEntity.formatarCPF('123.456.789-01')).toBe('123.456.789-01');
       });
     });
+
+    describe('formatarEndereco', () => {
+      it('joins the main address parts', () => {
+        expect(AssistidoEntity.formatarEndereco({
+          logradouro: 'Rua das Flores',
+          numero: '123',
+          complemento: 'Apto 45',
+          bairro: 'Centro',
+          cidade: 'São Paulo',
+          estado: 'SP',
+          cep: '01310-100'
+        })).toBe('Rua das Flores, 123, Apto 45, Centro, São Paulo/SP, 01310-100');
+      });
+
+      it('returns empty string when address is missing', () => {
+        expect(AssistidoEntity.formatarEndereco(undefined)).toBe('');
+      });
+    });
+
+    describe('correspondeABusca', () => {
+      const assistido = { nome: 'Mariane Vitória', cpf: '529.982.247-25', telefone: '11988887777' };
+
+      it('matches by name from two characters', () => {
+        expect(AssistidoEntity.correspondeABusca(assistido, 'ma')).toBe(true);
+        expect(AssistidoEntity.correspondeABusca(assistido, 'x')).toBe(false);
+      });
+
+      it('matches by CPF digits', () => {
+        expect(AssistidoEntity.correspondeABusca(assistido, '529982')).toBe(true);
+      });
+    });
   });
 
   describe('Complete Assistido Validation', () => {

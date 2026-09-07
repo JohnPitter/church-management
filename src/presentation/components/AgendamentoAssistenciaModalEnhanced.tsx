@@ -16,6 +16,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { toLocalDateString, todayLocalString } from '../../utils/dateUtils';
 import { applyPhoneMask, applyCPFMask } from '../../utils/inputMasks';
+import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
+import { Assistido, AssistidoEntity } from '@modules/assistance/assistidos/domain/entities/Assistido';
 
 interface AgendamentoAssistenciaModalProps {
   isOpen: boolean;
@@ -247,6 +249,18 @@ interface FormData {
   psico_justificativaDemanda: string;
 }
 
+const DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+const formatarDiasAtendimento = (profissional?: ProfissionalAssistencia): string => {
+  if (!profissional?.horariosFuncionamento?.length) {
+    return '';
+  }
+  return [...profissional.horariosFuncionamento]
+    .sort((a, b) => a.diaSemana - b.diaSemana)
+    .map(horario => `${DIAS_SEMANA[horario.diaSemana]} ${horario.horaInicio}–${horario.horaFim}`)
+    .join(', ');
+};
+
 const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalProps> = ({
   isOpen,
   onClose,
@@ -262,9 +276,13 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
   const [profissionaisDisponiveis, setProfissionaisDisponiveis] = useState<ProfissionalAssistencia[]>([]);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<Date[]>([]);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [assistidos, setAssistidos] = useState<Assistido[]>([]);
+  const [buscaAssistido, setBuscaAssistido] = useState('');
+  const [assistidoId, setAssistidoId] = useState('');
 
   const profissionalService = new ProfissionalAssistenciaService();
   const agendamentoService = new AgendamentoAssistenciaService();
+  const assistidoService = new AssistidoService();
 
   const [formData, setFormData] = useState<FormData>({
     // Basic patient data
@@ -592,6 +610,8 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
     }
     setActiveTab(0);
     setErrors({});
+    setBuscaAssistido('');
+    setAssistidoId(agendamento?.pacienteId && !agendamento.pacienteId.startsWith('temp_') ? agendamento.pacienteId : '');
   }, [agendamento, mode, isOpen]);
 
   useEffect(() => {
@@ -600,6 +620,13 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.tipoAssistencia, isOpen]);
+
+  useEffect(() => {
+    if (isOpen && !isReadOnly) {
+      void loadAssistidos();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   useEffect(() => {
     if (formData.profissionalId && formData.dataAgendamento) {
@@ -635,6 +662,40 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
       setHorariosDisponiveis([]);
     }
   };
+
+  const loadAssistidos = async () => {
+    try {
+      const lista = await assistidoService.getAllAssistidos();
+      setAssistidos(lista);
+    } catch (error) {
+      console.error('Error loading assistidos:', error);
+      setAssistidos([]);
+    }
+  };
+
+  const fillFromAssistido = (assistido: Assistido) => {
+    const nascimento = assistido.dataNascimento
+      ? toLocalDateString(new Date(assistido.dataNascimento))
+      : '';
+    setAssistidoId(assistido.id);
+    setBuscaAssistido(assistido.nome);
+    setFormData(prev => ({
+      ...prev,
+      pacienteNome: assistido.nome,
+      pacienteTelefone: AssistidoEntity.formatarTelefone(assistido.telefone || ''),
+      pacienteEmail: assistido.email || '',
+      pacienteCPF: assistido.cpf ? AssistidoEntity.formatarCPF(assistido.cpf) : '',
+      pacienteDataNascimento: nascimento,
+      pacienteEndereco: AssistidoEntity.formatarEndereco(assistido.endereco)
+    }));
+  };
+
+  const clearAssistidoVinculo = () => {
+    setAssistidoId('');
+    setBuscaAssistido('');
+  };
+
+  const assistidosFiltrados = assistidos.filter(item => AssistidoEntity.correspondeABusca(item, buscaAssistido));
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     let processedValue = value;
@@ -871,6 +932,17 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
 
       if (selectedDate < today) {
         newErrors['dataAgendamento'] = 'Data deve ser hoje ou futura';
+      } else {
+        const profissionalSelecionado = profissionaisDisponiveis.find(p => p.id === formData.profissionalId);
+        const atendeNoDia = profissionalSelecionado?.horariosFuncionamento?.some(
+          horario => horario.diaSemana === selectedDate.getDay()
+        );
+        if (profissionalSelecionado?.horariosFuncionamento?.length && !atendeNoDia) {
+          const dias = formatarDiasAtendimento(profissionalSelecionado);
+          newErrors['dataAgendamento'] = dias
+            ? `O profissional atende apenas: ${dias}`
+            : 'O profissional não atende neste dia da semana';
+        }
       }
     }
 
@@ -1131,7 +1203,7 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
       const dataHoraFim = new Date(dataHoraAgendamento.getTime() + profissionalSelecionado.tempoConsulta * 60000);
 
       const agendamentoData: any = {
-        pacienteId: 'temp_' + Date.now(),
+        pacienteId: assistidoId || 'temp_' + Date.now(),
         pacienteNome: formData.pacienteNome.trim(),
         pacienteTelefone: formatPhoneNumber(formData.pacienteTelefone),
         profissionalId: formData.profissionalId,
@@ -1406,6 +1478,9 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
 
   if (!isOpen) return null;
 
+  const profissionalSelecionado = profissionaisDisponiveis.find(p => p.id === formData.profissionalId);
+  const diasAtendimento = formatarDiasAtendimento(profissionalSelecionado);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
@@ -1457,6 +1532,51 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
           {/* Tab 1: Dados do Paciente */}
           {activeTab === 0 && (
             <div className="space-y-6">
+              {!isReadOnly && (
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Buscar na ficha de assistidos
+                  </label>
+                  <input
+                    type="text"
+                    value={buscaAssistido}
+                    onChange={(e) => setBuscaAssistido(e.target.value)}
+                    placeholder="Digite o nome, telefone ou CPF"
+                    disabled={isLoading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {assistidoId && (
+                    <div className="mt-2 flex items-center justify-between text-sm text-sky-800 bg-sky-50 border border-sky-200 rounded-md px-3 py-2">
+                      <span>Dados preenchidos a partir da ficha cadastrada.</span>
+                      <button type="button" className="text-sky-700 hover:text-sky-900 font-medium" onClick={clearAssistidoVinculo}>
+                        Limpar vínculo
+                      </button>
+                    </div>
+                  )}
+                  {buscaAssistido.trim().length >= 2 && !assistidoId && (
+                    <ul className="absolute z-20 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg">
+                      {assistidosFiltrados.length === 0 && (
+                        <li className="px-3 py-2 text-sm text-gray-500">Nenhum assistido encontrado</li>
+                      )}
+                      {assistidosFiltrados.slice(0, 8).map(item => (
+                        <li key={item.id}>
+                          <button
+                            type="button"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-sky-50"
+                            onClick={() => fillFromAssistido(item)}
+                          >
+                            <span className="font-medium text-gray-900">{item.nome}</span>
+                            <span className="block text-xs text-gray-500">
+                              {AssistidoEntity.formatarTelefone(item.telefone)}
+                              {item.cpf ? ` · ${item.cpf}` : ''}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1697,6 +1817,9 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
                       errors.dataAgendamento ? 'border-red-500' : 'border-gray-300'
                     } ${isReadOnly ? 'bg-gray-100' : ''}`}
                   />
+                  {diasAtendimento && (
+                    <p className="text-xs text-gray-500 mt-1">Atende: {diasAtendimento}</p>
+                  )}
                   {errors.dataAgendamento && <p className="text-red-500 text-sm mt-1">{errors.dataAgendamento}</p>}
                 </div>
 
@@ -1725,7 +1848,11 @@ const AgendamentoAssistenciaModalEnhanced: React.FC<AgendamentoAssistenciaModalP
                   </select>
                   {errors.horaAgendamento && <p className="text-red-500 text-sm mt-1">{errors.horaAgendamento}</p>}
                   {formData.profissionalId && formData.dataAgendamento && horariosDisponiveis.length === 0 && !errors.horaAgendamento && (
-                    <p className="text-amber-600 text-sm mt-1">O profissional não possui horários configurados para este dia. Configure os horários no cadastro do profissional.</p>
+                    <p className="text-amber-600 text-sm mt-1">
+                      {diasAtendimento
+                        ? `Sem horários neste dia. O profissional atende: ${diasAtendimento}.`
+                        : 'O profissional não possui horários configurados para este dia. Configure os horários no cadastro do profissional.'}
+                    </p>
                   )}
                 </div>
 

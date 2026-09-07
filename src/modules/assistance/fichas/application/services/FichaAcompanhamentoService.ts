@@ -115,6 +115,25 @@ export class FichaAcompanhamentoService {
     }
   }
 
+  async reabrirAtendimento(
+    origemId: string,
+    profissional: { id: string; nome: string },
+    createdBy: string
+  ): Promise<FichaAcompanhamento> {
+    try {
+      const origem = await this.repository.getFichaById(origemId);
+      if (!origem) {
+        throw new Error('Ficha não encontrada');
+      }
+      const payload = FichaAcompanhamentoEntity.reabrirAtendimento(origem, profissional, createdBy);
+      const ficha = FichaAcompanhamentoEntity.create(payload);
+      return await this.repository.createFicha(ficha);
+    } catch (error: any) {
+      console.error('Error reopening attendance:', error);
+      throw new Error(error.message || 'Não foi possível gerar o novo atendimento');
+    }
+  }
+
   // Métodos para sessões
   async createSessao(fichaId: string, sessaoData: {
     numeroSessao: number;

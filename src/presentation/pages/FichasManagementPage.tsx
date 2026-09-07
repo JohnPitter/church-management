@@ -9,6 +9,7 @@ import { generateProntuarioPDF, generateProntuarioWord } from '../utils/prontuar
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
 import PageShell from '../components/common/PageShell';
+import NovoAtendimentoModal from '../components/NovoAtendimentoModal';
 
 interface FichaModalProps {
   isOpen: boolean;
@@ -921,6 +922,7 @@ const FichasManagementPage: React.FC = () => {
   const [tipoFilter, setTipoFilter] = useState<'todos' | 'psicologica' | 'social' | 'juridica' | 'medica'>('todos');
   const [selectedFicha, setSelectedFicha] = useState<FichaAcompanhamento | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [reopenFicha, setReopenFicha] = useState<FichaAcompanhamento | null>(null);
 
   const {
     currentPage, pageSize, totalItems, totalPages, paginatedItems,
@@ -1216,6 +1218,12 @@ const FichasManagementPage: React.FC = () => {
                               Ver Detalhes
                             </button>
                             <button
+                              onClick={() => setReopenFicha(ficha)}
+                              className="text-sky-600 hover:text-sky-900"
+                            >
+                              Novo atendimento
+                            </button>
+                            <button
                               onClick={() => handleDeleteFicha(ficha.id)}
                               className="text-red-600 hover:text-red-900"
                             >
@@ -1251,6 +1259,15 @@ const FichasManagementPage: React.FC = () => {
         ficha={selectedFicha}
         onSave={handleSaveFicha}
         onDelete={handleDeleteFicha}
+      />
+      <NovoAtendimentoModal
+        isOpen={Boolean(reopenFicha)}
+        ficha={reopenFicha}
+        createdBy={currentUser?.id || currentUser?.email || 'sistema'}
+        onClose={() => setReopenFicha(null)}
+        onCreated={(created) => {
+          setFichas(prev => [created, ...prev]);
+        }}
       />
     
     </PageShell>

@@ -550,6 +550,11 @@ service cloud.firestore {
       allow create, update: if canAccessPedagogy();
       allow delete: if canManagePedagogy();
     }
+    match /classAttendanceRolls/{docId} {
+      allow read: if canAccessPedagogy();
+      allow create, update: if canAccessPedagogy();
+      allow delete: if canManagePedagogy();
+    }
     match /studentDifficultyRecords/{docId} {
       allow read: if canAccessPedagogy();
       allow create, update: if canAccessPedagogy();

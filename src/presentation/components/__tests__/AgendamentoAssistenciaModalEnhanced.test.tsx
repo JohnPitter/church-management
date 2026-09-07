@@ -6,6 +6,8 @@ import {
   AgendamentoAssistenciaService,
   ProfissionalAssistenciaService
 } from '@modules/assistance/assistencia/application/services/AssistenciaService';
+import { AssistidoService } from '@modules/assistance/assistidos/application/services/AssistidoService';
+import { StatusAssistido } from '@modules/assistance/assistidos/domain/entities/Assistido';
 import {
   AgendamentoAssistencia,
   ModalidadeAtendimento,
@@ -19,6 +21,7 @@ var mockGetProfissionaisByTipo = jest.fn();
 var mockObterHorariosDisponiveis = jest.fn();
 var mockCreateAgendamento = jest.fn();
 var mockUpdateAgendamento = jest.fn();
+var mockGetAllAssistidos = jest.fn();
 const mockToastSuccess = jest.fn();
 const mockToastError = jest.fn();
 
@@ -116,10 +119,14 @@ describe('AgendamentoAssistenciaModalEnhanced', () => {
     jest.spyOn(AgendamentoAssistenciaService.prototype, 'updateAgendamento').mockImplementation((...args: any[]) =>
       mockUpdateAgendamento(...args)
     );
+    jest.spyOn(AssistidoService.prototype, 'getAllAssistidos').mockImplementation((...args: any[]) =>
+      mockGetAllAssistidos(...args)
+    );
     mockGetProfissionaisByTipo.mockResolvedValue([profissionalAtivo]);
     mockObterHorariosDisponiveis.mockResolvedValue([new Date(2027, 2, 20, 13, 0, 0, 0)]);
     mockCreateAgendamento.mockResolvedValue(createAgendamento());
     mockUpdateAgendamento.mockResolvedValue(createAgendamento({ id: 'ag-updated' }));
+    mockGetAllAssistidos.mockResolvedValue([]);
   });
 
   it('renders in view mode with prefilled values and no save button', async () => {
@@ -202,5 +209,44 @@ describe('AgendamentoAssistenciaModalEnhanced', () => {
     expect(rendered.onSave).toHaveBeenCalledWith(expect.objectContaining({ id: 'ag-updated' }));
     expect(rendered.onClose).toHaveBeenCalled();
     expect(mockToastSuccess).toHaveBeenCalled();
+  });
+
+  it('fills patient data from an existing assistido search', async () => {
+    mockGetAllAssistidos.mockResolvedValue([
+      {
+        id: 'ass-1',
+        nome: 'Mariane Vitoria',
+        telefone: '11988887777',
+        email: 'mariane@example.com',
+        cpf: '529.982.247-25',
+        dataNascimento: new Date(1995, 4, 10),
+        endereco: {
+          logradouro: 'Rua A',
+          numero: '10',
+          bairro: 'Centro',
+          cidade: 'Recife',
+          estado: 'PE',
+          cep: '50000-000'
+        },
+        status: StatusAssistido.Ativo
+      }
+    ]);
+
+    renderModal();
+
+    await waitFor(() => {
+      expect(mockGetAllAssistidos).toHaveBeenCalled();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('Digite o nome, telefone ou CPF'), {
+      target: { value: 'Mariane' }
+    });
+
+    fireEvent.click(await screen.findByRole('button', { name: /Mariane Vitoria/i }));
+
+    expect(getInputByPlaceholder('Nome completo do paciente')).toHaveValue('Mariane Vitoria');
+    expect(getInputByPlaceholder('(11) 99999-9999')).toHaveValue('(11) 98888-7777');
+    expect(getInputByPlaceholder('email@exemplo.com')).toHaveValue('mariane@example.com');
+    expect(screen.getByText('Dados preenchidos a partir da ficha cadastrada.')).toBeInTheDocument();
   });
 });
