@@ -2,9 +2,11 @@ import React, { FormEvent, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import PageShell from '../components/common/PageShell';
 import PedagogyOrgSwitch from '../components/PedagogyOrgSwitch';
+import PedagogyAttendancePanel from '../components/PedagogyAttendancePanel';
 import { useAuth } from '../contexts/AuthContext';
 import { pedagogyService } from '@modules/pedagogy/application/services/PedagogyService';
 import {
+  ClassAttendanceRoll,
   ClassSessionRecord,
   DIFFICULTY_LABELS,
   FEEDBACK_KIND_LABELS,
@@ -18,7 +20,7 @@ import {
   StudentDifficultyType
 } from '@modules/pedagogy/domain/entities/Pedagogy';
 
-type TabId = 'diretrizes' | 'encontros' | 'dificuldades' | 'aplicacao' | 'feedback';
+type TabId = 'diretrizes' | 'encontros' | 'chamada' | 'dificuldades' | 'aplicacao' | 'feedback';
 
 const EducatorPedagogyPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -27,6 +29,7 @@ const EducatorPedagogyPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [guidelines, setGuidelines] = useState<PedagogicalGuideline[]>([]);
   const [sessions, setSessions] = useState<ClassSessionRecord[]>([]);
+  const [attendanceRolls, setAttendanceRolls] = useState<ClassAttendanceRoll[]>([]);
   const [difficulties, setDifficulties] = useState<StudentDifficultyRecord[]>([]);
   const [applications, setApplications] = useState<GuidelineApplication[]>([]);
   const [feedback, setFeedback] = useState<PedagogicalFeedback[]>([]);
@@ -71,15 +74,17 @@ const EducatorPedagogyPage: React.FC = () => {
     }
     setLoading(true);
     try {
-      const [guideList, sessionList, difficultyList, applicationList, feedbackList] = await Promise.all([
+      const [guideList, sessionList, attendanceList, difficultyList, applicationList, feedbackList] = await Promise.all([
         pedagogyService.listActiveGuidelines(new Date(), organization),
         pedagogyService.listSessions(currentUser.id, organization),
+        pedagogyService.listAttendanceRolls(currentUser.id, organization),
         pedagogyService.listDifficulties(currentUser.id, organization),
         pedagogyService.listApplications(currentUser.id, organization),
         pedagogyService.listFeedbackForEducator(currentUser.id, organization)
       ]);
       setGuidelines(guideList);
       setSessions(sessionList);
+      setAttendanceRolls(attendanceList || []);
       setDifficulties(difficultyList);
       setApplications(applicationList);
       setFeedback(feedbackList);
@@ -204,6 +209,7 @@ const EducatorPedagogyPage: React.FC = () => {
   const tabs: Array<{ id: TabId; label: string }> = [
     { id: 'diretrizes', label: 'Diretrizes' },
     { id: 'encontros', label: 'Frequência e engajamento' },
+    { id: 'chamada', label: 'Chamada' },
     { id: 'dificuldades', label: 'Dificuldades' },
     { id: 'aplicacao', label: 'Aplicação da diretriz' },
     { id: 'feedback', label: 'Orientações' }
@@ -374,6 +380,20 @@ const EducatorPedagogyPage: React.FC = () => {
                 )}
               </section>
             </div>
+          )}
+
+          {!loading && tab === 'chamada' && currentUser && (
+            <PedagogyAttendancePanel
+              organization={organization}
+              rolls={attendanceRolls}
+              difficulties={difficulties}
+              educatorOptions={[{ id: currentUser.id, name: currentUser.displayName }]}
+              defaultEducatorId={currentUser.id}
+              defaultEducatorName={currentUser.displayName}
+              canPickEducator={false}
+              onSaved={loadData}
+              fieldClass={fieldClass}
+            />
           )}
 
           {!loading && tab === 'dificuldades' && (

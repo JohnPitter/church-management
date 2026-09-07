@@ -10,6 +10,7 @@ import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
 import PageShell from '../components/common/PageShell';
 import { ProfessionalFichaModal } from './fichas/ProfessionalFichaModal';
+import NovoAtendimentoModal from '../components/NovoAtendimentoModal';
 
 const ProfessionalFichasPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -23,6 +24,7 @@ const ProfessionalFichasPage: React.FC = () => {
   const [agendamentosHoje, setAgendamentosHoje] = useState<AgendamentoAssistencia[]>([]);
   const [selectedFicha, setSelectedFicha] = useState<FichaAcompanhamento | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [reopenFicha, setReopenFicha] = useState<FichaAcompanhamento | null>(null);
 
   const profissionalService = new ProfissionalAssistenciaService();
   const agendamentoService = new AgendamentoAssistenciaService();
@@ -353,6 +355,12 @@ const ProfessionalFichasPage: React.FC = () => {
                             </svg>
                             Ver Detalhes
                           </button>
+                          <button
+                            onClick={() => setReopenFicha(ficha)}
+                            className="bg-sky-600 text-white px-4 py-2 rounded-md hover:bg-sky-700 transition-colors text-sm"
+                          >
+                            Novo atendimento
+                          </button>
                           <select
                             value={ficha.status}
                             onChange={(e) => handleChangeStatus(ficha, e.target.value)}
@@ -392,6 +400,15 @@ const ProfessionalFichasPage: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         ficha={selectedFicha}
         onSave={handleSaveFicha}
+      />
+      <NovoAtendimentoModal
+        isOpen={Boolean(reopenFicha)}
+        ficha={reopenFicha}
+        createdBy={currentUser?.id || currentUser?.email || 'sistema'}
+        onClose={() => setReopenFicha(null)}
+        onCreated={() => {
+          void loadData();
+        }}
       />
     
     </PageShell>

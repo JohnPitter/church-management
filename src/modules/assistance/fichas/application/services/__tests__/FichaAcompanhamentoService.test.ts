@@ -531,6 +531,43 @@ describe('FichaAcompanhamentoService', () => {
         );
       });
     });
+
+    describe('reabrirAtendimento', () => {
+      it('copies the previous record into a new open attendance', async () => {
+        const origem: FichaAcompanhamento = {
+          ...mockFicha,
+          status: 'alta',
+          dadosEspecializados: {
+            psicologia: { queixaPrincipal: 'Ansiedade' }
+          }
+        };
+        mockRepository.getFichaById.mockResolvedValue(origem);
+        mockRepository.createFicha.mockImplementation(async (ficha) => ficha as FichaAcompanhamento);
+
+        const result = await service.reabrirAtendimento(
+          origem.id,
+          { id: 'prof456', nome: 'Dra. Ana' },
+          'user123'
+        );
+
+        expect(result.status).toBe('em_tratamento');
+        expect(result.pacienteNome).toBe('João Silva');
+        expect(result.profissionalId).toBe('prof456');
+        expect(result.profissionalNome).toBe('Dra. Ana');
+        expect(result.fichaOrigemId).toBe(origem.id);
+        expect(result.dadosEspecializados?.psicologia?.queixaPrincipal).toBe('Ansiedade');
+        expect(result.observacoes).toContain('Novo atendimento gerado');
+        expect(mockRepository.createFicha).toHaveBeenCalledTimes(1);
+      });
+
+      it('throws when the origin record is missing', async () => {
+        mockRepository.getFichaById.mockResolvedValue(null);
+
+        await expect(
+          service.reabrirAtendimento('missing', { id: 'prof456', nome: 'Dra. Ana' }, 'user123')
+        ).rejects.toThrow('Ficha não encontrada');
+      });
+    });
   });
 
   describe('Session (Sessão) Management', () => {

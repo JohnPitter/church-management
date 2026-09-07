@@ -151,6 +151,23 @@ export interface PedagogicalFeedback {
   createdAt: Date;
 }
 
+export interface AttendanceStudent {
+  name: string;
+  present: boolean;
+}
+
+export interface ClassAttendanceRoll {
+  id: string;
+  organization: PedagogyOrganization;
+  educatorId: string;
+  educatorName: string;
+  classGroup: string;
+  sessionDate: Date;
+  students: AttendanceStudent[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export const DIFFICULTY_LABELS: Record<StudentDifficultyType, string> = {
   [StudentDifficultyType.Attention]: 'Atenção',
   [StudentDifficultyType.Comprehension]: 'Compreensão',
@@ -240,6 +257,74 @@ export class PedagogyEntity {
   ): T[] {
     const withSession = new Set(sessions.map(item => item.educatorId));
     return educators.filter(educator => !withSession.has(educator.id));
+  }
+
+  static validateAttendance(data: Partial<ClassAttendanceRoll>): void {
+    if (!data.classGroup?.trim()) {
+      throw new Error('Turma é obrigatória');
+    }
+    if (!data.sessionDate) {
+      throw new Error('Data da chamada é obrigatória');
+    }
+    const named = (data.students || []).filter(student => student.name.trim());
+    if (named.length === 0) {
+      throw new Error('Inclua ao menos um aluno na chamada');
+    }
+  }
+
+  static absentStudents(roll: ClassAttendanceRoll): AttendanceStudent[] {
+    return roll.students.filter(student => student.name.trim() && !student.present);
+  }
+
+  static presentCount(roll: Pick<ClassAttendanceRoll, 'students'>): number {
+    return roll.students.filter(student => student.name.trim() && student.present).length;
+  }
+
+  static suggestStudentNames(
+    classGroup: string,
+    difficulties: Array<{ studentName: string; classGroup?: string }>,
+    rolls: Array<{ classGroup: string; students: AttendanceStudent[] }>
+  ): string[] {
+    const key = classGroup.trim().toLowerCase();
+    if (!key) {
+      return [];
+    }
+    const names = new Set<string>();
+    rolls
+      .filter(roll => roll.classGroup.trim().toLowerCase() === key)
+      .forEach(roll => {
+        roll.students.forEach(student => {
+          const name = student.name.trim();
+          if (name) {
+            names.add(name);
+          }
+        });
+      });
+    difficulties
+      .filter(record => (record.classGroup || '').trim().toLowerCase() === key)
+      .forEach(record => {
+        const name = record.studentName.trim();
+        if (name) {
+          names.add(name);
+        }
+      });
+    return Array.from(names).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }
+
+  static absenceReport(rolls: ClassAttendanceRoll[] = []): Array<{
+    studentName: string;
+    classGroup: string;
+    sessionDate: Date;
+    educatorName: string;
+  }> {
+    return (rolls || [])
+      .flatMap(roll => PedagogyEntity.absentStudents(roll).map(student => ({
+        studentName: student.name,
+        classGroup: roll.classGroup,
+        sessionDate: roll.sessionDate,
+        educatorName: roll.educatorName
+      })))
+      .sort((a, b) => b.sessionDate.getTime() - a.sessionDate.getTime());
   }
 
   static validateDifficulty(data: Partial<StudentDifficultyRecord>): void {

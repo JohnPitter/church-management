@@ -79,4 +79,36 @@ describe('PedagogyEntity', () => {
 
     expect(pending.map(item => item.id)).toEqual(['e1', 'e3']);
   });
+
+  it('rejects attendance without named students', () => {
+    expect(() => PedagogyEntity.validateAttendance({
+      classGroup: 'Turma A',
+      sessionDate: new Date(),
+      students: [{ name: '  ', present: true }]
+    })).toThrow('Inclua ao menos um aluno na chamada');
+  });
+
+  it('lists absences and suggests names from the class history', () => {
+    const roll = {
+      id: 'r1',
+      organization: PedagogyOrganization.Church,
+      educatorId: 'e1',
+      educatorName: 'Ana',
+      classGroup: 'Turma A',
+      sessionDate: new Date('2026-09-07T12:00:00'),
+      students: [
+        { name: 'Mariane', present: true },
+        { name: 'Pedro', present: false }
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    expect(PedagogyEntity.absentStudents(roll).map(item => item.name)).toEqual(['Pedro']);
+    expect(PedagogyEntity.presentCount(roll)).toBe(1);
+    expect(PedagogyEntity.suggestStudentNames('turma a', [
+      { studentName: 'Lucas', classGroup: 'Turma A' }
+    ], [roll])).toEqual(['Lucas', 'Mariane', 'Pedro']);
+    expect(PedagogyEntity.absenceReport([roll])[0].studentName).toBe('Pedro');
+  });
 });

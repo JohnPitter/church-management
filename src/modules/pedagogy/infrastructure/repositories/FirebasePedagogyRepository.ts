@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import {
+  ClassAttendanceRoll,
   ClassSessionRecord,
   GuidelineApplication,
   PedagogicalFeedback,
@@ -51,6 +52,7 @@ export class FirebasePedagogyRepository {
   private readonly difficulties = 'studentDifficultyRecords';
   private readonly applications = 'guidelineApplications';
   private readonly feedback = 'pedagogicalFeedback';
+  private readonly attendance = 'classAttendanceRolls';
 
   async createGuideline(
     data: Omit<PedagogicalGuideline, 'id'>
@@ -166,6 +168,20 @@ export class FirebasePedagogyRepository {
       )
     );
     return snap.docs.map(item => this.mapFeedback(item.id, item.data()));
+  }
+
+  async createAttendanceRoll(data: Omit<ClassAttendanceRoll, 'id'>): Promise<ClassAttendanceRoll> {
+    const ref = await addDoc(collection(db, this.attendance), this.serializeAttendance(data));
+    return { ...data, id: ref.id };
+  }
+
+  async listAttendanceRolls(educatorId?: string): Promise<ClassAttendanceRoll[]> {
+    const base = collection(db, this.attendance);
+    const q = educatorId
+      ? query(base, where('educatorId', '==', educatorId), orderBy('sessionDate', 'desc'))
+      : query(base, orderBy('sessionDate', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(item => this.mapAttendance(item.id, item.data()));
   }
 
   private serializeGuideline(data: Partial<PedagogicalGuideline>): Record<string, unknown> {
@@ -309,6 +325,37 @@ export class FirebasePedagogyRepository {
       message: String(data.message || ''),
       materials: (data.materials as PedagogicalFeedback['materials']) || [],
       createdAt: toDate(data.createdAt as TimestampLike)
+    };
+  }
+
+  private serializeAttendance(data: Partial<ClassAttendanceRoll>): Record<string, unknown> {
+    return omitUndefined({
+      ...data,
+      organization: resolvePedagogyOrganization(data.organization),
+      sessionDate: data.sessionDate ? Timestamp.fromDate(new Date(data.sessionDate)) : undefined,
+      createdAt: data.createdAt ? Timestamp.fromDate(new Date(data.createdAt)) : undefined,
+      updatedAt: data.updatedAt ? Timestamp.fromDate(new Date(data.updatedAt)) : undefined,
+      students: data.students || []
+    });
+  }
+
+  private mapAttendance(id: string, data: Record<string, unknown>): ClassAttendanceRoll {
+    const students = Array.isArray(data.students)
+      ? (data.students as Array<{ name?: string; present?: boolean }>).map(student => ({
+          name: String(student?.name || ''),
+          present: Boolean(student?.present)
+        }))
+      : [];
+    return {
+      id,
+      organization: resolvePedagogyOrganization(data.organization),
+      educatorId: String(data.educatorId || ''),
+      educatorName: String(data.educatorName || ''),
+      classGroup: String(data.classGroup || ''),
+      sessionDate: toDate(data.sessionDate as TimestampLike),
+      students,
+      createdAt: toDate(data.createdAt as TimestampLike),
+      updatedAt: toDate(data.updatedAt as TimestampLike)
     };
   }
 }

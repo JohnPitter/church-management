@@ -214,6 +214,7 @@ export interface FichaAcompanhamento {
   createdAt: Date;
   updatedAt: Date;
   createdBy: string;
+  fichaOrigemId?: string;
 }
 
 export interface SessaoAcompanhamento {
@@ -268,6 +269,33 @@ export class FichaAcompanhamentoEntity {
       ...sessao,
       ...updates,
       updatedAt: new Date()
+    };
+  }
+
+  static reabrirAtendimento(
+    origem: FichaAcompanhamento,
+    profissional: { id: string; nome: string },
+    createdBy: string
+  ): Omit<FichaAcompanhamento, 'id' | 'createdAt' | 'updatedAt'> {
+    const nota = `[${new Date().toLocaleString('pt-BR')}] Novo atendimento gerado a partir do histórico anterior (ficha ${origem.id}). Profissional anterior: ${origem.profissionalNome}.`;
+    return {
+      pacienteId: origem.pacienteId,
+      pacienteNome: origem.pacienteNome,
+      profissionalId: profissional.id,
+      profissionalNome: profissional.nome,
+      tipoAssistencia: origem.tipoAssistencia,
+      dataInicio: new Date(),
+      status: 'em_tratamento',
+      objetivo: origem.objetivo,
+      diagnosticoInicial: origem.diagnosticoInicial,
+      observacoes: origem.observacoes ? `${origem.observacoes}\n\n${nota}` : nota,
+      informacoesMedicas: origem.informacoesMedicas,
+      medicamentos: origem.medicamentos,
+      alergias: origem.alergias,
+      contatoEmergencia: origem.contatoEmergencia,
+      dadosEspecializados: origem.dadosEspecializados,
+      createdBy,
+      fichaOrigemId: origem.id
     };
   }
 

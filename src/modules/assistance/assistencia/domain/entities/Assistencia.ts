@@ -396,8 +396,10 @@ export class AssistenciaEntity {
       fim: new Date(a.dataHoraFim).getTime(),
     }));
 
+    // dataFim is exclusive: a single-day query uses [day 00:00, next day 00:00).
+    // Inclusive comparison leaked the next day's slots (e.g. Tuesday showed Wednesday hours).
     const dataAtual = new Date(dataInicio);
-    while (dataAtual <= dataFim) {
+    while (dataAtual < dataFim) {
       const horariosDia = horariosPorDia.get(dataAtual.getDay());
       if (!horariosDia) {
         dataAtual.setDate(dataAtual.getDate() + 1);

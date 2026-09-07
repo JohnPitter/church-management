@@ -1,5 +1,6 @@
 import React from 'react';
 import { generateProntuarioPDF, generateProntuarioWord } from '../../../utils/prontuarioExport';
+import { formatDateTimeBR } from '../../../../utils/dateUtils';
 import type { FichaTabProps } from './types';
 export const FichaProntuarioTab: React.FC<FichaTabProps> = (props) => {
   const {
@@ -27,7 +28,10 @@ export const FichaProntuarioTab: React.FC<FichaTabProps> = (props) => {
     handleUpdateSessao,
     hasError,
     getInputClassName,
+    prontuarioSessaoEm,
   } = props;
+
+  const dataHoraSessao = prontuarioSessaoEm ? formatDateTimeBR(prontuarioSessaoEm) : formatDateTimeBR(new Date());
 
   return (
             <div className="space-y-6">
@@ -59,7 +63,10 @@ export const FichaProntuarioTab: React.FC<FichaTabProps> = (props) => {
               </div>
 
               <div className="border-t pt-6">
-                <h4 className="text-md font-semibold text-gray-900 mb-4">Adicionar Registro ao Prontuário</h4>
+                <h4 className="text-md font-semibold text-gray-900 mb-1">Adicionar Registro ao Prontuário</h4>
+                <p className="text-sm text-gray-600 mb-4">
+                  Sessão em {dataHoraSessao}. Digite apenas o prontuário desta sessão.
+                </p>
                 <textarea
                   value={novoComentario}
                   onChange={(e) => setNovoComentario(e.target.value)}

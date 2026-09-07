@@ -1,4 +1,5 @@
 import {
+  ClassAttendanceRoll,
   ClassSessionRecord,
   FeedbackKind,
   GuidelineApplication,
@@ -150,6 +151,30 @@ export class PedagogyService {
 
   async listAllFeedback(organization?: PedagogyOrganization): Promise<PedagogicalFeedback[]> {
     return this.filterByOrganization(await this.repository.listFeedback(), organization);
+  }
+
+  async createAttendanceRoll(
+    data: Omit<ClassAttendanceRoll, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<ClassAttendanceRoll> {
+    PedagogyEntity.validateAttendance(data);
+    const now = new Date();
+    const students = data.students
+      .filter(student => student.name.trim())
+      .map(student => ({ name: student.name.trim(), present: Boolean(student.present) }));
+    return this.repository.createAttendanceRoll({
+      ...data,
+      students,
+      organization: data.organization || PedagogyOrganization.Church,
+      createdAt: now,
+      updatedAt: now
+    });
+  }
+
+  async listAttendanceRolls(
+    educatorId?: string,
+    organization?: PedagogyOrganization
+  ): Promise<ClassAttendanceRoll[]> {
+    return this.filterByOrganization(await this.repository.listAttendanceRolls(educatorId), organization);
   }
 
   async getDashboardStats(

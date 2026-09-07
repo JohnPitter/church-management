@@ -725,6 +725,14 @@
       ]
     },
     {
+      "collectionGroup": "classAttendanceRolls",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "educatorId", "order": "ASCENDING" },
+        { "fieldPath": "sessionDate", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "studentDifficultyRecords",
       "queryScope": "COLLECTION",
       "fields": [

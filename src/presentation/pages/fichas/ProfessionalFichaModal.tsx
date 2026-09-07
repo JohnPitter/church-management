@@ -4,6 +4,7 @@ import { FirebaseFichaAcompanhamentoRepository } from '@modules/assistance/ficha
 import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
 import toast from 'react-hot-toast';
 import { loggingService } from '@modules/shared-kernel/logging/infrastructure/services/LoggingService';
+import { formatDateTimeBR } from '../../../utils/dateUtils';
 import {
   FichaDetalhesTab,
   FichaDadosEspecializadosTab,
@@ -34,6 +35,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
   });
   const [isLoading, setIsLoading] = useState(false);
   const [editingSessao, setEditingSessao] = useState<SessaoAcompanhamento | null>(null);
+  const [prontuarioSessaoEm, setProntuarioSessaoEm] = useState(() => new Date());
   const [editandoDadosEspecializados, setEditandoDadosEspecializados] = useState(false);
   const [dadosEspecializadosForm, setDadosEspecializadosForm] = useState<any>({});
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -51,6 +53,8 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
         setDadosEspecializadosForm({});
       }
       setEditandoDadosEspecializados(false);
+      setProntuarioSessaoEm(new Date());
+      setNovoComentario('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ficha, isOpen]);
@@ -73,8 +77,8 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
     setIsLoading(true);
     try {
       const observacoesAtualizadas = ficha.observacoes 
-        ? `${ficha.observacoes}\n\n[${new Date().toLocaleString('pt-BR')} - ${currentUser?.email}]\n${novoComentario.trim()}`
-        : `[${new Date().toLocaleString('pt-BR')} - ${currentUser?.email}]\n${novoComentario.trim()}`;
+        ? `${ficha.observacoes}\n\n[${formatDateTimeBR(prontuarioSessaoEm)} - ${currentUser?.email}]\n${novoComentario.trim()}`
+        : `[${formatDateTimeBR(prontuarioSessaoEm)} - ${currentUser?.email}]\n${novoComentario.trim()}`;
       
       const fichaAtualizada = await fichaRepository.updateFicha(ficha.id, {
         observacoes: observacoesAtualizadas
@@ -82,6 +86,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
       
       onSave(fichaAtualizada);
       setNovoComentario('');
+      setProntuarioSessaoEm(new Date());
       await loggingService.logDatabase('info', 'Comment added to ficha', `Ficha ID: ${ficha.id}`, currentUser);
       toast.success('Registro adicionado ao prontuário com sucesso!');
     } catch (error: any) {
@@ -120,9 +125,11 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
         observacoes: '',
         evolucao: ''
       });
+      setProntuarioSessaoEm(now);
+      setActiveTab(3);
       await loadSessoes(); // Recarrega as sessões
       await loggingService.logDatabase('info', 'Session added to ficha', `Ficha ID: ${ficha.id}`, currentUser);
-      toast.success('Sessão adicionada com sucesso!');
+      toast.success('Sessão adicionada. Complete o prontuário — data e horário já estão preenchidos.');
     } catch (error: any) {
       console.error('Error adding sessao:', error);
       const errorMessage = error?.message || 'Erro desconhecido';
@@ -347,6 +354,7 @@ const ProfessionalFichaModal: React.FC<FichaModalProps> = ({ isOpen, onClose, fi
     handleUpdateSessao,
     hasError,
     getInputClassName,
+    prontuarioSessaoEm,
   };
 
   return (
