@@ -8,6 +8,7 @@ import {
   StudentDifficultyRecord
 } from '@modules/pedagogy/domain/entities/Pedagogy';
 import { pedagogyService } from '@modules/pedagogy/application/services/PedagogyService';
+import { generateAttendanceReportPDF, generateAttendanceRollPDF } from '../utils/attendanceReportExport';
 
 type EducatorOption = { id: string; name: string };
 
@@ -108,7 +109,20 @@ const PedagogyAttendancePanel: React.FC<PedagogyAttendancePanelProps> = ({
     }
   };
 
+  const handleExportReport = () => {
+    try {
+      generateAttendanceReportPDF(safeRolls, organization);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível exportar o relatório');
+    }
+  };
+
+  const handleExportRoll = (roll: ClassAttendanceRoll) => {
+    generateAttendanceRollPDF(roll, organization);
+  };
+
   const primaryButtonClass = 'bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-md text-sm font-medium disabled:opacity-50';
+  const secondaryButtonClass = 'border border-sky-600 text-sky-700 hover:bg-sky-50 px-3 py-1.5 rounded-md text-sm font-medium';
 
   return (
     <div className="space-y-8">
@@ -194,7 +208,14 @@ const PedagogyAttendancePanel: React.FC<PedagogyAttendancePanelProps> = ({
       </form>
 
       <section>
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">Chamadas registradas</h3>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <h3 className="text-lg font-semibold text-gray-900">Chamadas registradas</h3>
+          {safeRolls.length > 0 && (
+            <button type="button" className={secondaryButtonClass} onClick={handleExportReport}>
+              Exportar relatório PDF
+            </button>
+          )}
+        </div>
         {safeRolls.length === 0 ? (
           <p className="text-gray-500">Nenhuma chamada registrada ainda.</p>
         ) : (
@@ -203,17 +224,28 @@ const PedagogyAttendancePanel: React.FC<PedagogyAttendancePanelProps> = ({
               const absent = PedagogyEntity.absentStudents(roll);
               return (
                 <article key={roll.id} className="border border-gray-200 rounded-lg p-4">
-                  <p className="font-medium text-gray-900">
-                    {roll.classGroup} · {roll.sessionDate.toLocaleDateString('pt-BR')}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {roll.educatorName} · {PedagogyEntity.presentCount(roll)} presente(s) · {absent.length} falta(s)
-                  </p>
-                  {absent.length > 0 && (
-                    <p className="text-sm text-amber-800 mt-2">
-                      Ausentes: {absent.map(item => item.name).join(', ')}
-                    </p>
-                  )}
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {roll.classGroup} · {roll.sessionDate.toLocaleDateString('pt-BR')}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {roll.educatorName} · {PedagogyEntity.presentCount(roll)} presente(s) · {absent.length} falta(s)
+                      </p>
+                      {absent.length > 0 && (
+                        <p className="text-sm text-amber-800 mt-2">
+                          Ausentes: {absent.map(item => item.name).join(', ')}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      className={secondaryButtonClass}
+                      onClick={() => handleExportRoll(roll)}
+                    >
+                      Exportar PDF
+                    </button>
+                  </div>
                 </article>
               );
             })}

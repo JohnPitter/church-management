@@ -62,9 +62,16 @@ jest.mock('@modules/user-management/users/infrastructure/repositories/FirebaseUs
   }
 }));
 
+jest.mock('../../utils/attendanceReportExport', () => ({
+  generateAttendanceReportPDF: (...args: unknown[]) => mockGenerateAttendanceReportPDF(...args),
+  generateAttendanceRollPDF: (...args: unknown[]) => mockGenerateAttendanceRollPDF(...args)
+}));
+
 const mockListSessions = jest.fn();
 const mockListAttendanceRolls = jest.fn();
 const mockGetDashboardStats = jest.fn();
+const mockGenerateAttendanceReportPDF = jest.fn();
+const mockGenerateAttendanceRollPDF = jest.fn();
 
 jest.mock('@modules/pedagogy/application/services/PedagogyService', () => ({
   pedagogyService: {
@@ -82,6 +89,8 @@ jest.mock('@modules/pedagogy/application/services/PedagogyService', () => ({
 
 describe('PedagogyManagementPage pending educators tab', () => {
   beforeEach(() => {
+    mockGenerateAttendanceReportPDF.mockClear();
+    mockGenerateAttendanceRollPDF.mockClear();
     mockListAttendanceRolls.mockResolvedValue([]);
     mockListSessions.mockResolvedValue([
       {
@@ -154,5 +163,34 @@ describe('PedagogyManagementPage pending educators tab', () => {
 
     expect(await screen.findByText('Caderneta de chamada')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Salvar chamada' })).toBeInTheDocument();
+  });
+
+  it('exports the attendance report as PDF', async () => {
+    mockListAttendanceRolls.mockResolvedValue([
+      {
+        id: 'r1',
+        organization: PedagogyOrganization.Church,
+        educatorId: 'e1',
+        educatorName: 'Ana Educadora',
+        classGroup: 'Turma A',
+        sessionDate: new Date('2026-09-08T12:00:00'),
+        students: [
+          { name: 'Mariane', present: true },
+          { name: 'Pedro', present: false }
+        ],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ]);
+
+    renderPage();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Chamada' }));
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Exportar relatório PDF' }));
+
+    expect(mockGenerateAttendanceReportPDF).toHaveBeenCalledTimes(1);
+    expect(mockGenerateAttendanceReportPDF.mock.calls[0][0]).toHaveLength(1);
+    expect(mockGenerateAttendanceReportPDF.mock.calls[0][1]).toBe(PedagogyOrganization.Church);
   });
 });
