@@ -125,6 +125,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, { module: SystemModule; ac
     { module: SystemModule.Visitors, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
     { module: SystemModule.Calendar, actions: [PermissionAction.View, PermissionAction.Manage] },
     { module: SystemModule.Assistidos, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Manage] },
+    { module: SystemModule.Pedagogy, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete, PermissionAction.Manage] },
     { module: SystemModule.Notifications, actions: [PermissionAction.View, PermissionAction.Create, PermissionAction.Manage] },
     { module: SystemModule.Reports, actions: [PermissionAction.View] },
     { module: SystemModule.Settings, actions: [PermissionAction.View] }

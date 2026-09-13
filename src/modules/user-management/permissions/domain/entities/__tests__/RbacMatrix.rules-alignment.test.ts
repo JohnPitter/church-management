@@ -61,6 +61,9 @@ describe('RBAC matrix (rules alignment contract)', () => {
     expect(
       PermissionManager.hasPermission('secretary', SystemModule.Finance, PermissionAction.Manage)
     ).toBe(false);
+    expect(
+      PermissionManager.hasPermission('secretary', SystemModule.Pedagogy, PermissionAction.Manage)
+    ).toBe(true);
   });
 
   it('every role in DEFAULT_ROLE_PERMISSIONS is a known firestore role string', () => {
@@ -132,5 +135,12 @@ describe('RBAC matrix (rules alignment contract)', () => {
       PermissionManager.hasPermission('member', SystemModule.Finance, PermissionAction.Create)
     ).toBe(false);
     expect(rules).not.toMatch(/function canAccessFinance\(\)[\s\S]{0,80}isMember/);
+
+    expect(rules).toMatch(
+      /match \/classRosters\/\{docId\}[\s\S]*?allow create, update, delete:\s*if canManagePedagogy\(\)/
+    );
+    expect(rules).toMatch(
+      /function canManagePedagogy\(\)[\s\S]*?\(isAdmin\(\) \|\| isPedagogicalCoordinator\(\) \|\| isSecretary\(\)\)/
+    );
   });
 });

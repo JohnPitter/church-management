@@ -4,9 +4,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import PageShell from '../components/common/PageShell';
 import PedagogyOrgSwitch from '../components/PedagogyOrgSwitch';
 import PedagogyAttendancePanel from '../components/PedagogyAttendancePanel';
+import PedagogyRosterPanel from '../components/PedagogyRosterPanel';
 import { useAuth } from '../contexts/AuthContext';
 import {
   ClassAttendanceRoll,
+  ClassRoster,
   ClassSessionRecord,
   DIFFICULTY_LABELS,
   FEEDBACK_KIND_LABELS,
@@ -27,7 +29,7 @@ import { PedagogyDashboardStats, pedagogyService } from '@modules/pedagogy/appli
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { UserRole } from '@/domain/entities/User';
 
-type TabId = 'painel' | 'pendentes' | 'diretrizes' | 'encontros' | 'chamada' | 'dificuldades' | 'aplicacao' | 'feedback' | 'relatorios';
+type TabId = 'painel' | 'pendentes' | 'diretrizes' | 'encontros' | 'turmas' | 'chamada' | 'dificuldades' | 'aplicacao' | 'feedback' | 'relatorios';
 type EducatorOption = { id: string; name: string; email?: string };
 
 const emptyMaterial = (): SupportMaterial => ({
@@ -48,6 +50,7 @@ const PedagogyManagementPage: React.FC = () => {
   const [guidelines, setGuidelines] = useState<PedagogicalGuideline[]>([]);
   const [sessions, setSessions] = useState<ClassSessionRecord[]>([]);
   const [attendanceRolls, setAttendanceRolls] = useState<ClassAttendanceRoll[]>([]);
+  const [rosters, setRosters] = useState<ClassRoster[]>([]);
   const [difficulties, setDifficulties] = useState<StudentDifficultyRecord[]>([]);
   const [applications, setApplications] = useState<GuidelineApplication[]>([]);
   const [feedback, setFeedback] = useState<PedagogicalFeedback[]>([]);
@@ -94,10 +97,11 @@ const PedagogyManagementPage: React.FC = () => {
         email: user.email
       }));
       setEducators(educatorList);
-      const [guideList, sessionList, attendanceList, difficultyList, applicationList, feedbackList, dashboard] = await Promise.all([
+      const [guideList, sessionList, attendanceList, rosterList, difficultyList, applicationList, feedbackList, dashboard] = await Promise.all([
         pedagogyService.listGuidelines(organization),
         pedagogyService.listSessions(undefined, organization),
         pedagogyService.listAttendanceRolls(undefined, organization),
+        pedagogyService.listRosters(organization),
         pedagogyService.listDifficulties(undefined, organization),
         pedagogyService.listApplications(undefined, organization),
         pedagogyService.listAllFeedback(organization),
@@ -106,6 +110,7 @@ const PedagogyManagementPage: React.FC = () => {
       setGuidelines(guideList);
       setSessions(sessionList);
       setAttendanceRolls(attendanceList || []);
+      setRosters(rosterList || []);
       setDifficulties(difficultyList);
       setApplications(applicationList);
       setFeedback(feedbackList);
@@ -201,6 +206,7 @@ const PedagogyManagementPage: React.FC = () => {
     { id: 'pendentes', label: pendingEducators.length > 0 ? `Pendentes (${pendingEducators.length})` : 'Pendentes' },
     { id: 'diretrizes', label: 'Diretrizes' },
     { id: 'encontros', label: 'Encontros' },
+    { id: 'turmas', label: 'Turmas' },
     { id: 'chamada', label: 'Chamada' },
     { id: 'dificuldades', label: 'Dificuldades' },
     { id: 'aplicacao', label: 'Aplicação' },
@@ -491,10 +497,21 @@ const PedagogyManagementPage: React.FC = () => {
         />
       )}
 
+      {!loading && tab === 'turmas' && currentUser && (
+        <PedagogyRosterPanel
+          organization={organization}
+          rosters={rosters}
+          createdBy={currentUser.id}
+          onSaved={loadData}
+          fieldClass={fieldClass}
+        />
+      )}
+
       {!loading && tab === 'chamada' && (
         <PedagogyAttendancePanel
           organization={organization}
           rolls={attendanceRolls}
+          rosters={rosters}
           difficulties={difficulties}
           educatorOptions={educators}
           canPickEducator

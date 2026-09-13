@@ -81,6 +81,8 @@ jest.mock('@modules/pedagogy/application/services/PedagogyService', () => ({
     listApplications: jest.fn().mockResolvedValue([]),
     listAllFeedback: jest.fn().mockResolvedValue([]),
     listAttendanceRolls: (...args: unknown[]) => mockListAttendanceRolls(...args),
+    listRosters: jest.fn().mockResolvedValue([]),
+    createRoster: jest.fn(),
     createAttendanceRoll: jest.fn(),
     getDashboardStats: (...args: unknown[]) => mockGetDashboardStats(...args),
     getTopDifficulties: jest.fn().mockReturnValue([])
@@ -162,7 +164,17 @@ describe('PedagogyManagementPage pending educators tab', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Chamada' }));
 
     expect(await screen.findByText('Caderneta de chamada')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Puxar chamada' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Salvar chamada' })).toBeInTheDocument();
+  });
+
+  it('opens the class roster tab for coordination', async () => {
+    renderPage();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Turmas' }));
+
+    expect(await screen.findByText('Cadastrar turma')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salvar turma' })).toBeInTheDocument();
   });
 
   it('exports the attendance report as PDF', async () => {

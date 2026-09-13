@@ -111,4 +111,27 @@ describe('PedagogyEntity', () => {
     ], [roll])).toEqual(['Lucas', 'Mariane', 'Pedro']);
     expect(PedagogyEntity.absenceReport([roll])[0].studentName).toBe('Pedro');
   });
+
+  it('normalizes roster names and moves a student between classes', () => {
+    const origin = {
+      id: 't1',
+      organization: PedagogyOrganization.Church,
+      classGroup: 'Clube da leitura',
+      students: ['Mariane', 'Pedro'],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: 'sec-1'
+    };
+    const destination = {
+      ...origin,
+      id: 't2',
+      classGroup: 'Turma B',
+      students: ['Lucas']
+    };
+
+    const moved = PedagogyEntity.moveStudentBetweenRosters(origin, destination, 'pedro');
+    expect(moved.origin.students).toEqual(['Mariane']);
+    expect(moved.destination.students).toEqual(['Lucas', 'Pedro']);
+    expect(PedagogyEntity.normalizeStudentNames([' Pedro ', 'pedro', 'Ana'])).toEqual(['Ana', 'Pedro']);
+  });
 });

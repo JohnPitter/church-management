@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { pedagogyService } from '@modules/pedagogy/application/services/PedagogyService';
 import {
   ClassAttendanceRoll,
+  ClassRoster,
   ClassSessionRecord,
   DIFFICULTY_LABELS,
   FEEDBACK_KIND_LABELS,
@@ -30,6 +31,7 @@ const EducatorPedagogyPage: React.FC = () => {
   const [guidelines, setGuidelines] = useState<PedagogicalGuideline[]>([]);
   const [sessions, setSessions] = useState<ClassSessionRecord[]>([]);
   const [attendanceRolls, setAttendanceRolls] = useState<ClassAttendanceRoll[]>([]);
+  const [rosters, setRosters] = useState<ClassRoster[]>([]);
   const [difficulties, setDifficulties] = useState<StudentDifficultyRecord[]>([]);
   const [applications, setApplications] = useState<GuidelineApplication[]>([]);
   const [feedback, setFeedback] = useState<PedagogicalFeedback[]>([]);
@@ -74,10 +76,11 @@ const EducatorPedagogyPage: React.FC = () => {
     }
     setLoading(true);
     try {
-      const [guideList, sessionList, attendanceList, difficultyList, applicationList, feedbackList] = await Promise.all([
+      const [guideList, sessionList, attendanceList, rosterList, difficultyList, applicationList, feedbackList] = await Promise.all([
         pedagogyService.listActiveGuidelines(new Date(), organization),
         pedagogyService.listSessions(currentUser.id, organization),
         pedagogyService.listAttendanceRolls(currentUser.id, organization),
+        pedagogyService.listRosters(organization),
         pedagogyService.listDifficulties(currentUser.id, organization),
         pedagogyService.listApplications(currentUser.id, organization),
         pedagogyService.listFeedbackForEducator(currentUser.id, organization)
@@ -85,6 +88,7 @@ const EducatorPedagogyPage: React.FC = () => {
       setGuidelines(guideList);
       setSessions(sessionList);
       setAttendanceRolls(attendanceList || []);
+      setRosters(rosterList || []);
       setDifficulties(difficultyList);
       setApplications(applicationList);
       setFeedback(feedbackList);
@@ -386,6 +390,7 @@ const EducatorPedagogyPage: React.FC = () => {
             <PedagogyAttendancePanel
               organization={organization}
               rolls={attendanceRolls}
+              rosters={rosters}
               difficulties={difficulties}
               educatorOptions={[{ id: currentUser.id, name: currentUser.displayName }]}
               defaultEducatorId={currentUser.id}

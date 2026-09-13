@@ -168,6 +168,16 @@ export interface ClassAttendanceRoll {
   updatedAt: Date;
 }
 
+export interface ClassRoster {
+  id: string;
+  organization: PedagogyOrganization;
+  classGroup: string;
+  students: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+}
+
 export const DIFFICULTY_LABELS: Record<StudentDifficultyType, string> = {
   [StudentDifficultyType.Attention]: 'Atenção',
   [StudentDifficultyType.Comprehension]: 'Compreensão',
@@ -325,6 +335,91 @@ export class PedagogyEntity {
         educatorName: roll.educatorName
       })))
       .sort((a, b) => b.sessionDate.getTime() - a.sessionDate.getTime());
+  }
+
+  static normalizeStudentNames(names: string[]): string[] {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    names.forEach(raw => {
+      const name = raw.trim();
+      if (!name) {
+        return;
+      }
+      const key = name.toLowerCase();
+      if (seen.has(key)) {
+        return;
+      }
+      seen.add(key);
+      result.push(name);
+    });
+    return result.sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }
+
+  static validateRoster(data: Partial<ClassRoster>, allowEmpty = false): void {
+    if (!data.classGroup?.trim()) {
+      throw new Error('Turma é obrigatória');
+    }
+    const names = PedagogyEntity.normalizeStudentNames(data.students || []);
+    if (!allowEmpty && names.length === 0) {
+      throw new Error('Inclua ao menos um aluno na turma');
+    }
+  }
+
+  static addStudentToRoster(roster: ClassRoster, name: string): ClassRoster {
+    const nextName = name.trim();
+    if (!nextName) {
+      throw new Error('Nome do aluno é obrigatório');
+    }
+    return {
+      ...roster,
+      students: PedagogyEntity.normalizeStudentNames([...roster.students, nextName]),
+      updatedAt: new Date()
+    };
+  }
+
+  static renameStudentInRoster(roster: ClassRoster, currentName: string, nextName: string): ClassRoster {
+    const from = currentName.trim().toLowerCase();
+    const to = nextName.trim();
+    if (!to) {
+      throw new Error('Nome do aluno é obrigatório');
+    }
+    if (!roster.students.some(name => name.toLowerCase() === from)) {
+      throw new Error('Aluno não encontrado nesta turma');
+    }
+    return {
+      ...roster,
+      students: PedagogyEntity.normalizeStudentNames(
+        roster.students.map(name => (name.toLowerCase() === from ? to : name))
+      ),
+      updatedAt: new Date()
+    };
+  }
+
+  static removeStudentFromRoster(roster: ClassRoster, name: string): ClassRoster {
+    const key = name.trim().toLowerCase();
+    return {
+      ...roster,
+      students: roster.students.filter(item => item.toLowerCase() !== key),
+      updatedAt: new Date()
+    };
+  }
+
+  static moveStudentBetweenRosters(
+    origin: ClassRoster,
+    destination: ClassRoster,
+    name: string
+  ): { origin: ClassRoster; destination: ClassRoster } {
+    if (origin.id === destination.id) {
+      throw new Error('Escolha outra turma para mover o aluno');
+    }
+    const found = origin.students.find(item => item.toLowerCase() === name.trim().toLowerCase());
+    if (!found) {
+      throw new Error('Aluno não encontrado nesta turma');
+    }
+    return {
+      origin: PedagogyEntity.removeStudentFromRoster(origin, found),
+      destination: PedagogyEntity.addStudentToRoster(destination, found)
+    };
   }
 
   static validateDifficulty(data: Partial<StudentDifficultyRecord>): void {

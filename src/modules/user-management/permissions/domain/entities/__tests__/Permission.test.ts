@@ -248,6 +248,10 @@ describe('PermissionManager', () => {
       expect(PermissionManager.canAccessAdminPanel('educator')).toBe(false);
     });
 
+    it('gives secretary manage on pedagogy so they can register class lists and print rolls', () => {
+      expect(PermissionManager.hasPermission('secretary', SystemModule.Pedagogy, PermissionAction.Manage)).toBe(true);
+    });
+
     it('gives educator the same public content pages as professional', () => {
       const publicModules = [
         SystemModule.Events,

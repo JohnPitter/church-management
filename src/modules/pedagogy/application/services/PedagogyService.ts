@@ -1,5 +1,6 @@
 import {
   ClassAttendanceRoll,
+  ClassRoster,
   ClassSessionRecord,
   FeedbackKind,
   GuidelineApplication,
@@ -175,6 +176,89 @@ export class PedagogyService {
     organization?: PedagogyOrganization
   ): Promise<ClassAttendanceRoll[]> {
     return this.filterByOrganization(await this.repository.listAttendanceRolls(educatorId), organization);
+  }
+
+  async listRosters(organization?: PedagogyOrganization): Promise<ClassRoster[]> {
+    return this.filterByOrganization(await this.repository.listRosters(), organization);
+  }
+
+  async createRoster(
+    data: Omit<ClassRoster, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<ClassRoster> {
+    PedagogyEntity.validateRoster(data);
+    const classGroup = data.classGroup.trim();
+    const existing = (await this.listRosters(data.organization)).find(
+      item => item.classGroup.trim().toLowerCase() === classGroup.toLowerCase()
+    );
+    if (existing) {
+      throw new Error('Essa turma já está cadastrada');
+    }
+    const now = new Date();
+    return this.repository.createRoster({
+      ...data,
+      classGroup,
+      students: PedagogyEntity.normalizeStudentNames(data.students),
+      organization: data.organization || PedagogyOrganization.Church,
+      createdAt: now,
+      updatedAt: now
+    });
+  }
+
+  async addStudentToRoster(rosterId: string, name: string): Promise<ClassRoster> {
+    const roster = await this.requireRoster(rosterId);
+    const updated = PedagogyEntity.addStudentToRoster(roster, name);
+    await this.repository.updateRoster(rosterId, {
+      students: updated.students,
+      updatedAt: updated.updatedAt
+    });
+    return { ...updated, id: rosterId };
+  }
+
+  async renameStudentInRoster(rosterId: string, currentName: string, nextName: string): Promise<ClassRoster> {
+    const roster = await this.requireRoster(rosterId);
+    const updated = PedagogyEntity.renameStudentInRoster(roster, currentName, nextName);
+    await this.repository.updateRoster(rosterId, {
+      students: updated.students,
+      updatedAt: updated.updatedAt
+    });
+    return { ...updated, id: rosterId };
+  }
+
+  async removeStudentFromRoster(rosterId: string, name: string): Promise<ClassRoster> {
+    const roster = await this.requireRoster(rosterId);
+    const updated = PedagogyEntity.removeStudentFromRoster(roster, name);
+    PedagogyEntity.validateRoster(updated, true);
+    await this.repository.updateRoster(rosterId, {
+      students: updated.students,
+      updatedAt: updated.updatedAt
+    });
+    return { ...updated, id: rosterId };
+  }
+
+  async moveStudent(originId: string, destinationId: string, name: string): Promise<void> {
+    const [origin, destination] = await Promise.all([
+      this.requireRoster(originId),
+      this.requireRoster(destinationId)
+    ]);
+    const moved = PedagogyEntity.moveStudentBetweenRosters(origin, destination, name);
+    await Promise.all([
+      this.repository.updateRoster(originId, {
+        students: moved.origin.students,
+        updatedAt: moved.origin.updatedAt
+      }),
+      this.repository.updateRoster(destinationId, {
+        students: moved.destination.students,
+        updatedAt: moved.destination.updatedAt
+      })
+    ]);
+  }
+
+  private async requireRoster(id: string): Promise<ClassRoster> {
+    const roster = await this.repository.getRoster(id);
+    if (!roster) {
+      throw new Error('Turma não encontrada');
+    }
+    return roster;
   }
 
   async getDashboardStats(

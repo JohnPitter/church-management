@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import {
   AttendanceStudent,
   ClassAttendanceRoll,
+  ClassRoster,
   PedagogyEntity,
   PedagogyOrganization,
   StudentDifficultyRecord
@@ -15,6 +16,7 @@ type EducatorOption = { id: string; name: string };
 interface PedagogyAttendancePanelProps {
   organization: PedagogyOrganization;
   rolls: ClassAttendanceRoll[];
+  rosters?: ClassRoster[];
   difficulties: StudentDifficultyRecord[];
   educatorOptions: EducatorOption[];
   defaultEducatorId?: string;
@@ -24,9 +26,7 @@ interface PedagogyAttendancePanelProps {
   fieldClass: string;
 }
 
-const emptyStudents = (): AttendanceStudent[] => (
-  Array.from({ length: 6 }, () => ({ name: '', present: true }))
-);
+const emptyStudents = (): AttendanceStudent[] => [];
 
 const todayInputValue = (): string => {
   const date = new Date();
@@ -37,7 +37,7 @@ const todayInputValue = (): string => {
 const PedagogyAttendancePanel: React.FC<PedagogyAttendancePanelProps> = ({
   organization,
   rolls,
-  difficulties,
+  rosters = [],
   educatorOptions,
   defaultEducatorId,
   defaultEducatorName,
@@ -51,7 +51,6 @@ const PedagogyAttendancePanel: React.FC<PedagogyAttendancePanelProps> = ({
   const [students, setStudents] = useState<AttendanceStudent[]>(emptyStudents);
   const [saving, setSaving] = useState(false);
   const safeRolls = rolls || [];
-  const safeDifficulties = difficulties || [];
 
   useEffect(() => {
     if (defaultEducatorId) {
@@ -63,15 +62,23 @@ const PedagogyAttendancePanel: React.FC<PedagogyAttendancePanelProps> = ({
   const absences = useMemo(() => PedagogyEntity.absenceReport(safeRolls), [safeRolls]);
 
   const applySuggestedNames = () => {
-    const names = PedagogyEntity.suggestStudentNames(classGroup, safeDifficulties, safeRolls);
-    if (names.length === 0) {
-      toast.error('Nenhum aluno conhecido nesta turma ainda. Digite os nomes na lista.');
+    if (!classGroup.trim()) {
+      toast.error('Selecione a turma cadastrada pela secretaria ou coordenação');
       return;
     }
-    setStudents([
-      ...names.map(name => ({ name, present: true })),
-      { name: '', present: true }
-    ]);
+    const roster = rosters.find(
+      item => item.classGroup.trim().toLowerCase() === classGroup.trim().toLowerCase()
+    );
+    if (!roster) {
+      toast.error('Essa turma ainda não foi cadastrada. Secretaria ou coordenação precisam criar a lista.');
+      return;
+    }
+    if (roster.students.length === 0) {
+      toast.error('Essa turma ainda não tem alunos cadastrados. Secretaria ou coordenação precisam completar a lista.');
+      return;
+    }
+    setStudents(roster.students.map(name => ({ name, present: true })));
+    toast.success(`Chamada de ${classGroup} carregada. Desmarque as faltas e salve.`);
   };
 
   const updateStudent = (index: number, updates: Partial<AttendanceStudent>) => {
@@ -130,7 +137,7 @@ const PedagogyAttendancePanel: React.FC<PedagogyAttendancePanelProps> = ({
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Caderneta de chamada</h3>
           <p className="text-sm text-gray-600 mt-1">
-            Marque presença e ausência por aluno. Não substitui o registro de frequência/engajamento do encontro.
+            Selecione a turma, puxe a lista cadastrada pela secretaria ou coordenação, marque as faltas e salve.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -151,12 +158,27 @@ const PedagogyAttendancePanel: React.FC<PedagogyAttendancePanelProps> = ({
           )}
           <label className="block min-w-0">
             <span className="block text-sm font-medium text-gray-700 mb-1">Turma</span>
-            <input
-              className={fieldClass}
-              placeholder="Ex.: Turma A"
-              value={classGroup}
-              onChange={event => setClassGroup(event.target.value)}
-            />
+            {rosters.length > 0 ? (
+              <select
+                className={fieldClass}
+                value={classGroup}
+                onChange={event => {
+                  setClassGroup(event.target.value);
+                  setStudents(emptyStudents());
+                }}
+              >
+                <option value="">Selecione a turma</option>
+                {rosters.map(item => (
+                  <option key={item.id} value={item.classGroup}>{item.classGroup}</option>
+                ))}
+              </select>
+            ) : (
+              <p className="text-sm text-gray-500 pt-2">
+                {canPickEducator
+                  ? 'Nenhuma turma cadastrada. Use a aba Turmas para criar a lista.'
+                  : 'Nenhuma turma cadastrada. Peça à secretaria ou à coordenação para cadastrar a lista.'}
+              </p>
+            )}
           </label>
           <label className="block min-w-0">
             <span className="block text-sm font-medium text-gray-700 mb-1">Data</span>
@@ -169,19 +191,31 @@ const PedagogyAttendancePanel: React.FC<PedagogyAttendancePanelProps> = ({
           </label>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" className="text-sm text-sky-700 underline" onClick={applySuggestedNames}>
-            Carregar alunos da turma
-          </button>
           <button
             type="button"
-            className="text-sm text-sky-700 underline"
-            onClick={() => setStudents(current => [...current, { name: '', present: true }])}
+            className="text-sm text-sky-700 underline disabled:text-gray-400 disabled:no-underline"
+            onClick={applySuggestedNames}
+            disabled={rosters.length === 0}
           >
-            Adicionar aluno
+            Puxar chamada
           </button>
+          {students.length > 0 && (
+            <button
+              type="button"
+              className="text-sm text-sky-700 underline"
+              onClick={() => setStudents(current => [...current, { name: '', present: true }])}
+            >
+              Adicionar aluno
+            </button>
+          )}
         </div>
         <div className="border border-gray-200 rounded-lg divide-y">
-          {students.map((student, index) => (
+          {students.length === 0 ? (
+            <p className="px-3 py-4 text-sm text-gray-500">
+              Selecione a turma e clique em Puxar chamada para trazer os alunos cadastrados.
+            </p>
+          ) : (
+            students.map((student, index) => (
             <div key={index} className="flex items-center gap-3 px-3 py-2">
               <input
                 className={`${fieldClass} flex-1`}
@@ -198,7 +232,8 @@ const PedagogyAttendancePanel: React.FC<PedagogyAttendancePanelProps> = ({
                 Presente
               </label>
             </div>
-          ))}
+            ))
+          )}
         </div>
         <div className="flex justify-end pt-2 border-t border-gray-100">
           <button type="submit" className={primaryButtonClass} disabled={saving}>

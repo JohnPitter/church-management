@@ -14,6 +14,7 @@ import {
 import { db } from '@/config/firebase';
 import {
   ClassAttendanceRoll,
+  ClassRoster,
   ClassSessionRecord,
   GuidelineApplication,
   PedagogicalFeedback,
@@ -53,6 +54,7 @@ export class FirebasePedagogyRepository {
   private readonly applications = 'guidelineApplications';
   private readonly feedback = 'pedagogicalFeedback';
   private readonly attendance = 'classAttendanceRolls';
+  private readonly rosters = 'classRosters';
 
   async createGuideline(
     data: Omit<PedagogicalGuideline, 'id'>
@@ -182,6 +184,35 @@ export class FirebasePedagogyRepository {
       : query(base, orderBy('sessionDate', 'desc'));
     const snap = await getDocs(q);
     return snap.docs.map(item => this.mapAttendance(item.id, item.data()));
+  }
+
+  async createRoster(data: Omit<ClassRoster, 'id'>): Promise<ClassRoster> {
+    const ref = await addDoc(collection(db, this.rosters), this.serializeRoster(data));
+    return { ...data, id: ref.id };
+  }
+
+  async updateRoster(id: string, updates: Partial<ClassRoster>): Promise<void> {
+    await updateDoc(doc(db, this.rosters, id), omitUndefined({
+      ...this.serializeRoster(updates as Omit<ClassRoster, 'id'>),
+      updatedAt: Timestamp.fromDate(updates.updatedAt || new Date())
+    }) as Record<string, Timestamp | string | number | boolean | object | null>);
+  }
+
+  async deleteRoster(id: string): Promise<void> {
+    await deleteDoc(doc(db, this.rosters, id));
+  }
+
+  async getRoster(id: string): Promise<ClassRoster | null> {
+    const snap = await getDoc(doc(db, this.rosters, id));
+    if (!snap.exists()) {
+      return null;
+    }
+    return this.mapRoster(snap.id, snap.data());
+  }
+
+  async listRosters(): Promise<ClassRoster[]> {
+    const snap = await getDocs(query(collection(db, this.rosters), orderBy('classGroup', 'asc')));
+    return snap.docs.map(item => this.mapRoster(item.id, item.data()));
   }
 
   private serializeGuideline(data: Partial<PedagogicalGuideline>): Record<string, unknown> {
@@ -356,6 +387,32 @@ export class FirebasePedagogyRepository {
       students,
       createdAt: toDate(data.createdAt as TimestampLike),
       updatedAt: toDate(data.updatedAt as TimestampLike)
+    };
+  }
+
+  private serializeRoster(data: Partial<ClassRoster>): Record<string, unknown> {
+    return omitUndefined({
+      ...data,
+      organization: resolvePedagogyOrganization(data.organization),
+      classGroup: data.classGroup?.trim(),
+      students: Array.isArray(data.students) ? data.students : [],
+      createdAt: data.createdAt ? Timestamp.fromDate(new Date(data.createdAt)) : undefined,
+      updatedAt: data.updatedAt ? Timestamp.fromDate(new Date(data.updatedAt)) : undefined
+    });
+  }
+
+  private mapRoster(id: string, data: Record<string, unknown>): ClassRoster {
+    const students = Array.isArray(data.students)
+      ? (data.students as unknown[]).map(item => String(item || '')).filter(Boolean)
+      : [];
+    return {
+      id,
+      organization: resolvePedagogyOrganization(data.organization),
+      classGroup: String(data.classGroup || ''),
+      students,
+      createdAt: toDate(data.createdAt as TimestampLike),
+      updatedAt: toDate(data.updatedAt as TimestampLike),
+      createdBy: String(data.createdBy || '')
     };
   }
 }
