@@ -393,9 +393,11 @@ export class FirebasePedagogyRepository {
   private serializeRoster(data: Partial<ClassRoster>): Record<string, unknown> {
     return omitUndefined({
       ...data,
-      organization: resolvePedagogyOrganization(data.organization),
-      classGroup: data.classGroup?.trim(),
-      students: Array.isArray(data.students) ? data.students : [],
+      organization: data.organization !== undefined
+        ? resolvePedagogyOrganization(data.organization)
+        : undefined,
+      classGroup: data.classGroup !== undefined ? data.classGroup.trim() : undefined,
+      students: Array.isArray(data.students) ? data.students : undefined,
       createdAt: data.createdAt ? Timestamp.fromDate(new Date(data.createdAt)) : undefined,
       updatedAt: data.updatedAt ? Timestamp.fromDate(new Date(data.updatedAt)) : undefined
     });

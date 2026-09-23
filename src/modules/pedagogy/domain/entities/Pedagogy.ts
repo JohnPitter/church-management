@@ -422,6 +422,24 @@ export class PedagogyEntity {
     };
   }
 
+  static copyStudentToRoster(
+    origin: ClassRoster,
+    destination: ClassRoster,
+    name: string
+  ): { origin: ClassRoster; destination: ClassRoster } {
+    if (origin.id === destination.id) {
+      throw new Error('Escolha outra turma para copiar o aluno');
+    }
+    const found = origin.students.find(item => item.toLowerCase() === name.trim().toLowerCase());
+    if (!found) {
+      throw new Error('Aluno não encontrado nesta turma');
+    }
+    return {
+      origin,
+      destination: PedagogyEntity.addStudentToRoster(destination, found)
+    };
+  }
+
   static validateDifficulty(data: Partial<StudentDifficultyRecord>): void {
     if (!data.studentName?.trim()) {
       throw new Error('Nome do aluno é obrigatório');

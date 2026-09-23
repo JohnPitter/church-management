@@ -134,4 +134,45 @@ describe('PedagogyEntity', () => {
     expect(moved.destination.students).toEqual(['Lucas', 'Pedro']);
     expect(PedagogyEntity.normalizeStudentNames([' Pedro ', 'pedro', 'Ana'])).toEqual(['Ana', 'Pedro']);
   });
+
+  it('copies a student without removing from origin, while move still cuts', () => {
+    const origin = {
+      id: 't1',
+      organization: PedagogyOrganization.Church,
+      classGroup: 'Clube da leitura',
+      students: ['Mariane', 'Pedro'],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: 'sec-1'
+    };
+    const destination = {
+      ...origin,
+      id: 't2',
+      classGroup: 'Turma B',
+      students: ['Lucas']
+    };
+
+    const copied = PedagogyEntity.copyStudentToRoster(origin, destination, 'pedro');
+    expect(copied.origin.students).toEqual(['Mariane', 'Pedro']);
+    expect(copied.destination.students).toEqual(['Lucas', 'Pedro']);
+
+    const moved = PedagogyEntity.moveStudentBetweenRosters(origin, destination, 'pedro');
+    expect(moved.origin.students).toEqual(['Mariane']);
+    expect(moved.destination.students).toEqual(['Lucas', 'Pedro']);
+  });
+
+  it('rejects copying a student onto the same roster', () => {
+    const roster = {
+      id: 't1',
+      organization: PedagogyOrganization.Church,
+      classGroup: 'Clube da leitura',
+      students: ['Pedro'],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: 'sec-1'
+    };
+
+    expect(() => PedagogyEntity.copyStudentToRoster(roster, roster, 'Pedro'))
+      .toThrow('Escolha outra turma para copiar o aluno');
+  });
 });
