@@ -84,9 +84,11 @@ describe('RBAC matrix (rules alignment contract)', () => {
       'function isAdmin()',
       'function isStaff()',
       'function canWriteMembers()',
+      'function hasGrantedModule(',
       'function canAccessFinance()',
       'function canAccessFichas()',
       'function canAccessAssistance()',
+      'function canManageOng()',
       'function canAccessPedagogy()',
     ]) {
       expect(rules).toContain(helper);
@@ -114,12 +116,12 @@ describe('RBAC matrix (rules alignment contract)', () => {
     expect(rules).toContain('function canWriteMembers()');
     expect(rules).toMatch(/canWriteMembers\(\)[\s\S]*?isStaff\(\)/);
 
-    // finance: transactions e afins
+    // finance: transactions e afins (role admin|finance OR custom grant)
     expect(rules).toMatch(
       /match \/transactions\/\{docId\}[\s\S]*?allow read, write:\s*if canAccessFinance\(\)/
     );
     expect(rules).toMatch(
-      /function canAccessFinance\(\)[\s\S]*?\(isAdmin\(\) \|\| isFinance\(\)\)/
+      /function canAccessFinance\(\)[\s\S]*?\(isAdmin\(\) \|\| isFinance\(\) \|\| hasGrantedModule\('finance'\)\)/
     );
 
     // fichas clínicas
@@ -141,6 +143,41 @@ describe('RBAC matrix (rules alignment contract)', () => {
     );
     expect(rules).toMatch(
       /function canManagePedagogy\(\)[\s\S]*?\(isAdmin\(\) \|\| isPedagogicalCoordinator\(\) \|\| isSecretary\(\)\)/
+    );
+  });
+
+  it('firestore.rules honra customPermissions.granted nas helpers de finance/assistidos/ong', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require('fs') as typeof import('fs');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const path = require('path') as typeof import('path');
+    const rules = fs.readFileSync(path.resolve(process.cwd(), 'firestore.rules'), 'utf8');
+
+    expect(rules).toContain('function hasGrantedModule(');
+    expect(rules).toContain("'customPermissions' in getUserData()");
+    expect(rules).toContain("'granted' in getUserData().customPermissions");
+    expect(rules).toContain('granted[0].module == moduleId');
+    expect(rules).toContain('granted[9].module == moduleId');
+
+    expect(rules).toMatch(
+      /function canAccessFinance\(\)[\s\S]{0,250}hasGrantedModule\('finance'\)/
+    );
+    expect(rules).toMatch(
+      /function canAccessAssistance\(\)[\s\S]{0,300}hasGrantedModule\('assistidos'\)/
+    );
+    expect(rules).toMatch(
+      /function canAccessAssistance\(\)[\s\S]{0,300}hasGrantedModule\('assistance'\)/
+    );
+    expect(rules).toMatch(
+      /function canManageOng\(\)[\s\S]{0,250}hasGrantedModule\('ong'\)/
+    );
+
+    // Grants não alargam a matriz de roles: member continua sem finance.
+    expect(
+      PermissionManager.hasPermission('member', SystemModule.Finance, PermissionAction.Create)
+    ).toBe(false);
+    expect(DEFAULT_ROLE_PERMISSIONS.member?.some((p) => p.module === SystemModule.Finance)).toBe(
+      false
     );
   });
 });

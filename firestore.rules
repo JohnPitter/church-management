@@ -86,14 +86,45 @@ service cloud.firestore {
       return isApproved() && isStaff();
     }
 
+    // Custom grants: users/{uid}.customPermissions.granted[].module
+    // Unrolled — Firestore rules cannot iterate lists. Size 10 covers existing docs.
+    function hasGrantedModule(moduleId) {
+      return isApproved()
+        && 'customPermissions' in getUserData()
+        && 'granted' in getUserData().customPermissions
+        && (
+          (getUserData().customPermissions.granted.size() > 0
+            && getUserData().customPermissions.granted[0].module == moduleId)
+          || (getUserData().customPermissions.granted.size() > 1
+            && getUserData().customPermissions.granted[1].module == moduleId)
+          || (getUserData().customPermissions.granted.size() > 2
+            && getUserData().customPermissions.granted[2].module == moduleId)
+          || (getUserData().customPermissions.granted.size() > 3
+            && getUserData().customPermissions.granted[3].module == moduleId)
+          || (getUserData().customPermissions.granted.size() > 4
+            && getUserData().customPermissions.granted[4].module == moduleId)
+          || (getUserData().customPermissions.granted.size() > 5
+            && getUserData().customPermissions.granted[5].module == moduleId)
+          || (getUserData().customPermissions.granted.size() > 6
+            && getUserData().customPermissions.granted[6].module == moduleId)
+          || (getUserData().customPermissions.granted.size() > 7
+            && getUserData().customPermissions.granted[7].module == moduleId)
+          || (getUserData().customPermissions.granted.size() > 8
+            && getUserData().customPermissions.granted[8].module == moduleId)
+          || (getUserData().customPermissions.granted.size() > 9
+            && getUserData().customPermissions.granted[9].module == moduleId)
+        );
+    }
+
     // Finanças / doações / patrimônio
     function canAccessFinance() {
-      return isApproved() && (isAdmin() || isFinance());
+      return isApproved() && (isAdmin() || isFinance() || hasGrantedModule('finance'));
     }
 
     // Assistência / assistidos / agendamentos
     function canAccessAssistance() {
-      return isApproved() && (isStaff() || isProfessional());
+      return isApproved() && (isStaff() || isProfessional()
+        || hasGrantedModule('assistidos') || hasGrantedModule('assistance'));
     }
 
     // Fichas clínicas: staff e profissionais (dado sensível)
@@ -108,7 +139,7 @@ service cloud.firestore {
 
     // ONG
     function canManageOng() {
-      return isApproved() && isStaff();
+      return isApproved() && (isStaff() || hasGrantedModule('ong'));
     }
 
     function canAccessPedagogy() {

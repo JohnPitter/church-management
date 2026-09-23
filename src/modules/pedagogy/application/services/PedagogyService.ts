@@ -187,12 +187,7 @@ export class PedagogyService {
   ): Promise<ClassRoster> {
     PedagogyEntity.validateRoster(data);
     const classGroup = data.classGroup.trim();
-    const existing = (await this.listRosters(data.organization)).find(
-      item => item.classGroup.trim().toLowerCase() === classGroup.toLowerCase()
-    );
-    if (existing) {
-      throw new Error('Essa turma já está cadastrada');
-    }
+    await this.assertUniqueClassGroup(classGroup, data.organization);
     const now = new Date();
     return this.repository.createRoster({
       ...data,
@@ -251,6 +246,70 @@ export class PedagogyService {
         updatedAt: moved.destination.updatedAt
       })
     ]);
+  }
+
+  async copyStudent(originId: string, destinationId: string, name: string): Promise<void> {
+    const [origin, destination] = await Promise.all([
+      this.requireRoster(originId),
+      this.requireRoster(destinationId)
+    ]);
+    const copied = PedagogyEntity.copyStudentToRoster(origin, destination, name);
+    await this.repository.updateRoster(destinationId, {
+      students: copied.destination.students,
+      updatedAt: copied.destination.updatedAt
+    });
+  }
+
+  async renameClassGroup(rosterId: string, classGroup: string): Promise<ClassRoster> {
+    const roster = await this.requireRoster(rosterId);
+    const nextName = classGroup.trim();
+    PedagogyEntity.validateRoster({ ...roster, classGroup: nextName }, true);
+    await this.assertUniqueClassGroup(nextName, roster.organization, rosterId);
+    const now = new Date();
+    await this.repository.updateRoster(rosterId, {
+      classGroup: nextName,
+      organization: roster.organization,
+      students: roster.students,
+      updatedAt: now
+    });
+    return { ...roster, classGroup: nextName, updatedAt: now };
+  }
+
+  async changeRosterOrganization(
+    rosterId: string,
+    organization: PedagogyOrganization
+  ): Promise<ClassRoster> {
+    const roster = await this.requireRoster(rosterId);
+    if (roster.organization === organization) {
+      return roster;
+    }
+    await this.assertUniqueClassGroup(roster.classGroup, organization, rosterId);
+    const now = new Date();
+    await this.repository.updateRoster(rosterId, {
+      organization,
+      classGroup: roster.classGroup,
+      students: roster.students,
+      updatedAt: now
+    });
+    return { ...roster, organization, updatedAt: now };
+  }
+
+  async deleteRoster(id: string): Promise<void> {
+    await this.requireRoster(id);
+    await this.repository.deleteRoster(id);
+  }
+
+  private async assertUniqueClassGroup(
+    classGroup: string,
+    organization: PedagogyOrganization | undefined,
+    exceptId?: string
+  ): Promise<void> {
+    const existing = (await this.listRosters(organization)).find(
+      item => item.id !== exceptId && item.classGroup.trim().toLowerCase() === classGroup.toLowerCase()
+    );
+    if (existing) {
+      throw new Error('Essa turma já está cadastrada');
+    }
   }
 
   private async requireRoster(id: string): Promise<ClassRoster> {
