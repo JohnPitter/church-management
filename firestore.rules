@@ -66,7 +66,7 @@ service cloud.firestore {
       return isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
-    // Conteúdo público (blog, eventos, etc.): escrita por staff
+    // Conteúdo público (blog, eventos, etc.): escrita por staff ou grant do módulo
     function canWriteContent() {
       return isApproved() && isStaff();
     }
@@ -83,7 +83,7 @@ service cloud.firestore {
     }
 
     function canWriteMembers() {
-      return isApproved() && isStaff();
+      return isApproved() && (isStaff() || hasGrantedModule('members'));
     }
 
     // Custom grants: users/{uid}.customPermissions.granted[].module
@@ -118,7 +118,8 @@ service cloud.firestore {
 
     // Finanças / doações / patrimônio
     function canAccessFinance() {
-      return isApproved() && (isAdmin() || isFinance() || hasGrantedModule('finance'));
+      return isApproved() && (isAdmin() || isFinance()
+        || hasGrantedModule('finance') || hasGrantedModule('donations'));
     }
 
     // Assistência / assistidos / agendamentos
@@ -127,14 +128,15 @@ service cloud.firestore {
         || hasGrantedModule('assistidos') || hasGrantedModule('assistance'));
     }
 
-    // Fichas clínicas: staff e profissionais (dado sensível)
+    // Fichas clínicas: staff, profissionais, ou grant do módulo assistência (não assistidos)
     function canAccessFichas() {
-      return isApproved() && (isAdmin() || isProfessional() || isSecretary());
+      return isApproved() && (isAdmin() || isProfessional() || isSecretary()
+        || hasGrantedModule('assistance'));
     }
 
     // Visitantes
     function canManageVisitors() {
-      return isApproved() && isStaff();
+      return isApproved() && (isStaff() || hasGrantedModule('visitors'));
     }
 
     // ONG
@@ -143,16 +145,18 @@ service cloud.firestore {
     }
 
     function canAccessPedagogy() {
-      return isApproved() && (isStaff() || isPedagogicalCoordinator() || isEducator() || isAdmin());
+      return isApproved() && (isStaff() || isPedagogicalCoordinator() || isEducator() || isAdmin()
+        || hasGrantedModule('pedagogy'));
     }
 
     function canManagePedagogy() {
-      return isApproved() && (isAdmin() || isPedagogicalCoordinator() || isSecretary());
+      return isApproved() && (isAdmin() || isPedagogicalCoordinator() || isSecretary()
+        || hasGrantedModule('pedagogy'));
     }
 
     // Notificações em massa
     function canCreateNotifications() {
-      return isApproved() && (isStaff() || isAdmin());
+      return isApproved() && (isStaff() || isAdmin() || hasGrantedModule('notifications'));
     }
 
     // Usuário não eleva role/status no próprio update
@@ -219,7 +223,8 @@ service cloud.firestore {
     // update role/status: só admin
     // ========================================
     match /users/{userId} {
-      allow read: if isOwner(userId) || isStaff() || isFinance() || isProfessional();
+      allow read: if isOwner(userId) || isStaff() || isFinance() || isProfessional()
+        || hasGrantedModule('finance') || hasGrantedModule('users') || hasGrantedModule('ong');
       allow create: if isSelfRegistrationCreate(userId) || isAdmin();
       allow update: if isAdmin()
         || (isOwner(userId) && notChangingPrivilegedUserFields());
@@ -231,49 +236,49 @@ service cloud.firestore {
     // ========================================
     match /events/{docId} {
       allow read: if true;
-      allow create, update: if canWriteEventsOrProjects();
-      allow delete: if isStaff();
+      allow create, update: if canWriteEventsOrProjects() || hasGrantedModule('events');
+      allow delete: if isStaff() || hasGrantedModule('events');
     }
 
     match /blogPosts/{docId} {
       allow read: if true;
-      allow write: if canWriteContent();
+      allow write: if canWriteContent() || hasGrantedModule('blog');
     }
 
     match /projects/{docId} {
       allow read: if true;
-      allow create, update: if canWriteEventsOrProjects();
-      allow delete: if isStaff();
+      allow create, update: if canWriteEventsOrProjects() || hasGrantedModule('projects');
+      allow delete: if isStaff() || hasGrantedModule('projects');
     }
 
     match /devotionals/{docId} {
       allow read: if true;
-      allow write: if canWriteContent();
+      allow write: if canWriteContent() || hasGrantedModule('devotionals');
     }
 
     match /devotionalCategories/{docId} {
       allow read: if true;
-      allow write: if canWriteContent();
+      allow write: if canWriteContent() || hasGrantedModule('devotionals');
     }
 
     match /devotionalPlans/{docId} {
       allow read: if true;
-      allow write: if canWriteContent();
+      allow write: if canWriteContent() || hasGrantedModule('devotionals');
     }
 
     match /eventCategories/{docId} {
       allow read: if true;
-      allow write: if canWriteContent();
+      allow write: if canWriteContent() || hasGrantedModule('events');
     }
 
     match /liveStreams/{docId} {
       allow read: if true;
-      allow write: if canWriteContent();
+      allow write: if canWriteContent() || hasGrantedModule('transmissions');
     }
 
     match /leaders/{docId} {
       allow read: if true;
-      allow write: if canWriteContent();
+      allow write: if canWriteContent() || hasGrantedModule('leadership');
     }
 
     match /homeLayouts/{docId} {
@@ -293,7 +298,7 @@ service cloud.firestore {
 
     match /homeSettings/{docId} {
       allow read: if true;
-      allow write: if isStaff();
+      allow write: if isStaff() || hasGrantedModule('settings') || hasGrantedModule('home_builder');
     }
 
     match /settings/{docId} {
@@ -314,7 +319,7 @@ service cloud.firestore {
     // ========================================
     match /forumCategories/{docId} {
       allow read: if true;
-      allow write: if canWriteContent();
+      allow write: if canWriteContent() || hasGrantedModule('forum');
     }
 
     match /forumTopics/{docId} {
@@ -538,7 +543,7 @@ service cloud.firestore {
     }
     match /profissionaisAssistencia/{docId} {
       allow read: if isApproved();
-      allow write: if isStaff();
+      allow write: if isStaff() || hasGrantedModule('assistance');
     }
     match /atendimentos/{docId} {
       allow read, write: if canAccessAssistance();
@@ -610,7 +615,7 @@ service cloud.firestore {
     // ASSETS
     // ========================================
     match /assets/{docId} {
-      allow read, write: if canAccessFinance() || isStaff();
+      allow read, write: if canAccessFinance() || isStaff() || hasGrantedModule('assets');
     }
 
     // ========================================
@@ -630,30 +635,30 @@ service cloud.firestore {
     }
 
     match /auditLogs/{docId} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || hasGrantedModule('audit');
       allow create: if isAuthenticated();
       allow update, delete: if false;
     }
     match /systemLogs/{docId} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || hasGrantedModule('logs');
       allow create: if isAuthenticated();
       allow update: if false;
       allow delete: if isAdmin();
     }
     match /permissionAudit/{docId} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || hasGrantedModule('permissions') || hasGrantedModule('audit');
       allow create: if isAuthenticated();
       allow update, delete: if false;
     }
 
     match /system_backups/{docId} {
-      allow read, write: if isAdmin();
+      allow read, write: if isAdmin() || hasGrantedModule('backup');
     }
     match /backups/{docId} {
-      allow read, write: if isAdmin();
+      allow read, write: if isAdmin() || hasGrantedModule('backup');
     }
     match /backup_metadata/{docId} {
-      allow read, write: if isAdmin();
+      allow read, write: if isAdmin() || hasGrantedModule('backup');
     }
 
     match /{document=**} {

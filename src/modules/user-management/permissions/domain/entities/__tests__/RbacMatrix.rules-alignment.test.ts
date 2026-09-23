@@ -121,7 +121,10 @@ describe('RBAC matrix (rules alignment contract)', () => {
       /match \/transactions\/\{docId\}[\s\S]*?allow read, write:\s*if canAccessFinance\(\)/
     );
     expect(rules).toMatch(
-      /function canAccessFinance\(\)[\s\S]*?\(isAdmin\(\) \|\| isFinance\(\) \|\| hasGrantedModule\('finance'\)\)/
+      /function canAccessFinance\(\)[\s\S]*?isAdmin\(\) \|\| isFinance\(\)/
+    );
+    expect(rules).toMatch(
+      /function canAccessFinance\(\)[\s\S]*?hasGrantedModule\('finance'\)/
     );
 
     // fichas clínicas
@@ -129,7 +132,7 @@ describe('RBAC matrix (rules alignment contract)', () => {
       /match \/fichasAcompanhamento\/\{docId\}[\s\S]*?allow read, write:\s*if canAccessFichas\(\)/
     );
     expect(rules).toMatch(
-      /function canAccessFichas\(\)[\s\S]*?\(isAdmin\(\) \|\| isProfessional\(\) \|\| isSecretary\(\)\)/
+      /function canAccessFichas\(\)[\s\S]*?isAdmin\(\) \|\| isProfessional\(\) \|\| isSecretary\(\)/
     );
 
     // member role na UI não tem finance create — alinhado a finance helper sem role member
@@ -142,7 +145,7 @@ describe('RBAC matrix (rules alignment contract)', () => {
       /match \/classRosters\/\{docId\}[\s\S]*?allow create, update, delete:\s*if canManagePedagogy\(\)/
     );
     expect(rules).toMatch(
-      /function canManagePedagogy\(\)[\s\S]*?\(isAdmin\(\) \|\| isPedagogicalCoordinator\(\) \|\| isSecretary\(\)\)/
+      /function canManagePedagogy\(\)[\s\S]*?isAdmin\(\) \|\| isPedagogicalCoordinator\(\) \|\| isSecretary\(\)/
     );
   });
 
@@ -160,8 +163,12 @@ describe('RBAC matrix (rules alignment contract)', () => {
     expect(rules).toContain('granted[9].module == moduleId');
 
     expect(rules).toMatch(
-      /function canAccessFinance\(\)[\s\S]{0,250}hasGrantedModule\('finance'\)/
+      /function canAccessFinance\(\)[\s\S]*?hasGrantedModule\('finance'\)/
     );
+    expect(rules).toMatch(
+      /function canAccessFinance\(\)[\s\S]*?hasGrantedModule\('donations'\)/
+    );
+
     expect(rules).toMatch(
       /function canAccessAssistance\(\)[\s\S]{0,300}hasGrantedModule\('assistidos'\)/
     );
@@ -171,6 +178,26 @@ describe('RBAC matrix (rules alignment contract)', () => {
     expect(rules).toMatch(
       /function canManageOng\(\)[\s\S]{0,250}hasGrantedModule\('ong'\)/
     );
+    expect(rules).toMatch(
+      /function canWriteMembers\(\)[\s\S]{0,200}hasGrantedModule\('members'\)/
+    );
+    expect(rules).toMatch(
+      /function canManageVisitors\(\)[\s\S]{0,200}hasGrantedModule\('visitors'\)/
+    );
+    expect(rules).toMatch(
+      /function canAccessPedagogy\(\)[\s\S]{0,280}hasGrantedModule\('pedagogy'\)/
+    );
+    expect(rules).toMatch(
+      /function canManagePedagogy\(\)[\s\S]{0,250}hasGrantedModule\('pedagogy'\)/
+    );
+    expect(rules).toMatch(
+      /function canAccessFichas\(\)[\s\S]{0,250}hasGrantedModule\('assistance'\)/
+    );
+    expect(rules).toMatch(
+      /function canCreateNotifications\(\)[\s\S]{0,200}hasGrantedModule\('notifications'\)/
+    );
+    expect(rules).toContain("hasGrantedModule('users')");
+    expect(rules).toContain("hasGrantedModule('assets')");
 
     // Grants não alargam a matriz de roles: member continua sem finance.
     expect(
