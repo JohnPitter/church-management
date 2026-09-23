@@ -23,6 +23,34 @@ service firebase.storage {
       return hasRole('admin') || hasRole('secretary');
     }
 
+    function hasGrantedModule(moduleId) {
+      return isApproved()
+        && 'customPermissions' in userDoc()
+        && 'granted' in userDoc().customPermissions
+        && (
+          (userDoc().customPermissions.granted.size() > 0
+            && userDoc().customPermissions.granted[0].module == moduleId)
+          || (userDoc().customPermissions.granted.size() > 1
+            && userDoc().customPermissions.granted[1].module == moduleId)
+          || (userDoc().customPermissions.granted.size() > 2
+            && userDoc().customPermissions.granted[2].module == moduleId)
+          || (userDoc().customPermissions.granted.size() > 3
+            && userDoc().customPermissions.granted[3].module == moduleId)
+          || (userDoc().customPermissions.granted.size() > 4
+            && userDoc().customPermissions.granted[4].module == moduleId)
+          || (userDoc().customPermissions.granted.size() > 5
+            && userDoc().customPermissions.granted[5].module == moduleId)
+          || (userDoc().customPermissions.granted.size() > 6
+            && userDoc().customPermissions.granted[6].module == moduleId)
+          || (userDoc().customPermissions.granted.size() > 7
+            && userDoc().customPermissions.granted[7].module == moduleId)
+          || (userDoc().customPermissions.granted.size() > 8
+            && userDoc().customPermissions.granted[8].module == moduleId)
+          || (userDoc().customPermissions.granted.size() > 9
+            && userDoc().customPermissions.granted[9].module == moduleId)
+        );
+    }
+
     function isImageOrPdf() {
       return request.resource != null
         && request.resource.size < 10 * 1024 * 1024
@@ -58,35 +86,37 @@ service firebase.storage {
 
     match /blog-images/{allPaths=**} {
       allow read: if true;
-      allow write: if isApproved() && isStaff() && isImage();
+      allow write: if isApproved() && (isStaff() || hasGrantedModule('blog')) && isImage();
     }
 
     match /event-images/{allPaths=**} {
       allow read: if true;
-      allow write: if isApproved() && isStaff() && isImage();
+      allow write: if isApproved() && (isStaff() || hasGrantedModule('events')) && isImage();
     }
 
     match /member-photos/{allPaths=**} {
       allow read: if isAuthenticated();
-      allow write: if isApproved() && isStaff() && isImage();
+      allow write: if isApproved() && (isStaff() || hasGrantedModule('members')) && isImage();
     }
 
     match /assistido-photos/{allPaths=**} {
       allow read: if isAuthenticated() && isApproved()
-        && (isStaff() || hasRole('professional'));
+        && (isStaff() || hasRole('professional')
+          || hasGrantedModule('assistidos') || hasGrantedModule('assistance'));
       allow write: if isApproved()
-        && (isStaff() || hasRole('professional'))
+        && (isStaff() || hasRole('professional')
+          || hasGrantedModule('assistidos') || hasGrantedModule('assistance'))
         && isImageOrPdf();
     }
 
     match /streams/thumbnails/{allPaths=**} {
       allow read: if true;
-      allow write: if isApproved() && isStaff() && isImage();
+      allow write: if isApproved() && (isStaff() || hasGrantedModule('transmissions')) && isImage();
     }
 
     match /devotional-media/{allPaths=**} {
       allow read: if true;
-      allow write: if isApproved() && isStaff() && isMedia();
+      allow write: if isApproved() && (isStaff() || hasGrantedModule('devotionals')) && isMedia();
     }
 
     match /{allPaths=**} {
