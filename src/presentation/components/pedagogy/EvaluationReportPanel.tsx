@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { PedagogyOrganization } from '@modules/pedagogy/domain/entities/Pedagogy';
-import type { DevelopmentEvaluation, EvaluationInstrument } from '@modules/pedagogy/application/services/DevelopmentEvaluationService';
+import type { EvaluationInstrument } from '@modules/pedagogy/application/services/DevelopmentEvaluationService';
 import { EvaluationEvolution, EvaluationHistory } from './EvaluationResults';
 import EvaluationReportFilters from './EvaluationReportFilters';
 import { useEvaluationReport } from './useEvaluationReport';
 import { exportEvaluationPDF, exportEvaluationWord } from '../../utils/evaluationReportExport';
 
-interface Props { organization: PedagogyOrganization; instrument: EvaluationInstrument; refresh?: number; saved?: DevelopmentEvaluation }
+interface Props { organization: PedagogyOrganization; instrument: EvaluationInstrument }
 
-export default function EvaluationReportPanel({ organization, instrument, refresh = 0, saved }: Props) {
-  const { filter, report, options, loading, error, updateFilter, retry } = useEvaluationReport({ organization, refresh, saved });
+export default function EvaluationReportPanel({ organization, instrument }: Props) {
+  const { filter, report, options, loading, error, updateFilter, retry } = useEvaluationReport(organization);
   const [exporting, setExporting] = useState(false);
   const exportReport = async (format: 'pdf' | 'word') => {
     if (!report || exporting) return;

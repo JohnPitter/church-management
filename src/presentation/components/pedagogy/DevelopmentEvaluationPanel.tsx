@@ -4,13 +4,16 @@ import { developmentEvaluationService, DevelopmentEvaluation, EvaluationInstrume
 import EvaluationForm from './EvaluationForm';
 import EvaluationReportPanel from './EvaluationReportPanel';
 
-interface Props { organization: PedagogyOrganization; rolls?: ClassAttendanceRoll[]; educatorName?: string; allowCreate?: boolean }
+type Props = { organization: PedagogyOrganization } & (
+  | { mode: 'evaluation'; rolls: ClassAttendanceRoll[]; educatorName: string }
+  | { mode: 'reports' }
+);
 
-export default function DevelopmentEvaluationPanel({ organization, rolls = [], educatorName = '', allowCreate = false }: Props) {
+export default function DevelopmentEvaluationPanel(props: Props) {
+  const { organization } = props;
   const [instrument, setInstrument] = useState<EvaluationInstrument>();
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
-  const [refresh, setRefresh] = useState(0);
   const [saved, setSaved] = useState<DevelopmentEvaluation>();
   useEffect(() => {
     let active = true;
@@ -22,7 +25,9 @@ export default function DevelopmentEvaluationPanel({ organization, rolls = [], e
   if (error) return <div role="alert"><p className="text-red-700">{error}</p><button className="underline" onClick={() => setRetry(value => value + 1)}>Tentar novamente</button></div>;
   if (!instrument) return <p role="status">Carregando instrumento de avaliação...</p>;
   return <div className="space-y-8">
-    {allowCreate && <EvaluationForm key={`${organization}-form`} organization={organization} rolls={rolls} educatorName={educatorName} instrument={instrument} onSaved={record => { setSaved(record); setRefresh(value => value + 1); }} />}
-    <EvaluationReportPanel key={`${organization}-report`} organization={organization} instrument={instrument} refresh={refresh} saved={saved} />
+    {props.mode === 'evaluation' ? <>
+      <EvaluationForm key={`${organization}-form`} organization={organization} rolls={props.rolls} educatorName={props.educatorName} instrument={instrument} onSaved={setSaved} />
+      {saved?.organization === organization && <p role="status" className="text-sm text-green-700">Avaliação de {saved.studentName} registrada. Consulte os indicadores e o acompanhamento na aba Relatórios.</p>}
+    </> : <EvaluationReportPanel key={`${organization}-report`} organization={organization} instrument={instrument} />}
   </div>;
 }

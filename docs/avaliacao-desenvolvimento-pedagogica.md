@@ -44,6 +44,8 @@ As regras também impedem alteração das próprias permissões e a troca da aut
 
 ## Validação e publicação
 
+Na Coordenação e na Área do Arte-Educador, a aba **Avaliação** contém o formulário de registro. A aba **Relatórios** contém filtros, histórico, indicadores, gráficos e exportações. A página de consulta disponibilizada à Psicologia permanece somente para leitura e exportação.
+
 Foram verificados os cálculos, a validação do formulário, a preservação dos dados após falha, a troca de perguntas por ciclo, os contratos de exportação e a matriz de permissões. Os emuladores validaram autenticação, gravação, idempotência, autoria no servidor, consulta individual/coletiva, concessão ao profissional, isolamento entre educadores e bloqueio de operações diretas pelas regras.
 
 Para repetir as verificações:

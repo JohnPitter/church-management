@@ -21,7 +21,7 @@ import {
   StudentDifficultyRecord
 } from '@modules/pedagogy/domain/entities/Pedagogy';
 
-type TabId = 'diretrizes' | 'encontros' | 'chamada' | 'avaliacao' | 'aplicacao' | 'feedback';
+type TabId = 'diretrizes' | 'encontros' | 'chamada' | 'avaliacao' | 'relatorios' | 'aplicacao' | 'feedback';
 
 const EducatorPedagogyPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -168,6 +168,7 @@ const EducatorPedagogyPage: React.FC = () => {
     { id: 'encontros', label: 'Frequência e engajamento' },
     { id: 'chamada', label: 'Chamada' },
     { id: 'avaliacao', label: 'Avaliação' },
+    { id: 'relatorios', label: 'Relatórios' },
     { id: 'aplicacao', label: 'Aplicação da diretriz' },
     { id: 'feedback', label: 'Orientações' }
   ];
@@ -356,9 +357,13 @@ const EducatorPedagogyPage: React.FC = () => {
 
           {!loading && tab === 'avaliacao' && (
             <div className="space-y-8">
-              <DevelopmentEvaluationPanel organization={organization} rolls={attendanceRolls} educatorName={currentUser?.displayName || ''} allowCreate />
+              <DevelopmentEvaluationPanel mode="evaluation" organization={organization} rolls={attendanceRolls} educatorName={currentUser?.displayName || ''} />
               <LegacyEvaluationObservations records={difficulties} />
             </div>
+          )}
+
+          {!loading && tab === 'relatorios' && (
+            <DevelopmentEvaluationPanel mode="reports" organization={organization} />
           )}
 
           {!loading && tab === 'aplicacao' && (
