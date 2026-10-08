@@ -47,6 +47,12 @@ export class EvaluationRepository {
     if (educatorId) query = query.where('educatorId', '==', educatorId);
     if (filter.classGroup) query = query.where('classGroup', '==', filter.classGroup);
     if (filter.studentId) query = query.where('studentId', '==', filter.studentId);
+    if (!filter.includeDetails) {
+      query = query.select(
+        'answers', 'classGroup', 'createdAt', 'cycle', 'evaluationDate', 'id', 'moment',
+        'organization', 'period', 'studentId', 'studentName'
+      );
+    }
     const snapshot = await query.limit(5001).get();
     if (snapshot.size > 5000) throw new EvaluationValidationError('O relatório excede 5.000 avaliações. Reduza o período.');
     return snapshot.docs.map(doc => doc.data() as DevelopmentEvaluation);
