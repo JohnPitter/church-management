@@ -9,8 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Public page configuration for `/cadastro-visitante`.
+- Avaliação do Desenvolvimento com cinco ciclos etários, nove dimensões, momentos inicial/intermediário/final, observações e encaminhamentos.
+- Indicadores IDG, IDE e IDD calculados no backend, relatórios individuais/coletivos e exportação PDF/DOCX com gráficos.
+- Funções autenticadas, contratos versionados e testes unitários e com emuladores para avaliações pedagógicas.
+
+### Changed
+- Aba pedagógica “Dificuldades” renomeada para “Avaliação”, preservando a consulta aos registros antigos.
+- Consulta de avaliações disponível à Psicologia mediante concessão explícita de visualização no módulo pedagógico.
 
 ### Fixed
+- Bloqueadas mudanças nas próprias permissões e alterações de autoria de chamadas por outro educador.
+- Removidos dois avisos de expressões regulares e um título duplicado de teste que impediam os gates de qualidade.
 - Visitor self-registration route now uses public-page access control and remains available when stored public-page settings are missing newer defaults.
 - Anonymous visitor self-registration can create constrained `visitors` records through Firestore rules.
 

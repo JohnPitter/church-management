@@ -763,6 +763,25 @@
         { "fieldPath": "isCollective", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "developmentEvaluations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "organization", "order": "ASCENDING" },
+        { "fieldPath": "period", "order": "ASCENDING" },
+        { "fieldPath": "cycle", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "developmentEvaluations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "organization", "order": "ASCENDING" },
+        { "fieldPath": "period", "order": "ASCENDING" },
+        { "fieldPath": "cycle", "order": "ASCENDING" },
+        { "fieldPath": "educatorId", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

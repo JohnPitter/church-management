@@ -3,13 +3,14 @@ import toast from 'react-hot-toast';
 import PageShell from '../components/common/PageShell';
 import PedagogyOrgSwitch from '../components/PedagogyOrgSwitch';
 import PedagogyAttendancePanel from '../components/PedagogyAttendancePanel';
+import DevelopmentEvaluationPanel from '../components/pedagogy/DevelopmentEvaluationPanel';
+import LegacyEvaluationObservations from '../components/pedagogy/LegacyEvaluationObservations';
 import { useAuth } from '../contexts/AuthContext';
 import { pedagogyService } from '@modules/pedagogy/application/services/PedagogyService';
 import {
   ClassAttendanceRoll,
   ClassRoster,
   ClassSessionRecord,
-  DIFFICULTY_LABELS,
   FEEDBACK_KIND_LABELS,
   GuidelineApplication,
   PEDAGOGY_ORGANIZATION_LABELS,
@@ -17,11 +18,10 @@ import {
   PedagogicalGuideline,
   PedagogyEntity,
   PedagogyOrganization,
-  StudentDifficultyRecord,
-  StudentDifficultyType
+  StudentDifficultyRecord
 } from '@modules/pedagogy/domain/entities/Pedagogy';
 
-type TabId = 'diretrizes' | 'encontros' | 'chamada' | 'dificuldades' | 'aplicacao' | 'feedback';
+type TabId = 'diretrizes' | 'encontros' | 'chamada' | 'avaliacao' | 'aplicacao' | 'feedback';
 
 const EducatorPedagogyPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -45,14 +45,6 @@ const EducatorPedagogyPage: React.FC = () => {
     engagedCount: '',
     lowEngagementCount: '',
     notes: ''
-  });
-
-  const [difficultyForm, setDifficultyForm] = useState({
-    studentName: '',
-    classGroup: '',
-    difficulties: [] as StudentDifficultyType[],
-    otherDifficulty: '',
-    description: ''
   });
 
   const [applicationForm, setApplicationForm] = useState({
@@ -136,36 +128,6 @@ const EducatorPedagogyPage: React.FC = () => {
     }
   };
 
-  const handleDifficulty = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!currentUser) {
-      return;
-    }
-    try {
-      await pedagogyService.createDifficulty({
-        organization,
-        educatorId: currentUser.id,
-        educatorName: currentUser.displayName,
-        studentName: difficultyForm.studentName,
-        classGroup: difficultyForm.classGroup || undefined,
-        difficulties: difficultyForm.difficulties,
-        otherDifficulty: difficultyForm.otherDifficulty || undefined,
-        description: difficultyForm.description
-      });
-      toast.success('Dificuldade registrada para acompanhamento pedagógico');
-      setDifficultyForm({
-        studentName: '',
-        classGroup: '',
-        difficulties: [],
-        otherDifficulty: '',
-        description: ''
-      });
-      await loadData();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Erro ao registrar dificuldade');
-    }
-  };
-
   const handleApplication = async (event: FormEvent) => {
     event.preventDefault();
     if (!currentUser) {
@@ -201,20 +163,11 @@ const EducatorPedagogyPage: React.FC = () => {
     }
   };
 
-  const toggleDifficulty = (type: StudentDifficultyType) => {
-    setDifficultyForm(current => ({
-      ...current,
-      difficulties: current.difficulties.includes(type)
-        ? current.difficulties.filter(item => item !== type)
-        : [...current.difficulties, type]
-    }));
-  };
-
   const tabs: Array<{ id: TabId; label: string }> = [
     { id: 'diretrizes', label: 'Diretrizes' },
     { id: 'encontros', label: 'Frequência e engajamento' },
     { id: 'chamada', label: 'Chamada' },
-    { id: 'dificuldades', label: 'Dificuldades' },
+    { id: 'avaliacao', label: 'Avaliação' },
     { id: 'aplicacao', label: 'Aplicação da diretriz' },
     { id: 'feedback', label: 'Orientações' }
   ];
@@ -401,86 +354,10 @@ const EducatorPedagogyPage: React.FC = () => {
             />
           )}
 
-          {!loading && tab === 'dificuldades' && (
+          {!loading && tab === 'avaliacao' && (
             <div className="space-y-8">
-              <form onSubmit={handleDifficulty} className="space-y-5">
-                <h3 className="text-lg font-semibold text-gray-900">Identificar dificuldade</h3>
-                <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-md p-3">
-                  Registro de acompanhamento pedagógico, não diagnóstico.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field label="Aluno">
-                    <input
-                      className={fieldClass}
-                      placeholder="Nome do aluno"
-                      value={difficultyForm.studentName}
-                      onChange={event => setDifficultyForm({ ...difficultyForm, studentName: event.target.value })}
-                    />
-                  </Field>
-                  <Field label="Turma (opcional)">
-                    <input
-                      className={fieldClass}
-                      placeholder="Turma ou grupo"
-                      value={difficultyForm.classGroup}
-                      onChange={event => setDifficultyForm({ ...difficultyForm, classGroup: event.target.value })}
-                    />
-                  </Field>
-                </div>
-                <div>
-                  <p className="block text-sm font-medium text-gray-700 mb-2">Dificuldades observadas</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {Object.values(StudentDifficultyType).map(type => (
-                      <label key={type} className="flex items-center gap-2 text-sm text-gray-700 border border-gray-200 rounded-md px-3 py-2">
-                        <input
-                          type="checkbox"
-                          checked={difficultyForm.difficulties.includes(type)}
-                          onChange={() => toggleDifficulty(type)}
-                        />
-                        {DIFFICULTY_LABELS[type]}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                {difficultyForm.difficulties.includes(StudentDifficultyType.Other) && (
-                  <Field label="Outros: descreva">
-                    <input
-                      className={fieldClass}
-                      placeholder="Descreva a dificuldade"
-                      value={difficultyForm.otherDifficulty}
-                      onChange={event => setDifficultyForm({ ...difficultyForm, otherDifficulty: event.target.value })}
-                    />
-                  </Field>
-                )}
-                <Field label="Descrição breve da situação">
-                  <textarea
-                    className={`${fieldClass} min-h-[100px]`}
-                    placeholder="O que foi observado neste acompanhamento"
-                    value={difficultyForm.description}
-                    onChange={event => setDifficultyForm({ ...difficultyForm, description: event.target.value })}
-                  />
-                </Field>
-                <div className="flex justify-end pt-2 border-t border-gray-100">
-                  <button type="submit" className={primaryButtonClass}>Salvar registro</button>
-                </div>
-              </form>
-              <section>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Registros anteriores</h3>
-                {difficulties.length === 0 ? (
-                  <p className="text-gray-500">Nenhuma dificuldade registrada ainda.</p>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {difficulties.map(item => (
-                      <article key={item.id} className="border border-gray-200 rounded-lg p-4">
-                        <p className="font-medium text-gray-900">{item.studentName}</p>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {item.difficulties.map(type => DIFFICULTY_LABELS[type]).join(', ')}
-                        </p>
-                        <p className="text-sm text-gray-700 mt-2">{item.description}</p>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </section>
+              <DevelopmentEvaluationPanel organization={organization} rolls={attendanceRolls} educatorName={currentUser?.displayName || ''} allowCreate />
+              <LegacyEvaluationObservations records={difficulties} />
             </div>
           )}
 

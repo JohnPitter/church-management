@@ -13,7 +13,7 @@ function fileStamp(date = new Date()): string {
 }
 
 function sanitizeFilePart(value: string): string {
-  const cleaned = value.trim().replace(/\s+/g, '_').replace(/[^\w\-]+/g, '');
+  const cleaned = value.trim().replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
   return cleaned || 'chamada';
 }
 

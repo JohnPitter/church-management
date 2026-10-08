@@ -1,0 +1,395 @@
+{
+  "version": 1,
+  "axes": [
+    {
+      "id": "eu",
+      "label": "EU",
+      "description": "Desenvolvimento pessoal, socioemocional e autonomia"
+    },
+    {
+      "id": "outro",
+      "label": "OUTRO",
+      "description": "Relações, convivência e participação"
+    },
+    {
+      "id": "mundo",
+      "label": "MUNDO",
+      "description": "Cidadania, comunidade e território"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "self_perception",
+      "axis": "eu",
+      "label": "Autopercepção e desenvolvimento pessoal"
+    },
+    {
+      "id": "emotions",
+      "axis": "eu",
+      "label": "Emoções e bem-estar"
+    },
+    {
+      "id": "autonomy",
+      "axis": "eu",
+      "label": "Autonomia e projeto de vida"
+    },
+    {
+      "id": "communication",
+      "axis": "outro",
+      "label": "Comunicação e expressão"
+    },
+    {
+      "id": "relationships",
+      "axis": "outro",
+      "label": "Vínculos e convivência"
+    },
+    {
+      "id": "participation",
+      "axis": "outro",
+      "label": "Participação e cultura"
+    },
+    {
+      "id": "support_network",
+      "axis": "mundo",
+      "label": "Família e rede de apoio"
+    },
+    {
+      "id": "citizenship",
+      "axis": "mundo",
+      "label": "Conhecimento e cidadania"
+    },
+    {
+      "id": "protagonism",
+      "axis": "mundo",
+      "label": "Participação e protagonismo social"
+    }
+  ],
+  "cycles": [
+    {
+      "id": 1,
+      "label": "Ciclo 1 — 04 A 06 ANOS",
+      "questions": [
+        {
+          "dimensionId": "self_perception",
+          "text": "Consegue fazer escolhas entre atividades, brincadeiras ou materiais?",
+          "example": "Ex.: escolher uma brincadeira, uma cor, um brinquedo ou a atividade que deseja realizar."
+        },
+        {
+          "dimensionId": "emotions",
+          "text": "Consegue mostrar ou dizer quando está feliz, triste, bravo, com medo ou quando precisa de ajuda?",
+          "example": "Ex.: falar que está triste, chamar o adulto ou mostrar o que aconteceu."
+        },
+        {
+          "dimensionId": "autonomy",
+          "text": "Consegue realizar pequenas tarefas e cuidar dos próprios materiais com o apoio necessário?",
+          "example": "Ex.: guardar brinquedos, guardar materiais, organizar seus pertences ou ajudar a arrumar o espaço."
+        },
+        {
+          "dimensionId": "communication",
+          "text": "Consegue dizer o que quer, precisa ou pensa para que outras pessoas entendam?",
+          "example": "Ex.: pedir água, pedir ajuda, dizer que quer participar ou explicar o que aconteceu."
+        },
+        {
+          "dimensionId": "relationships",
+          "text": "Consegue brincar e participar de atividades com outras crianças, respeitando combinados simples?",
+          "example": "Ex.: esperar a vez, compartilhar materiais, ouvir o colega e evitar bater ou empurrar."
+        },
+        {
+          "dimensionId": "participation",
+          "text": "Participa das atividades oferecidas pelo Instituto e demonstra interesse em experimentar novas atividades?",
+          "example": "Ex.: participar de música, dança, esporte, artes, brincadeiras ou outras atividades."
+        },
+        {
+          "dimensionId": "support_network",
+          "text": "Quando precisa de ajuda, consegue procurar ou aceitar ajuda de um adulto de referência?",
+          "example": "Ex.: procurar o arte-educador, responsável ou outra pessoa conhecida."
+        },
+        {
+          "dimensionId": "citizenship",
+          "text": "Consegue seguir combinados simples e cuidar dos espaços e materiais que utiliza?",
+          "example": "Ex.: guardar materiais, jogar lixo no lugar certo, cuidar dos brinquedos e respeitar regras simples."
+        },
+        {
+          "dimensionId": "protagonism",
+          "text": "Demonstra vontade de ajudar e participar de pequenas tarefas do grupo?",
+          "example": "Ex.: ajudar a guardar materiais, organizar o espaço ou ajudar um colega."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "label": "Ciclo 2 — 07 A 11 ANOS",
+      "questions": [
+        {
+          "dimensionId": "self_perception",
+          "text": "Consegue falar sobre o que gosta, o que sabe fazer e o que gostaria de aprender?",
+          "example": "Ex.: falar sobre seus interesses, habilidades ou algo novo que gostaria de aprender."
+        },
+        {
+          "dimensionId": "emotions",
+          "text": "Quando está triste, bravo, preocupado ou com algum problema, consegue falar sobre o que aconteceu e pedir ajuda?",
+          "example": "Ex.: procurar um adulto, explicar o problema ou aceitar ajuda."
+        },
+        {
+          "dimensionId": "autonomy",
+          "text": "Consegue organizar seus materiais, cumprir pequenas responsabilidades e realizar tarefas com pouca ajuda?",
+          "example": "Ex.: cuidar dos próprios pertences, guardar materiais e cumprir uma tarefa combinada."
+        },
+        {
+          "dimensionId": "communication",
+          "text": "Consegue explicar suas ideias, necessidades e opiniões de forma que outras pessoas entendam?",
+          "example": "Ex.: contar o que aconteceu, dar uma opinião, fazer um pedido ou explicar uma dificuldade."
+        },
+        {
+          "dimensionId": "relationships",
+          "text": "Consegue conviver com outras pessoas, respeitando diferenças, combinados e momentos de conflito?",
+          "example": "Ex.: ouvir o outro, esperar a vez, aceitar opiniões diferentes e tentar resolver conflitos sem agressão."
+        },
+        {
+          "dimensionId": "participation",
+          "text": "Participa das atividades e demonstra interesse por diferentes formas de cultura, esporte e expressão?",
+          "example": "Ex.: participar de música, dança, esporte, artes, leitura, eventos ou outras atividades."
+        },
+        {
+          "dimensionId": "support_network",
+          "text": "Sabe quem procurar quando precisa de ajuda ou orientação?",
+          "example": "Ex.: procurar um familiar, arte-educador, professor, responsável ou outra pessoa de confiança."
+        },
+        {
+          "dimensionId": "citizenship",
+          "text": "Consegue cumprir responsabilidades e cuidar dos materiais e espaços que são de todos?",
+          "example": "Ex.: cuidar dos materiais, manter o espaço organizado e cumprir combinados do grupo."
+        },
+        {
+          "dimensionId": "protagonism",
+          "text": "Demonstra iniciativa para ajudar, dar ideias ou participar de tarefas que beneficiem o grupo?",
+          "example": "ajudar um colega, sugerir uma atividade, colaborar na organização ou assumir uma pequena responsabilidade."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "label": "Ciclo 3 — 12 A 17 ANOS",
+      "questions": [
+        {
+          "dimensionId": "self_perception",
+          "text": "Consegue falar sobre seus interesses, habilidades, dificuldades e coisas que gostaria de aprender ou melhorar?",
+          "example": "Ex.: identificar algo que faz bem, algo que precisa melhorar ou uma área que gostaria de conhecer."
+        },
+        {
+          "dimensionId": "emotions",
+          "text": "Quando enfrenta uma dificuldade, consegue falar sobre o que está acontecendo e buscar ajuda quando precisa?",
+          "example": "Ex.: procurar alguém de confiança, explicar o problema ou pedir orientação."
+        },
+        {
+          "dimensionId": "autonomy",
+          "text": "Consegue estabelecer objetivos e pensar em passos para alcançá-los?",
+          "example": "Ex.: pensar sobre estudos, profissão, cursos, trabalho, projetos pessoais ou outras metas para o futuro."
+        },
+        {
+          "dimensionId": "communication",
+          "text": "Consegue expressar suas ideias, sentimentos e opiniões de forma clara e respeitosa?",
+          "example": "Ex.: discordar sem ofender, explicar seu ponto de vista, falar sobre o que sente ou fazer um pedido."
+        },
+        {
+          "dimensionId": "relationships",
+          "text": "Consegue respeitar diferenças, estabelecer limites e lidar com conflitos sem agressão?",
+          "example": "Ex.: respeitar opiniões diferentes, dizer “não” quando necessário, evitar provocações e buscar diálogo."
+        },
+        {
+          "dimensionId": "participation",
+          "text": "Participa das atividades e demonstra interesse por diferentes formas de cultura, esporte, lazer e expressão?",
+          "example": "Participar de música, dança, esporte, artes, eventos, grupos ou outras atividades."
+        },
+        {
+          "dimensionId": "support_network",
+          "text": "Consegue identificar pessoas, serviços ou instituições que podem ajudá-lo diante de diferentes necessidades?",
+          "example": "Ex.: saber a quem recorrer diante de uma questão de saúde, estudo, trabalho, documentação ou outra necessidade."
+        },
+        {
+          "dimensionId": "citizenship",
+          "text": "Demonstra conhecer e respeitar seus direitos e responsabilidades?",
+          "example": "Ex.: compreender regras, responsabilidades, direitos básicos e consequências de determinadas escolhas."
+        },
+        {
+          "dimensionId": "protagonism",
+          "text": "Demonstra iniciativa para contribuir com o grupo ou com a comunidade?",
+          "example": "Ex.: propor ideias, ajudar outras pessoas, organizar uma atividade, assumir responsabilidades ou participar de uma ação coletiva."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "label": "Ciclo 4 — 18 A 59 ANOS",
+      "questions": [
+        {
+          "dimensionId": "self_perception",
+          "text": "Consegue identificar seus interesses, habilidades e objetivos pessoais, profissionais ou de aprendizagem?",
+          "example": "Ex.: falar sobre o que sabe fazer, o que gostaria de aprender ou objetivos que deseja alcançar."
+        },
+        {
+          "dimensionId": "emotions",
+          "text": "Quando enfrenta uma dificuldade, consegue identificar o que está acontecendo e buscar ajuda ou apoio quando necessário?",
+          "example": "Ex.: procurar uma pessoa, serviço ou instituição que possa ajudar."
+        },
+        {
+          "dimensionId": "autonomy",
+          "text": "Consegue organizar suas responsabilidades e estabelecer planos para alcançar seus objetivos?",
+          "example": "Organizar compromissos, planejar uma tarefa, estabelecer uma meta ou pensar nos passos necessários para alcançá-la."
+        },
+        {
+          "dimensionId": "communication",
+          "text": "Consegue expressar suas ideias, necessidades e opiniões de forma clara e respeitosa?",
+          "example": "Ex.: comunicar uma necessidade, fazer um pedido, discordar ou conversar sobre um problema."
+        },
+        {
+          "dimensionId": "relationships",
+          "text": "Consegue conviver e colaborar com outras pessoas, respeitando diferenças e resolvendo conflitos por meio do diálogo?",
+          "example": "Ex.: trabalhar em grupo, ouvir opiniões diferentes, negociar e buscar soluções para conflitos."
+        },
+        {
+          "dimensionId": "participation",
+          "text": "Participa das atividades, grupos e espaços culturais, esportivos ou de convivência disponíveis?",
+          "example": "Ex.: participar de aulas, grupos, eventos, atividades culturais, esportivas ou comunitárias."
+        },
+        {
+          "dimensionId": "support_network",
+          "text": "Consegue identificar e acessar pessoas, serviços ou instituições que podem ajudá-lo diante de suas necessidades?",
+          "example": "Ex.: saber onde buscar atendimento de saúde, assistência, orientação profissional, documentação ou outros serviços."
+        },
+        {
+          "dimensionId": "citizenship",
+          "text": "Demonstra conhecer seus direitos, responsabilidades e os recursos disponíveis na comunidade?",
+          "example": "Ex.: conhecer serviços públicos, respeitar responsabilidades coletivas e saber onde buscar informações ou atendimento."
+        },
+        {
+          "dimensionId": "protagonism",
+          "text": "Demonstra iniciativa para participar de ações, ajudar outras pessoas ou contribuir com a comunidade?",
+          "example": "Ex.: participar de ações coletivas, ajudar vizinhos ou colegas, propor soluções ou colaborar em projetos."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "label": "Ciclo 5 — 60 ANOS OU MAIS",
+      "questions": [
+        {
+          "dimensionId": "self_perception",
+          "text": "Consegue falar sobre seus interesses, habilidades e atividades que gostaria de continuar fazendo ou aprender?",
+          "example": "Ex.: falar sobre atividades de que gosta, conhecimentos que possui ou coisas novas que gostaria de experimentar."
+        },
+        {
+          "dimensionId": "emotions",
+          "text": "Quando enfrenta uma dificuldade, consegue falar sobre o que está acontecendo e buscar ajuda quando necessário?",
+          "example": "Ex.: procurar uma pessoa de confiança, pedir ajuda ou buscar um serviço."
+        },
+        {
+          "dimensionId": "autonomy",
+          "text": "Consegue fazer escolhas e manter sua participação nas atividades e tarefas que consegue realizar?",
+          "example": "Ex.: escolher atividades, organizar seus materiais, decidir como deseja participar e realizar tarefas de acordo com suas possibilidades."
+        },
+        {
+          "dimensionId": "communication",
+          "text": "Consegue expressar suas ideias, necessidades e opiniões de forma que outras pessoas entendam?",
+          "example": "Ex.: comunicar o que precisa, dar opiniões, fazer pedidos ou contar algo que aconteceu."
+        },
+        {
+          "dimensionId": "relationships",
+          "text": "Consegue conviver e colaborar com outras pessoas, respeitando diferenças e combinados?",
+          "example": "Ex.: conversar, participar de grupos, ouvir outras pessoas e colaborar nas atividades."
+        },
+        {
+          "dimensionId": "participation",
+          "text": "Participa das atividades e mantém interesses, vínculos e momentos de convivência?",
+          "example": "Ex.: participar de artesanato, atividade física, música, grupos, eventos ou outras atividades do Instituto."
+        },
+        {
+          "dimensionId": "support_network",
+          "text": "Sabe a quem recorrer quando precisa de ajuda, orientação ou acesso a algum serviço?",
+          "example": "Ex.: procurar familiares, amigos, responsáveis, serviços de saúde, assistência ou outras instituições."
+        },
+        {
+          "dimensionId": "citizenship",
+          "text": "Demonstra conhecer seus direitos e os recursos disponíveis para sua participação e bem-estar na comunidade?",
+          "example": "Ex.: conhecer serviços, espaços, benefícios, atividades ou recursos que podem ser utilizados."
+        },
+        {
+          "dimensionId": "protagonism",
+          "text": "Demonstra iniciativa para ajudar, compartilhar conhecimentos ou participar de ações coletivas?",
+          "example": "Ex.: ajudar outra pessoa, ensinar algo que sabe, compartilhar experiências, colaborar em atividades ou participar de ações comunitárias."
+        }
+      ]
+    }
+  ],
+  "moments": [
+    {
+      "id": "initial",
+      "label": "Inicial"
+    },
+    {
+      "id": "intermediate",
+      "label": "Intermediário"
+    },
+    {
+      "id": "final",
+      "label": "Final"
+    }
+  ],
+  "answers": [
+    {
+      "id": "A",
+      "label": "Sim, espontaneamente"
+    },
+    {
+      "id": "B",
+      "label": "Sim, com incentivo ou ajuda"
+    },
+    {
+      "id": "C",
+      "label": "Não realiza, mesmo com ajuda"
+    },
+    {
+      "id": "NO",
+      "label": "Não foi possível observar"
+    }
+  ],
+  "referrals": [
+    {
+      "id": "none",
+      "label": "Não há necessidade identificada no momento"
+    },
+    {
+      "id": "psychology",
+      "label": "Avaliação pela Psicologia"
+    },
+    {
+      "id": "family",
+      "label": "Contato ou diálogo com a família/responsável"
+    },
+    {
+      "id": "coordination",
+      "label": "Reunião com a equipe/coordenação"
+    },
+    {
+      "id": "other",
+      "label": "Outro encaminhamento"
+    }
+  ],
+  "observations": [
+    {
+      "id": "attention",
+      "label": "Você percebeu alguma mudança, dificuldade ou situação que merece atenção no assistido?",
+      "example": "Mudança no comportamento, participação, frequência, relacionamentos, conflitos ou isolamento."
+    },
+    {
+      "id": "potential",
+      "label": "Você percebeu alguma habilidade, interesse ou potencialidade que merece ser incentivada?",
+      "example": "Criatividade, liderança, facilidade para aprender, habilidade artística ou esportiva."
+    },
+    {
+      "id": "additional",
+      "label": "Existe alguma informação importante sobre o assistido que não foi contemplada nas perguntas anteriores?",
+      "example": "Algo relevante para o acompanhamento que não se encaixe nas perguntas anteriores."
+    }
+  ]
+}
