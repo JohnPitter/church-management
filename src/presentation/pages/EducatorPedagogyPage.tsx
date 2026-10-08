@@ -5,6 +5,7 @@ import PedagogyOrgSwitch from '../components/PedagogyOrgSwitch';
 import PedagogyAttendancePanel from '../components/PedagogyAttendancePanel';
 import DevelopmentEvaluationPanel from '../components/pedagogy/DevelopmentEvaluationPanel';
 import LegacyEvaluationObservations from '../components/pedagogy/LegacyEvaluationObservations';
+import PedagogyTabs from '../components/pedagogy/PedagogyTabs';
 import { useAuth } from '../contexts/AuthContext';
 import { pedagogyService } from '@modules/pedagogy/application/services/PedagogyService';
 import {
@@ -185,26 +186,9 @@ const EducatorPedagogyPage: React.FC = () => {
         <PedagogyOrgSwitch value={organization} onChange={setOrganization} />
       </div>
       <div className="bg-white rounded-lg shadow">
-        <div className="border-b border-gray-200 overflow-x-auto">
-          <nav className="-mb-px flex">
-            {tabs.map(item => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setTab(item.id)}
-                className={`py-3 px-4 sm:px-6 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  tab === item.id
-                    ? 'border-sky-500 text-sky-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-        </div>
+        <PedagogyTabs tabs={tabs} activeTab={tab} onChange={setTab} panelId="educator-pedagogy-content" />
 
-        <div className="p-4 sm:p-6 space-y-8">
+        <div className="p-4 sm:p-6 space-y-8" role="tabpanel" id="educator-pedagogy-content" aria-labelledby={`educator-pedagogy-content-tab-${tab}`}>
           {loading && <p className="text-gray-600">Carregando sua área pedagógica...</p>}
 
           {!loading && tab === 'diretrizes' && (

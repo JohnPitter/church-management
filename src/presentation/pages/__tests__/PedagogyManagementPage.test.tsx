@@ -148,14 +148,14 @@ describe('PedagogyManagementPage pending educators tab', () => {
       sessionDate: new Date('2026-10-07T12:00:00Z'), createdAt: new Date(), updatedAt: new Date()
     }]);
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Avaliação' }));
+    await userEvent.click(await screen.findByRole('tab', { name: 'Avaliação' }));
     expect(await screen.findByLabelText('Chamada e turma')).toBeInTheDocument();
     userEvent.selectOptions(screen.getByLabelText('Chamada e turma'), 'roll-1');
     expect(screen.getByRole('option', { name: 'Maria' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Salvar avaliação' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Exportar PDF' })).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Relatórios' }));
+    await userEvent.click(screen.getByRole('tab', { name: 'Relatórios' }));
     expect(await screen.findByRole('button', { name: 'Exportar PDF' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Exportar Word' })).toBeInTheDocument();
     expect(screen.queryByLabelText('Chamada e turma')).not.toBeInTheDocument();
@@ -163,14 +163,35 @@ describe('PedagogyManagementPage pending educators tab', () => {
     expect(await screen.findByText('Nenhuma avaliação neste período e ciclo.')).toBeInTheDocument();
   });
 
+  it('mantém Aplicação distinta dos Relatórios qualitativos', async () => {
+    (pedagogyService.listApplications as jest.Mock).mockResolvedValue([{
+      id: 'application-1', organization: PedagogyOrganization.Church, guidelineTitle: 'Convivência',
+      educatorName: 'Ana Educadora', month: 10, year: 2026, applicationDifficulties: '',
+      applicationNarrative: 'Atividade realizada em grupo.', strategies: 'Trabalho em duplas.',
+      observedResults: 'Participação ampliada.'
+    }]);
+    renderPage();
+
+    await userEvent.click(await screen.findByRole('tab', { name: 'Aplicação' }));
+    expect(screen.getByRole('tab', { name: 'Aplicação' })).toHaveAttribute('aria-selected', 'true');
+    expect(await screen.findByText('Aplicação das diretrizes')).toBeInTheDocument();
+    expect(screen.getByText('Atividade realizada em grupo.')).toBeInTheDocument();
+    expect(screen.queryByText('Relatório qualitativo individual e coletivo')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Relatórios' }));
+    expect(screen.getByRole('tab', { name: 'Relatórios' })).toHaveAttribute('aria-selected', 'true');
+    expect(await screen.findByText('Relatório qualitativo individual e coletivo')).toBeInTheDocument();
+    expect(screen.queryByText('Atividade realizada em grupo.')).not.toBeInTheDocument();
+  });
+
   it('lists educators without a session record on the Pendentes tab', async () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Pendentes (1)' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Pendentes (1)' })).toBeInTheDocument();
     });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Pendentes (1)' }));
+    await userEvent.click(screen.getByRole('tab', { name: 'Pendentes (1)' }));
 
     expect(await screen.findByText('Ana Educadora')).toBeInTheDocument();
     expect(screen.getByText('ana@example.com')).toBeInTheDocument();
@@ -194,10 +215,10 @@ describe('PedagogyManagementPage pending educators tab', () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Chamada' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Chamada' })).toBeInTheDocument();
     });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Chamada' }));
+    await userEvent.click(screen.getByRole('tab', { name: 'Chamada' }));
 
     expect(await screen.findByText('Caderneta de chamada')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Puxar chamada' })).toBeInTheDocument();
@@ -207,7 +228,7 @@ describe('PedagogyManagementPage pending educators tab', () => {
   it('opens the class roster tab for coordination', async () => {
     renderPage();
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Turmas' }));
+    await userEvent.click(await screen.findByRole('tab', { name: 'Turmas' }));
 
     expect(await screen.findByText('Cadastrar turma')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Salvar turma' })).toBeInTheDocument();
@@ -233,7 +254,7 @@ describe('PedagogyManagementPage pending educators tab', () => {
 
     renderPage();
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Chamada' }));
+    await userEvent.click(await screen.findByRole('tab', { name: 'Chamada' }));
 
     await userEvent.click(await screen.findByRole('button', { name: 'Exportar relatório PDF' }));
 

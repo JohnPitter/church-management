@@ -7,6 +7,8 @@ import PedagogyAttendancePanel from '../components/PedagogyAttendancePanel';
 import PedagogyRosterPanel from '../components/PedagogyRosterPanel';
 import DevelopmentEvaluationPanel from '../components/pedagogy/DevelopmentEvaluationPanel';
 import LegacyEvaluationObservations from '../components/pedagogy/LegacyEvaluationObservations';
+import PedagogyTabs from '../components/pedagogy/PedagogyTabs';
+import PedagogyApplicationsPanel from '../components/pedagogy/PedagogyApplicationsPanel';
 import { useAuth } from '../contexts/AuthContext';
 import {
   ClassAttendanceRoll,
@@ -236,26 +238,9 @@ const PedagogyManagementPage: React.FC = () => {
         <PedagogyOrgSwitch value={organization} onChange={handleOrganizationChange} />
       </div>
       <div className="bg-white rounded-lg shadow">
-        <div className="border-b border-gray-200 overflow-x-auto">
-          <nav className="-mb-px flex">
-            {tabs.map(item => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setTab(item.id)}
-                className={`py-3 px-4 sm:px-6 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  tab === item.id
-                    ? 'border-sky-500 text-sky-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-        </div>
+        <PedagogyTabs tabs={tabs} activeTab={tab} onChange={setTab} panelId="coord-pedagogy-content" />
 
-        <div className="p-4 sm:p-6">
+        <div className="p-4 sm:p-6" role="tabpanel" id="coord-pedagogy-content" aria-labelledby={`coord-pedagogy-content-tab-${tab}`}>
       {loading && <p className="text-gray-600">Carregando registros pedagógicos...</p>}
 
       {!loading && tab === 'painel' && stats && (
@@ -528,18 +513,7 @@ const PedagogyManagementPage: React.FC = () => {
       )}
 
       {!loading && tab === 'aplicacao' && (
-        <div className="space-y-4">
-          {applications.map(item => (
-            <article key={item.id} className="border border-gray-200 rounded-lg p-5 space-y-2">
-              <h4 className="font-semibold">{item.guidelineTitle} · {String(item.month).padStart(2, '0')}/{item.year}</h4>
-              <p className="text-xs text-gray-500">{item.educatorName}</p>
-              <p><strong>Dificuldades:</strong> {item.applicationDifficulties || '—'}</p>
-              <p><strong>Relato:</strong> {item.applicationNarrative}</p>
-              <p><strong>Estratégias:</strong> {item.strategies || '—'}</p>
-              <p><strong>Resultados:</strong> {item.observedResults || '—'}</p>
-            </article>
-          ))}
-        </div>
+        <PedagogyApplicationsPanel applications={applications} />
       )}
 
       {!loading && tab === 'feedback' && (
