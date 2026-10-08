@@ -105,6 +105,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         { name: 'Devocionais', href: '/devotionals', show: hasPermission(SystemModule.Devotionals, PermissionAction.View) },
         { name: 'Transmissões', href: '/live', show: hasPermission(SystemModule.Transmissions, PermissionAction.View) },
         { name: 'Projetos', href: '/projects', show: hasPermission(SystemModule.Projects, PermissionAction.View) },
+        { name: 'Avaliações do Desenvolvimento', href: '/avaliacoes-desenvolvimento', show: hasPermission(SystemModule.Pedagogy, PermissionAction.View) },
       ]
     }
   ];

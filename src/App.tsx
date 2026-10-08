@@ -72,6 +72,7 @@ const FichasManagementPage = lazyWithRetry(() => import('./presentation/pages/Fi
 const ProfessionalHelpRequestsPage = lazyWithRetry(() => import('./presentation/pages/ProfessionalHelpRequestsPage').then(module => ({ default: module.ProfessionalHelpRequestsPage })));
 const PedagogyManagementPage = lazyWithRetry(() => import('./presentation/pages/PedagogyManagementPage'));
 const EducatorPedagogyPage = lazyWithRetry(() => import('./presentation/pages/EducatorPedagogyPage'));
+const DevelopmentEvaluationReportsPage = lazyWithRetry(() => import('./presentation/pages/DevelopmentEvaluationReportsPage'));
 const SetupPage = lazyWithRetry(() => import('./presentation/pages/SetupPage'));
 const BirthdaysPage = lazyWithRetry(() => import('./presentation/pages/BirthdaysPage'));
 const WelcomePage = lazyWithRetry(() => import('./presentation/pages/WelcomePage'));
@@ -776,6 +777,14 @@ const router = createBrowserRouter([
             <Layout>
               <AssetsManagementPage />
             </Layout>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'avaliacoes-desenvolvimento',
+        element: (
+          <ProtectedRoute requireModule={SystemModule.Pedagogy} requireAction={PermissionAction.View}>
+            <Layout><DevelopmentEvaluationReportsPage /></Layout>
           </ProtectedRoute>
         )
       },

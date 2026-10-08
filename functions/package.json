@@ -3,6 +3,8 @@
   "description": "Cloud Functions for Church Management System",
   "scripts": {
     "build": "tsc",
+    "test": "npm run build && node --test test/evaluation.test.cjs",
+    "test:emulator": "npm run build && firebase emulators:exec --project demo-pedagogy --config ../firebase.emulators.json --only auth,firestore,functions \"node test/evaluation.emulator.cjs\"",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",

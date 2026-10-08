@@ -1127,7 +1127,7 @@ describe('AgendamentoAssistenciaService', () => {
     });
   });
 
-  describe('confirmarAgendamento', () => {
+  describe('confirmarAgendamento e criação de ficha', () => {
     it('should confirm appointment and create ficha', async () => {
       const agendamento = createTestAgendamento();
       mockAgendamentoRepository.confirmarAgendamento.mockResolvedValue(undefined);

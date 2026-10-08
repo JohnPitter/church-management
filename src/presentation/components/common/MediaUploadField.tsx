@@ -43,7 +43,7 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
 
     setUploading(true);
     try {
-      const safeName = file.name.replace(/[^\w.\-]/g, '_');
+      const safeName = file.name.replace(/[^\w.-]/g, '_');
       const storageRef = ref(storage, `${storageFolder}/${Date.now()}_${safeName}`);
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);

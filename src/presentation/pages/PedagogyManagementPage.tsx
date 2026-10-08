@@ -5,12 +5,13 @@ import PageShell from '../components/common/PageShell';
 import PedagogyOrgSwitch from '../components/PedagogyOrgSwitch';
 import PedagogyAttendancePanel from '../components/PedagogyAttendancePanel';
 import PedagogyRosterPanel from '../components/PedagogyRosterPanel';
+import DevelopmentEvaluationPanel from '../components/pedagogy/DevelopmentEvaluationPanel';
+import LegacyEvaluationObservations from '../components/pedagogy/LegacyEvaluationObservations';
 import { useAuth } from '../contexts/AuthContext';
 import {
   ClassAttendanceRoll,
   ClassRoster,
   ClassSessionRecord,
-  DIFFICULTY_LABELS,
   FEEDBACK_KIND_LABELS,
   FeedbackKind,
   GuidelineApplication,
@@ -29,7 +30,7 @@ import { PedagogyDashboardStats, pedagogyService } from '@modules/pedagogy/appli
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
 import { UserRole } from '@/domain/entities/User';
 
-type TabId = 'painel' | 'pendentes' | 'diretrizes' | 'encontros' | 'turmas' | 'chamada' | 'dificuldades' | 'aplicacao' | 'feedback' | 'relatorios';
+type TabId = 'painel' | 'pendentes' | 'diretrizes' | 'encontros' | 'turmas' | 'chamada' | 'avaliacao' | 'aplicacao' | 'feedback' | 'relatorios';
 type EducatorOption = { id: string; name: string; email?: string };
 
 const emptyMaterial = (): SupportMaterial => ({
@@ -208,13 +209,12 @@ const PedagogyManagementPage: React.FC = () => {
     { id: 'encontros', label: 'Encontros' },
     { id: 'turmas', label: 'Turmas' },
     { id: 'chamada', label: 'Chamada' },
-    { id: 'dificuldades', label: 'Dificuldades' },
+    { id: 'avaliacao', label: 'Avaliação' },
     { id: 'aplicacao', label: 'Aplicação' },
     { id: 'feedback', label: 'Feedback' },
     { id: 'relatorios', label: 'Relatórios' }
   ];
 
-  const topDifficulties = pedagogyService.getTopDifficulties(difficulties);
 
   const openFeedbackForEducator = (educatorId: string) => {
     setFeedbackForm({
@@ -263,7 +263,7 @@ const PedagogyManagementPage: React.FC = () => {
           <StatCard label="Alunos atendidos" value={String(stats.studentsServed)} />
           <StatCard label="Frequência média" value={`${stats.averageAttendance}%`} />
           <StatCard label="Engajamento médio" value={`${stats.averageEngagement}%`} />
-          <StatCard label="Alunos com maior acompanhamento" value={String(stats.studentsNeedingFollowup)} />
+          <StatCard label="Acompanhamento recorrente em registros anteriores" value={String(stats.studentsNeedingFollowup)} />
           <StatCard
             label="Arte-educadores com registros pendentes"
             value={String(stats.educatorsWithPendingRecords)}
@@ -520,22 +520,10 @@ const PedagogyManagementPage: React.FC = () => {
         />
       )}
 
-      {!loading && tab === 'dificuldades' && (
-        <div className="space-y-4">
-          <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded p-3">
-            Estes registros são instrumento de acompanhamento pedagógico, não diagnóstico do aluno.
-          </p>
-          {difficulties.map(item => (
-            <article key={item.id} className="border border-gray-200 rounded-lg p-5">
-              <h4 className="font-semibold">{item.studentName}</h4>
-              <p className="text-xs text-gray-500">{item.educatorName} · {item.createdAt.toLocaleDateString('pt-BR')}</p>
-              <p className="text-sm mt-2">
-                {item.difficulties.map(type => DIFFICULTY_LABELS[type]).join(', ')}
-                {item.otherDifficulty ? ` (${item.otherDifficulty})` : ''}
-              </p>
-              <p className="text-sm text-gray-700 mt-2">{item.description}</p>
-            </article>
-          ))}
+      {!loading && tab === 'avaliacao' && (
+        <div className="space-y-6">
+          <DevelopmentEvaluationPanel organization={organization} />
+          <LegacyEvaluationObservations records={difficulties} />
         </div>
       )}
 
@@ -623,27 +611,7 @@ const PedagogyManagementPage: React.FC = () => {
       )}
 
       {!loading && tab === 'relatorios' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <article className="border border-gray-200 rounded-lg p-6">
-            <h3 className="font-semibold mb-3">Principais dificuldades identificadas</h3>
-            <ul className="space-y-2 text-sm">
-              {topDifficulties.map(item => (
-                <li key={item.type} className="flex justify-between">
-                  <span>{DIFFICULTY_LABELS[item.type as keyof typeof DIFFICULTY_LABELS] || item.type}</span>
-                  <strong>{item.count}</strong>
-                </li>
-              ))}
-              {topDifficulties.length === 0 && <li>Nenhum registro ainda.</li>}
-            </ul>
-          </article>
-          <article className="border border-gray-200 rounded-lg p-6">
-            <h3 className="font-semibold mb-3">Aplicação das diretrizes</h3>
-            <p className="text-sm text-gray-700">
-              {applications.length} relatos mensais registrados. Use o painel para identificar arte-educadores
-              sem registros e alunos com dificuldades recorrentes.
-            </p>
-          </article>
-        </div>
+        <DevelopmentEvaluationPanel organization={organization} />
       )}
         </div>
       </div>
