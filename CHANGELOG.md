@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Corrigido o destaque da aba pedagógica selecionada, que era apagado por estilos globais; Aplicação passa a identificar seus relatos de diretrizes e informar quando não há registros.
 - Separadas as abas Avaliação (registro dos dados) e Relatórios (consulta, indicadores e exportação), restaurando o formulário na Coordenação e mantendo relatórios próprios do arte-educador.
+- Relatórios pedagógicos passam a carregar indicadores primeiro; histórico qualitativo e dados completos para exportação são buscados somente quando necessários, com filtros estabilizados antes da consulta.
 - Bloqueadas mudanças nas próprias permissões e alterações de autoria de chamadas por outro educador.
 - Removidos dois avisos de expressões regulares e um título duplicado de teste que impediam os gates de qualidade.
 - Visitor self-registration route now uses public-page access control and remains available when stored public-page settings are missing newer defaults.

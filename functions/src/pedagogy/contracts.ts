@@ -70,12 +70,15 @@ export interface EvaluationReportFilter {
   cycle: EvaluationCycle;
   classGroup?: string;
   studentId?: string;
+  includeDetails?: boolean;
 }
 
 export interface EvaluationReport {
   filter: EvaluationReportFilter;
   generatedAt: string;
   records: DevelopmentEvaluation[];
+  totalRecords: number;
+  detailsLoaded: boolean;
   evolution: Array<{ moment: EvaluationMoment; indices: DevelopmentIndices; students: number; evaluations: number }>;
   studentCount: number;
   methodology: string;

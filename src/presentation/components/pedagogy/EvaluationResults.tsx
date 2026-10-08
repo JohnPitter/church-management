@@ -12,7 +12,7 @@ export function EvaluationEvolution({ report, instrument }: { report: Evaluation
   const labels = report.evolution.map(item => instrument.moments.find(moment => moment.id === item.moment)?.label || item.moment);
   return <section className="space-y-4">
     <h3 className="font-semibold">Evolução do desenvolvimento</h3>
-    <p className="text-sm text-gray-600">{report.studentCount} assistido(s) · {report.records.length} avaliação(ões) no período. Dados não observados ficam fora do cálculo.</p>
+    <p className="text-sm text-gray-600">{report.studentCount} assistido(s) · {report.totalRecords ?? report.records.length} avaliação(ões) no período. Dados não observados ficam fora do cálculo.</p>
     <div className="h-72"><Line data={{ labels, datasets: series.map((item, index) => ({
       label: item.label, data: item.values, borderColor: evolutionColors[index], backgroundColor: evolutionColors[index], spanGaps: false
     })) }} options={{ responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, ticks: { callback: value => `${value}%` } } } }} /></div>

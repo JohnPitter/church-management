@@ -20,7 +20,8 @@ export function buildEvaluationReport(records: DevelopmentEvaluation[], filter: 
     };
   });
   return {
-    filter, generatedAt: new Date().toISOString(), records: selected, evolution,
+    filter, generatedAt: new Date().toISOString(), records: selected, totalRecords: selected.length,
+    detailsLoaded: Boolean(filter.includeDetails), evolution,
     studentCount: new Set(selected.map(item => item.studentId)).size,
     methodology: 'A = 2 pontos; B = 1; C = 0. N/O é excluído da pontuação e do máximo. '
       + 'Sem questões observadas: Não calculado. Para cada assistido e momento, utiliza-se a avaliação mais recente '

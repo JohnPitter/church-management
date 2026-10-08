@@ -9,10 +9,11 @@ import PedagogyManagementPage from '../PedagogyManagementPage';
 import mockInstrument from '../../../../functions/src/pedagogy/instrument.json';
 
 jest.mock('react-chartjs-2', () => ({ Line: () => null, Bar: () => null }));
+const mockEvaluationReport = jest.fn();
 jest.mock('@modules/pedagogy/application/services/DevelopmentEvaluationService', () => ({
   developmentEvaluationService: {
     getInstrument: () => Promise.resolve(mockInstrument),
-    report: () => Promise.resolve({ records: [], evolution: [], studentCount: 0, methodology: '' })
+    report: (...args: unknown[]) => mockEvaluationReport(...args)
   }
 }));
 
@@ -101,6 +102,7 @@ jest.mock('@modules/pedagogy/application/services/PedagogyService', () => ({
 
 describe('PedagogyManagementPage pending educators tab', () => {
   beforeEach(() => {
+    mockEvaluationReport.mockReset().mockResolvedValue({ records: [], totalRecords: 0, detailsLoaded: false, evolution: [], studentCount: 0, methodology: '' });
     [pedagogyService.listGuidelines, pedagogyService.listDifficulties, pedagogyService.listApplications,
       pedagogyService.listAllFeedback, pedagogyService.listRosters].forEach(method => {
       (method as jest.Mock).mockResolvedValue([]);
@@ -161,6 +163,7 @@ describe('PedagogyManagementPage pending educators tab', () => {
     expect(screen.queryByLabelText('Chamada e turma')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Salvar avaliação' })).not.toBeInTheDocument();
     expect(await screen.findByText('Nenhuma avaliação neste período e ciclo.')).toBeInTheDocument();
+    expect(mockEvaluationReport).toHaveBeenLastCalledWith(expect.objectContaining({ includeDetails: false }));
   });
 
   it('mantém Aplicação distinta dos Relatórios qualitativos', async () => {

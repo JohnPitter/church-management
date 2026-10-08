@@ -98,4 +98,12 @@ test('cópia antiga de permissões no usuário não eleva papel embutido', () =>
 test('filtro rejeita organização e período inválidos', () => {
   assert.throws(() => validateReportFilter({ ...filter, organization: 'unknown' }));
   assert.throws(() => validateReportFilter({ ...filter, period: '2026-3' }));
+  assert.throws(() => validateReportFilter({ ...filter, includeDetails: 'yes' }));
+});
+test('relatório resumido sinaliza que o histórico completo não foi solicitado', () => {
+  const summary = buildEvaluationReport([record({})], filter);
+  const detailed = buildEvaluationReport([record({})], { ...filter, includeDetails: true });
+  assert.equal(summary.detailsLoaded, false);
+  assert.equal(detailed.detailsLoaded, true);
+  assert.equal(summary.totalRecords, 1);
 });

@@ -52,9 +52,13 @@ async function main() {
   assert.equal((await call('getDevelopmentEvaluationReport', filter, other)).body.result.records.length, 0);
   const report = (await call('getDevelopmentEvaluationReport', filter, coordinator)).body.result;
   assert.equal(report.records.length, 1);
+  assert.equal(report.detailsLoaded, false);
+  assert.equal(report.records[0].observations, undefined);
   assert.equal(report.evolution[0].indices.idg, 100);
   assert.equal(report.evolution[1].indices.idg, null);
-  assert.equal((await call('getDevelopmentEvaluationReport', filter, professional)).body.result.records[0].observations.potential, 'Criatividade');
+  const detailed = (await call('getDevelopmentEvaluationReport', { ...filter, includeDetails: true }, professional)).body.result;
+  assert.equal(detailed.detailsLoaded, true);
+  assert.equal(detailed.records[0].observations.potential, 'Criatividade');
   assert.equal((await directWrite('developmentEvaluations', 'spoof', { educatorId: educator.localId }, educator)).status, 403);
   assert.equal((await directWrite('users', educator.localId, { role: 'educator', status: 'approved', displayName: 'Teste', customPermissions: { granted: [{ module: 'pedagogy', actions: ['manage'] }] } }, educator)).status, 403);
   assert.equal((await directWrite('classAttendanceRolls', `roll-${educator.localId}`, { educatorId: other.localId }, other)).status, 403);

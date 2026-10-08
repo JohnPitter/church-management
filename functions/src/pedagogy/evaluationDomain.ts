@@ -33,12 +33,16 @@ export function validateReportFilter(input: unknown): EvaluationReportFilter {
   if (typeof data.period !== 'string' || !/^20\d{2}-[12]$/.test(data.period)) {
     throw new EvaluationValidationError('Informe o período no formato ano-semestre');
   }
+  if (data.includeDetails !== undefined && typeof data.includeDetails !== 'boolean') {
+    throw new EvaluationValidationError('Formato de relatório inválido');
+  }
   return {
     organization: data.organization,
     cycle: data.cycle as EvaluationReportFilter['cycle'],
     period: data.period,
     ...(data.classGroup ? { classGroup: requiredText(data.classGroup, 'Turma') } : {}),
-    ...(data.studentId ? { studentId: requiredText(data.studentId, 'Assistido') } : {})
+    ...(data.studentId ? { studentId: requiredText(data.studentId, 'Assistido') } : {}),
+    ...(data.includeDetails ? { includeDetails: true } : {})
   };
 }
 
