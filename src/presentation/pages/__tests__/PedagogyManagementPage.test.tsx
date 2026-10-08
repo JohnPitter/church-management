@@ -3,8 +3,18 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { PedagogyOrganization } from '@modules/pedagogy/domain/entities/Pedagogy';
+import { pedagogyService } from '@modules/pedagogy/application/services/PedagogyService';
 import { UserRole, UserStatus } from '@/domain/entities/User';
 import PedagogyManagementPage from '../PedagogyManagementPage';
+import mockInstrument from '../../../../functions/src/pedagogy/instrument.json';
+
+jest.mock('react-chartjs-2', () => ({ Line: () => null, Bar: () => null }));
+jest.mock('@modules/pedagogy/application/services/DevelopmentEvaluationService', () => ({
+  developmentEvaluationService: {
+    getInstrument: () => Promise.resolve(mockInstrument),
+    report: () => Promise.resolve({ records: [], evolution: [], studentCount: 0, methodology: '' })
+  }
+}));
 
 jest.mock('@/config/firebase', () => ({
   db: {},
@@ -91,6 +101,10 @@ jest.mock('@modules/pedagogy/application/services/PedagogyService', () => ({
 
 describe('PedagogyManagementPage pending educators tab', () => {
   beforeEach(() => {
+    [pedagogyService.listGuidelines, pedagogyService.listDifficulties, pedagogyService.listApplications,
+      pedagogyService.listAllFeedback, pedagogyService.listRosters].forEach(method => {
+      (method as jest.Mock).mockResolvedValue([]);
+    });
     mockGenerateAttendanceReportPDF.mockClear();
     mockGenerateAttendanceRollPDF.mockClear();
     mockListAttendanceRolls.mockResolvedValue([]);
@@ -126,6 +140,28 @@ describe('PedagogyManagementPage pending educators tab', () => {
         <PedagogyManagementPage />
       </MemoryRouter>
     );
+
+  it('abre o formulário em Avaliação e mantém consulta e exportação apenas em Relatórios', async () => {
+    mockListAttendanceRolls.mockResolvedValue([{
+      id: 'roll-1', organization: PedagogyOrganization.Church, educatorId: 'e1', educatorName: 'Ana',
+      classGroup: 'Artes', students: [{ name: 'Maria', present: true }],
+      sessionDate: new Date('2026-10-07T12:00:00Z'), createdAt: new Date(), updatedAt: new Date()
+    }]);
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: 'Avaliação' }));
+    expect(await screen.findByLabelText('Chamada e turma')).toBeInTheDocument();
+    userEvent.selectOptions(screen.getByLabelText('Chamada e turma'), 'roll-1');
+    expect(screen.getByRole('option', { name: 'Maria' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salvar avaliação' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Exportar PDF' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Relatórios' }));
+    expect(await screen.findByRole('button', { name: 'Exportar PDF' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Exportar Word' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Chamada e turma')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Salvar avaliação' })).not.toBeInTheDocument();
+    expect(await screen.findByText('Nenhuma avaliação neste período e ciclo.')).toBeInTheDocument();
+  });
 
   it('lists educators without a session record on the Pendentes tab', async () => {
     renderPage();

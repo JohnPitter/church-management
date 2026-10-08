@@ -9,7 +9,7 @@ export default function DevelopmentEvaluationReportsPage() {
   return <PageShell title="Avaliações do Desenvolvimento" subtitle="Acompanhamento qualitativo para as equipes de Pedagogia e Psicologia">
     <div className="space-y-6 rounded-lg bg-white p-6 shadow-sm">
       <PedagogyOrgSwitch value={organization} onChange={setOrganization} />
-      <DevelopmentEvaluationPanel organization={organization} />
+      <DevelopmentEvaluationPanel mode="reports" organization={organization} />
     </div>
   </PageShell>;
 }

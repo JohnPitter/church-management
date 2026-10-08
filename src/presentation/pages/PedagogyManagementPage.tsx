@@ -522,7 +522,7 @@ const PedagogyManagementPage: React.FC = () => {
 
       {!loading && tab === 'avaliacao' && (
         <div className="space-y-6">
-          <DevelopmentEvaluationPanel organization={organization} />
+          <DevelopmentEvaluationPanel mode="evaluation" organization={organization} rolls={attendanceRolls} educatorName={currentUser?.displayName || ''} />
           <LegacyEvaluationObservations records={difficulties} />
         </div>
       )}
@@ -611,7 +611,7 @@ const PedagogyManagementPage: React.FC = () => {
       )}
 
       {!loading && tab === 'relatorios' && (
-        <DevelopmentEvaluationPanel organization={organization} />
+        <DevelopmentEvaluationPanel mode="reports" organization={organization} />
       )}
         </div>
       </div>

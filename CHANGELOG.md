@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Consulta de avaliações disponível à Psicologia mediante concessão explícita de visualização no módulo pedagógico.
 
 ### Fixed
+- Separadas as abas Avaliação (registro dos dados) e Relatórios (consulta, indicadores e exportação), restaurando o formulário na Coordenação e mantendo relatórios próprios do arte-educador.
 - Bloqueadas mudanças nas próprias permissões e alterações de autoria de chamadas por outro educador.
 - Removidos dois avisos de expressões regulares e um título duplicado de teste que impediam os gates de qualidade.
 - Visitor self-registration route now uses public-page access control and remains available when stored public-page settings are missing newer defaults.
