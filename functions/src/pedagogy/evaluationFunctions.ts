@@ -5,6 +5,7 @@ import { EvaluationValidationError, validateEvaluation, validateReportFilter } f
 import { buildEvaluationReport } from './evaluationReport';
 import { EvaluationRepository } from './evaluationRepository';
 import { evaluationInstrument } from './instrument';
+import { EvaluationWorkspace } from './contracts';
 
 async function authorize(context: https.CallableContext) {
   if (!context.auth) throw new https.HttpsError('unauthenticated', 'Entre no sistema para continuar');
@@ -38,6 +39,22 @@ async function handle<T>(operation: () => Promise<T>): Promise<T> {
 export const getDevelopmentEvaluationInstrument = region('southamerica-east1').https.onCall((_data, context) => handle(async () => {
   await authorize(context);
   return evaluationInstrument;
+}));
+
+export const getDevelopmentEvaluationWorkspace = region('southamerica-east1').https.onCall((data: unknown, context) => handle(async (): Promise<EvaluationWorkspace> => {
+  const { uid, access, repository } = await authorize(context);
+  const request = data as { organization?: unknown; section?: unknown } | null;
+  if (!request || typeof request.organization !== 'string' || !['church', 'ong'].includes(request.organization)
+    || typeof request.section !== 'string' || !['context', 'evaluation', 'applications'].includes(request.section)) {
+    throw new EvaluationValidationError('Selecione uma organização e uma seção válidas');
+  }
+  const organization = request.organization as 'church' | 'ong';
+  const section = request.section as 'context' | 'evaluation' | 'applications';
+  if (section === 'evaluation' && !access.create) throw new https.HttpsError('permission-denied', 'Sem permissão para registrar avaliações');
+  const records = section === 'context' ? [] : await repository.workspace({
+    organization, section, educatorId: access.collective ? undefined : uid
+  });
+  return { access, instrument: evaluationInstrument, records };
 }));
 
 export const createDevelopmentEvaluation = region('southamerica-east1').https.onCall((data: unknown, context) => handle(async () => {

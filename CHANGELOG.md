@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Consulta autenticada do contexto pedagógico para o app mobile, com instrumento compartilhado, permissões e leitura de chamadas/aplicações conforme o escopo do usuário.
 - Public page configuration for `/cadastro-visitante`.
 - Avaliação do Desenvolvimento com cinco ciclos etários, nove dimensões, momentos inicial/intermediário/final, observações e encaminhamentos.
 - Indicadores IDG, IDE e IDD calculados no backend, relatórios individuais/coletivos e exportação PDF/DOCX com gráficos.

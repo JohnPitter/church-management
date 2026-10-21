@@ -83,3 +83,33 @@ export interface EvaluationReport {
   studentCount: number;
   methodology: string;
 }
+
+export interface EvaluationWorkspaceRequest {
+  organization: EvaluationOrganization;
+  section: 'context' | 'evaluation' | 'applications';
+}
+
+export interface EvaluationAttendance {
+  id: string;
+  classGroup: string;
+  sessionDate: string;
+  students: Array<{ name: string }>;
+}
+
+export interface EvaluationApplication {
+  id: string;
+  guidelineTitle: string;
+  educatorName: string;
+  month: number;
+  year: number;
+  applicationNarrative: string;
+  applicationDifficulties: string;
+  strategies: string;
+  observedResults: string;
+}
+
+export interface EvaluationWorkspace {
+  access: { view: boolean; create: boolean; collective: boolean };
+  instrument: EvaluationInstrument;
+  records: Array<EvaluationAttendance | EvaluationApplication>;
+}

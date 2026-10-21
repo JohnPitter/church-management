@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import { firestore } from 'firebase-admin';
-import { CreateEvaluationRequest, DevelopmentEvaluation, EvaluationReportFilter } from './contracts';
+import { CreateEvaluationRequest, DevelopmentEvaluation, EvaluationReportFilter, EvaluationWorkspace, EvaluationWorkspaceRequest } from './contracts';
 import { calculateIndices, EvaluationValidationError } from './evaluationDomain';
 import { evaluationInstrument } from './instrument';
 
@@ -10,6 +10,31 @@ const digest = (value: string): string => createHash('sha256').update(value).dig
 
 export class EvaluationRepository {
   constructor(private readonly db: firestore.Firestore) {}
+
+  async workspace(request: EvaluationWorkspaceRequest & { educatorId?: string }): Promise<EvaluationWorkspace['records']> {
+    const collection = request.section === 'evaluation' ? 'classAttendanceRolls' : 'guidelineApplications';
+    let query: firestore.Query = this.db.collection(collection);
+    if (request.educatorId) query = query.where('educatorId', '==', request.educatorId);
+    const fields = request.section === 'evaluation'
+      ? ['organization', 'classGroup', 'students', 'sessionDate']
+      : ['organization', 'guidelineTitle', 'educatorName', 'month', 'year', 'applicationNarrative', 'applicationDifficulties', 'strategies', 'observedResults'];
+    const snapshot = await query.select(...fields).limit(1001).get();
+    if (snapshot.size > 1000) throw new EvaluationValidationError('Mais de 1.000 registros disponíveis. Consulte a coordenação pela versão web.');
+    return snapshot.docs.filter(doc => (doc.data().organization || 'church') === request.organization).map(doc => {
+      const data = doc.data();
+      if (request.section === 'evaluation') return {
+        id: doc.id, classGroup: String(data.classGroup || ''),
+        sessionDate: data.sessionDate?.toDate?.().toISOString().slice(0, 10) || '',
+        students: (data.students || []).map((student: { name: string }) => ({ name: String(student.name || '') }))
+      };
+      return {
+        id: doc.id, guidelineTitle: String(data.guidelineTitle || ''), educatorName: String(data.educatorName || ''),
+        month: Number(data.month || 0), year: Number(data.year || 0),
+        applicationNarrative: String(data.applicationNarrative || ''), applicationDifficulties: String(data.applicationDifficulties || ''),
+        strategies: String(data.strategies || ''), observedResults: String(data.observedResults || '')
+      };
+    });
+  }
 
   async create(request: CreateEvaluationRequest, author: EvaluationAuthor): Promise<DevelopmentEvaluation> {
     const id = digest(`${author.id}:${request.requestId}`);
