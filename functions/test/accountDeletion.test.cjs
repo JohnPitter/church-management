@@ -1,8 +1,9 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  AccountDeletionError, LAST_ADMIN_MESSAGE, MAX_BATCH_OPS, REMOVED_USER_NAME,
-  assertNotLastAdmin, isLastAdmin, normalizeEmails, chunk, buildCleanupPlan, runCleanupPlan, deleteOwnAccountFlow
+  AccountDeletionError, LAST_ADMIN_MESSAGE, RECENT_LOGIN_MESSAGE, MAX_BATCH_OPS, REMOVED_USER_NAME, REAUTH_MAX_AGE_SECONDS,
+  assertNotLastAdmin, isLastAdmin, isRecentLogin, assertRecentLogin, findTopicsWithUserAsLastReplier,
+  normalizeEmails, chunk, buildCleanupPlan, runCleanupPlan, deleteOwnAccountFlow
 } = require('../lib/accountDeletion');
 
 // In-memory Firestore fake: refs are "collection/id" strings, docs are plain objects.
@@ -53,14 +54,40 @@ function createFakeDb(seed = {}) {
   return { store, deps, commits };
 }
 
-test('guarda do último admin: bloqueia somente admin sem outro admin', () => {
-  assert.equal(isLastAdmin('admin', 1), true);
-  assert.equal(isLastAdmin('admin', 0), true);
-  assert.equal(isLastAdmin('admin', 2), false);
-  assert.equal(isLastAdmin('member', 1), false);
-  assert.equal(isLastAdmin(undefined, 0), false);
-  assert.throws(() => assertNotLastAdmin('admin', 1), err => err instanceof AccountDeletionError && err.code === 'failed-precondition' && err.message === LAST_ADMIN_MESSAGE);
-  assert.doesNotThrow(() => assertNotLastAdmin('admin', 2));
+test('guarda do último admin: bloqueia somente admin aprovado sem outro admin aprovado', () => {
+  assert.equal(isLastAdmin('admin', 'approved', 1), true);
+  assert.equal(isLastAdmin('admin', 'approved', 0), true);
+  assert.equal(isLastAdmin('admin', 'approved', 2), false);
+  assert.equal(isLastAdmin('admin', 'pending', 1), false);
+  assert.equal(isLastAdmin('member', 'approved', 1), false);
+  assert.equal(isLastAdmin(undefined, undefined, 0), false);
+  assert.throws(() => assertNotLastAdmin('admin', 'approved', 1), err => err instanceof AccountDeletionError && err.code === 'failed-precondition' && err.reason === 'last-admin' && err.message === LAST_ADMIN_MESSAGE);
+  assert.doesNotThrow(() => assertNotLastAdmin('admin', 'approved', 2));
+});
+
+test('reautenticação recente: auth_time de no máximo 5 minutos', () => {
+  const now = 1_800_000_000;
+  assert.equal(isRecentLogin(now - 10, now), true);
+  assert.equal(isRecentLogin(now - REAUTH_MAX_AGE_SECONDS, now), true);
+  assert.equal(isRecentLogin(now - REAUTH_MAX_AGE_SECONDS - 1, now), false);
+  assert.equal(isRecentLogin(undefined, now), false);
+  assert.equal(isRecentLogin('123', now), false);
+  assert.equal(isRecentLogin(now + 3600, now), false);
+  assert.throws(() => assertRecentLogin(now - 3600, now), err => err.code === 'unauthenticated' && err.reason === 'recent-login-required' && err.message === RECENT_LOGIN_MESSAGE);
+});
+
+test('lastReplyBy: só tópicos em que o usuário respondeu e é o último a responder', () => {
+  const replies = [{ topicId: 't1', authorName: 'Ana' }, { topicId: 't2', authorName: 'Ana' }, { topicId: 't4', authorName: 'Ana Souza' }];
+  const topics = [
+    { id: 't1', lastReplyBy: 'Ana' },
+    { id: 't2', lastReplyBy: 'Bia' },
+    { id: 't3', lastReplyBy: 'Ana' },
+    { id: 't4', lastReplyBy: 'Ana Souza' },
+    { id: 't5' }
+  ];
+  assert.deepEqual(findTopicsWithUserAsLastReplier(replies, topics), ['t1', 't4']);
+  assert.deepEqual(findTopicsWithUserAsLastReplier([{ topicId: 't2', authorName: REMOVED_USER_NAME }], [{ id: 't2', lastReplyBy: 'Bia' }], ['Bia']), ['t2']);
+  assert.deepEqual(findTopicsWithUserAsLastReplier([{ topicId: 't1', authorName: REMOVED_USER_NAME }], [{ id: 't1', lastReplyBy: REMOVED_USER_NAME }]), []);
 });
 
 test('normalizeEmails mantém forma digitada e minúscula, sem vazios/duplicados', () => {
@@ -146,7 +173,10 @@ test('runCleanupPlan é idempotente: segunda execução não apaga nada e não f
   assert.equal(second['prayerRequests:email:a@x.com'], 0);
 });
 
-function flowDeps(fake, { role = 'member', admins = 1, authEmail = 'a@x.com', failAt } = {}) {
+const NOW = 1_800_000_000;
+const fresh = uid => ({ uid, authTime: NOW - 30, nowSeconds: NOW });
+
+function flowDeps(fake, { role = 'member', status = 'approved', admins = 1, authEmail = 'a@x.com', failAt } = {}) {
   const calls = [];
   const step = name => async () => { calls.push(name); if (failAt === name) throw new Error(`boom ${name}`); };
   return {
@@ -154,44 +184,74 @@ function flowDeps(fake, { role = 'member', admins = 1, authEmail = 'a@x.com', fa
     deps: {
       ...fake.deps,
       async commit(ops) { calls.push('firestore'); return fake.deps.commit(ops); },
-      async getUserProfile() { calls.push('profile'); return { role, email: 'a@x.com' }; },
-      async countAdmins() { calls.push('countAdmins'); return admins; },
+      async getUserProfile() { calls.push('profile'); return { role, status, email: 'a@x.com', displayName: 'Ana' }; },
+      async countApprovedAdmins() { calls.push('countApprovedAdmins'); return admins; },
       async getAuthEmail() { calls.push('authEmail'); return authEmail; },
+      anonymizeLastReplies: async (uid, names) => { calls.push(`lastReplies:${names.join(',')}`); },
       deleteStorageFolder: async prefix => { calls.push(`storage:${prefix}`); if (failAt === 'storage') throw new Error('boom storage'); },
+      writeTombstone: step('tombstone'),
+      deleteTombstone: step('deleteTombstone'),
       deleteUserDoc: step('userDoc'),
       deleteAuthUser: step('auth')
     }
   };
 }
 
-test('fluxo: último admin é barrado antes de qualquer escrita', async () => {
+test('fluxo: login antigo (auth_time > 5 min) é recusado antes de qualquer leitura/escrita', async () => {
+  const fake = createFakeDb(seed());
+  const { deps, calls } = flowDeps(fake);
+  await assert.rejects(deleteOwnAccountFlow({ uid: 'u1', authTime: NOW - 600, nowSeconds: NOW }, deps), err => err.reason === 'recent-login-required');
+  await assert.rejects(deleteOwnAccountFlow({ uid: 'u1', nowSeconds: NOW }, deps), err => err.code === 'unauthenticated');
+  assert.deepEqual(calls, []);
+});
+
+test('fluxo: último admin aprovado é barrado antes de qualquer escrita', async () => {
   const fake = createFakeDb(seed());
   const { deps, calls } = flowDeps(fake, { role: 'admin', admins: 1 });
-  await assert.rejects(deleteOwnAccountFlow('u1', deps), err => err.code === 'failed-precondition');
-  assert.deepEqual(calls, ['profile', 'countAdmins']);
+  await assert.rejects(deleteOwnAccountFlow(fresh('u1'), deps), err => err.code === 'failed-precondition' && err.reason === 'last-admin');
+  assert.deepEqual(calls, ['profile', 'countApprovedAdmins']);
   assert.ok(fake.store.has('likes/l1'));
 });
 
-test('fluxo: admin com outro admin pode excluir; ordem termina com Auth', async () => {
+test('fluxo: admin não aprovado não consulta a contagem e pode excluir', async () => {
+  const fake = createFakeDb(seed());
+  const { deps, calls } = flowDeps(fake, { role: 'admin', status: 'pending', admins: 0 });
+  await deleteOwnAccountFlow(fresh('u1'), deps);
+  assert.ok(!calls.includes('countApprovedAdmins'));
+});
+
+test('fluxo: ordem completa — tombstone antes de users/{uid}, Auth por último', async () => {
   const fake = createFakeDb(seed());
   const { deps, calls } = flowDeps(fake, { role: 'admin', admins: 2 });
-  await deleteOwnAccountFlow('u1', deps);
+  await deleteOwnAccountFlow(fresh('u1'), deps);
   const tail = calls.filter(c => c !== 'firestore');
-  assert.deepEqual(tail, ['profile', 'countAdmins', 'authEmail', 'storage:profile-photos/u1/', 'userDoc', 'auth']);
-  assert.equal(calls[calls.length - 1], 'auth');
+  assert.deepEqual(tail, ['profile', 'countApprovedAdmins', 'authEmail', 'lastReplies:Ana', 'storage:profile-photos/u1/', 'tombstone', 'userDoc', 'auth']);
+  assert.ok(calls.indexOf('lastReplies:Ana') < calls.indexOf('firestore'), 'lastReplyBy runs before replies are anonymized');
 });
 
 test('fluxo: falha no Storage não remove o usuário do Auth e a nova tentativa conclui', async () => {
   const fake = createFakeDb(seed());
   const first = flowDeps(fake, { failAt: 'storage' });
-  await assert.rejects(deleteOwnAccountFlow('u1', first.deps), /boom storage/);
-  assert.ok(!first.calls.includes('auth') && !first.calls.includes('userDoc'));
+  await assert.rejects(deleteOwnAccountFlow(fresh('u1'), first.deps), /boom storage/);
+  assert.ok(!first.calls.includes('auth') && !first.calls.includes('userDoc') && !first.calls.includes('tombstone'));
   const retry = flowDeps(fake);
-  await deleteOwnAccountFlow('u1', retry.deps);
+  await deleteOwnAccountFlow(fresh('u1'), retry.deps);
   assert.equal(retry.calls[retry.calls.length - 1], 'auth');
+});
+
+test('fluxo: falha ao apagar do Auth remove o tombstone (best effort) e propaga o erro', async () => {
+  const fake = createFakeDb(seed());
+  const { deps, calls } = flowDeps(fake, { failAt: 'auth' });
+  await assert.rejects(deleteOwnAccountFlow(fresh('u1'), deps), /boom auth/);
+  assert.deepEqual(calls.slice(-3), ['userDoc', 'auth', 'deleteTombstone']);
+
+  const failingCleanup = flowDeps(fake, { failAt: 'auth' });
+  failingCleanup.deps.deleteTombstone = async () => { throw new Error('tombstone cleanup failed'); };
+  await assert.rejects(deleteOwnAccountFlow(fresh('u1'), failingCleanup.deps), /boom auth/);
 });
 
 test('fluxo: sem uid é rejeitado como não autenticado', async () => {
   const fake = createFakeDb(seed());
-  await assert.rejects(deleteOwnAccountFlow(undefined, flowDeps(fake).deps), err => err.code === 'unauthenticated');
+  await assert.rejects(deleteOwnAccountFlow({ nowSeconds: NOW }, flowDeps(fake).deps), err => err.code === 'unauthenticated');
 });
+

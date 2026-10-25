@@ -13,10 +13,22 @@ export const REMOVED_USER_NAME = 'Usuário removido';
 export const MAX_BATCH_OPS = 450;
 export const LAST_ADMIN_MESSAGE =
   'Você é o último administrador do sistema. Promova outro usuário a administrador antes de excluir sua conta.';
+export const RECENT_LOGIN_MESSAGE =
+  'Por segurança, confirme sua senha (ou sua conta Google) novamente e tente excluir a conta logo em seguida.';
 export const PROFESSIONAL_UNLINK_REASON = 'Conta de usuário excluída pelo próprio titular';
+/** The ID token's auth_time must be at most this old (seconds). */
+export const REAUTH_MAX_AGE_SECONDS = 5 * 60;
+/** Tombstone collection: blocks self-recreation of users/{uid} by stale sessions (see firestore.rules). */
+export const TOMBSTONE_COLLECTION = 'deletedAccounts';
+
+export type AccountDeletionReason = 'last-admin' | 'recent-login-required' | 'unauthenticated';
 
 export class AccountDeletionError extends Error {
-  constructor(public readonly code: 'failed-precondition' | 'unauthenticated', message: string) {
+  constructor(
+    public readonly code: 'failed-precondition' | 'unauthenticated',
+    message: string,
+    public readonly reason: AccountDeletionReason
+  ) {
     super(message);
     this.name = 'AccountDeletionError';
   }
@@ -62,15 +74,53 @@ const set = (value: unknown): PatchValue => ({ kind: 'set', value });
 const deleteField = (): PatchValue => ({ kind: 'deleteField' });
 const arrayRemove = (value: string): PatchValue => ({ kind: 'arrayRemove', value });
 
-/** Last-admin guard: an admin can only leave if another admin remains. */
-export function isLastAdmin(role: unknown, adminCount: number): boolean {
-  return role === 'admin' && adminCount <= 1;
+/**
+ * Last-admin guard: an APPROVED admin can only leave if another approved admin remains.
+ * `approvedAdminCount` counts users with role=='admin' && status=='approved' (caller included).
+ */
+export function isLastAdmin(role: unknown, status: unknown, approvedAdminCount: number): boolean {
+  return role === 'admin' && status === 'approved' && approvedAdminCount <= 1;
 }
 
-export function assertNotLastAdmin(role: unknown, adminCount: number): void {
-  if (isLastAdmin(role, adminCount)) {
-    throw new AccountDeletionError('failed-precondition', LAST_ADMIN_MESSAGE);
+export function assertNotLastAdmin(role: unknown, status: unknown, approvedAdminCount: number): void {
+  if (isLastAdmin(role, status, approvedAdminCount)) {
+    throw new AccountDeletionError('failed-precondition', LAST_ADMIN_MESSAGE, 'last-admin');
   }
+}
+
+/** Server-side re-authentication: the token's auth_time (seconds) must be recent. */
+export function isRecentLogin(authTimeSeconds: unknown, nowSeconds: number, maxAgeSeconds = REAUTH_MAX_AGE_SECONDS): boolean {
+  if (typeof authTimeSeconds !== 'number' || !Number.isFinite(authTimeSeconds)) return false;
+  const age = nowSeconds - authTimeSeconds;
+  return age <= maxAgeSeconds && age >= -60; // small tolerance for clock skew
+}
+
+export function assertRecentLogin(authTimeSeconds: unknown, nowSeconds: number): void {
+  if (!isRecentLogin(authTimeSeconds, nowSeconds)) {
+    throw new AccountDeletionError('unauthenticated', RECENT_LOGIN_MESSAGE, 'recent-login-required');
+  }
+}
+
+/**
+ * forumTopics.lastReplyBy stores only the replier's NAME (no id). A topic is anonymized when the
+ * user replied to it and its lastReplyBy equals one of the user's names. Another person with the
+ * exact same name being the last replier would also be anonymized: a privacy-safe false positive.
+ */
+export function findTopicsWithUserAsLastReplier(
+  userReplies: Array<{ topicId?: unknown; authorName?: unknown }>,
+  topics: Array<{ id: string; lastReplyBy?: unknown }>,
+  extraNames: Array<string | null | undefined> = []
+): string[] {
+  const names = new Set<string>();
+  for (const name of [...userReplies.map(reply => reply.authorName), ...extraNames]) {
+    if (typeof name === 'string' && name.trim() && name !== REMOVED_USER_NAME) names.add(name);
+  }
+  const repliedTopics = new Set(
+    userReplies.map(reply => reply.topicId).filter((id): id is string => typeof id === 'string')
+  );
+  return topics
+    .filter(topic => repliedTopics.has(topic.id) && typeof topic.lastReplyBy === 'string' && names.has(topic.lastReplyBy))
+    .map(topic => topic.id);
 }
 
 /** Emails are stored as typed (prayer requests) or lowercased (users/events): match both forms. */
@@ -102,6 +152,8 @@ export function chunk<T>(items: T[], size: number = MAX_BATCH_OPS): T[][] {
  * ANONYMIZED (community content kept so threads stay coherent; ids kept because other
  *   features key off them, e.g. forum like notifications):
  *   forumTopics/forumReplies (authorName -> "Usuário removido", authorEmail -> null, authorAvatar removed),
+ *   forumTopics.lastReplyBy where the user was the last replier (done by the flow via
+ *   findTopicsWithUserAsLastReplier, before replies are anonymized),
  *   comments (author.name -> "Usuário removido", author.photoURL removed),
  *   devotionalComments (userName -> "Usuário removido", userEmail -> null),
  *   prayerRequests sent with the user's email (name -> "Usuário removido", email/phone -> null),
@@ -110,7 +162,8 @@ export function chunk<T>(items: T[], size: number = MAX_BATCH_OPS): T[][] {
  * UNLINKED: profissionaisAssistencia with userId == uid lose the link and are marked inactive;
  *   the professional record and its clinical history (fichas, sessões) are kept.
  * KEPT untouched: members, voluntarios, leaders (staff-managed roster records with no auth link,
- *   matched only by an email typed by staff), assistance/clinical, financial, attendance,
+ *   matched only by an email typed by staff), blogPosts/devotionals authored by staff (the byline
+ *   stays until the administration edits it), assistance/clinical, financial, attendance,
  *   pedagogy, audit/system logs and other institutional records.
  */
 export function buildCleanupPlan(uid: string, emails: string[]): CleanupPlan {
@@ -224,39 +277,76 @@ export async function runCleanupPlan<Ref>(
   return summary;
 }
 
+export interface UserProfileSnapshot {
+  role?: unknown;
+  status?: unknown;
+  email?: string | null;
+  displayName?: string | null;
+}
+
 export interface DeleteOwnAccountDeps<Ref> extends CleanupDeps<Ref> {
-  getUserProfile(uid: string): Promise<{ role?: unknown; email?: string | null } | null>;
-  countAdmins(): Promise<number>;
+  getUserProfile(uid: string): Promise<UserProfileSnapshot | null>;
+  /** Number of users with role=='admin' && status=='approved'. */
+  countApprovedAdmins(): Promise<number>;
   /** Auth email, or null when the auth user no longer exists. */
   getAuthEmail(uid: string): Promise<string | null>;
+  /** Anonymizes forumTopics.lastReplyBy where the user was the last replier (runs before replies are anonymized). */
+  anonymizeLastReplies?(uid: string, knownNames: string[]): Promise<void>;
   /** Extra cleanup that cannot be expressed as a simple query (e.g. stream viewers). */
   extraCleanup?(uid: string): Promise<void>;
   deleteStorageFolder(prefix: string): Promise<void>;
+  /** Writes deletedAccounts/{uid} (server timestamp only, no PII). */
+  writeTombstone(uid: string): Promise<void>;
+  deleteTombstone(uid: string): Promise<void>;
   deleteUserDoc(uid: string): Promise<void>;
   /** Must tolerate "user not found". */
   deleteAuthUser(uid: string): Promise<void>;
 }
 
+export interface CallerContext {
+  uid?: string;
+  /** auth_time claim of the caller's ID token (seconds since epoch). */
+  authTime?: unknown;
+  nowSeconds: number;
+}
+
 /**
  * Orchestration, in an order that keeps a mid-failure recoverable:
- * guard -> Firestore cleanup -> Storage -> users/{uid} -> Auth user (LAST, so the user
- * can still log in and retry if anything before it fails).
+ * recent-login check -> last-admin guard -> Firestore cleanup -> Storage -> tombstone ->
+ * users/{uid} -> Auth user (LAST, so the user can still log in and retry if anything before
+ * it fails). If deleting the Auth user fails, the tombstone is removed (best effort) so the
+ * profile can be recreated on the next login and the deletion retried.
  */
-export async function deleteOwnAccountFlow<Ref>(uid: string | undefined, deps: DeleteOwnAccountDeps<Ref>) {
-  if (!uid) throw new AccountDeletionError('unauthenticated', 'Usuário deve estar autenticado');
+export async function deleteOwnAccountFlow<Ref>(caller: CallerContext, deps: DeleteOwnAccountDeps<Ref>) {
+  const uid = caller.uid;
+  if (!uid) throw new AccountDeletionError('unauthenticated', 'Usuário deve estar autenticado', 'unauthenticated');
+  assertRecentLogin(caller.authTime, caller.nowSeconds);
 
   const profile = await deps.getUserProfile(uid);
-  if (profile?.role === 'admin') {
-    assertNotLastAdmin(profile.role, await deps.countAdmins());
+  if (profile?.role === 'admin' && profile?.status === 'approved') {
+    assertNotLastAdmin(profile.role, profile.status, await deps.countApprovedAdmins());
   }
 
   const authEmail = await deps.getAuthEmail(uid);
   const emails = normalizeEmails([profile?.email, authEmail]);
 
+  if (deps.anonymizeLastReplies) {
+    await deps.anonymizeLastReplies(uid, profile?.displayName ? [profile.displayName] : []);
+  }
   const summary = await runCleanupPlan(buildCleanupPlan(uid, emails), deps);
   if (deps.extraCleanup) await deps.extraCleanup(uid);
   await deps.deleteStorageFolder(`profile-photos/${uid}/`);
+  await deps.writeTombstone(uid);
   await deps.deleteUserDoc(uid);
-  await deps.deleteAuthUser(uid);
+  try {
+    await deps.deleteAuthUser(uid);
+  } catch (error) {
+    try {
+      await deps.deleteTombstone(uid);
+    } catch {
+      // best effort: the original error is the one reported
+    }
+    throw error;
+  }
   return summary;
 }

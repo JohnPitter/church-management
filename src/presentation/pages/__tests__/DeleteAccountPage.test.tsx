@@ -35,6 +35,7 @@ jest.mock('react-router-dom', () => ({
 }));
 
 const mockDeleteAccount = jest.fn();
+const mockGetIdToken = jest.fn();
 let mockAuthState: any;
 jest.mock('../../contexts/AuthContext', () => ({
   useAuth: () => mockAuthState
@@ -66,8 +67,10 @@ describe('DeleteAccountPage', () => {
     mockFirebaseAuth.currentUser = {
       uid: 'u1',
       email: 'ana@example.com',
-      providerData: [{ providerId: 'password' }]
+      providerData: [{ providerId: 'password' }],
+      getIdToken: mockGetIdToken
     };
+    mockGetIdToken.mockResolvedValue('fresh-token');
     // CRA's jest config uses resetMocks, so implementations are set per test.
     mockCredential.mockImplementation((email: string, password: string) => ({ email, password }));
     mockReauthenticateWithCredential.mockResolvedValue(undefined);
@@ -127,7 +130,26 @@ describe('DeleteAccountPage', () => {
     expect(mockCredential).toHaveBeenCalledWith('ana@example.com', 'secret123');
     expect(mockReauthenticateWithCredential).toHaveBeenCalledWith(mockFirebaseAuth.currentUser, { email: 'ana@example.com', password: 'secret123' });
     expect(mockDeleteAccount).toHaveBeenCalledTimes(1);
-    expect(mockReauthenticateWithCredential.mock.invocationCallOrder[0]).toBeLessThan(mockDeleteAccount.mock.invocationCallOrder[0]);
+    expect(mockGetIdToken).toHaveBeenCalledWith(true);
+    // reauthenticate -> force token refresh (fresh auth_time) -> callable
+    expect(mockReauthenticateWithCredential.mock.invocationCallOrder[0]).toBeLessThan(mockGetIdToken.mock.invocationCallOrder[0]);
+    expect(mockGetIdToken.mock.invocationCallOrder[0]).toBeLessThan(mockDeleteAccount.mock.invocationCallOrder[0]);
+  });
+
+  it('asks to confirm identity again when the server refuses an old login', async () => {
+    mockDeleteAccount.mockRejectedValue(Object.assign(new Error('Por segurança, confirme sua senha'), {
+      code: 'functions/unauthenticated',
+      details: { reason: 'recent-login-required' }
+    }));
+    renderPage();
+    fireEvent.change(screen.getByLabelText('Confirme sua senha'), { target: { value: 'secret123' } });
+    fireEvent.change(screen.getByLabelText(/para confirmar/i), { target: { value: 'EXCLUIR' } });
+    fireEvent.click(submitButton());
+
+    expect(await screen.findByText(/sua confirmação de identidade expirou/i)).toBeInTheDocument();
+    expect(screen.queryByText('Não é possível excluir o último administrador')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Confirme sua senha')).toHaveValue('');
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it('re-authenticates Google-only accounts with a popup (no password field)', async () => {
@@ -157,7 +179,10 @@ describe('DeleteAccountPage', () => {
 
   it('shows the last-admin error clearly and stays on the page', async () => {
     const message = 'Você é o último administrador do sistema. Promova outro usuário a administrador antes de excluir sua conta.';
-    mockDeleteAccount.mockRejectedValue(Object.assign(new Error(message), { code: 'functions/failed-precondition' }));
+    mockDeleteAccount.mockRejectedValue(Object.assign(new Error(message), {
+      code: 'functions/failed-precondition',
+      details: { reason: 'last-admin' }
+    }));
     renderPage();
     fireEvent.change(screen.getByLabelText('Confirme sua senha'), { target: { value: 'secret123' } });
     fireEvent.change(screen.getByLabelText(/para confirmar/i), { target: { value: 'EXCLUIR' } });

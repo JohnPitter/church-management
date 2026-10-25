@@ -26,14 +26,15 @@ const DELETED_ITEMS = [
 ];
 
 const ANONYMIZED_ITEMS = [
-  'Tópicos e respostas no fórum',
+  'Tópicos e respostas no fórum, inclusive a indicação de "última resposta" nos tópicos em que você respondeu por último',
   'Comentários no blog e nos devocionais',
   'Pedidos de oração enviados com o e-mail da conta'
 ];
 
 const KEPT_ITEMS = [
   'Registros institucionais, financeiros, de assistência, pedagógicos e de frequência',
-  'Cadastros de membro, voluntário e liderança mantidos pela secretaria (sem vínculo com o login)',
+  'Cadastros de membro, voluntário e liderança mantidos pela secretaria: não têm vínculo com o login e não são alterados (peça à igreja para corrigi-los ou removê-los)',
+  'Posts do blog e devocionais publicados pela equipe: o nome do autor permanece até a administração editá-los',
   'Cadastro de profissional de assistência: o vínculo com a conta é removido e o cadastro fica inativo',
   'Logs de auditoria exigidos por lei'
 ];
@@ -185,6 +186,8 @@ export const DeleteAccountPage: React.FC = () => {
         const credential = EmailAuthProvider.credential(firebaseUser.email || currentUser.email, password);
         await reauthenticateWithCredential(firebaseUser, credential);
       }
+      // Force a fresh ID token so the server sees the new auth_time (it requires <= 5 min).
+      await firebaseUser.getIdToken(true);
     } catch (reauthError: any) {
       setError(getReauthErrorMessage(reauthError?.code));
       setPhase('idle');
@@ -197,9 +200,16 @@ export const DeleteAccountPage: React.FC = () => {
       toast.success('Sua conta foi excluída.');
       navigate('/conta-excluida', { replace: true });
     } catch (deleteError: any) {
-      const lastAdmin = deleteError?.code === 'functions/failed-precondition';
+      const reason = deleteError?.details?.reason;
+      const lastAdmin = reason === 'last-admin'
+        || (!reason && deleteError?.code === 'functions/failed-precondition');
       setIsLastAdminError(lastAdmin);
-      setError(deleteError?.message || 'Não foi possível excluir sua conta. Tente novamente.');
+      if (reason === 'recent-login-required') {
+        setPassword('');
+        setError('Sua confirmação de identidade expirou. Confirme sua senha (ou sua conta Google) novamente e clique em excluir logo em seguida.');
+      } else {
+        setError(deleteError?.message || 'Não foi possível excluir sua conta. Tente novamente.');
+      }
       setPhase('idle');
     }
   };

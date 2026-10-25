@@ -12,11 +12,13 @@ export const AccountDeletedPage: React.FC = () => (
       </div>
       <h1 className="text-2xl font-bold text-gray-900 mb-3">Conta excluída</h1>
       <p className="text-gray-600 mb-2">
-        Sua conta e seus dados pessoais foram excluídos. Conteúdos que você publicou na comunidade
-        agora aparecem como "Usuário removido".
+        Sua conta e seus dados pessoais foram excluídos. Seus tópicos, respostas e comentários na
+        comunidade e seus pedidos de oração agora aparecem como "Usuário removido".
       </p>
       <p className="text-sm text-gray-500 mb-8">
-        Registros institucionais exigidos por lei foram mantidos, conforme a nossa política de privacidade.
+        Registros institucionais exigidos por lei foram mantidos. Cadastros feitos pela secretaria (membros,
+        voluntários, liderança) e posts do blog ou devocionais publicados pela equipe podem manter seu nome
+        até a administração removê-lo — fale com a igreja se quiser essa remoção.
       </p>
       <div className="flex flex-col gap-3">
         <Link

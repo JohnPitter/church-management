@@ -215,15 +215,17 @@ export const PrivacyPolicyPage: React.FC = () => {
                 </>,
                 <>
                   <strong>Anonimizamos:</strong> conteúdos que você publicou em espaços de comunidade (tópicos e
-                  respostas do fórum, comentários e pedidos de oração), que passam a aparecer como “Usuário
-                  removido”.
+                  respostas do fórum, inclusive a indicação de “última resposta”, comentários e pedidos de oração
+                  enviados com o e-mail da conta), que passam a aparecer como “Usuário removido”.
                 </>,
                 <>
                   <strong>Mantemos:</strong> registros que devemos ou temos interesse legítimo em conservar:
                   financeiro e doações (obrigação legal), registros institucionais, atendimentos e fichas de
                   assistência vinculados ao assistido e logs de auditoria.
                 </>,
-                'Registros de profissionais e de membros são desvinculados da conta excluída.',
+                'Cadastros de membros, voluntários e liderança são mantidos pela secretaria, não têm vínculo com o login e não são alterados pela exclusão da conta; peça à administração para corrigi-los ou removê-los.',
+                'Se você tinha cadastro de profissional de assistência vinculado à conta, o vínculo é removido e o cadastro fica inativo; o histórico de atendimentos é preservado.',
+                'Posts do blog e devocionais publicados pela equipe podem manter o nome do autor até a administração editá-los.',
               ]}
             />
           </Section>

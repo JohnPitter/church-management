@@ -230,7 +230,8 @@ export class FirebaseAuthService implements IAuthService {
       const message = serverMessage && !['internal', 'INTERNAL', 'unavailable'].includes(serverMessage)
         ? serverMessage
         : 'Não foi possível excluir sua conta agora. Verifique sua conexão e tente novamente.';
-      throw Object.assign(new Error(message), { code });
+      // details.reason: 'last-admin' | 'recent-login-required' (set by the callable)
+      throw Object.assign(new Error(message), { code, details: error?.details });
     }
 
     if (uid) this.deletedUids.add(uid);
@@ -293,7 +294,17 @@ export class FirebaseAuthService implements IAuthService {
           firestoreData.biography = userData.biography;
         }
 
-        await setDoc(doc(db, 'users', firebaseUser.uid), firestoreData);
+        try {
+          await setDoc(doc(db, 'users', firebaseUser.uid), firestoreData);
+        } catch (createError: any) {
+          if (createError?.code === 'permission-denied') {
+            // A deletedAccounts tombstone exists (account deleted, possibly from another
+            // tab/device): stop treating this uid as a live account — no retry, no noise.
+            this.deletedUids.add(firebaseUser.uid);
+            return null;
+          }
+          throw createError;
+        }
 
         return {
           id: firebaseUser.uid,
