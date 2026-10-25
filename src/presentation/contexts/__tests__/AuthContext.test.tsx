@@ -51,6 +51,7 @@ describe('AuthContext', () => {
       }),
       linkEmailPassword: jest.fn(),
       getSignInMethods: jest.fn(),
+      deleteAccount: jest.fn(),
     };
 
     // Mock container to return our mock service
@@ -180,6 +181,7 @@ describe('AuthContext', () => {
         canAccessSystem: expect.any(Function),
         linkEmailPassword: expect.any(Function),
         getSignInMethods: expect.any(Function),
+        deleteAccount: expect.any(Function),
       });
     });
   });
@@ -951,6 +953,60 @@ describe('AuthContext', () => {
         expect(result.current.canCreateContent()).toBe(false);
         expect(result.current.isProfessional()).toBe(false);
       });
+    });
+  });
+  describe('deleteAccount', () => {
+    it('tears down the listener before calling the service, then clears the user and resubscribes', async () => {
+      const testUser = createTestUser();
+      const unsubscribeMock = jest.fn();
+      const order: string[] = [];
+      unsubscribeMock.mockImplementation(() => order.push('unsubscribe'));
+      mockAuthService.onAuthStateChanged.mockImplementation((callback) => {
+        order.push('subscribe');
+        authStateChangeCallback = callback;
+        return unsubscribeMock;
+      });
+      mockAuthService.deleteAccount.mockImplementation(async () => {
+        order.push('deleteAccount');
+      });
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider });
+      act(() => {
+        authStateChangeCallback?.(testUser);
+      });
+      await waitFor(() => expect(result.current.currentUser).toEqual(testUser));
+
+      await act(async () => {
+        await result.current.deleteAccount();
+      });
+
+      expect(order).toEqual(['subscribe', 'unsubscribe', 'deleteAccount', 'subscribe']);
+      expect(result.current.currentUser).toBeNull();
+      expect(loggingService.setUserContext).toHaveBeenLastCalledWith(null);
+    });
+
+    it('restores the listener and keeps the user logged in when deletion fails', async () => {
+      const testUser = createTestUser();
+      const unsubscribeMock = jest.fn();
+      mockAuthService.onAuthStateChanged.mockImplementation((callback) => {
+        authStateChangeCallback = callback;
+        return unsubscribeMock;
+      });
+      mockAuthService.deleteAccount.mockRejectedValue(new Error('Você é o último administrador'));
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider });
+      act(() => {
+        authStateChangeCallback?.(testUser);
+      });
+      await waitFor(() => expect(result.current.currentUser).toEqual(testUser));
+
+      await act(async () => {
+        await expect(result.current.deleteAccount()).rejects.toThrow('Você é o último administrador');
+      });
+
+      expect(unsubscribeMock).toHaveBeenCalledTimes(1);
+      expect(mockAuthService.onAuthStateChanged).toHaveBeenCalledTimes(2);
+      expect(result.current.currentUser).toEqual(testUser);
     });
   });
 });

@@ -2,7 +2,7 @@
 // Clean implementation for authentication
 
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getRoleHomePath } from '../utils/roleHomePath';
 
@@ -15,6 +15,10 @@ export const LoginPage: React.FC = () => {
   
   const { login, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Optional return path (e.g. /excluir-conta); only same-app absolute paths are honored.
+  const from = (location.state as { from?: unknown } | null)?.from;
+  const returnTo = typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') ? from : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +27,7 @@ export const LoginPage: React.FC = () => {
 
     try {
       const user = await login(email, password);
-      navigate(getRoleHomePath(user?.role));
+      navigate(returnTo ?? getRoleHomePath(user?.role));
     } catch (err: any) {
       setError(err.message || 'Erro ao fazer login');
     } finally {
@@ -37,7 +41,7 @@ export const LoginPage: React.FC = () => {
 
     try {
       const user = await signInWithGoogle();
-      navigate(getRoleHomePath(user?.role));
+      navigate(returnTo ?? getRoleHomePath(user?.role));
     } catch (err: any) {
       setError(err.message || 'Erro ao fazer login com Google');
     } finally {

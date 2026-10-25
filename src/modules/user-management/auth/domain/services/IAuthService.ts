@@ -12,4 +12,6 @@ export interface IAuthService {
   onAuthStateChanged(callback: (user: User | null) => void): () => void;
   linkEmailPassword(password: string): Promise<void>;
   getSignInMethods(email: string): Promise<string[]>;
+  /** Permanently deletes the signed-in user's own account (server-side) and signs out. */
+  deleteAccount(): Promise<void>;
 }

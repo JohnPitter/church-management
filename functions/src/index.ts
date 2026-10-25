@@ -22,6 +22,9 @@ export { uploadProfilePhoto } from './uploadProfilePhoto';
 // Export push notification trigger (FCM) for new notifications
 export { onNotificationCreated } from './onNotificationCreated';
 
+// Export self-service account deletion (uses only context.auth.uid)
+export { deleteOwnAccount } from './deleteOwnAccount';
+
 /**
  * Create User Account
  *
