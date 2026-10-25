@@ -247,6 +247,14 @@ export const RegisterPage: React.FC = () => {
               </div>
             </div>
 
+            <p className="text-xs text-center text-gray-500">
+              Ao criar sua conta você concorda com a{' '}
+              <Link to="/privacidade" className="font-medium text-indigo-600 hover:text-indigo-500 underline">
+                Política de Privacidade
+              </Link>
+              .
+            </p>
+
             <div>
               <button
                 type="submit"

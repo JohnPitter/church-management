@@ -88,6 +88,7 @@ const PermissionTestPage = lazyWithRetry(() => import('./presentation/pages/Perm
 const AboutPage = lazyWithRetry(() => import('./presentation/pages/AboutPage').then(module => ({ default: module.AboutPage })));
 const DonatePage = lazyWithRetry(() => import('./presentation/pages/DonatePage').then(module => ({ default: module.DonatePage })));
 const PrayerPage = lazyWithRetry(() => import('./presentation/pages/PrayerPage').then(module => ({ default: module.PrayerPage })));
+const PrivacyPolicyPage = lazyWithRetry(() => import('./presentation/pages/PrivacyPolicyPage').then(module => ({ default: module.PrivacyPolicyPage })));
 const ContactPage = lazyWithRetry(() => import('./presentation/pages/ContactPage').then(module => ({ default: module.ContactPage })));
 const VisitorSelfRegistrationPage = lazyWithRetry(() => import('./presentation/pages/VisitorSelfRegistrationPage').then(module => ({ default: module.VisitorSelfRegistrationPage })));
 const DeleteAccountPage = lazyWithRetry(() => import('./presentation/pages/DeleteAccountPage').then(module => ({ default: module.DeleteAccountPage })));
@@ -151,6 +152,7 @@ const router = createBrowserRouter([
       { path: 'setup', element: <SetupPage /> },
       { path: 'welcome', element: <WelcomePage /> },
       { path: 'about', element: <AboutPage /> },
+      { path: 'privacidade', element: <PrivacyPolicyPage /> },
       { path: 'donate', element: <DonatePage /> },
       {
         path: 'prayer',
