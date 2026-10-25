@@ -503,6 +503,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Main content */}
       <main>{children}</main>
+
+      <footer className="py-4 text-center text-xs text-gray-400">
+        <Link to="/privacidade" className="hover:text-gray-600 underline">
+          Política de Privacidade
+        </Link>
+      </footer>
     </div>
   );
 };

@@ -147,6 +147,12 @@ export const LoginPage: React.FC = () => {
                 Cadastre-se
               </Link>
             </div>
+
+            <div className="text-center text-xs text-gray-500">
+              <Link to="/privacidade" className="hover:text-indigo-600 underline">
+                Política de Privacidade
+              </Link>
+            </div>
           </form>
         </div>
       </div>
