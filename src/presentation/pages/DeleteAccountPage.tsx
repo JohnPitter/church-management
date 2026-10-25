@@ -13,6 +13,8 @@ import {
 import toast from 'react-hot-toast';
 import { auth } from '@/config/firebase';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
+import { DEFAULT_CHURCH_CONTACT_EMAIL } from '@/config/contact';
 
 export const DELETE_CONFIRMATION_WORD = 'EXCLUIR';
 
@@ -108,6 +110,8 @@ type Phase = 'idle' | 'deleting' | 'done';
 export const DeleteAccountPage: React.FC = () => {
   const { currentUser, loading, deleteAccount } = useAuth();
   const navigate = useNavigate();
+  const { settings } = useSettings();
+  const contactEmail = settings?.churchEmail || DEFAULT_CHURCH_CONTACT_EMAIL;
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
@@ -153,8 +157,8 @@ export const DeleteAccountPage: React.FC = () => {
           Entrar para excluir minha conta
         </button>
         <p className="mt-4 text-sm text-gray-500 text-center">
-          Não consegue entrar? Fale com a igreja pela página{' '}
-          <Link to="/contact" className="text-blue-600 hover:underline">Fale Conosco</Link>.
+          Não consegue entrar? Fale com a administração:{' '}
+          <a href={`mailto:${contactEmail}`} className="text-blue-600 hover:underline">{contactEmail}</a>.
         </p>
       </PageFrame>
     );
@@ -274,6 +278,10 @@ export const DeleteAccountPage: React.FC = () => {
           >
             {isLastAdminError && <p className="font-semibold mb-1">Não é possível excluir o último administrador</p>}
             <p>{error}</p>
+            <p className="mt-2">
+              Precisa de ajuda? Escreva para{' '}
+              <a href={`mailto:${contactEmail}`} className="underline">{contactEmail}</a>.
+            </p>
           </div>
         )}
 

@@ -23,6 +23,10 @@ jest.mock('firebase/auth', () => ({
   reauthenticateWithPopup: (...args: any[]) => mockReauthenticateWithPopup(...args)
 }));
 
+jest.mock('../../contexts/SettingsContext', () => ({
+  useSettings: () => ({ settings: null, loading: false })
+}));
+
 jest.mock('react-hot-toast', () => ({
   __esModule: true,
   default: { success: jest.fn(), error: jest.fn() }

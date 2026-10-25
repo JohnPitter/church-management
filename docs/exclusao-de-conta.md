@@ -48,6 +48,8 @@ Seu identificador também é retirado das listas de curtidas, favoritos, inscrit
   função recusa (`unauthenticated`, `details.reason = 'recent-login-required'`) e a tela pede nova confirmação.
 - O **último administrador aprovado** (`role == 'admin'` e `status == 'approved'`) não pode excluir a própria conta:
   promova outro administrador antes (`failed-precondition`, `details.reason = 'last-admin'`).
+
+**Contato para pedidos de exclusão:** `igreja.ibc.cacote@gmail.com` (fallback em `src/config/contact.ts`; o e-mail das configurações da igreja tem prioridade). Quem não consegue entrar, ou precisa da remoção de nome em registros institucionais, deve escrever para esse endereço.
 - **Tombstone** `deletedAccounts/{uid}` (`{ deletedAt }`, sem dados pessoais) é gravado antes de apagar `users/{uid}`.
   O `firestore.rules` recusa o auto-cadastro de `users/{uid}` enquanto ele existir, então sessões antigas (outra aba,
   app, resposta perdida — o token vale ~1h) não recriam o perfil. A coleção é inacessível a clientes. Uids novos

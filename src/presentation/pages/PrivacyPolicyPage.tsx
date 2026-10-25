@@ -8,6 +8,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
+import { DEFAULT_CHURCH_CONTACT_EMAIL } from '@/config/contact';
 
 const LAST_UPDATE = '25 de outubro de 2026';
 
@@ -29,7 +30,7 @@ const List: React.FC<{ items: React.ReactNode[] }> = ({ items }) => (
 export const PrivacyPolicyPage: React.FC = () => {
   const { settings } = useSettings();
   const churchName = settings?.churchName || 'a Igreja';
-  const email = settings?.churchEmail;
+  const email = settings?.churchEmail || DEFAULT_CHURCH_CONTACT_EMAIL;
   const phone = settings?.churchPhone;
 
   const contactText = (

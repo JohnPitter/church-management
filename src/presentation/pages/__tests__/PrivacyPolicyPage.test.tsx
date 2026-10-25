@@ -54,11 +54,13 @@ describe('PrivacyPolicyPage', () => {
     );
   });
 
-  it('works without settings, using generic fallback text', () => {
+  it('falls back to the default church email without settings', () => {
     mockUseSettings.mockReturnValue({ settings: null, loading: false });
     renderPage();
     expect(screen.getByRole('heading', { level: 1, name: 'Política de Privacidade' })).toBeInTheDocument();
-    expect(screen.getAllByText(/canais de contato divulgados pela administração da igreja/).length).toBeGreaterThan(0);
-    expect(document.querySelector('a[href^="mailto:"]')).toBeNull();
+    expect(screen.getAllByRole('link', { name: 'igreja.ibc.cacote@gmail.com' })[0]).toHaveAttribute(
+      'href',
+      'mailto:igreja.ibc.cacote@gmail.com'
+    );
   });
 });
