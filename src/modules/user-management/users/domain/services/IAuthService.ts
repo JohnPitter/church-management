@@ -14,4 +14,6 @@ export interface IAuthService {
   register(email: string, password: string, displayName: string): Promise<User>;
   resetPassword(email: string): Promise<void>;
   updatePassword(currentPassword: string, newPassword: string): Promise<void>;
+  /** Permanently deletes the signed-in user's own account (server-side) and signs out. */
+  deleteAccount(): Promise<void>;
 }
