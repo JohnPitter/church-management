@@ -30,6 +30,7 @@ const PedagogyRosterPanel: React.FC<PedagogyRosterPanelProps> = ({
   const [editGroup, setEditGroup] = useState<Record<string, string>>({});
   const [editOrg, setEditOrg] = useState<Record<string, PedagogyOrganization>>({});
   const [saving, setSaving] = useState(false);
+  const [savingRosterId, setSavingRosterId] = useState<string | null>(null);
 
   const handleCreate = async (event: FormEvent) => {
     event.preventDefault();
@@ -55,6 +56,7 @@ const PedagogyRosterPanel: React.FC<PedagogyRosterPanelProps> = ({
   const handleAdd = async (rosterId: string) => {
     try {
       await pedagogyService.addStudentToRoster(rosterId, newName[rosterId] || '');
+      toast.success('Aluno adicionado à turma');
       setNewName(current => ({ ...current, [rosterId]: '' }));
       await onSaved();
     } catch (error) {
@@ -66,6 +68,7 @@ const PedagogyRosterPanel: React.FC<PedagogyRosterPanelProps> = ({
     const nextName = rename[`${rosterId}:${currentName}`];
     try {
       await pedagogyService.renameStudentInRoster(rosterId, currentName, nextName ?? currentName);
+      toast.success('Nome do aluno atualizado');
       await onSaved();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Não foi possível alterar o nome');
@@ -112,6 +115,7 @@ const PedagogyRosterPanel: React.FC<PedagogyRosterPanelProps> = ({
   const handleRemove = async (rosterId: string, name: string) => {
     try {
       await pedagogyService.removeStudentFromRoster(rosterId, name);
+      toast.success(`${name} foi removido da turma`);
       await onSaved();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Não foi possível remover o aluno');
@@ -127,9 +131,15 @@ const PedagogyRosterPanel: React.FC<PedagogyRosterPanelProps> = ({
     }
     const nameChanged = nextGroup !== roster.classGroup;
     const orgChanged = nextOrg !== roster.organization;
-    if (!nameChanged && !orgChanged) {
+    const renames = roster.students
+      .map(name => ({ name, next: (rename[`${roster.id}:${name}`] ?? name).trim() }))
+      .filter(item => item.next !== item.name);
+    const pendingStudent = (newName[roster.id] || '').trim();
+    if (!nameChanged && !orgChanged && renames.length === 0 && !pendingStudent) {
+      toast('Nenhuma alteração para salvar');
       return;
     }
+    setSavingRosterId(roster.id);
     try {
       if (orgChanged) {
         await pedagogyService.changeRosterOrganization(roster.id, nextOrg);
@@ -137,11 +147,31 @@ const PedagogyRosterPanel: React.FC<PedagogyRosterPanelProps> = ({
       if (nameChanged) {
         await pedagogyService.renameClassGroup(roster.id, nextGroup);
       }
+      for (const item of renames) {
+        await pedagogyService.renameStudentInRoster(roster.id, item.name, item.next);
+      }
+      if (pendingStudent) {
+        await pedagogyService.addStudentToRoster(roster.id, pendingStudent);
+      }
+      clearDrafts(roster.id);
       toast.success('Turma atualizada');
       await onSaved();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Não foi possível salvar a turma');
+    } finally {
+      setSavingRosterId(null);
     }
+  };
+
+  const clearDrafts = (rosterId: string) => {
+    const prefix = `${rosterId}:`;
+    const withoutRoster = <T,>(current: Record<string, T>) => Object.fromEntries(
+      Object.entries(current).filter(([key]) => key !== rosterId && !key.startsWith(prefix))
+    );
+    setEditGroup(withoutRoster);
+    setEditOrg(withoutRoster);
+    setRename(withoutRoster);
+    setNewName(withoutRoster);
   };
 
   const handleDeleteRoster = async (roster: ClassRoster) => {
@@ -234,8 +264,9 @@ const PedagogyRosterPanel: React.FC<PedagogyRosterPanelProps> = ({
                   type="button"
                   className={primaryButtonClass}
                   onClick={() => void handleSaveClass(roster)}
+                  disabled={savingRosterId === roster.id}
                 >
-                  Salvar alterações da turma
+                  {savingRosterId === roster.id ? 'Salvando...' : 'Salvar alterações da turma'}
                 </button>
                 <button
                   type="button"
@@ -245,7 +276,10 @@ const PedagogyRosterPanel: React.FC<PedagogyRosterPanelProps> = ({
                   Apagar turma
                 </button>
               </div>
-              <p className="text-sm text-gray-600">{roster.students.length} aluno(s)</p>
+              <p className="text-sm text-gray-600">
+                {roster.students.length} aluno(s). Nomes alterados e aluno novo só são gravados ao clicar em
+                {' '}"Salvar alterações da turma" (ou nos botões de cada linha).
+              </p>
               {roster.students.length === 0 && (
                 <p className="text-sm text-gray-500">Nenhum aluno nesta turma.</p>
               )}
@@ -310,6 +344,12 @@ const PedagogyRosterPanel: React.FC<PedagogyRosterPanelProps> = ({
                   placeholder="Adicionar aluno"
                   value={newName[roster.id] || ''}
                   onChange={event => setNewName(current => ({ ...current, [roster.id]: event.target.value }))}
+                  onKeyDown={event => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      void handleAdd(roster.id);
+                    }
+                  }}
                 />
                 <button type="button" className={primaryButtonClass} onClick={() => void handleAdd(roster.id)}>
                   Adicionar

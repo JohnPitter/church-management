@@ -90,8 +90,10 @@ const PedagogyManagementPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organization]);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+    }
     try {
       const users = await userRepository.findByRole('educator' as UserRole).catch(() => []);
       const educatorList = users.map(user => ({
@@ -487,7 +489,7 @@ const PedagogyManagementPage: React.FC = () => {
           organization={organization}
           rosters={rosters}
           createdBy={currentUser.id}
-          onSaved={loadData}
+          onSaved={() => loadData(true)}
           fieldClass={fieldClass}
         />
       )}
