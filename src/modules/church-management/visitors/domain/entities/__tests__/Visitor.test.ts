@@ -673,6 +673,16 @@ describe('Visitor Entity', () => {
     });
 
     describe('getDaysSinceFirstVisit', () => {
+      // Math.ceil sobre "agora": sem relógio fixo, 1 ms de atraso vira +1 dia
+      beforeEach(() => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2026-06-15T12:00:00'));
+      });
+
+      afterEach(() => {
+        jest.useRealTimers();
+      });
+
       it('should calculate days correctly', () => {
         const tenDaysAgo = new Date();
         tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
@@ -695,6 +705,16 @@ describe('Visitor Entity', () => {
     });
 
     describe('getDaysSinceLastVisit', () => {
+      // Math.ceil sobre "agora": sem relógio fixo, 1 ms de atraso vira +1 dia
+      beforeEach(() => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2026-06-15T12:00:00'));
+      });
+
+      afterEach(() => {
+        jest.useRealTimers();
+      });
+
       it('should calculate days correctly', () => {
         const fiveDaysAgo = new Date();
         fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);

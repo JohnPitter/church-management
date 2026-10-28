@@ -14,6 +14,7 @@ Documentacao tecnica completa do sistema de gestao para igrejas.
 | [Firebase](firebase.md) | Configuracao, Firestore, Cloud Functions, Storage, regras de seguranca |
 | [Permissoes](permissions.md) | RBAC com 6 papeis, 26 modulos, 5 acoes, overrides por usuario |
 | [Desenvolvimento](development.md) | Guia de setup, comandos, workflow, padroes de UX, troubleshooting |
+| [Testes E2E](e2e.md) | Playwright + emulators do Firebase: como rodar, o que cobre e como escrever testes |
 
 ---
 
