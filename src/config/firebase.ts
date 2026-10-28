@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { initializeFirestore } from 'firebase/firestore';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
+import { connectFirestoreEmulator, initializeFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
 
@@ -29,5 +29,12 @@ export const storage = getStorage(app);
 
 // Cloud Functions configurado para região Brasil
 export const functions = getFunctions(app, FUNCTIONS_REGION);
+
+// Testes e2e: aponta Auth e Firestore para os emulators locais (nunca para produção).
+// Só liga com REACT_APP_USE_EMULATORS=true em tempo de build.
+if (process.env.REACT_APP_USE_EMULATORS === 'true') {
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+  connectFirestoreEmulator(db, '127.0.0.1', 8080);
+}
 
 export default app;

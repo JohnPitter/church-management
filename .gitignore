@@ -72,3 +72,8 @@ functions/lib/
 lint_output.txt
 test_summary.txt
 nul
+
+# E2E (Playwright)
+/e2e/.build
+/test-results/
+/playwright-report/
