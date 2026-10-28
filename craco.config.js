@@ -10,5 +10,10 @@ module.exports = {
         tsConfigPath: './tsconfig.json'
       }
     }
-  ]
+  ],
+  jest: {
+    configure: {
+      globalSetup: '<rootDir>/jest.global-setup.js'
+    }
+  }
 };
