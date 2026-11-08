@@ -26,6 +26,8 @@ interface AssistanceStatusPieChartProps {
 const statusColors: Record<string, { bg: string; border: string }> = {
   'agendado': { bg: 'rgba(59, 130, 246, 0.8)', border: 'rgba(59, 130, 246, 1)' },
   'confirmado': { bg: 'rgba(16, 185, 129, 0.8)', border: 'rgba(16, 185, 129, 1)' },
+  'em_andamento': { bg: 'rgba(245, 158, 11, 0.8)', border: 'rgba(245, 158, 11, 1)' },
+  'remarcado': { bg: 'rgba(168, 85, 247, 0.8)', border: 'rgba(168, 85, 247, 1)' },
   'em andamento': { bg: 'rgba(245, 158, 11, 0.8)', border: 'rgba(245, 158, 11, 1)' },
   'concluido': { bg: 'rgba(34, 197, 94, 0.8)', border: 'rgba(34, 197, 94, 1)' },
   'cancelado': { bg: 'rgba(239, 68, 68, 0.8)', border: 'rgba(239, 68, 68, 1)' },
@@ -38,7 +40,7 @@ export const AssistanceStatusPieChart: React.FC<AssistanceStatusPieChartProps> =
   className = ''
 }) => {
   const labels = Object.keys(data).map(key =>
-    key.charAt(0).toUpperCase() + key.slice(1)
+    key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')
   );
   const values = Object.values(data);
 
