@@ -1,15 +1,31 @@
 // Presentation Component - Assistance Reports
 // Relatórios de atendimento para o painel administrativo
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { AgendamentoAssistenciaService, ProfissionalAssistenciaService } from '@modules/assistance/assistencia/application/services/AssistenciaService';
 import { FichaAcompanhamentoService } from '@modules/assistance/fichas/application/services/FichaAcompanhamentoService';
-import { AgendamentoAssistencia, ProfissionalAssistencia } from '@modules/assistance/assistencia/domain/entities/Assistencia';
+import { FichaAcompanhamento, SessaoAcompanhamento } from '@modules/assistance/fichas/domain/entities/FichaAcompanhamento';
+import {
+  AgendamentoAssistencia,
+  ProfissionalAssistencia,
+  AssistenciaEntity,
+  StatusAgendamento,
+  TipoAssistencia
+} from '@modules/assistance/assistencia/domain/entities/Assistencia';
 import { AssistanceBarChart } from './charts/AssistanceBarChart';
 import { AssistanceStatusPieChart } from './charts/AssistanceStatusPieChart';
 import { AssistanceTimelineChart } from './charts/AssistanceTimelineChart';
 
 interface AssistanceReportsProps {}
+
+interface ResumoAcompanhamento {
+  emTratamento: number;
+  concluidas: number; // fichas com alta
+  pausadas: number;
+  canceladas: number;
+  sessoesRealizadas: number;
+  sessoesFaltou: number;
+}
 
 interface RelatorioGeral {
   totalProfissionais: number;
@@ -21,7 +37,9 @@ interface RelatorioGeral {
   fichasAtivas: number;
   fichasConcluidas: number;
   atendimentosPorTipo: Record<string, number>;
+  /** Todos os status de agendamento (inclusive os zerados) */
   atendimentosPorStatus: Record<string, number>;
+  acompanhamento: ResumoAcompanhamento;
 }
 
 interface RelatorioProfissional {
@@ -31,18 +49,25 @@ interface RelatorioProfissional {
     fichasAtivas: number;
     fichasConcluidas: number;
     totalSessoes: number;
+    sessoesRealizadas: number;
+    sessoesFaltou: number;
     mediaSessoesPorFicha: number;
   };
   agendamentosRecentes: AgendamentoAssistencia[];
 }
 
+const isFichaAtiva = (f: FichaAcompanhamento) => f.status === 'em_tratamento' || (f.status as string) === 'ativo';
+const isFichaConcluida = (f: FichaAcompanhamento) => f.status === 'alta' || (f.status as string) === 'concluido';
+
 const AssistanceReports: React.FC<AssistanceReportsProps> = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
-  const [relatorioGeral, setRelatorioGeral] = useState<RelatorioGeral | null>(null);
-  const [relatoriosProfissionais, setRelatoriosProfissionais] = useState<RelatorioProfissional[]>([]);
   const [periodoFiltro, setPeriodoFiltro] = useState<string>('mes');
+  const [tipoFiltro, setTipoFiltro] = useState<TipoAssistencia | 'all'>('all');
+  const [profissionais, setProfissionais] = useState<ProfissionalAssistencia[]>([]);
   const [agendamentos, setAgendamentos] = useState<AgendamentoAssistencia[]>([]);
+  const [fichas, setFichas] = useState<FichaAcompanhamento[]>([]);
+  const [sessoesPorFicha, setSessoesPorFicha] = useState<Record<string, SessaoAcompanhamento[]>>({});
 
   const agendamentoService = new AgendamentoAssistenciaService();
   const profissionalService = new ProfissionalAssistenciaService();
@@ -83,101 +108,127 @@ const AssistanceReports: React.FC<AssistanceReportsProps> = () => {
     try {
       setLoading(true);
 
-      // Carregar dados gerais
-      const [profissionais, agendamentosData, fichas] = await Promise.all([
+      const [profissionaisData, agendamentosData, fichasData] = await Promise.all([
         profissionalService.getAllProfissionais(),
         agendamentoService.getAllAgendamentos(),
         fichaService.getAllFichas()
       ]);
 
+      // As sessões (realizada / paciente faltou) ficam dentro de cada ficha
+      const sessoesEntries = await Promise.all(
+        fichasData.map(async (ficha) => {
+          try {
+            return [ficha.id, await fichaService.getSessoesByFicha(ficha.id)] as const;
+          } catch (error) {
+            console.error('Error loading sessoes da ficha', ficha.id, error);
+            return [ficha.id, [] as SessaoAcompanhamento[]] as const;
+          }
+        })
+      );
+
+      setProfissionais(profissionaisData);
       setAgendamentos(agendamentosData);
-
-      // Calcular relatório geral
-      const hoje = new Date();
-      const inicioSemana = new Date(hoje);
-      inicioSemana.setDate(hoje.getDate() - hoje.getDay());
-      const fimSemana = new Date(inicioSemana);
-      fimSemana.setDate(inicioSemana.getDate() + 6);
-      
-      const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-      const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
-
-      const agendamentosHoje = agendamentosData.filter(a => {
-        const dataAgendamento = new Date(a.dataHoraAgendamento);
-        return dataAgendamento.toDateString() === hoje.toDateString();
-      }).length;
-
-      const agendamentosSemana = agendamentosData.filter(a => {
-        const dataAgendamento = new Date(a.dataHoraAgendamento);
-        return dataAgendamento >= inicioSemana && dataAgendamento <= fimSemana;
-      }).length;
-
-      const agendamentosMes = agendamentosData.filter(a => {
-        const dataAgendamento = new Date(a.dataHoraAgendamento);
-        return dataAgendamento >= inicioMes && dataAgendamento <= fimMes;
-      }).length;
-
-      const fichasAtivas = fichas.filter(f => f.status === 'em_tratamento' || (f.status as string) === 'ativo').length;
-      const fichasConcluidas = fichas.filter(f => f.status === 'alta' || (f.status as string) === 'concluido').length;
-
-      // Agrupar por tipo
-      const atendimentosPorTipo = agendamentosData.reduce((acc, a) => {
-        acc[a.tipoAssistencia] = (acc[a.tipoAssistencia] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-
-      // Agrupar por status
-      const atendimentosPorStatus = agendamentosData.reduce((acc, a) => {
-        acc[a.status] = (acc[a.status] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-
-      const relatorioGeralData: RelatorioGeral = {
-        totalProfissionais: profissionais.length,
-        totalAgendamentos: agendamentosData.length,
-        totalFichas: fichas.length,
-        agendamentosHoje,
-        agendamentosSemana,
-        agendamentosMes,
-        fichasAtivas,
-        fichasConcluidas,
-        atendimentosPorTipo,
-        atendimentosPorStatus
-      };
-
-      setRelatorioGeral(relatorioGeralData);
-
-      // Calcular relatórios por profissional a partir dos dados já carregados
-      const relatoriosProfissionaisData: RelatorioProfissional[] = profissionais.map(profissional => {
-        const fichasProfissional = fichas.filter(f => f.profissionalId === profissional.id);
-        const fichasAtivas = fichasProfissional.filter(f => f.status === 'em_tratamento' || (f.status as string) === 'ativo');
-        const fichasConcluidas = fichasProfissional.filter(f => f.status === 'alta' || (f.status as string) === 'concluido');
-        const agendamentosRecentes = agendamentosData
-          .filter(a => a.profissionalId === profissional.id)
-          .sort((a, b) => new Date(b.dataHoraAgendamento).getTime() - new Date(a.dataHoraAgendamento).getTime())
-          .slice(0, 5);
-
-        return {
-          profissional,
-          estatisticas: {
-            totalFichas: fichasProfissional.length,
-            fichasAtivas: fichasAtivas.length,
-            fichasConcluidas: fichasConcluidas.length,
-            totalSessoes: 0,
-            mediaSessoesPorFicha: 0
-          },
-          agendamentosRecentes
-        };
-      });
-
-      setRelatoriosProfissionais(relatoriosProfissionaisData);
-
+      setFichas(fichasData);
+      setSessoesPorFicha(Object.fromEntries(sessoesEntries));
     } catch (error) {
       console.error('Error loading reports:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Tudo abaixo é derivado dos dados carregados + filtro de tipo de assistência
+  const { relatorioGeral, relatoriosProfissionais, agendamentosFiltrados } = useMemo(() => {
+    const porTipo = tipoFiltro === 'all' ? null : tipoFiltro;
+    const agendamentosF = agendamentos.filter(a => !porTipo || a.tipoAssistencia === porTipo);
+    const fichasF = fichas.filter(f => !porTipo || f.tipoAssistencia === porTipo);
+    const profissionaisF = profissionais.filter(p => !porTipo || p.especialidade === porTipo);
+
+    const hoje = new Date();
+    const inicioSemana = new Date(hoje);
+    inicioSemana.setDate(hoje.getDate() - hoje.getDay());
+    const fimSemana = new Date(inicioSemana);
+    fimSemana.setDate(inicioSemana.getDate() + 6);
+    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+
+    const agendamentosHoje = agendamentosF.filter(a =>
+      new Date(a.dataHoraAgendamento).toDateString() === hoje.toDateString()).length;
+    const agendamentosSemana = agendamentosF.filter(a => {
+      const d = new Date(a.dataHoraAgendamento);
+      return d >= inicioSemana && d <= fimSemana;
+    }).length;
+    const agendamentosMes = agendamentosF.filter(a => {
+      const d = new Date(a.dataHoraAgendamento);
+      return d >= inicioMes && d <= fimMes;
+    }).length;
+
+    const atendimentosPorTipo = agendamentosF.reduce((acc, a) => {
+      acc[a.tipoAssistencia] = (acc[a.tipoAssistencia] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Lista TODOS os status (inclusive zerados), não só os que aparecem nos dados
+    const atendimentosPorStatus = Object.values(StatusAgendamento).reduce((acc, status) => {
+      acc[status] = agendamentosF.filter(a => a.status === status).length;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const sessoesDe = (lista: FichaAcompanhamento[]) =>
+      lista.flatMap(f => sessoesPorFicha[f.id] || []);
+    const sessoesF = sessoesDe(fichasF);
+
+    const acompanhamento: ResumoAcompanhamento = {
+      emTratamento: fichasF.filter(isFichaAtiva).length,
+      concluidas: fichasF.filter(isFichaConcluida).length,
+      pausadas: fichasF.filter(f => f.status === 'pausado').length,
+      canceladas: fichasF.filter(f => f.status === 'cancelado').length,
+      sessoesRealizadas: sessoesF.filter(s => s.status === 'concluida').length,
+      sessoesFaltou: sessoesF.filter(s => s.status === 'nao_realizada').length
+    };
+
+    const geral: RelatorioGeral = {
+      totalProfissionais: profissionaisF.length,
+      totalAgendamentos: agendamentosF.length,
+      totalFichas: fichasF.length,
+      agendamentosHoje,
+      agendamentosSemana,
+      agendamentosMes,
+      fichasAtivas: acompanhamento.emTratamento,
+      fichasConcluidas: acompanhamento.concluidas,
+      atendimentosPorTipo,
+      atendimentosPorStatus,
+      acompanhamento
+    };
+
+    const porProfissional: RelatorioProfissional[] = profissionaisF.map(profissional => {
+      const fichasProfissional = fichasF.filter(f => f.profissionalId === profissional.id);
+      const sessoes = sessoesDe(fichasProfissional);
+      const agendamentosRecentes = agendamentosF
+        .filter(a => a.profissionalId === profissional.id)
+        .sort((a, b) => new Date(b.dataHoraAgendamento).getTime() - new Date(a.dataHoraAgendamento).getTime())
+        .slice(0, 5);
+
+      return {
+        profissional,
+        estatisticas: {
+          totalFichas: fichasProfissional.length,
+          fichasAtivas: fichasProfissional.filter(isFichaAtiva).length,
+          fichasConcluidas: fichasProfissional.filter(isFichaConcluida).length,
+          totalSessoes: sessoes.length,
+          sessoesRealizadas: sessoes.filter(s => s.status === 'concluida').length,
+          sessoesFaltou: sessoes.filter(s => s.status === 'nao_realizada').length,
+          mediaSessoesPorFicha: fichasProfissional.length
+            ? Math.round((sessoes.length / fichasProfissional.length) * 10) / 10
+            : 0
+        },
+        agendamentosRecentes
+      };
+    });
+
+    return { relatorioGeral: geral, relatoriosProfissionais: porProfissional, agendamentosFiltrados: agendamentosF };
+  }, [agendamentos, fichas, profissionais, sessoesPorFicha, tipoFiltro]);
+
 
   const tabs = [
     {
@@ -246,6 +297,17 @@ const AssistanceReports: React.FC<AssistanceReportsProps> = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">Relatórios de Assistências</h2>
         <div className="flex items-center space-x-4">
+          <select
+            value={tipoFiltro}
+            onChange={(e) => setTipoFiltro(e.target.value as TipoAssistencia | 'all')}
+            aria-label="Tipo de assistência"
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">Todas as assistências</option>
+            {Object.values(TipoAssistencia).map((tipo) => (
+              <option key={tipo} value={tipo}>{AssistenciaEntity.formatarTipoAssistencia(tipo)}</option>
+            ))}
+          </select>
           <select
             value={periodoFiltro}
             onChange={(e) => setPeriodoFiltro(e.target.value)}
@@ -334,14 +396,36 @@ const AssistanceReports: React.FC<AssistanceReportsProps> = () => {
             </div>
           </div>
 
-          {/* Resumo por status */}
+          {/* Resumo por status do agendamento (todos os status, inclusive zerados) */}
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Status dos Agendamentos</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {Object.entries(relatorioGeral.atendimentosPorStatus).map(([status, quantidade]) => (
                 <div key={status} className="text-center p-4 bg-gray-50 rounded-lg">
                   <p className="text-lg font-semibold text-gray-900">{quantidade}</p>
-                  <p className="text-sm text-gray-600 capitalize">{status}</p>
+                  <p className="text-sm text-gray-600">
+                    {AssistenciaEntity.formatarStatusAgendamento(status as StatusAgendamento)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Acompanhamento: status das fichas e das sessões registradas dentro delas */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Acompanhamento (fichas e sessões)</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {[
+                { label: 'Em tratamento', value: relatorioGeral.acompanhamento.emTratamento },
+                { label: 'Concluídas (alta)', value: relatorioGeral.acompanhamento.concluidas },
+                { label: 'Pausadas', value: relatorioGeral.acompanhamento.pausadas },
+                { label: 'Canceladas', value: relatorioGeral.acompanhamento.canceladas },
+                { label: 'Sessões realizadas', value: relatorioGeral.acompanhamento.sessoesRealizadas },
+                { label: 'Paciente faltou', value: relatorioGeral.acompanhamento.sessoesFaltou }
+              ].map(({ label, value }) => (
+                <div key={label} className="text-center p-4 bg-gray-50 rounded-lg">
+                  <p className="text-lg font-semibold text-gray-900">{value}</p>
+                  <p className="text-sm text-gray-600">{label}</p>
                 </div>
               ))}
             </div>
@@ -394,6 +478,18 @@ const AssistanceReports: React.FC<AssistanceReportsProps> = () => {
                       </p>
                       <p className="text-xs text-gray-600">Total Sessões</p>
                     </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <p className="text-lg font-semibold text-green-600">
+                        {relatorio.estatisticas.sessoesRealizadas}
+                      </p>
+                      <p className="text-xs text-gray-600">Sessões Realizadas</p>
+                    </div>
+                    <div className="text-center p-3 bg-red-50 rounded-lg">
+                      <p className="text-lg font-semibold text-red-600">
+                        {relatorio.estatisticas.sessoesFaltou}
+                      </p>
+                      <p className="text-xs text-gray-600">Paciente Faltou</p>
+                    </div>
                     <div className="text-center p-3 bg-orange-50 rounded-lg">
                       <p className="text-lg font-semibold text-orange-600">
                         {relatorio.estatisticas.mediaSessoesPorFicha}
@@ -429,7 +525,7 @@ const AssistanceReports: React.FC<AssistanceReportsProps> = () => {
           {/* Timeline Chart */}
           <div className="bg-white rounded-lg shadow p-6">
             <AssistanceTimelineChart
-              data={generateTimelineData(agendamentos)}
+              data={generateTimelineData(agendamentosFiltrados)}
               className="h-80"
             />
           </div>
@@ -448,7 +544,7 @@ const AssistanceReports: React.FC<AssistanceReportsProps> = () => {
             {/* Pie Chart - By Status */}
             <div className="bg-white rounded-lg shadow p-6">
               <AssistanceStatusPieChart
-                data={relatorioGeral.atendimentosPorStatus}
+                data={Object.fromEntries(Object.entries(relatorioGeral.atendimentosPorStatus).filter(([, n]) => n > 0))}
                 title="Distribuição por Status"
                 className="h-80"
               />
