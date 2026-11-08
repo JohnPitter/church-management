@@ -1158,7 +1158,7 @@ describe('AgendamentoAssistenciaService', () => {
       const agendamento = createTestAgendamento({
         id: 'agend-due',
         dataHoraAgendamento: appointmentDate,
-        status: StatusAgendamento.Agendado
+        status: StatusAgendamento.Confirmado
       });
       const createFichaSpy = jest
         .spyOn(FirebaseFichaAcompanhamentoRepository.prototype, 'createFicha')

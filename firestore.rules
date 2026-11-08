@@ -226,10 +226,19 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isOwner(userId) || isStaff() || isFinance() || isProfessional()
         || hasGrantedModule('finance') || hasGrantedModule('users') || hasGrantedModule('ong');
-      allow create: if isSelfRegistrationCreate(userId) || isAdmin();
+      // Self-registration is refused for uids with a deletedAccounts tombstone (written by the
+      // deleteOwnAccount callable), so stale sessions cannot recreate a deleted profile.
+      allow create: if (isSelfRegistrationCreate(userId)
+          && !exists(/databases/$(database)/documents/deletedAccounts/$(userId)))
+        || isAdmin();
       allow update: if isAdmin()
         || (isOwner(userId) && notChangingPrivilegedUserFields());
       allow delete: if isAdmin();
+    }
+
+    // Tombstones of self-deleted accounts: Admin SDK only (no client access).
+    match /deletedAccounts/{uid} {
+      allow read, write: if false;
     }
 
     // ========================================

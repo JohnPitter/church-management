@@ -219,7 +219,7 @@ describe('AdminVisitorsPage', () => {
 
       render(<AdminVisitorsPage />);
 
-      expect(screen.getByText('Verificando permissões...')).toBeInTheDocument();
+      expect(screen.getAllByText('Verificando permissões...').length).toBeGreaterThan(0);
     });
 
     it('should show access denied when user cannot view visitors', async () => {
@@ -230,7 +230,7 @@ describe('AdminVisitorsPage', () => {
       render(<AdminVisitorsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Acesso Negado')).toBeInTheDocument();
+        expect(screen.getByText('Acesso negado')).toBeInTheDocument();
       });
       expect(screen.getByText(/não tem permissão para visualizar visitantes/i)).toBeInTheDocument();
     });

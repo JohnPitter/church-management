@@ -104,6 +104,12 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
               >
                 Eventos
               </button>
+              <button
+                onClick={() => navigate('/privacidade')}
+                className="hover:text-blue-600 transition-colors"
+              >
+                Privacidade
+              </button>
             </div>
           </div>
         </div>

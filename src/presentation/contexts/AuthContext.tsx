@@ -1,7 +1,7 @@
 // Presentation Context - Auth Context
 // Clean implementation using Clean Architecture
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { User, UserEntity } from '@/domain/entities/User';
 import { container } from '../../infrastructure/di/container';
 import type { IAuthService } from '@modules/user-management/auth/domain/services/IAuthService';
@@ -21,6 +21,7 @@ interface AuthContextType {
   canAccessSystem: () => boolean;
   linkEmailPassword: (password: string) => Promise<void>;
   getSignInMethods: (email: string) => Promise<string[]>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,17 +35,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const authService = container.get('IAuthService') as IAuthService;
+  // Kept in a ref so deleteAccount() can suspend the auth + users/{uid} listener.
+  const unsubscribeRef = useRef<(() => void) | null>(null);
 
-  useEffect(() => {
-    const unsubscribe = authService.onAuthStateChanged((user) => {
+  const subscribe = useCallback(() => {
+    unsubscribeRef.current?.();
+    unsubscribeRef.current = authService.onAuthStateChanged((user) => {
       setCurrentUser(user);
       // Set user context in logging service
       loggingService.setUserContext(user);
       setLoading(false);
     });
-
-    return unsubscribe;
   }, [authService]);
+
+  useEffect(() => {
+    subscribe();
+
+    return () => {
+      unsubscribeRef.current?.();
+      unsubscribeRef.current = null;
+    };
+  }, [subscribe]);
 
   const login = async (email: string, password: string): Promise<User> => {
     try {
@@ -104,6 +115,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return await authService.getSignInMethods(email);
   };
 
+  /**
+   * Permanently deletes the current user's own account.
+   * The listener is torn down FIRST: when the server deletes users/{uid}, the snapshot
+   * listener would otherwise recreate the document (owner create is allowed and the ID
+   * token stays valid for up to 1h). On failure the listener is restored so the user
+   * stays logged in with a working app.
+   */
+  const deleteAccount = async (): Promise<void> => {
+    unsubscribeRef.current?.();
+    unsubscribeRef.current = null;
+
+    try {
+      await authService.deleteAccount();
+    } catch (error) {
+      subscribe();
+      throw error;
+    }
+
+    setCurrentUser(null);
+    loggingService.setUserContext(null);
+    // Resume listening (now signed out) so a later login in this tab works normally.
+    subscribe();
+  };
+
   const canCreateContent = (): boolean => {
     if (!currentUser) return false;
     return UserEntity.canCreateContent(currentUser);
@@ -145,7 +180,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isProfessional,
     canAccessSystem,
     linkEmailPassword,
-    getSignInMethods
+    getSignInMethods,
+    deleteAccount
   };
 
   return (

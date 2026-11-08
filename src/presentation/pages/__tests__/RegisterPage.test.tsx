@@ -53,6 +53,13 @@ jest.mock('@modules/user-management/users/infrastructure/repositories/FirebaseUs
   };
 });
 
+// Mock logging service (evita acesso ao Firestore real)
+jest.mock('@modules/shared-kernel/logging/infrastructure/services/LoggingService', () => ({
+  loggingService: {
+    logAuth: jest.fn().mockResolvedValue(undefined)
+  }
+}));
+
 // Helper to create mock user
 const createMockUser = (overrides: Partial<User> = {}): User => ({
   id: 'user-123',

@@ -328,7 +328,7 @@ export const AdminBackupPage: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="font-medium text-gray-900">Total de Registros</span>
-                  <span className="text-lg font-bold text-indigo-600">{databaseStats.totalRecords.toLocaleString()}</span>
+                  <span className="text-lg font-bold text-indigo-600">{databaseStats.totalRecords.toLocaleString('pt-BR')}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="font-medium text-gray-900">Tamanho Total</span>
@@ -408,7 +408,7 @@ export const AdminBackupPage: React.FC = () => {
                       <h4 className="text-sm font-medium text-gray-900">{collection.name}</h4>
                       <span className="text-xs text-gray-500">{collection.size}</span>
                     </div>
-                    <p className="text-2xl font-bold text-indigo-600">{collection.records.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-indigo-600">{collection.records.toLocaleString('pt-BR')}</p>
                     <p className="text-xs text-gray-500">registros</p>
                   </div>
                 ))}

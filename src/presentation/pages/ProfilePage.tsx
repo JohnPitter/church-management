@@ -2,6 +2,7 @@
 // User profile management and settings page
 
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { format } from 'date-fns';
 import { FirebaseUserRepository } from '@modules/user-management/users/infrastructure/repositories/FirebaseUserRepository';
@@ -991,6 +992,25 @@ export const ProfilePage: React.FC = () => {
                             )}
                           </div>
                         </div>
+                      </div>
+                    </div>
+
+                    <div className="border border-red-200 rounded-md p-4">
+                      <h3 className="text-lg font-medium text-red-700">Zona de perigo</h3>
+                      <p className="mt-1 text-sm text-gray-600">
+                        Excluir sua conta apaga seus dados pessoais de forma permanente. Veja o que é apagado,
+                        anonimizado e mantido antes de confirmar.
+                      </p>
+                      <div className="mt-4 flex flex-wrap items-center gap-4">
+                        <Link
+                          to="/excluir-conta"
+                          className="inline-flex items-center px-4 py-2 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-700"
+                        >
+                          Excluir minha conta
+                        </Link>
+                        <Link to="/privacidade" className="text-sm text-blue-600 hover:underline">
+                          Política de Privacidade
+                        </Link>
                       </div>
                     </div>
                   </div>

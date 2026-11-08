@@ -3,7 +3,8 @@
 
 import { IAuthService } from '@modules/user-management/users/domain/services/IAuthService';
 import { User, UserStatus, UserRole } from '@modules/user-management/users/domain/entities/User';
-import { auth, db } from '@/config/firebase';
+import { auth, db, functions } from '@/config/firebase';
+import { httpsCallable } from 'firebase/functions';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
@@ -19,6 +20,10 @@ import {
 import { doc, getDoc, setDoc, onSnapshot, Timestamp } from 'firebase/firestore';
 
 export class FirebaseAuthService implements IAuthService {
+  // uids deleted in this session: never re-subscribe to / recreate their users/{uid} doc,
+  // even if the local sign-out after deletion failed (ID tokens stay valid for ~1h).
+  private readonly deletedUids = new Set<string>();
+
   async signIn(credentials: { email: string; password: string }): Promise<User> {
     return this.login(credentials.email, credentials.password);
   }
@@ -150,7 +155,7 @@ export class FirebaseAuthService implements IAuthService {
       unsubscribeUserDoc?.();
       unsubscribeUserDoc = undefined;
 
-      if (!firebaseUser) {
+      if (!firebaseUser || this.deletedUids.has(firebaseUser.uid)) {
         callback(null);
         return;
       }
@@ -209,6 +214,36 @@ export class FirebaseAuthService implements IAuthService {
     }
   }
 
+  /**
+   * Calls the `deleteOwnAccount` callable (server uses only the caller's uid) and signs out.
+   * Callers must tear down the users/{uid} listener BEFORE calling this, otherwise the
+   * listener would recreate the deleted profile document (see AuthContext.deleteAccount).
+   * Errors keep the server's PT-BR message and the `functions/<code>` code.
+   */
+  async deleteAccount(): Promise<void> {
+    const uid = auth.currentUser?.uid;
+    try {
+      await httpsCallable(functions, 'deleteOwnAccount')({});
+    } catch (error: any) {
+      const code: string = error?.code || 'functions/internal';
+      const serverMessage: string | undefined = error?.message;
+      const message = serverMessage && !['internal', 'INTERNAL', 'unavailable'].includes(serverMessage)
+        ? serverMessage
+        : 'Não foi possível excluir sua conta agora. Verifique sua conexão e tente novamente.';
+      // details.reason: 'last-admin' | 'recent-login-required' (set by the callable)
+      throw Object.assign(new Error(message), { code, details: error?.details });
+    }
+
+    if (uid) this.deletedUids.add(uid);
+
+    try {
+      await signOut(auth);
+    } catch (error) {
+      // The account no longer exists on the server; a local sign-out failure is harmless.
+      console.warn('Sign out after account deletion failed:', error);
+    }
+  }
+
   async getSignInMethods(email: string): Promise<string[]> {
     try {
       return await fetchSignInMethodsForEmail(auth, email);
@@ -218,6 +253,9 @@ export class FirebaseAuthService implements IAuthService {
   }
 
   private async getFullUserData(firebaseUser: FirebaseUser): Promise<User | null> {
+    if (this.deletedUids.has(firebaseUser.uid)) {
+      return null;
+    }
     try {
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       
@@ -256,7 +294,17 @@ export class FirebaseAuthService implements IAuthService {
           firestoreData.biography = userData.biography;
         }
 
-        await setDoc(doc(db, 'users', firebaseUser.uid), firestoreData);
+        try {
+          await setDoc(doc(db, 'users', firebaseUser.uid), firestoreData);
+        } catch (createError: any) {
+          if (createError?.code === 'permission-denied') {
+            // A deletedAccounts tombstone exists (account deleted, possibly from another
+            // tab/device): stop treating this uid as a live account — no retry, no noise.
+            this.deletedUids.add(firebaseUser.uid);
+            return null;
+          }
+          throw createError;
+        }
 
         return {
           id: firebaseUser.uid,
